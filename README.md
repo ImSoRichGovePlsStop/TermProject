@@ -1,3 +1,5 @@
+# TermProject
+
 ## Getting Started
 1. Clone the repo
 ```bash
