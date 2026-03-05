@@ -1,6 +1,6 @@
 # TermProject
 
-A Unity game project for 2110511 Game Programming.
+A Unity game project for 2110511 Game Programming.  
 Unity Version: 6.3 LTS (6000.3.7f1)
 
 ---
