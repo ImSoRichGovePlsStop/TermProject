@@ -1,6 +1,7 @@
 # TermProject
 
 A Unity game project for 2110511 Game Programming.
+Unity Version: 6.3 LTS (6000.3.7f1)
 
 ---
 
@@ -16,13 +17,13 @@ A Unity game project for 2110511 Game Programming.
 ```bash
    git checkout dev
    git pull origin dev
-   git checkout -b gong/feat/player-movement
+   git checkout -b <your-branch-name>
 ```
 4. Work on your feature, then commit
 ```bash
    git add .
-   git commit -m "feat: add player movement"
-   git push origin gong/feat/player-movement
+   git commit -m "<commit-name>"
+   git push origin <your-branch-name>
 ```
 5. Open a Pull Request on GitHub
    - Go to the repo on GitHub
