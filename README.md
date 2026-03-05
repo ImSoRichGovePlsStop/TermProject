@@ -1,6 +1,11 @@
 # TermProject
 
+A Unity game project for 2110511 Game Programming.
+
+---
+
 ## Getting Started
+
 1. Clone the repo
 ```bash
    git clone https://github.com/ImSoRichGovePlsStop/TermProject.git
@@ -26,9 +31,12 @@
    - Add a description and request a reviewer
    - Click **"Create pull request"**
 
+---
+
 ## Contributing
 
 ### Branch Naming Scheme
+
 Follow this format: `<name>/<type>/<short-description>`
 
 **Example:** `gong/feat/player-movement`
@@ -42,6 +50,9 @@ Follow this format: `<name>/<type>/<short-description>`
 | `remove/` | Removing unused code, dependencies, or features |
 
 ### Branch Protection Rules
+
+The `dev` and `main` branches are protected with the following rules:
+
 1. **Require a pull request before merging**
    - All changes must be submitted via pull request (PR).
 2. **Require branches to be up to date before merging**
