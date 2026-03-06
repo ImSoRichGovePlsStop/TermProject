@@ -1,0 +1,35 @@
+using UnityEngine;
+
+[CreateAssetMenu(fileName = "WeaponData", menuName = "Weapon/WeaponData")]
+public class WeaponData : ScriptableObject
+{
+    [Header("Info")]
+    public string weaponName;
+
+    [Header("Stats")]
+    public float health;
+    public float damage;
+    public float attackSpeed;
+    public float moveSpeed;
+    public float critChance;
+    public float critDamage;
+    public float evadeChance;
+
+    [Header("Combo")]
+    public ComboHit[] combo;
+}
+
+[System.Serializable]
+public class ComboHit
+{
+    [Header("Damage")]
+    public float damageScale;
+
+    [Header("Hitbox Shape")]
+    public float range;
+    public float angle;
+    public float extraRange;
+
+    [Header("Animation")]
+    public string animationTrigger;
+}
