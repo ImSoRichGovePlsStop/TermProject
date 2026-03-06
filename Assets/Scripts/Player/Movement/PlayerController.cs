@@ -12,9 +12,10 @@ public class PlayerController : MonoBehaviour
     private AttackHitbox attackHitbox;
 
     private bool isAttacking = false;
+    private bool isSecondaryAttacking = false;
     private int comboIndex = 0;
     private float lastAttackTime = 0f;
-    private float comboResetTime = 1.5f;
+    private float comboResetTime = 1f;
 
     void Start()
     {
@@ -33,7 +34,7 @@ public class PlayerController : MonoBehaviour
         move = ctx.ReadValue<Vector2>();
     }
 
-    public void OnAttack(InputAction.CallbackContext ctx)
+    public void OnPrimaryAttack(InputAction.CallbackContext ctx)
     {
         if (!ctx.started) return;
         if (isAttacking) return;
@@ -63,21 +64,54 @@ public class PlayerController : MonoBehaviour
         comboIndex = (comboIndex + 1) % weapon.combo.Length;
     }
 
+    public void OnSecondaryAttack(InputAction.CallbackContext ctx)
+    {
+        if (!ctx.started) return;
+        if (isAttacking || isSecondaryAttacking) return;
+
+        WeaponData weapon = weaponEquip.GetCurrentWeapon();
+        if (weapon == null || weapon.secondaryAttack == null) return;
+
+        ComboHit hit = weapon.secondaryAttack;
+
+        Vector3 exactDir = GetExactMouseDirection();
+        attackHitbox.transform.rotation = Quaternion.LookRotation(exactDir);
+        attackHitbox.SetComboHit(hit);
+
+        Vector2 mouseDir = GetMouseDirection(exactDir);
+        lastDir = mouseDir;
+        anim.SetFloat("moveX", mouseDir.x);
+        anim.SetFloat("moveY", mouseDir.y);
+
+        anim.SetTrigger(hit.animationTrigger);
+
+        isSecondaryAttacking = true;
+
+        comboIndex = 0;
+    }
+
     public void OnAttackActive()
     {
         attackHitbox.Attack();
     }
 
-    public void OnAttackEnd()
+    public void OnPrimaryAttackEnd()
     {
         isAttacking = false;
         anim.SetFloat("moveX", lastDir.x);
         anim.SetFloat("moveY", lastDir.y);
     }
 
+    public void OnSecondaryAttackEnd()
+    {
+        isSecondaryAttacking = false;
+        anim.SetFloat("moveX", lastDir.x);
+        anim.SetFloat("moveY", lastDir.y);
+    }
+
     void FixedUpdate()
     {
-        if (isAttacking)
+        if (isAttacking || isSecondaryAttacking)
         {
             rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
             return;

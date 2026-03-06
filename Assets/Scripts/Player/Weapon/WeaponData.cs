@@ -15,8 +15,11 @@ public class WeaponData : ScriptableObject
     public float critDamage;
     public float evadeChance;
 
-    [Header("Combo")]
+    [Header("Primary Combo")]
     public ComboHit[] combo;
+
+    [Header("Secondary Attack")]
+    public ComboHit secondaryAttack;
 }
 
 [System.Serializable]

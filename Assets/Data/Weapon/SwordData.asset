@@ -36,3 +36,9 @@ MonoBehaviour:
     angle: 90
     extraRange: 0.7
     animationTrigger: attack3
+  secondaryAttack:
+    damageScale: 0.6
+    range: 1
+    angle: 360
+    extraRange: 0
+    animationTrigger: attack_secondary

@@ -14,8 +14,13 @@ public class PlayerAnimationEvents : MonoBehaviour
         controller.OnAttackActive();
     }
 
-    public void OnAttackEnd()
+    public void OnPrimaryAttackEnd()
     {
-        controller.OnAttackEnd();
+        controller.OnPrimaryAttackEnd();
+    }
+
+    public void OnSecondaryAttackEnd()
+    {
+        controller.OnSecondaryAttackEnd();
     }
 }
