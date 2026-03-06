@@ -11,7 +11,7 @@ public class PlayerController : MonoBehaviour
     private WeaponEquip weaponEquip;
     private AttackHitbox attackHitbox;
 
-    private bool isAttacking = false;
+    private bool isPrimaryAttacking = false;
     private bool isSecondaryAttacking = false;
     private int comboIndex = 0;
     private float lastAttackTime = 0f;
@@ -37,7 +37,7 @@ public class PlayerController : MonoBehaviour
     public void OnPrimaryAttack(InputAction.CallbackContext ctx)
     {
         if (!ctx.started) return;
-        if (isAttacking) return;
+        if (isPrimaryAttacking) return;
 
         WeaponData weapon = weaponEquip.GetCurrentWeapon();
         if (weapon == null || weapon.combo.Length == 0) return;
@@ -58,7 +58,7 @@ public class PlayerController : MonoBehaviour
 
         anim.SetTrigger(hit.animationTrigger);
 
-        isAttacking = true;
+        isPrimaryAttacking = true;
         lastAttackTime = Time.time;
 
         comboIndex = (comboIndex + 1) % weapon.combo.Length;
@@ -67,7 +67,7 @@ public class PlayerController : MonoBehaviour
     public void OnSecondaryAttack(InputAction.CallbackContext ctx)
     {
         if (!ctx.started) return;
-        if (isAttacking || isSecondaryAttacking) return;
+        if (isPrimaryAttacking || isSecondaryAttacking) return;
 
         WeaponData weapon = weaponEquip.GetCurrentWeapon();
         if (weapon == null || weapon.secondaryAttack == null) return;
@@ -97,7 +97,7 @@ public class PlayerController : MonoBehaviour
 
     public void OnPrimaryAttackEnd()
     {
-        isAttacking = false;
+        isPrimaryAttacking = false;
         anim.SetFloat("moveX", lastDir.x);
         anim.SetFloat("moveY", lastDir.y);
     }
@@ -111,7 +111,7 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (isAttacking || isSecondaryAttacking)
+        if (isPrimaryAttacking || isSecondaryAttacking)
         {
             rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
             return;
