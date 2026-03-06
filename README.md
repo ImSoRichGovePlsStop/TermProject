@@ -34,6 +34,16 @@ Unity Version: 6.3 LTS (6000.3.7f1)
 
 ---
 
+## Keeping Your Branch Up to Date
+Pull the latest changes from `dev` into your branch regularly:
+```bash
+   git checkout dev
+   git pull origin dev
+   git checkout <your-branch-name>
+   git merge dev
+```
+---
+
 ## Contributing
 
 ### Branch Naming Scheme
