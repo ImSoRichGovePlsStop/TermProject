@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class InventoryUI : MonoBehaviour
@@ -10,8 +9,6 @@ public class InventoryUI : MonoBehaviour
 
     [Header("Prefabs")]
     [SerializeField] private ModuleItemUI moduleItemPrefab;
-
-    private readonly List<ModuleItemUI> _items = new();
 
     private void Start()
     {
@@ -38,7 +35,6 @@ public class InventoryUI : MonoBehaviour
         ui.Init(inst, weaponGridUI, bagGridUI);
 
         StartCoroutine(SnapNextFrame(ui, bagGridUI, inst.GridPosition));
-        _items.Add(ui);
         return ui;
     }
 

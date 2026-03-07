@@ -40,8 +40,7 @@ public class InventoryManager : MonoBehaviour
 
         if (targetGrid.TryPlace(inst, pivot)) return true;
 
-        // restore
-        if (prevGrid != null) prevGrid.TryPlace(inst, prevPos);
+        prevGrid?.TryPlace(inst, prevPos);
         return false;
     }
 

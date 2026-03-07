@@ -49,17 +49,12 @@ public class GridUI : MonoBehaviour
             }
     }
 
-    /// <summary>
-    /// คืน world position มุมบนซ้ายของ cell
-    /// ใช้ GetWorldCorners ซึ่ง accurate เสมอหลัง layout เสร็จ
-    /// corners[0]=bottomLeft [1]=topLeft [2]=topRight [3]=bottomRight
-    /// </summary>
     public Vector3 GetCellWorldTopLeft(Vector2Int coord)
     {
         if (_cells == null || !Data.IsInBounds(coord)) return transform.position;
         var corners = new Vector3[4];
         _cells[coord.x, coord.y].GetComponent<RectTransform>().GetWorldCorners(corners);
-        return corners[1]; // top-left
+        return corners[1];
     }
 
     public bool ScreenToCell(Vector2 screenPos, Camera uiCam, out Vector2Int coord)

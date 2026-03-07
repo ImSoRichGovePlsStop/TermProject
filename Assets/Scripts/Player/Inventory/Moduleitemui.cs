@@ -5,8 +5,7 @@ using UnityEngine.UI;
 [RequireComponent(typeof(CanvasGroup))]
 [RequireComponent(typeof(Image))]
 public class ModuleItemUI : MonoBehaviour,
-    IBeginDragHandler, IDragHandler, IEndDragHandler,
-    IPointerEnterHandler, IPointerExitHandler
+    IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     public ModuleInstance Instance { get; private set; }
 
@@ -16,6 +15,7 @@ public class ModuleItemUI : MonoBehaviour,
     [SerializeField] private float dragAlpha = 0.6f;
 
     private RectTransform _rt;
+    private RectTransform _canvasRt;
     private CanvasGroup   _cg;
     private Canvas        _canvas;
     private GridUI        _originGrid;
@@ -28,9 +28,10 @@ public class ModuleItemUI : MonoBehaviour,
         WeaponGridUI       = weaponGridUI;
         BagGridUI          = bagGridUI;
 
-        _rt     = GetComponent<RectTransform>();
-        _cg     = GetComponent<CanvasGroup>();
-        _canvas = GetComponentInParent<Canvas>();
+        _rt       = GetComponent<RectTransform>();
+        _cg       = GetComponent<CanvasGroup>();
+        _canvas   = GetComponentInParent<Canvas>();
+        _canvasRt = _canvas.GetComponent<RectTransform>();
 
         _rt.pivot = new Vector2(0f, 1f);
 
@@ -62,19 +63,15 @@ public class ModuleItemUI : MonoBehaviour,
         }
     }
 
-    // Snap โดยใช้ world position ของมุมบนซ้ายของ cell โดยตรง
     public void SnapToCell(GridUI gridUI, Vector2Int cell)
-{
-    var parent = gridUI.transform.parent as RectTransform;
-    _rt.SetParent(parent, worldPositionStays: false);
+    {
+        var parent = gridUI.transform.parent as RectTransform;
+        _rt.SetParent(parent, worldPositionStays: false);
 
-    // world pos ของมุมบนซ้าย cell → แปลงเป็น local ของ parent ตรงๆ
-    // ไม่ผ่าน screen space เลย ไม่มี precision loss
-    Vector3 worldPos = gridUI.GetCellWorldTopLeft(cell);
-    Vector3 localPos = parent.InverseTransformPoint(worldPos);
-
-    _rt.anchoredPosition = new Vector2(localPos.x, localPos.y);
-}
+        Vector3 worldPos = gridUI.GetCellWorldTopLeft(cell);
+        Vector3 localPos = parent.InverseTransformPoint(worldPos);
+        _rt.anchoredPosition = new Vector2(localPos.x, localPos.y);
+    }
 
     public void OnBeginDrag(PointerEventData e)
     {
@@ -92,7 +89,7 @@ public class ModuleItemUI : MonoBehaviour,
     public void OnDrag(PointerEventData e)
     {
         if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            _canvas.GetComponent<RectTransform>(), e.position, UICam(), out var local))
+            _canvasRt, e.position, UICam(), out var local))
             _rt.anchoredPosition = local;
 
         UpdateHighlight(e);
@@ -118,9 +115,6 @@ public class ModuleItemUI : MonoBehaviour,
 
         SnapToCell(snapGrid, snapCell);
     }
-
-    public void OnPointerEnter(PointerEventData e) { }
-    public void OnPointerExit (PointerEventData e) { }
 
     private void UpdateHighlight(PointerEventData e)
     {
