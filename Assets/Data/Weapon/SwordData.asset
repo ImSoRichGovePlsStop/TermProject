@@ -20,6 +20,9 @@ MonoBehaviour:
   critChance: 0.1
   critDamage: 1.5
   evadeChance: 0.05
+  dashSpeed: 25
+  dashDuration: 0.15
+  dashCooldown: 1.5
   combo:
   - damageScale: 1
     range: 0.8

@@ -17,6 +17,11 @@ public class PlayerController : MonoBehaviour
     private float lastAttackTime = 0f;
     private float comboResetTime = 1f;
 
+    private bool isDashing = false;
+    private float dashTimer = 0f;
+    private float dashCooldownTimer = 0f;
+    private Vector3 dashDirection;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -32,6 +37,28 @@ public class PlayerController : MonoBehaviour
     public void OnMove(InputAction.CallbackContext ctx)
     {
         move = ctx.ReadValue<Vector2>();
+    }
+
+    public void OnDash(InputAction.CallbackContext ctx)
+    {
+        if (!ctx.started) return;
+        if (isDashing) return;
+        if (dashCooldownTimer > 0) return;
+
+        WeaponData weapon = weaponEquip.GetCurrentWeapon();
+        if (weapon == null) return;
+
+        if (move != Vector2.zero)
+            dashDirection = new Vector3(move.x, 0, move.y).normalized;
+        else
+            dashDirection = new Vector3(lastDir.x, 0, lastDir.y).normalized;
+
+        isDashing = true;
+        dashTimer = weapon.dashDuration;
+        dashCooldownTimer = weapon.dashCooldown;
+
+        stats.SetInvincible(true);
+        anim.SetBool("isDashing", true);
     }
 
     public void OnPrimaryAttack(InputAction.CallbackContext ctx)
@@ -111,6 +138,30 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (dashCooldownTimer > 0)
+            dashCooldownTimer -= Time.fixedDeltaTime;
+
+        if (isDashing)
+        {
+            WeaponData weapon = weaponEquip.GetCurrentWeapon();
+            if (weapon == null) { isDashing = false; stats.SetInvincible(false); return; }
+            rb.linearVelocity = new Vector3(
+                dashDirection.x * weapon.dashSpeed,
+                rb.linearVelocity.y,
+                dashDirection.z * weapon.dashSpeed
+            );
+
+            dashTimer -= Time.fixedDeltaTime;
+            if (dashTimer <= 0)
+            {
+                isDashing = false;
+                stats.SetInvincible(false);
+                anim.SetBool("isDashing", false);
+            }
+
+            return;
+        }
+
         if (isPrimaryAttacking || isSecondaryAttacking)
         {
             rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
