@@ -1,5 +1,5 @@
 [System.Serializable]
-public class StatBonus
+public class StatModifier
 {
     public float health;
     public float damage;

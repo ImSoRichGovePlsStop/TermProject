@@ -14,24 +14,24 @@ public class PlayerStats : MonoBehaviour
     private float weaponCritDamage;
     private float weaponEvadeChance;
 
-    private StatBonus additiveBonus = new StatBonus();
+    private StatModifier flatModifier = new StatModifier();
 
-    private StatBonus multiplierBonus = new StatBonus();
+    private StatModifier multiplierModifier = new StatModifier();
 
     public float MaxHealth =>
-        (weaponHealth + additiveBonus.health) * (1 + multiplierBonus.health);
+        (weaponHealth + flatModifier.health) * (1 + multiplierModifier.health);
     public float Damage =>
-        (weaponDamage + additiveBonus.damage) * (1 + multiplierBonus.damage);
+        (weaponDamage + flatModifier.damage) * (1 + multiplierModifier.damage);
     public float AttackSpeed =>
-        (weaponAttackSpeed + additiveBonus.attackSpeed) * (1 + multiplierBonus.attackSpeed);
+        (weaponAttackSpeed + flatModifier.attackSpeed) * (1 + multiplierModifier.attackSpeed);
     public float MoveSpeed =>
-        (weaponMoveSpeed + additiveBonus.moveSpeed) * (1 + multiplierBonus.moveSpeed);
+        (weaponMoveSpeed + flatModifier.moveSpeed) * (1 + multiplierModifier.moveSpeed);
     public float CritChance =>
-        (weaponCritChance + additiveBonus.critChance) * (1 + multiplierBonus.critChance);
+        (weaponCritChance + flatModifier.critChance) * (1 + multiplierModifier.critChance);
     public float CritDamage =>
-        (weaponCritDamage + additiveBonus.critDamage) * (1 + multiplierBonus.critDamage);
+        (weaponCritDamage + flatModifier.critDamage) * (1 + multiplierModifier.critDamage);
     public float EvadeChance =>
-        (weaponEvadeChance + additiveBonus.evadeChance) * (1 + multiplierBonus.evadeChance);
+        (weaponEvadeChance + flatModifier.evadeChance) * (1 + multiplierModifier.evadeChance);
 
     public float CurrentHealth { get; private set; }
 
@@ -65,54 +65,54 @@ public class PlayerStats : MonoBehaviour
         Debug.Log($"Stats applied from {weapon.weaponName}");
     }
 
-    public void AddAdditiveBonus(StatBonus bonus)
+    public void AddFlatModifier(StatModifier bonus)
     {
-        additiveBonus.health += bonus.health;
-        additiveBonus.damage += bonus.damage;
-        additiveBonus.attackSpeed += bonus.attackSpeed;
-        additiveBonus.moveSpeed += bonus.moveSpeed;
-        additiveBonus.critChance += bonus.critChance;
-        additiveBonus.critDamage += bonus.critDamage;
-        additiveBonus.evadeChance += bonus.evadeChance;
+        flatModifier.health += bonus.health;
+        flatModifier.damage += bonus.damage;
+        flatModifier.attackSpeed += bonus.attackSpeed;
+        flatModifier.moveSpeed += bonus.moveSpeed;
+        flatModifier.critChance += bonus.critChance;
+        flatModifier.critDamage += bonus.critDamage;
+        flatModifier.evadeChance += bonus.evadeChance;
 
         CurrentHealth = Mathf.Clamp(CurrentHealth, 0, MaxHealth);
     }
 
-    public void AddMultiplierBonus(StatBonus bonus)
+    public void AddMultiplierModifier(StatModifier bonus)
     {
-        multiplierBonus.health += bonus.health;
-        multiplierBonus.damage += bonus.damage;
-        multiplierBonus.attackSpeed += bonus.attackSpeed;
-        multiplierBonus.moveSpeed += bonus.moveSpeed;
-        multiplierBonus.critChance += bonus.critChance;
-        multiplierBonus.critDamage += bonus.critDamage;
-        multiplierBonus.evadeChance += bonus.evadeChance;
+        multiplierModifier.health += bonus.health;
+        multiplierModifier.damage += bonus.damage;
+        multiplierModifier.attackSpeed += bonus.attackSpeed;
+        multiplierModifier.moveSpeed += bonus.moveSpeed;
+        multiplierModifier.critChance += bonus.critChance;
+        multiplierModifier.critDamage += bonus.critDamage;
+        multiplierModifier.evadeChance += bonus.evadeChance;
 
         CurrentHealth = Mathf.Clamp(CurrentHealth, 0, MaxHealth);
     }
 
-    public void RemoveAdditiveBonus(StatBonus bonus)
+    public void RemoveFlatModifier(StatModifier bonus)
     {
-        additiveBonus.health -= bonus.health;
-        additiveBonus.damage -= bonus.damage;
-        additiveBonus.attackSpeed -= bonus.attackSpeed;
-        additiveBonus.moveSpeed -= bonus.moveSpeed;
-        additiveBonus.critChance -= bonus.critChance;
-        additiveBonus.critDamage -= bonus.critDamage;
-        additiveBonus.evadeChance -= bonus.evadeChance;
+        flatModifier.health -= bonus.health;
+        flatModifier.damage -= bonus.damage;
+        flatModifier.attackSpeed -= bonus.attackSpeed;
+        flatModifier.moveSpeed -= bonus.moveSpeed;
+        flatModifier.critChance -= bonus.critChance;
+        flatModifier.critDamage -= bonus.critDamage;
+        flatModifier.evadeChance -= bonus.evadeChance;
 
         CurrentHealth = Mathf.Clamp(CurrentHealth, 0, MaxHealth);
     }
 
-    public void RemoveMultiplierBonus(StatBonus bonus)
+    public void RemoveMultiplierModifier(StatModifier bonus)
     {
-        multiplierBonus.health -= bonus.health;
-        multiplierBonus.damage -= bonus.damage;
-        multiplierBonus.attackSpeed -= bonus.attackSpeed;
-        multiplierBonus.moveSpeed -= bonus.moveSpeed;
-        multiplierBonus.critChance -= bonus.critChance;
-        multiplierBonus.critDamage -= bonus.critDamage;
-        multiplierBonus.evadeChance -= bonus.evadeChance;
+        multiplierModifier.health -= bonus.health;
+        multiplierModifier.damage -= bonus.damage;
+        multiplierModifier.attackSpeed -= bonus.attackSpeed;
+        multiplierModifier.moveSpeed -= bonus.moveSpeed;
+        multiplierModifier.critChance -= bonus.critChance;
+        multiplierModifier.critDamage -= bonus.critDamage;
+        multiplierModifier.evadeChance -= bonus.evadeChance;
 
         CurrentHealth = Mathf.Clamp(CurrentHealth, 0, MaxHealth);
     }
@@ -138,8 +138,8 @@ public class PlayerStats : MonoBehaviour
 
     public void ResetBonuses()
     {
-        additiveBonus = new StatBonus();
-        multiplierBonus = new StatBonus();
+        flatModifier = new StatModifier();
+        multiplierModifier = new StatModifier();
         CurrentHealth = Mathf.Clamp(CurrentHealth, 0, MaxHealth);
     }
 
