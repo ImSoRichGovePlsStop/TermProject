@@ -57,6 +57,7 @@ public class PlayerController : MonoBehaviour
         dashTimer = weapon.dashDuration;
         dashCooldownTimer = weapon.dashCooldown;
 
+        stats.SetInvincible(true);
         anim.SetBool("isDashing", true);
     }
 
@@ -143,8 +144,7 @@ public class PlayerController : MonoBehaviour
         if (isDashing)
         {
             WeaponData weapon = weaponEquip.GetCurrentWeapon();
-            if (weapon == null) { isDashing = false; return; }
-
+            if (weapon == null) { isDashing = false; stats.SetInvincible(false); return; }
             rb.linearVelocity = new Vector3(
                 dashDirection.x * weapon.dashSpeed,
                 rb.linearVelocity.y,
@@ -155,6 +155,7 @@ public class PlayerController : MonoBehaviour
             if (dashTimer <= 0)
             {
                 isDashing = false;
+                stats.SetInvincible(false);
                 anim.SetBool("isDashing", false);
             }
 

@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class PlayerStats : MonoBehaviour
@@ -17,6 +18,13 @@ public class PlayerStats : MonoBehaviour
     private StatModifier flatModifier = new StatModifier();
 
     private StatModifier multiplierModifier = new StatModifier();
+
+    public bool IsInvincible { get; private set; }
+
+    public void SetInvincible(bool value)
+    {
+        IsInvincible = value;
+    }
 
     public float MaxHealth =>
         (weaponHealth + flatModifier.health) * (1 + multiplierModifier.health);
@@ -64,6 +72,8 @@ public class PlayerStats : MonoBehaviour
 
         Debug.Log($"Stats applied from {weapon.weaponName}");
     }
+
+    // buffs/debuffs from modules (Don't check for invincibility)
 
     public void AddFlatModifier(StatModifier bonus)
     {
@@ -117,6 +127,56 @@ public class PlayerStats : MonoBehaviour
         CurrentHealth = Mathf.Clamp(CurrentHealth, 0, MaxHealth);
     }
 
+    // buffs/debuffs from monsters, traps, etc. (Check for invincibility)
+
+    public void TakeDebuff(StatModifier debuff, float duration)
+    {
+        if (IsInvincible) return;
+        StartCoroutine(DebuffCoroutine(debuff, duration, false));
+    }
+
+    public bool TakeDebuff(StatModifier debuff)
+    {
+        if (IsInvincible) return false;
+        AddFlatModifier(debuff);
+        return true;
+    }
+
+    public void TakeDebuffMultiplier(StatModifier debuff, float duration)
+    {
+        if (IsInvincible) return;
+        StartCoroutine(DebuffCoroutine(debuff, duration, true));
+    }
+
+    public bool TakeDebuffMultiplier(StatModifier debuff)
+    {
+        if (IsInvincible) return false;
+        AddMultiplierModifier(debuff);
+        return true;
+    }
+
+    private IEnumerator DebuffCoroutine(StatModifier debuff, float duration, bool isMultiplier)
+    {
+        if (isMultiplier)
+            AddMultiplierModifier(debuff);
+        else
+            AddFlatModifier(debuff);
+
+        yield return new WaitForSeconds(duration);
+
+        if (isMultiplier)
+            RemoveMultiplierModifier(debuff);
+        else
+            RemoveFlatModifier(debuff);
+    }
+
+    public void ResetModifiers()
+    {
+        flatModifier = new StatModifier();
+        multiplierModifier = new StatModifier();
+        CurrentHealth = Mathf.Clamp(CurrentHealth, 0, MaxHealth);
+    }
+
     public void Heal(float amount)
     {
         CurrentHealth = Mathf.Clamp(CurrentHealth + amount, 0, MaxHealth);
@@ -136,15 +196,10 @@ public class PlayerStats : MonoBehaviour
         Debug.Log($"Fully healed, HP: {CurrentHealth}/{MaxHealth}");
     }
 
-    public void ResetBonuses()
-    {
-        flatModifier = new StatModifier();
-        multiplierModifier = new StatModifier();
-        CurrentHealth = Mathf.Clamp(CurrentHealth, 0, MaxHealth);
-    }
-
     public void TakeDamage(float amount)
     {
+        if (IsInvincible) return;
+
         if (Random.value < EvadeChance)
         {
             Debug.Log("Evaded!");
