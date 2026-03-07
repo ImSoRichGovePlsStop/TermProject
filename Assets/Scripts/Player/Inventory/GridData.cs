@@ -1,11 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Pure C# grid model — ไม่มี MonoBehaviour
-/// จัดการ place / remove / validate / adjacency
-/// Coordinates: col = x (→), row = y (↓), origin = top-left
-/// </summary>
 public class GridData
 {
     public int  Width        { get; private set; }
@@ -23,8 +18,6 @@ public class GridData
         IsWeaponGrid = isWeaponGrid;
         Resize(width, height);
     }
-
-    // ── Resize ────────────────────────────────
 
     public void Resize(int newW, int newH, List<ModuleInstance> evicted = null)
     {
@@ -54,14 +47,10 @@ public class GridData
         _cells = newCells;
     }
 
-    // ── Queries ───────────────────────────────
-
     public bool           IsInBounds   (Vector2Int c) => c.x >= 0 && c.x < Width && c.y >= 0 && c.y < Height;
     public bool           IsCellEmpty  (Vector2Int c) => IsInBounds(c) && _cells[c.x, c.y] == null;
     public ModuleInstance GetModuleAt  (Vector2Int c) => IsInBounds(c) ? _cells[c.x, c.y] : null;
     public IReadOnlyCollection<ModuleInstance> GetAllModules() => _placed;
-
-    // ── Validation ────────────────────────────
 
     public bool CanPlace(ModuleInstance inst, Vector2Int pivot)
     {
@@ -73,8 +62,6 @@ public class GridData
         }
         return true;
     }
-
-    // ── Place / Remove ────────────────────────
 
     public bool TryPlace(ModuleInstance inst, Vector2Int pivot)
     {
@@ -99,8 +86,6 @@ public class GridData
         return true;
     }
 
-    // ── Adjacency ─────────────────────────────
-
     public List<ModuleInstance> GetAdjacentModules(ModuleInstance inst)
     {
         var result = new HashSet<ModuleInstance>();
@@ -113,8 +98,6 @@ public class GridData
             }
         return new List<ModuleInstance>(result);
     }
-
-    // ── Helper ────────────────────────────────
 
     public List<Vector2Int> GetAbsoluteCells(ModuleData data, Vector2Int pivot)
     {
