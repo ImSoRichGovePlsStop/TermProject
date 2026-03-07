@@ -156,6 +156,22 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 1ee87e38-ae41-4285-99aa-a3df77921ecd
     m_ActionName: 'Player/Secondary Attack[/Mouse/rightButton]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1461039391149267031}
+        m_TargetAssemblyTypeName: PlayerController, Assembly-CSharp
+        m_MethodName: OnDash
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: d7e13053-8d4a-47af-9a87-ddc09992ce8e
+    m_ActionName: 'Player/Dash[/Keyboard/leftShift]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player

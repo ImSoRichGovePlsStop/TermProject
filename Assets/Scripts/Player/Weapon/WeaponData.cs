@@ -15,6 +15,11 @@ public class WeaponData : ScriptableObject
     public float critDamage;
     public float evadeChance;
 
+    [Header("Dash")]
+    public float dashSpeed;
+    public float dashDuration;
+    public float dashCooldown;
+
     [Header("Primary Combo")]
     public ComboHit[] combo;
 
