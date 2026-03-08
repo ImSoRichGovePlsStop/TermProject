@@ -26,6 +26,11 @@ public class PlayerStats : MonoBehaviour
         IsInvincible = value;
     }
 
+    //private void Update()
+    //{
+    //    Debug.Log($"HP: {CurrentHealth:F1}/{MaxHealth:F1} | DMG: {Damage:F1} | SPD: {MoveSpeed:F1} | CRIT: {CritChance:P0}/{CritDamage:P0} | EVADE: {EvadeChance:P0} | INV: {IsInvincible}");
+    //}
+
     public float MaxHealth =>
         (weaponHealth + flatModifier.health) * (1 + multiplierModifier.health);
     public float Damage =>

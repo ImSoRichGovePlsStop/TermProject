@@ -12,8 +12,7 @@ public class ModuleData : ScriptableObject
 {
     public string moduleName = "New Module";
     public Sprite icon;
-
-    public ModuleStat stat;
+    public ModuleEffect moduleEffect;
 
     [Header("Shape  (5×5 — tick cells to form the shape)")]
     [SerializeField] private ModuleShapeRow[] shapeGrid = DefaultShape();
