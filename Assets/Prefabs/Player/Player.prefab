@@ -59,7 +59,7 @@ GameObject:
   - component: {fileID: 8796976880611823720}
   - component: {fileID: 6699237877294229590}
   - component: {fileID: 2787225686031908883}
-  - component: {fileID: 406121629417521670}
+  - component: {fileID: 2654450303875858809}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -267,7 +267,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
   defaultHealth: 100
   defaultMoveSpeed: 5
---- !u!114 &406121629417521670
+--- !u!114 &2654450303875858809
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -276,10 +276,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 6821820435605495984}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2ddabb945fbbdfe42ac467de4708c99a, type: 3}
+  m_Script: {fileID: 11500000, guid: 44a05885d64e0d6489b17783328e4d14, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerStatReceiver
-  _playerStats: {fileID: 2787225686031908883}
+  m_EditorClassIdentifier: Assembly-CSharp::ModuleEffectHandler
 --- !u!1 &7199941304210273291
 GameObject:
   m_ObjectHideFlags: 0

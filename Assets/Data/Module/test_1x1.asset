@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ModuleData
   moduleName: New Module
   icon: {fileID: 0}
-  stat: {fileID: 11400000, guid: 2d625e8a760407845bc867da5baafcd1, type: 2}
+  moduleEffect: {fileID: 11400000, guid: 94033e4052409bf4fb70becf5a90842d, type: 2}
   shapeGrid:
   - cells: 0100000000
   - cells: 0000000000
