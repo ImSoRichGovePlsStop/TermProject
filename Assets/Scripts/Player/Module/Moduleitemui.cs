@@ -41,11 +41,9 @@ public class ModuleItemUI : MonoBehaviour,
         _rt.sizeDelta = new Vector2(bound.x * (cs + sp) - sp,
                                     bound.y * (cs + sp) - sp);
 
-        // Main image ใช้สำหรับ raycast/drag เท่านั้น — ซ่อน visual ไว้
         var img = GetComponent<Image>();
         img.color = Color.clear;
 
-        // สร้าง child image ตาม shape จริง (ไม่ใช่ bounding box)
         foreach (var cell in instance.Data.GetShapeCells())
         {
             var go     = new GameObject($"cell_{cell.x}_{cell.y}", typeof(RectTransform), typeof(Image));
@@ -59,7 +57,7 @@ public class ModuleItemUI : MonoBehaviour,
 
             var cellImg = go.GetComponent<Image>();
             if (instance.Data.icon != null) cellImg.sprite = instance.Data.icon;
-            cellImg.raycastTarget = false; // ให้ parent จัดการ drag แทน
+            cellImg.raycastTarget = false;
         }
     }
 
