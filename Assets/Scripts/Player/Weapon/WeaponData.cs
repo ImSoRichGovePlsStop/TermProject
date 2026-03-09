@@ -25,6 +25,10 @@ public class WeaponData : ScriptableObject
 
     [Header("Secondary Attack")]
     public ComboHit secondaryAttack;
+
+    [Header("Attack Cooldowns")]
+    public float comboCooldown;
+    public float secondaryCooldown;
 }
 
 [System.Serializable]
@@ -40,4 +44,5 @@ public class ComboHit
 
     [Header("Animation")]
     public string animationTrigger;
+    public float animationDuration;
 }
