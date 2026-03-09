@@ -61,6 +61,14 @@ public class PlayerStats : MonoBehaviour
     private void Debug_TakeDamage()
         => TakeDamage(20f);
 
+    [ContextMenu("Test: 25 Flat Heal")]
+    private void Debug_HealFlat()
+        => Heal(25);
+
+    [ContextMenu("Test: 10 Percent Heal")]
+    private void Debug_HealPercent()
+        => HealPercent(0.1f);
+
     [ContextMenu("Test: Full Heal")]
     private void Debug_Heal()
         => HealFull();
@@ -116,6 +124,8 @@ public class PlayerStats : MonoBehaviour
 
     public void AddFlatModifier(StatModifier bonus)
     {
+        float ratio = CurrentHealth / MaxHealth;
+
         flatModifier.health += bonus.health;
         flatModifier.damage += bonus.damage;
         flatModifier.attackSpeed += bonus.attackSpeed;
@@ -124,11 +134,14 @@ public class PlayerStats : MonoBehaviour
         flatModifier.critDamage += bonus.critDamage;
         flatModifier.evadeChance += bonus.evadeChance;
 
+        CurrentHealth = MaxHealth * ratio;
         CurrentHealth = Mathf.Clamp(CurrentHealth, 0, MaxHealth);
     }
 
     public void AddMultiplierModifier(StatModifier bonus)
     {
+        float ratio = CurrentHealth / MaxHealth;
+
         multiplierModifier.health += bonus.health;
         multiplierModifier.damage += bonus.damage;
         multiplierModifier.attackSpeed += bonus.attackSpeed;
@@ -137,11 +150,14 @@ public class PlayerStats : MonoBehaviour
         multiplierModifier.critDamage += bonus.critDamage;
         multiplierModifier.evadeChance += bonus.evadeChance;
 
+        CurrentHealth = MaxHealth * ratio;
         CurrentHealth = Mathf.Clamp(CurrentHealth, 0, MaxHealth);
     }
 
     public void RemoveFlatModifier(StatModifier bonus)
     {
+        float ratio = CurrentHealth / MaxHealth;
+
         flatModifier.health -= bonus.health;
         flatModifier.damage -= bonus.damage;
         flatModifier.attackSpeed -= bonus.attackSpeed;
@@ -150,11 +166,14 @@ public class PlayerStats : MonoBehaviour
         flatModifier.critDamage -= bonus.critDamage;
         flatModifier.evadeChance -= bonus.evadeChance;
 
+        CurrentHealth = MaxHealth * ratio;
         CurrentHealth = Mathf.Clamp(CurrentHealth, 0, MaxHealth);
     }
 
     public void RemoveMultiplierModifier(StatModifier bonus)
     {
+        float ratio = CurrentHealth / MaxHealth;
+
         multiplierModifier.health -= bonus.health;
         multiplierModifier.damage -= bonus.damage;
         multiplierModifier.attackSpeed -= bonus.attackSpeed;
@@ -163,6 +182,7 @@ public class PlayerStats : MonoBehaviour
         multiplierModifier.critDamage -= bonus.critDamage;
         multiplierModifier.evadeChance -= bonus.evadeChance;
 
+        CurrentHealth = MaxHealth * ratio;
         CurrentHealth = Mathf.Clamp(CurrentHealth, 0, MaxHealth);
     }
 
