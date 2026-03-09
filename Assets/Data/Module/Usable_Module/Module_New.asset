@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ModuleData
   moduleName: New Module
   icon: {fileID: 0}
-  moduleEffect: {fileID: 0}
-  moduleColor: {r: 0, g: 1, b: 1, a: 1}
+  moduleEffect: {fileID: 11400000, guid: 1144fbc885425f1429e1b3fffdbdac19, type: 2}
+  moduleColor: {r: 0, g: 0.14668632, b: 1, a: 1}
   canBeBuffed: 1
   shapeGrid:
   - cells: 0100000000
@@ -25,7 +25,7 @@ MonoBehaviour:
   - cells: 0000000000
   auraGrid:
   - cells: 0000000000000000000000000000000000000000
-  - cells: 0000000002000000020000000200000000000000
+  - cells: 0000000000000000000000000000000000000000
   - cells: 0000000002000000010000000200000000000000
-  - cells: 0000000002000000020000000200000000000000
+  - cells: 0000000000000000000000000000000000000000
   - cells: 0000000000000000000000000000000000000000

@@ -13,5 +13,4 @@ MonoBehaviour:
   m_Name: buff_test
   m_EditorClassIdentifier: Assembly-CSharp::LevelUpBuffEffect
   levelBoost: 1
-  buffDuration: 0
-  canReceiveAura: 1
+  canReceiveAura: 0

@@ -584,6 +584,38 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 996965054930953868, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: testModules.Array.size
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 996965054930953868, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: 'testModules.Array.data[0]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 5087bf0deb45e7c47b748d2569c50db4, type: 2}
+    - target: {fileID: 996965054930953868, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: 'testModules.Array.data[2]'
+      value: 
+      objectReference: {fileID: 11400000, guid: af4800c36aeb47d408dc1191678b70d6, type: 2}
+    - target: {fileID: 996965054930953868, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: 'testModules.Array.data[3]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 2e1a7fdcc9d26e741b0d55e2bf7e6624, type: 2}
+    - target: {fileID: 996965054930953868, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: 'testModules.Array.data[4]'
+      value: 
+      objectReference: {fileID: 11400000, guid: bdcb8d5a07bd2b44da57ade1cbf1e76f, type: 2}
+    - target: {fileID: 996965054930953868, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: 'testModules.Array.data[5]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 0e070724ec0cdd5429ecadbdbac3bd88, type: 2}
+    - target: {fileID: 996965054930953868, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: 'testModules.Array.data[6]'
+      value: 
+      objectReference: {fileID: 11400000, guid: cebf06c574bf217448bbfc3b548e1803, type: 2}
+    - target: {fileID: 996965054930953868, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: 'testModules.Array.data[7]'
+      value: 
+      objectReference: {fileID: 11400000, guid: cebf06c574bf217448bbfc3b548e1803, type: 2}
     - target: {fileID: 4475479428734478226, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
       propertyPath: m_Name
       value: InventorySystem
