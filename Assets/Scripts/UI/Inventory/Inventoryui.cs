@@ -41,7 +41,7 @@ public class InventoryUI : MonoBehaviour
     private IEnumerator SnapNextFrame(ModuleItemUI ui, GridUI gridUI, Vector2Int cell)
     {
         yield return null;
-        Canvas.ForceUpdateCanvases();
         ui.SnapToCell(gridUI, cell);
+        Canvas.ForceUpdateCanvases();
     }
 }

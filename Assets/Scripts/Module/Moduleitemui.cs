@@ -16,47 +16,57 @@ public class ModuleItemUI : MonoBehaviour,
 
     private RectTransform _rt;
     private RectTransform _canvasRt;
-    private CanvasGroup   _cg;
-    private Canvas        _canvas;
-    private GridUI        _originGrid;
-    private Vector2Int    _originCell;
+    private CanvasGroup _cg;
+    private Canvas _canvas;
+    private GridUI _originGrid;
+    private Vector2Int _originCell;
 
     public void Init(ModuleInstance instance, GridUI weaponGridUI, GridUI bagGridUI)
     {
-        Instance           = instance;
+        Instance = instance;
         instance.UIElement = this;
-        WeaponGridUI       = weaponGridUI;
-        BagGridUI          = bagGridUI;
+        WeaponGridUI = weaponGridUI;
+        BagGridUI = bagGridUI;
 
-        _rt       = GetComponent<RectTransform>();
-        _cg       = GetComponent<CanvasGroup>();
-        _canvas   = GetComponentInParent<Canvas>();
+        _rt = GetComponent<RectTransform>();
+        _cg = GetComponent<CanvasGroup>();
+        _canvas = GetComponentInParent<Canvas>();
         _canvasRt = _canvas.GetComponent<RectTransform>();
 
         _rt.pivot = new Vector2(0f, 1f);
 
         var bound = instance.Data.GetBoundingSize();
-        float cs  = weaponGridUI.cellSize;
-        float sp  = weaponGridUI.cellSpacing;
+        float cs = weaponGridUI.cellSize;
+        float sp = weaponGridUI.cellSpacing;
         _rt.sizeDelta = new Vector2(bound.x * (cs + sp) - sp,
                                     bound.y * (cs + sp) - sp);
 
         var img = GetComponent<Image>();
         img.color = Color.clear;
 
+        Color cellColor = instance.Data.moduleColor;
+
         foreach (var cell in instance.Data.GetShapeCells())
         {
-            var go     = new GameObject($"cell_{cell.x}_{cell.y}", typeof(RectTransform), typeof(Image));
+            var go = new GameObject($"cell_{cell.x}_{cell.y}", typeof(RectTransform), typeof(Image));
             var cellRt = go.GetComponent<RectTransform>();
             cellRt.SetParent(_rt, false);
-            cellRt.pivot        = new Vector2(0f, 1f);
-            cellRt.anchorMin    = new Vector2(0f, 1f);
-            cellRt.anchorMax    = new Vector2(0f, 1f);
-            cellRt.sizeDelta    = new Vector2(cs, cs);
+            cellRt.pivot = new Vector2(0f, 1f);
+            cellRt.anchorMin = new Vector2(0f, 1f);
+            cellRt.anchorMax = new Vector2(0f, 1f);
+            cellRt.sizeDelta = new Vector2(cs, cs);
             cellRt.anchoredPosition = new Vector2(cell.x * (cs + sp), -cell.y * (cs + sp));
 
             var cellImg = go.GetComponent<Image>();
-            if (instance.Data.icon != null) cellImg.sprite = instance.Data.icon;
+            if (instance.Data.icon != null)
+            {
+                cellImg.sprite = instance.Data.icon;
+                cellImg.color = cellColor;          
+            }
+            else
+            {
+                cellImg.color = cellColor;         
+            }
             cellImg.raycastTarget = false;
         }
     }

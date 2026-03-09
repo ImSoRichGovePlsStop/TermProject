@@ -9,7 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 39728540c65e825419a994317b61ab12, type: 3}
-  m_Name: Damage
-  m_EditorClassIdentifier: Assembly-CSharp::DamageEffect
-  bonusDamage: 50
+  m_Script: {fileID: 11500000, guid: 71fd2558e0459fe4d9187835fd7b63a6, type: 3}
+  m_Name: CritRate_1x1
+  m_EditorClassIdentifier: Assembly-CSharp::CritRateEffect
+  bonusCritChance: 0.03
+  level: 1
+  bonusPerLevel: 0.0005
+  sizeCount: 1
