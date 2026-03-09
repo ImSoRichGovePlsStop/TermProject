@@ -366,6 +366,34 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 996965054930953868, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: testModules.Array.size
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 996965054930953868, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: 'testModules.Array.data[2]'
+      value: 
+      objectReference: {fileID: 11400000, guid: af4800c36aeb47d408dc1191678b70d6, type: 2}
+    - target: {fileID: 996965054930953868, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: 'testModules.Array.data[3]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 1d243e7d7b341be449d37d37fef2448d, type: 2}
+    - target: {fileID: 996965054930953868, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: 'testModules.Array.data[4]'
+      value: 
+      objectReference: {fileID: 11400000, guid: eae87b6b9927a9b40a9a59db03ebec77, type: 2}
+    - target: {fileID: 996965054930953868, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: 'testModules.Array.data[5]'
+      value: 
+      objectReference: {fileID: 11400000, guid: e1267ca0edfb29c4b9cba9c671477460, type: 2}
+    - target: {fileID: 996965054930953868, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: 'testModules.Array.data[6]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 744b4204843706649a80b0b97eb4b8bd, type: 2}
+    - target: {fileID: 996965054930953868, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: 'testModules.Array.data[7]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 6cc165b14d327ed44a13d8eeeb68ee3b, type: 2}
     - target: {fileID: 4475479428734478226, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
       propertyPath: m_Name
       value: InventorySystem

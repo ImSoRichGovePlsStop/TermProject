@@ -57,6 +57,7 @@ public class ModuleItemUI : MonoBehaviour,
 
             var cellImg = go.GetComponent<Image>();
             if (instance.Data.icon != null) cellImg.sprite = instance.Data.icon;
+            cellImg.color = instance.Data.moduleColor;
             cellImg.raycastTarget = false;
         }
     }

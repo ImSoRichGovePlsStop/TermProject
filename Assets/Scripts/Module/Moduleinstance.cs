@@ -7,6 +7,7 @@ public class ModuleInstance
     public Vector2Int  GridPosition { get; private set; }
     public GridData    CurrentGrid  { get; private set; }
     public ModuleItemUI UIElement   { get; set; }
+    public List<ModuleInstance> buffTargets { get; private set; } = new List<ModuleInstance>();
 
     public ModuleInstance(ModuleData data)
     {
@@ -28,6 +29,15 @@ public class ModuleInstance
     public List<Vector2Int> GetAbsoluteCells()
     {
         var relative = Data.GetShapeCells();
+        var absolute = new List<Vector2Int>(relative.Count);
+        foreach (var c in relative) absolute.Add(GridPosition + c);
+        return absolute;
+    }
+
+    public List<Vector2Int> GetAbsoluteBuffCells()
+    {
+        if (!Data.isBuffAdjacent) return new List<Vector2Int>();
+        var relative = Data.GetBuffCells();
         var absolute = new List<Vector2Int>(relative.Count);
         foreach (var c in relative) absolute.Add(GridPosition + c);
         return absolute;

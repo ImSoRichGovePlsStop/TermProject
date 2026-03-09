@@ -10,22 +10,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4b7eed258015d6e43af3e1877b980b72, type: 3}
-  m_Name: test_O
+  m_Name: Buff_1x1
   m_EditorClassIdentifier: Assembly-CSharp::ModuleData
   moduleName: New Module
   icon: {fileID: 0}
-  moduleEffect: {fileID: 11400000, guid: cd889655f90a8434daca5de9ba49b5fc, type: 2}
-  moduleColor: {r: 1, g: 0.6462264, b: 0.9858501, a: 1}
-  isBuffAdjacent: 0
+  moduleEffect: {fileID: 11400000, guid: 7f4c1df67b4b3ab4e961d54564965028, type: 2}
+  moduleColor: {r: 0, g: 0.19432831, b: 1, a: 1}
+  isBuffAdjacent: 1
   buffGrid:
   - cells: 0000000000
-  - cells: 0000000000
-  - cells: 0000000000
-  - cells: 0000000000
+  - cells: 0001010100
+  - cells: 0001000100
+  - cells: 0001010100
   - cells: 0000000000
   shapeGrid:
-  - cells: 0101010000
-  - cells: 0100010000
-  - cells: 0101010000
+  - cells: 0000000000
+  - cells: 0000000000
+  - cells: 0000010000
   - cells: 0000000000
   - cells: 0000000000
