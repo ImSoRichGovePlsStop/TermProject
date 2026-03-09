@@ -40,8 +40,10 @@ public class InventoryUI : MonoBehaviour
 
     private IEnumerator SnapNextFrame(ModuleItemUI ui, GridUI gridUI, Vector2Int cell)
     {
+        ui.GetComponent<CanvasGroup>().alpha = 0f;
         yield return null;
         Canvas.ForceUpdateCanvases();
         ui.SnapToCell(gridUI, cell);
+        ui.GetComponent<CanvasGroup>().alpha = 1f;
     }
 }
