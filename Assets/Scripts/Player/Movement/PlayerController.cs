@@ -16,6 +16,7 @@ public class PlayerController : MonoBehaviour
     private int comboIndex = 0;
     private float lastAttackTime = 0f;
     private float comboResetTime = 1f;
+    private float attackCooldownTimer = 0f;
 
     private bool isDashing = false;
     private float dashTimer = 0f;
@@ -64,7 +65,8 @@ public class PlayerController : MonoBehaviour
     public void OnPrimaryAttack(InputAction.CallbackContext ctx)
     {
         if (!ctx.started) return;
-        if (isPrimaryAttacking) return;
+        if (isPrimaryAttacking || isSecondaryAttacking) return;
+        if (attackCooldownTimer > 0) return;
 
         WeaponData weapon = weaponEquip.GetCurrentWeapon();
         if (weapon == null || weapon.combo.Length == 0) return;
@@ -83,6 +85,12 @@ public class PlayerController : MonoBehaviour
         anim.SetFloat("moveX", mouseDir.x);
         anim.SetFloat("moveY", mouseDir.y);
 
+        if (hit.animationDuration > 0)
+        {
+            float clipLength = GetClipLength(hit.animationTrigger);
+            anim.speed = clipLength / hit.animationDuration * stats.AttackSpeed;
+        }
+
         anim.SetTrigger(hit.animationTrigger);
 
         isPrimaryAttacking = true;
@@ -95,6 +103,7 @@ public class PlayerController : MonoBehaviour
     {
         if (!ctx.started) return;
         if (isPrimaryAttacking || isSecondaryAttacking) return;
+        if (attackCooldownTimer > 0) return;
 
         WeaponData weapon = weaponEquip.GetCurrentWeapon();
         if (weapon == null || weapon.secondaryAttack == null) return;
@@ -109,6 +118,12 @@ public class PlayerController : MonoBehaviour
         lastDir = mouseDir;
         anim.SetFloat("moveX", mouseDir.x);
         anim.SetFloat("moveY", mouseDir.y);
+
+        if (hit.animationDuration > 0)
+        {
+            float clipLength = GetClipLength(hit.animationTrigger);
+            anim.speed = clipLength / hit.animationDuration * stats.AttackSpeed;
+        }
 
         anim.SetTrigger(hit.animationTrigger);
 
@@ -125,19 +140,32 @@ public class PlayerController : MonoBehaviour
     public void OnPrimaryAttackEnd()
     {
         isPrimaryAttacking = false;
+        anim.speed = 1f;
         anim.SetFloat("moveX", lastDir.x);
         anim.SetFloat("moveY", lastDir.y);
+
+        WeaponData weapon = weaponEquip.GetCurrentWeapon();
+        if (weapon != null && comboIndex == 0)
+            attackCooldownTimer = weapon.comboCooldown / stats.AttackSpeed;
     }
 
     public void OnSecondaryAttackEnd()
     {
         isSecondaryAttacking = false;
+        anim.speed = 1f;
         anim.SetFloat("moveX", lastDir.x);
         anim.SetFloat("moveY", lastDir.y);
+
+        WeaponData weapon = weaponEquip.GetCurrentWeapon();
+        if (weapon != null)
+            attackCooldownTimer = weapon.secondaryCooldown / stats.AttackSpeed;
     }
 
     void FixedUpdate()
     {
+        if (attackCooldownTimer > 0)
+            attackCooldownTimer -= Time.fixedDeltaTime;
+
         if (dashCooldownTimer > 0)
             dashCooldownTimer -= Time.fixedDeltaTime;
 
@@ -214,5 +242,13 @@ public class PlayerController : MonoBehaviour
             return new Vector2(Mathf.Sign(dir.x), 0);
         else
             return new Vector2(0, Mathf.Sign(dir.y));
+    }
+
+    private float GetClipLength(string clipName)
+    {
+        foreach (var clip in anim.runtimeAnimatorController.animationClips)
+            if (clip.name == clipName)
+                return clip.length;
+        return 1f;
     }
 }
