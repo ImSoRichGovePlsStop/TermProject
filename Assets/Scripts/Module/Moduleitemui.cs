@@ -16,58 +16,62 @@ public class ModuleItemUI : MonoBehaviour,
 
     private RectTransform _rt;
     private RectTransform _canvasRt;
-    private CanvasGroup   _cg;
-    private Canvas        _canvas;
-    private GridUI        _originGrid;
-    private Vector2Int    _originCell;
+    private CanvasGroup _cg;
+    private Canvas _canvas;
+    private GridUI _originGrid;
+    private Vector2Int _originCell;
+    private Vector2 _dragOffset;
+    private Vector2Int _clickedCell;
 
     public void Init(ModuleInstance instance, GridUI weaponGridUI, GridUI bagGridUI)
     {
-        Instance           = instance;
+        Instance = instance;
         instance.UIElement = this;
-        WeaponGridUI       = weaponGridUI;
-        BagGridUI          = bagGridUI;
+        WeaponGridUI = weaponGridUI;
+        BagGridUI = bagGridUI;
 
-        _rt       = GetComponent<RectTransform>();
-        _cg       = GetComponent<CanvasGroup>();
-        _canvas   = GetComponentInParent<Canvas>();
+        _rt = GetComponent<RectTransform>();
+        _cg = GetComponent<CanvasGroup>();
+        _canvas = GetComponentInParent<Canvas>();
         _canvasRt = _canvas.GetComponent<RectTransform>();
 
         _rt.pivot = new Vector2(0f, 1f);
 
         var bound = instance.Data.GetBoundingSize();
-        float cs  = weaponGridUI.cellSize;
-        float sp  = weaponGridUI.cellSpacing;
+        float cs = weaponGridUI.cellSize;
+        float sp = weaponGridUI.cellSpacing;
         _rt.sizeDelta = new Vector2(bound.x * (cs + sp) - sp,
                                     bound.y * (cs + sp) - sp);
 
         var img = GetComponent<Image>();
         img.color = Color.clear;
+        img.raycastTarget = false;
 
         foreach (var cell in instance.Data.GetShapeCells())
         {
-            var go     = new GameObject($"cell_{cell.x}_{cell.y}", typeof(RectTransform), typeof(Image));
+            var go = new GameObject($"cell_{cell.x}_{cell.y}", typeof(RectTransform), typeof(Image));
             var cellRt = go.GetComponent<RectTransform>();
             cellRt.SetParent(_rt, false);
-            cellRt.pivot        = new Vector2(0f, 1f);
-            cellRt.anchorMin    = new Vector2(0f, 1f);
-            cellRt.anchorMax    = new Vector2(0f, 1f);
-            cellRt.sizeDelta    = new Vector2(cs, cs);
+            cellRt.pivot = new Vector2(0f, 1f);
+            cellRt.anchorMin = new Vector2(0f, 1f);
+            cellRt.anchorMax = new Vector2(0f, 1f);
+            cellRt.sizeDelta = new Vector2(cs, cs);
             cellRt.anchoredPosition = new Vector2(cell.x * (cs + sp), -cell.y * (cs + sp));
 
             var cellImg = go.GetComponent<Image>();
             if (instance.Data.icon != null) cellImg.sprite = instance.Data.icon;
-            cellImg.raycastTarget = false;
+            cellImg.color = instance.Data.moduleColor;
+            cellImg.raycastTarget = true;
         }
+        _cg.alpha = 0f;
     }
 
     public void SnapToCell(GridUI gridUI, Vector2Int cell)
     {
-        var parent = gridUI.transform.parent as RectTransform;
-        _rt.SetParent(parent, worldPositionStays: false);
+        _rt.SetParent(_canvasRt, worldPositionStays: false);
 
         Vector3 worldPos = gridUI.GetCellWorldTopLeft(cell);
-        Vector3 localPos = parent.InverseTransformPoint(worldPos);
+        Vector3 localPos = _canvasRt.InverseTransformPoint(worldPos);
         _rt.anchoredPosition = new Vector2(localPos.x, localPos.y);
     }
 
@@ -77,10 +81,16 @@ public class ModuleItemUI : MonoBehaviour,
             ? WeaponGridUI : BagGridUI;
         _originCell = Instance.GridPosition;
 
+        _clickedCell = GetClickedLocalCell(e);
+
         _rt.SetParent(_canvas.transform, worldPositionStays: true);
         _rt.SetAsLastSibling();
 
-        _cg.alpha          = dragAlpha;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            _canvasRt, e.position, UICam(), out var mouseLocal);
+        _dragOffset = mouseLocal - _rt.anchoredPosition;
+
+        _cg.alpha = dragAlpha;
         _cg.blocksRaycasts = false;
     }
 
@@ -88,22 +98,29 @@ public class ModuleItemUI : MonoBehaviour,
     {
         if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
             _canvasRt, e.position, UICam(), out var local))
-            _rt.anchoredPosition = local;
+            _rt.anchoredPosition = local - _dragOffset;
 
         UpdateHighlight(e);
     }
 
     public void OnEndDrag(PointerEventData e)
     {
-        _cg.alpha          = 1f;
+        _cg.alpha = 1f;
         _cg.blocksRaycasts = true;
         ClearHighlights();
 
-        GridUI     targetGrid = null;
-        Vector2Int pivot      = Vector2Int.zero;
+        GridUI targetGrid = null;
+        Vector2Int pivot = Vector2Int.zero;
 
         foreach (var g in new[] { WeaponGridUI, BagGridUI })
-            if (g.ScreenToCell(e.position, UICam(), out var c)) { targetGrid = g; pivot = c; break; }
+        {
+            if (g.ScreenToCell(e.position, UICam(), out var hoveredCell))
+            {
+                targetGrid = g;
+                pivot = hoveredCell - _clickedCell;
+                break;
+            }
+        }
 
         bool moved = targetGrid != null &&
                      InventoryManager.Instance.TryMoveModule(Instance, targetGrid.Data, pivot);
@@ -118,14 +135,34 @@ public class ModuleItemUI : MonoBehaviour,
     {
         ClearHighlights();
         foreach (var g in new[] { WeaponGridUI, BagGridUI })
-            if (g.ScreenToCell(e.position, UICam(), out var c))
-            { g.HighlightCells(Instance.Data, c, g.Data.CanPlace(Instance, c)); return; }
+        {
+            if (g.ScreenToCell(e.position, UICam(), out var hoveredCell))
+            {
+                var pivot = hoveredCell - _clickedCell;
+                g.HighlightCells(Instance.Data, pivot, g.Data.CanPlace(Instance, pivot));
+                return;
+            }
+        }
     }
 
     private void ClearHighlights()
     {
         WeaponGridUI?.ClearHighlights();
         BagGridUI?.ClearHighlights();
+    }
+
+    private Vector2Int GetClickedLocalCell(PointerEventData e)
+    {
+        float cs = WeaponGridUI.cellSize;
+        float sp = WeaponGridUI.cellSpacing;
+
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            _rt, e.position, UICam(), out var localPoint);
+
+        int col = Mathf.FloorToInt(localPoint.x / (cs + sp));
+        int row = Mathf.FloorToInt(-localPoint.y / (cs + sp));
+
+        return new Vector2Int(Mathf.Max(0, col), Mathf.Max(0, row));
     }
 
     private Camera UICam() =>

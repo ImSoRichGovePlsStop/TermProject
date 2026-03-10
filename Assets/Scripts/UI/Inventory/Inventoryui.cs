@@ -10,7 +10,7 @@ public class InventoryUI : MonoBehaviour
     [Header("Prefabs")]
     [SerializeField] private ModuleItemUI moduleItemPrefab;
 
-    private void Start()
+    private void Awake()
     {
         var mgr = InventoryManager.Instance;
         if (mgr == null) { Debug.LogError("[InventoryUI] InventoryManager missing!"); return; }
