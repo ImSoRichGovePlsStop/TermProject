@@ -1,9 +1,13 @@
-using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 public abstract class ModuleEffect : ScriptableObject
 {
     public bool IsActive { get; private set; }
+
+    private void OnEnable()
+    {
+        IsActive = false;
+    }
 
     public void Equip(PlayerStats stats)
     {

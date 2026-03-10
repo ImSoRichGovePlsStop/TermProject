@@ -29,19 +29,25 @@ MonoBehaviour:
     angle: 90
     extraRange: 0
     animationTrigger: attack1
+    animationDuration: 0.5
   - damageScale: 1
     range: 0.8
     angle: 90
     extraRange: 0
     animationTrigger: attack2
+    animationDuration: 0.5
   - damageScale: 2
     range: 0.8
     angle: 90
     extraRange: 0.7
     animationTrigger: attack3
+    animationDuration: 0.8
   secondaryAttack:
     damageScale: 0.6
     range: 1
     angle: 360
     extraRange: 0
     animationTrigger: attack_secondary
+    animationDuration: 1
+  comboCooldown: 0.5
+  secondaryCooldown: 0.5
