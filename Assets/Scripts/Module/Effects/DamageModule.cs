@@ -7,18 +7,18 @@ public class DamageModule : ModuleEffect
     public float[] baseStatPerRarity = { 10f, 15f, 22f, 32f, 45f };
     public float levelMultiplier = 0.15f;
 
-    private float _totalBuffPercent = 0f;
-    private float _currentStat = 0f;
+    private float totalBuffPercent = 0f;
+    private float currentStat = 0f;
 
     private void OnEnable()
     {
-        _totalBuffPercent = 0f;
-        _currentStat = 0f;
+        totalBuffPercent = 0f;
+        currentStat = 0f;
     }
 
     protected override void OnEquip(PlayerStats stats, Rarity rarity, int level)
     {
-        _currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
         stats.AddFlatModifier(new StatModifier { damage = GetEffectiveDamage() });
     }
 
@@ -30,17 +30,17 @@ public class DamageModule : ModuleEffect
     public override void OnBuffReceived(float percent, PlayerStats stats)
     {
         stats.RemoveFlatModifier(new StatModifier { damage = GetEffectiveDamage() });
-        _totalBuffPercent += percent;
+        totalBuffPercent += percent;
         stats.AddFlatModifier(new StatModifier { damage = GetEffectiveDamage() });
     }
 
     public override void OnBuffRemoved(float percent, PlayerStats stats)
     {
-        if (!IsActive) { _totalBuffPercent -= percent; return; }
+        if (!IsActive) { totalBuffPercent -= percent; return; }
         stats.RemoveFlatModifier(new StatModifier { damage = GetEffectiveDamage() });
-        _totalBuffPercent -= percent;
+        totalBuffPercent -= percent;
         stats.AddFlatModifier(new StatModifier { damage = GetEffectiveDamage() });
     }
 
-    private float GetEffectiveDamage() => _currentStat * (1f + _totalBuffPercent);
+    private float GetEffectiveDamage() => currentStat * (1f + totalBuffPercent);
 }
