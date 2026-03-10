@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Module Effect/Low HP Damage")]
-public class LowHpDamageModule : ModuleEffect
+public class LowHpModule : ModuleEffect
 {
     public float healthThreshold;
     public float bonusDamage;
