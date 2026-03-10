@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 7960103508822112348}
   - component: {fileID: 5751372851717793496}
   - component: {fileID: 2661486428939378519}
+  - component: {fileID: 61150285569358350}
   m_Layer: 0
   m_Name: Enemy_Hoplite
   m_TagString: Enemy
@@ -103,9 +104,9 @@ MonoBehaviour:
   detectRange: 6
   attackRange: 0.2
   loseTargetRange: 6
-  attackCooldown: 1.2
   player: {fileID: 0}
   movement: {fileID: 5751372851717793496}
+  enemyAttack: {fileID: 61150285569358350}
   animator: {fileID: 7551460917292428163}
 --- !u!114 &5751372851717793496
 MonoBehaviour:
@@ -140,6 +141,27 @@ MonoBehaviour:
   animator: {fileID: 7551460917292428163}
   enemyCollider: {fileID: 2242107197552931819}
   rb: {fileID: 208256006118903961}
+--- !u!114 &61150285569358350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1157175084331872940}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c65b852d3a2bae428945d227f9476ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  attackDamage: 10
+  attackRange: 1.2
+  attackCooldown: 5
+  attackPoint: {fileID: 3690318380378242785}
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  animator: {fileID: 7551460917292428163}
+  enemyHealth: {fileID: 2661486428939378519}
 --- !u!1 &1591345016874994846
 GameObject:
   m_ObjectHideFlags: 0
@@ -319,7 +341,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8851800910643273183}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 418cbc4948ad13848ba197a12c120637, type: 3}
   m_Name: 
