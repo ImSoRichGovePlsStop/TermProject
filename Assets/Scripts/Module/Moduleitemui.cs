@@ -63,15 +63,15 @@ public class ModuleItemUI : MonoBehaviour,
             cellImg.color = instance.Data.moduleColor;
             cellImg.raycastTarget = true;
         }
+        _cg.alpha = 0f;
     }
 
     public void SnapToCell(GridUI gridUI, Vector2Int cell)
     {
-        var parent = gridUI.transform.parent as RectTransform;
-        _rt.SetParent(parent, worldPositionStays: false);
+        _rt.SetParent(_canvasRt, worldPositionStays: false);
 
         Vector3 worldPos = gridUI.GetCellWorldTopLeft(cell);
-        Vector3 localPos = parent.InverseTransformPoint(worldPos);
+        Vector3 localPos = _canvasRt.InverseTransformPoint(worldPos);
         _rt.anchoredPosition = new Vector2(localPos.x, localPos.y);
     }
 
