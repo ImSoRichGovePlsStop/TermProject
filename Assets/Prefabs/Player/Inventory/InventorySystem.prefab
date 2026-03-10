@@ -297,7 +297,6 @@ GameObject:
   - component: {fileID: 4164588740569116628}
   - component: {fileID: 3458281353720568475}
   - component: {fileID: 6974604651814624824}
-  - component: {fileID: 996965054930953868}
   - component: {fileID: 5111823582727986639}
   m_Layer: 5
   m_Name: InventoryPanel
@@ -396,22 +395,6 @@ MonoBehaviour:
   weaponGridUI: {fileID: 8546374899932569028}
   bagGridUI: {fileID: 1646127900905442606}
   moduleItemPrefab: {fileID: 2996288814634159331, guid: 2e667019bf23b8743b2e3414548beeeb, type: 3}
---- !u!114 &996965054930953868
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6436220125950827349}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 35b48d9b623e8ea4687cd697335b0853, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Inventorytestspawner
-  testModules:
-  - {fileID: 11400000, guid: 6cc165b14d327ed44a13d8eeeb68ee3b, type: 2}
-  - {fileID: 11400000, guid: 744b4204843706649a80b0b97eb4b8bd, type: 2}
-  inventoryUI: {fileID: 6974604651814624824}
 --- !u!114 &5111823582727986639
 MonoBehaviour:
   m_ObjectHideFlags: 0

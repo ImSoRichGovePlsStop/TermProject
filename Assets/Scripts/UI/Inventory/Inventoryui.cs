@@ -21,9 +21,9 @@ public class InventoryUI : MonoBehaviour
         Debug.Log("[InventoryUI] Initialized.");
     }
 
-    public ModuleItemUI SpawnModule(ModuleData data)
+    public ModuleItemUI SpawnModule(ModuleData data, Rarity rarity = Rarity.Common, int level = 0)
     {
-        var inst = new ModuleInstance(data);
+        var inst = new ModuleInstance(data, rarity, level);
         if (!InventoryManager.Instance.TryAddToBag(inst))
         {
             Debug.LogWarning($"[InventoryUI] Bag full — {data.moduleName}");

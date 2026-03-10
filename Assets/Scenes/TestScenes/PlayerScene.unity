@@ -231,6 +231,42 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &442531596 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6436220125950827349, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+  m_PrefabInstance: {fileID: 1485241529}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &442531599 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6974604651814624824, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+  m_PrefabInstance: {fileID: 1485241529}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 442531596}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b1886347f80bae4295c8378ee70039e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryUI
+--- !u!114 &442531603
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 442531596}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35b48d9b623e8ea4687cd697335b0853, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryTestSpawner
+  testModules:
+  - data: {fileID: 11400000, guid: 6cc165b14d327ed44a13d8eeeb68ee3b, type: 2}
+    rarity: 2
+    level: 3
+  - data: {fileID: 11400000, guid: 744b4204843706649a80b0b97eb4b8bd, type: 2}
+    rarity: 3
+    level: 0
+  inventoryUI: {fileID: 442531599}
 --- !u!1 &504598971
 GameObject:
   m_ObjectHideFlags: 0
@@ -482,10 +518,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 996965054930953868, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6436220125950827349, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      insertIndex: 3
+      addedObject: {fileID: 442531603}
   m_SourcePrefab: {fileID: 100100000, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
 --- !u!1001 &1739704718
 PrefabInstance:

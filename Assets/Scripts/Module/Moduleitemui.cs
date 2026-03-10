@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -13,6 +14,7 @@ public class ModuleItemUI : MonoBehaviour,
     [HideInInspector] public GridUI BagGridUI;
 
     [SerializeField] private float dragAlpha = 0.6f;
+    [SerializeField] private float borderSize = 4f;
 
     private RectTransform _rt;
     private RectTransform _canvasRt;
@@ -22,6 +24,17 @@ public class ModuleItemUI : MonoBehaviour,
     private Vector2Int _originCell;
     private Vector2 _dragOffset;
     private Vector2Int _clickedCell;
+
+    // Rarity Colors
+    private static Color RarityColor(Rarity r) => r switch
+    {
+        Rarity.Common => new Color(0.75f, 0.75f, 0.75f),
+        Rarity.Uncommon => new Color(0.30f, 0.80f, 0.30f),
+        Rarity.Rare => new Color(0.20f, 0.50f, 1.00f),
+        Rarity.Epic => new Color(0.65f, 0.25f, 0.90f),
+        Rarity.Legendary => new Color(1.00f, 0.75f, 0.10f),
+        _ => Color.white
+    };
 
     public void Init(ModuleInstance instance, GridUI weaponGridUI, GridUI bagGridUI)
     {
@@ -47,9 +60,35 @@ public class ModuleItemUI : MonoBehaviour,
         img.color = Color.clear;
         img.raycastTarget = false;
 
-        foreach (var cell in instance.Data.GetShapeCells())
+        Color borderColor = RarityColor(instance.Rarity);
+        var shapeCells = instance.Data.GetShapeCells();
+
+        // Border layer
+        foreach (var cell in shapeCells)
         {
-            var go = new GameObject($"cell_{cell.x}_{cell.y}", typeof(RectTransform), typeof(Image));
+            var borderGo = new GameObject($"border_{cell.x}_{cell.y}",
+                                           typeof(RectTransform), typeof(Image));
+            var borderRt = borderGo.GetComponent<RectTransform>();
+            borderRt.SetParent(_rt, false);
+            borderRt.pivot = new Vector2(0f, 1f);
+            borderRt.anchorMin = new Vector2(0f, 1f);
+            borderRt.anchorMax = new Vector2(0f, 1f);
+            borderRt.sizeDelta = new Vector2(cs + borderSize * 2f, cs + borderSize * 2f);
+            borderRt.anchoredPosition = new Vector2(
+                 cell.x * (cs + sp) - borderSize,
+                -cell.y * (cs + sp) + borderSize);
+
+            var borderImg = borderGo.GetComponent<Image>();
+            borderImg.color = borderColor;
+            borderImg.raycastTarget = false;
+        }
+
+        // Cell layer
+        bool isFirstCell = true;
+        foreach (var cell in shapeCells)
+        {
+            var go = new GameObject($"cell_{cell.x}_{cell.y}",
+                                        typeof(RectTransform), typeof(Image));
             var cellRt = go.GetComponent<RectTransform>();
             cellRt.SetParent(_rt, false);
             cellRt.pivot = new Vector2(0f, 1f);
@@ -62,7 +101,33 @@ public class ModuleItemUI : MonoBehaviour,
             if (instance.Data.icon != null) cellImg.sprite = instance.Data.icon;
             cellImg.color = instance.Data.moduleColor;
             cellImg.raycastTarget = true;
+
+            // Level text on first cell
+            if (isFirstCell)
+            {
+                isFirstCell = false;
+                if (instance.Level > 0)
+                {
+                    var textGo = new GameObject("LevelText",
+                                               typeof(RectTransform), typeof(TextMeshProUGUI));
+                    var textRt = textGo.GetComponent<RectTransform>();
+                    textRt.SetParent(cellRt, false);
+                    textRt.anchorMin = new Vector2(0f, 1f);
+                    textRt.anchorMax = new Vector2(1f, 1f);
+                    textRt.pivot = new Vector2(1f, 1f);
+                    textRt.anchoredPosition = new Vector2(-2f, -2f);
+                    textRt.sizeDelta = new Vector2(0f, 20f);
+
+                    var tmp = textGo.GetComponent<TextMeshProUGUI>();
+                    tmp.text = $"+{instance.Level}";
+                    tmp.fontSize = 24f;
+                    tmp.color = Color.white;
+                    tmp.alignment = TextAlignmentOptions.TopRight;
+                    tmp.raycastTarget = false;
+                }
+            }
         }
+
         _cg.alpha = 0f;
     }
 

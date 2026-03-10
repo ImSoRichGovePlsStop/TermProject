@@ -3,45 +3,44 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Module Effect/Crit Chance")]
 public class CritChanceModule : ModuleEffect
 {
-    public float bonusCritChance;
-    private float totalBuffPercent = 0f;
+    [Header("Stat per Rarity (Common -> Legendary)")]
+    public float[] baseStatPerRarity = { 3f, 5f, 7f, 10f, 14f };
+    public float levelMultiplier = 0.08f;
+
+    private float _totalBuffPercent = 0f;
+    private float _currentStat = 0f;
 
     private void OnEnable()
     {
-        totalBuffPercent = 0f;
+        _totalBuffPercent = 0f;
+        _currentStat = 0f;
     }
 
-    protected override void OnEquip(PlayerStats stats)
+    protected override void OnEquip(PlayerStats stats, Rarity rarity, int level)
     {
-        stats.AddFlatModifier(new StatModifier { critChance = GetEffectiveCritChance() });
+        _currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        stats.AddFlatModifier(new StatModifier { critChance = GetEffectiveStat() });
     }
 
-    protected override void OnUnequip(PlayerStats stats)
+    protected override void OnUnequip(PlayerStats stats, Rarity rarity, int level)
     {
-        stats.RemoveFlatModifier(new StatModifier { critChance = GetEffectiveCritChance() });
+        stats.RemoveFlatModifier(new StatModifier { critChance = GetEffectiveStat() });
     }
 
     public override void OnBuffReceived(float percent, PlayerStats stats)
     {
-        stats.RemoveFlatModifier(new StatModifier { critChance = GetEffectiveCritChance() });
-        totalBuffPercent += percent;
-        stats.AddFlatModifier(new StatModifier { critChance = GetEffectiveCritChance() });
+        stats.RemoveFlatModifier(new StatModifier { critChance = GetEffectiveStat() });
+        _totalBuffPercent += percent;
+        stats.AddFlatModifier(new StatModifier { critChance = GetEffectiveStat() });
     }
 
     public override void OnBuffRemoved(float percent, PlayerStats stats)
     {
-        if (!IsActive)
-        {
-            totalBuffPercent -= percent;
-            return;
-        }
-        stats.RemoveFlatModifier(new StatModifier { critChance = GetEffectiveCritChance() });
-        totalBuffPercent -= percent;
-        stats.AddFlatModifier(new StatModifier { critChance = GetEffectiveCritChance() });
+        if (!IsActive) { _totalBuffPercent -= percent; return; }
+        stats.RemoveFlatModifier(new StatModifier { critChance = GetEffectiveStat() });
+        _totalBuffPercent -= percent;
+        stats.AddFlatModifier(new StatModifier { critChance = GetEffectiveStat() });
     }
 
-    private float GetEffectiveCritChance()
-    {
-        return bonusCritChance * (1 + totalBuffPercent);
-    }
+    private float GetEffectiveStat() => _currentStat * (1f + _totalBuffPercent);
 }
