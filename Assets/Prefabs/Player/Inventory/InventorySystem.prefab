@@ -295,6 +295,7 @@ GameObject:
   - component: {fileID: 6023145053737864822}
   - component: {fileID: 7478708107496817849}
   - component: {fileID: 4164588740569116628}
+  - component: {fileID: 6004093055370628203}
   - component: {fileID: 3458281353720568475}
   - component: {fileID: 6974604651814624824}
   - component: {fileID: 5111823582727986639}
@@ -364,6 +365,35 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &6004093055370628203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6436220125950827349}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35b48d9b623e8ea4687cd697335b0853, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryTestSpawner
+  testModules:
+  - data: {fileID: 11400000, guid: 6cc165b14d327ed44a13d8eeeb68ee3b, type: 2}
+    rarity: 2
+    level: 3
+  - data: {fileID: 11400000, guid: 744b4204843706649a80b0b97eb4b8bd, type: 2}
+    rarity: 3
+    level: 0
+  - data: {fileID: 11400000, guid: af4800c36aeb47d408dc1191678b70d6, type: 2}
+    rarity: 2
+    level: 5
+  - data: {fileID: 11400000, guid: eae87b6b9927a9b40a9a59db03ebec77, type: 2}
+    rarity: 4
+    level: 6
+  - data: {fileID: 11400000, guid: 1d243e7d7b341be449d37d37fef2448d, type: 2}
+    rarity: 1
+    level: 2
+  inventoryUI: {fileID: 6974604651814624824}
 --- !u!114 &3458281353720568475
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -32,6 +32,7 @@ public class InventoryUI : MonoBehaviour
 
         var go = Instantiate(moduleItemPrefab, transform);
         var ui = go.GetComponent<ModuleItemUI>();
+        ui.InventoryPanelRt = GetComponent<RectTransform>();
         ui.Init(inst, weaponGridUI, bagGridUI);
 
         StartCoroutine(SnapNextFrame(ui, bagGridUI, inst.GridPosition));

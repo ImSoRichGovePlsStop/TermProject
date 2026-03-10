@@ -25,6 +25,8 @@ public class ModuleItemUI : MonoBehaviour,
     private Vector2 _dragOffset;
     private Vector2Int _clickedCell;
 
+    [HideInInspector] public RectTransform InventoryPanelRt;
+
     // Rarity Colors
     private static Color RarityColor(Rarity r) => r switch
     {
@@ -67,24 +69,43 @@ public class ModuleItemUI : MonoBehaviour,
         foreach (var cell in shapeCells)
         {
             var borderGo = new GameObject($"border_{cell.x}_{cell.y}",
-                                           typeof(RectTransform), typeof(Image));
+                                          typeof(RectTransform), typeof(Image));
             var borderRt = borderGo.GetComponent<RectTransform>();
             borderRt.SetParent(_rt, false);
             borderRt.pivot = new Vector2(0f, 1f);
             borderRt.anchorMin = new Vector2(0f, 1f);
             borderRt.anchorMax = new Vector2(0f, 1f);
-            borderRt.sizeDelta = new Vector2(cs + borderSize * 2f, cs + borderSize * 2f);
+            bool bHasRight = shapeCells.Contains(new Vector2Int(cell.x + 1, cell.y));
+            bool bHasLeft = shapeCells.Contains(new Vector2Int(cell.x - 1, cell.y));
+            bool bHasBottom = shapeCells.Contains(new Vector2Int(cell.x, cell.y + 1));
+            bool bHasTop = shapeCells.Contains(new Vector2Int(cell.x, cell.y - 1));
+
+            float bExtraRight = bHasRight ? borderSize + sp : 0f;
+            float bExtraLeft = bHasLeft ? borderSize + sp : 0f;
+            float bExtraBottom = bHasBottom ? borderSize + sp : 0f;
+            float bExtraTop = bHasTop ? borderSize + sp : 0f;
+
+            borderRt.sizeDelta = new Vector2(
+                cs + bExtraLeft + bExtraRight,
+                cs + bExtraTop + bExtraBottom);
+
             borderRt.anchoredPosition = new Vector2(
-                 cell.x * (cs + sp) - borderSize,
-                -cell.y * (cs + sp) + borderSize);
+                 cell.x * (cs + sp) - bExtraLeft,
+                -cell.y * (cs + sp) + bExtraTop);
 
             var borderImg = borderGo.GetComponent<Image>();
             borderImg.color = borderColor;
             borderImg.raycastTarget = false;
         }
 
+        Vector2Int topRightCell = shapeCells[0];
+        foreach (var c in shapeCells)
+        {
+            if (c.y < topRightCell.y || (c.y == topRightCell.y && c.x > topRightCell.x))
+                topRightCell = c;
+        }
+
         // Cell layer
-        bool isFirstCell = true;
         foreach (var cell in shapeCells)
         {
             var go = new GameObject($"cell_{cell.x}_{cell.y}",
@@ -94,8 +115,23 @@ public class ModuleItemUI : MonoBehaviour,
             cellRt.pivot = new Vector2(0f, 1f);
             cellRt.anchorMin = new Vector2(0f, 1f);
             cellRt.anchorMax = new Vector2(0f, 1f);
-            cellRt.sizeDelta = new Vector2(cs, cs);
-            cellRt.anchoredPosition = new Vector2(cell.x * (cs + sp), -cell.y * (cs + sp));
+            bool hasRight = shapeCells.Contains(new Vector2Int(cell.x + 1, cell.y));
+            bool hasLeft = shapeCells.Contains(new Vector2Int(cell.x - 1, cell.y));
+            bool hasBottom = shapeCells.Contains(new Vector2Int(cell.x, cell.y + 1));
+            bool hasTop = shapeCells.Contains(new Vector2Int(cell.x, cell.y - 1));
+
+            float extraRight = hasRight ? borderSize + sp : 0f;
+            float extraLeft = hasLeft ? borderSize + sp : 0f;
+            float extraBottom = hasBottom ? borderSize + sp : 0f;
+            float extraTop = hasTop ? borderSize + sp : 0f;
+
+            cellRt.sizeDelta = new Vector2(
+                cs - borderSize * 2f + extraLeft + extraRight,
+                cs - borderSize * 2f + extraTop + extraBottom);
+
+            cellRt.anchoredPosition = new Vector2(
+                cell.x * (cs + sp) + borderSize - extraLeft,
+               -cell.y * (cs + sp) - borderSize + extraTop);
 
             var cellImg = go.GetComponent<Image>();
             if (instance.Data.icon != null) cellImg.sprite = instance.Data.icon;
@@ -103,9 +139,8 @@ public class ModuleItemUI : MonoBehaviour,
             cellImg.raycastTarget = true;
 
             // Level text on first cell
-            if (isFirstCell)
+            if (cell == topRightCell)
             {
-                isFirstCell = false;
                 if (instance.Level > 0)
                 {
                     var textGo = new GameObject("LevelText",
@@ -133,10 +168,10 @@ public class ModuleItemUI : MonoBehaviour,
 
     public void SnapToCell(GridUI gridUI, Vector2Int cell)
     {
-        _rt.SetParent(_canvasRt, worldPositionStays: false);
+        _rt.SetParent(InventoryPanelRt, worldPositionStays: false);
 
         Vector3 worldPos = gridUI.GetCellWorldTopLeft(cell);
-        Vector3 localPos = _canvasRt.InverseTransformPoint(worldPos);
+        Vector3 localPos = InventoryPanelRt.InverseTransformPoint(worldPos);
         _rt.anchoredPosition = new Vector2(localPos.x, localPos.y);
     }
 

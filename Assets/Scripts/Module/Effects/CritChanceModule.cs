@@ -4,7 +4,7 @@ using UnityEngine;
 public class CritChanceModule : ModuleEffect
 {
     [Header("Stat per Rarity (Common -> Legendary)")]
-    public float[] baseStatPerRarity = { 3f, 5f, 7f, 10f, 14f };
+    public float[] baseStatPerRarity = { 0.03f, 0.05f, 0.07f, 0.1f, 0.14f };
     public float levelMultiplier = 0.08f;
 
     private float _totalBuffPercent = 0f;
