@@ -11,6 +11,7 @@ public class ModuleInstance
 
     public Rarity Rarity { get; private set; }
     public int Level { get; private set; }
+    public ModuleRuntimeState RuntimeState { get; } = new ModuleRuntimeState();
 
     public ModuleInstance(ModuleData data, Rarity rarity = Rarity.Common, int level = 0)
     {
@@ -27,11 +28,13 @@ public class ModuleInstance
         CurrentGrid = grid;
         GridPosition = position;
     }
+
     internal void OnRemoved()
     {
         CurrentGrid = null;
         GridPosition = Vector2Int.zero;
     }
+
     public List<Vector2Int> GetAbsoluteCells()
     {
         var relative = Data.GetShapeCells();
@@ -39,6 +42,7 @@ public class ModuleInstance
         foreach (var c in relative) absolute.Add(GridPosition + c);
         return absolute;
     }
+
     public List<Vector2Int> GetAbsoluteBuffCells()
     {
         if (!Data.isBuffAdjacent) return new List<Vector2Int>();

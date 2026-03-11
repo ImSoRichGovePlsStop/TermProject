@@ -7,40 +7,47 @@ public class HpModule : ModuleEffect
     public float[] baseStatPerRarity = { 50f, 80f, 120f, 170f, 230f };
     public float levelMultiplier = 0.10f;
 
-    private float totalBuffPercent = 0f;
-    private float currentStat = 0f;
-
-    private void OnEnable()
+    protected override void OnEquip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state)
     {
-        totalBuffPercent = 0f;
-        currentStat = 0f;
+        state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        stats.AddFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
     }
 
-    protected override void OnEquip(PlayerStats stats, Rarity rarity, int level)
+    protected override void OnUnequip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state)
     {
-        currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
-        stats.AddFlatModifier(new StatModifier { health = GetEffectiveStat() });
+        stats.RemoveFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
     }
 
-    protected override void OnUnequip(PlayerStats stats, Rarity rarity, int level)
+    public override void OnBuffReceived(float percent, PlayerStats stats, ModuleRuntimeState state)
     {
-        stats.RemoveFlatModifier(new StatModifier { health = GetEffectiveStat() });
+        stats.RemoveFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
+        state.totalBuffPercent += percent;
+        stats.AddFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
     }
 
-    public override void OnBuffReceived(float percent, PlayerStats stats)
+    public override void OnBuffRemoved(float percent, PlayerStats stats, ModuleRuntimeState state)
     {
-        stats.RemoveFlatModifier(new StatModifier { health = GetEffectiveStat() });
-        totalBuffPercent += percent;
-        stats.AddFlatModifier(new StatModifier { health = GetEffectiveStat() });
+        if (!state.isActive)
+        {
+            state.totalBuffPercent -= percent;
+            return;
+        }
+        stats.RemoveFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
+        state.totalBuffPercent -= percent;
+        stats.AddFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
     }
 
-    public override void OnBuffRemoved(float percent, PlayerStats stats)
+    public override string GetDescription(Rarity rarity, int level, ModuleRuntimeState state)
     {
-        if (!IsActive) { totalBuffPercent -= percent; return; }
-        stats.RemoveFlatModifier(new StatModifier { health = GetEffectiveStat() });
-        totalBuffPercent -= percent;
-        stats.AddFlatModifier(new StatModifier { health = GetEffectiveStat() });
+        float baseStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        float effective = GetEffectiveStat(state);
+        if (state.totalBuffPercent > 0f)
+            return $"<s>+{baseStat:F0}</s> +{effective:F0} HP";
+        return $"+{baseStat:F0} HP";
     }
 
-    private float GetEffectiveStat() => currentStat * (1f + totalBuffPercent);
+    private float GetEffectiveStat(ModuleRuntimeState state)
+    {
+        return state.currentStat * (1f + state.totalBuffPercent);
+    }
 }

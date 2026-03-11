@@ -27,7 +27,7 @@ public class ModuleEffectHandler : MonoBehaviour
     private void OnModuleEquipped(ModuleInstance inst)
     {
         if (inst.Data.moduleEffect != null)
-            inst.Data.moduleEffect.Equip(playerStats, inst.Rarity, inst.Level);
+            inst.Data.moduleEffect.Equip(playerStats, inst.Rarity, inst.Level, inst.RuntimeState);
 
         if (inst.Data.isBuffAdjacent && inst.Data.moduleEffect != null)
         {
@@ -42,7 +42,8 @@ public class ModuleEffectHandler : MonoBehaviour
                     if (target.Data.moduleEffect == null) continue;
                     inst.Data.moduleEffect.ApplyBuff(
                         target.Data.moduleEffect, playerStats,
-                        buffModule.GetBuffPercent()
+                        buffModule.GetBuffPercent(inst.RuntimeState),
+                        target.RuntimeState
                     );
                     inst.buffTargets.Add(target);
                 }
@@ -63,7 +64,8 @@ public class ModuleEffectHandler : MonoBehaviour
             {
                 other.Data.moduleEffect.ApplyBuff(
                     inst.Data.moduleEffect, playerStats,
-                    otherBuffModule.GetBuffPercent()
+                    otherBuffModule.GetBuffPercent(other.RuntimeState),
+                    inst.RuntimeState
                 );
                 other.buffTargets.Add(inst);
             }
@@ -73,7 +75,7 @@ public class ModuleEffectHandler : MonoBehaviour
     private void OnModuleUnequipped(ModuleInstance inst)
     {
         if (inst.Data.moduleEffect != null)
-            inst.Data.moduleEffect.Unequip(playerStats, inst.Rarity, inst.Level);
+            inst.Data.moduleEffect.Unequip(playerStats, inst.Rarity, inst.Level, inst.RuntimeState);
 
         if (inst.Data.isBuffAdjacent && inst.Data.moduleEffect != null)
         {
@@ -85,7 +87,8 @@ public class ModuleEffectHandler : MonoBehaviour
                     if (target.Data.moduleEffect == null) continue;
                     inst.Data.moduleEffect.RemoveBuff(
                         target.Data.moduleEffect, playerStats,
-                        buffModule.GetBuffPercent()
+                        buffModule.GetBuffPercent(inst.RuntimeState),
+                        target.RuntimeState
                     );
                 }
                 inst.buffTargets.Clear();
@@ -104,7 +107,8 @@ public class ModuleEffectHandler : MonoBehaviour
 
             other.Data.moduleEffect.RemoveBuff(
                 inst.Data.moduleEffect, playerStats,
-                otherBuffModule.GetBuffPercent()
+                otherBuffModule.GetBuffPercent(other.RuntimeState),
+                inst.RuntimeState
             );
             other.buffTargets.Remove(inst);
         }
@@ -118,7 +122,7 @@ public class ModuleEffectHandler : MonoBehaviour
         foreach (var inst in mgr.WeaponGrid.GetAllModules())
         {
             if (inst.Data.moduleEffect == null) continue;
-            inst.Data.moduleEffect.OnUpdate(playerStats, inst.Rarity, inst.Level);
+            inst.Data.moduleEffect.OnUpdate(playerStats, inst.Rarity, inst.Level, inst.RuntimeState);
         }
     }
 
