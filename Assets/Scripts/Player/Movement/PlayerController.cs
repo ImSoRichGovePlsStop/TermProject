@@ -166,9 +166,9 @@ public class PlayerController : MonoBehaviour
         }
 
         closest?.Interact(this);
-
-        Debug.Log("casting");
+        Debug.Log("casted");
     }
+
 
     void OnDrawGizmosSelected()
     {
