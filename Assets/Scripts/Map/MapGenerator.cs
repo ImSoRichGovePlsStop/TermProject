@@ -4,6 +4,7 @@ public class MapGenerator : MonoBehaviour
 {
     [Header("Player")]
     public GameObject playerPrefab;
+    public GameObject enemiesPrefab;
 
     [Header("room sizes")]
     public Vector2 spawnRoomSize = new Vector2(10f, 10f);
@@ -30,8 +31,9 @@ public class MapGenerator : MonoBehaviour
         float battleRoomX = (spawnRoomSize.x / 2f) + roomSpacing + (battleRoomSize.x / 2f);
         GameObject battleRoomObj = CreateRoom("BattleRoom", battleRoomSize, new Vector3(battleRoomX, 0, 0));
         battleRoomObj.AddComponent<BattleRoom>();
+        battleRoomObj.GetComponent<BattleRoom>().enemyPrefabs = new GameObject[] { enemiesPrefab };
 
-        
+
 
         BoxCollider trigger = battleRoomObj.AddComponent<BoxCollider>();
         trigger.isTrigger = true;
