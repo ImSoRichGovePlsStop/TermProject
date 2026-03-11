@@ -1,16 +1,18 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class MapGenerator : MonoBehaviour
 {
     [Header("Player")]
     public GameObject playerPrefab;
 
-    [Header("Room Sizes")]
+    [Header("room sizes")]
     public Vector2 spawnRoomSize = new Vector2(10f, 10f);
-    public Vector2 battleRoomSize = new Vector2(12f, 12f);
+    public Vector2 battleRoomSize = new Vector2(10f, 10f);
 
-    [Header("Spacing")]
+    [Header("room spacing")]
     public float roomSpacing = 4f;
+
+    public float triggerHeight = 3f;
 
     void Start()
     {
@@ -19,28 +21,34 @@ public class MapGenerator : MonoBehaviour
 
     void GenerateMap()
     {
+        ///ตรงนี้มันแค่เป็นการลองเรียกห้องออกมาเฉยๆยังไม่ทันมีระบบสุ่ม
+
         GameObject spawnRoomObj = CreateRoom("SpawnRoom", spawnRoomSize, new Vector3(0, 0, 0));
         SpawnRoom spawnRoom = spawnRoomObj.AddComponent<SpawnRoom>();
-        spawnRoom.playerPrefab = playerPrefab; 
+        spawnRoom.playerPrefab = playerPrefab;
 
         float battleRoomX = (spawnRoomSize.x / 2f) + roomSpacing + (battleRoomSize.x / 2f);
-        GameObject battleRoom = CreateRoom("BattleRoom", battleRoomSize, new Vector3(battleRoomX, 0, 0));
-        battleRoom.AddComponent<BattleRoom>();
+        GameObject battleRoomObj = CreateRoom("BattleRoom", battleRoomSize, new Vector3(battleRoomX, 0, 0));
+        battleRoomObj.AddComponent<BattleRoom>();
+
+        
+
+        BoxCollider trigger = battleRoomObj.AddComponent<BoxCollider>();
+        trigger.isTrigger = true;
+        trigger.size = new Vector3(battleRoomSize.x, triggerHeight, battleRoomSize.y);
+        trigger.center = new Vector3(0, triggerHeight / 2f, 0); 
+
+        ///
     }
 
     GameObject CreateRoom(string name, Vector2 size, Vector3 position)
     {
-        
+
         GameObject room = GameObject.CreatePrimitive(PrimitiveType.Plane);
         room.name = name;
         room.transform.position = position;
         room.transform.localScale = new Vector3(size.x / 10f, 1f, size.y / 10f);
-
-        Renderer rend = room.GetComponent<Renderer>();
-        Material mat = new Material(Shader.Find("Standard"));
-        mat.color = name == "SpawnRoom" ? new Color(0.2f, 0.8f, 0.2f, 1f)   
-                                        : new Color(0.8f, 0.2f, 0.2f, 1f);  
-        rend.material = mat;
+ 
 
         return room;
     }

@@ -6,7 +6,7 @@ public class SpawnRoom : MonoBehaviour
     [Header("Player")]
     public GameObject playerPrefab;
 
-    public float spawnHeightOffset = 1f;
+    public float spawnHeightOffset = 0.3f;
 
     void Start()
     {
