@@ -2,46 +2,43 @@ using UnityEngine;
 
 public abstract class ModuleEffect : ScriptableObject
 {
-    public bool IsActive { get; private set; }
-
-    private void OnEnable()
+    public void Equip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state)
     {
-        IsActive = false;
+        if (state.isActive) return;
+        state.isActive = true;
+        OnEquip(stats, rarity, level, state);
     }
 
-    private void OnDisable()
+    public void Unequip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state)
     {
-        IsActive = false;
+        if (!state.isActive) return;
+        state.isActive = false;
+        OnUnequip(stats, rarity, level, state);
     }
 
-    public void Equip(PlayerStats stats)
+    public void ApplyBuff(ModuleEffect target, PlayerStats stats, float percent, ModuleRuntimeState targetState)
     {
-        if (IsActive) return;
-        IsActive = true;
-        OnEquip(stats);
+        target.OnBuffReceived(percent, stats, targetState);
     }
 
-    public void Unequip(PlayerStats stats)
+    public void RemoveBuff(ModuleEffect target, PlayerStats stats, float percent, ModuleRuntimeState targetState)
     {
-        if (!IsActive) return;
-        IsActive = false;
-        OnUnequip(stats);
+        target.OnBuffRemoved(percent, stats, targetState);
     }
 
-    public void ApplyBuff(ModuleEffect target, PlayerStats stats, float percent)
+    public virtual void OnUpdate(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state) { }
+    public virtual void OnBuffReceived(float percent, PlayerStats stats, ModuleRuntimeState state) { }
+    public virtual void OnBuffRemoved(float percent, PlayerStats stats, ModuleRuntimeState state) { }
+
+    protected abstract void OnEquip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state);
+    protected abstract void OnUnequip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state);
+
+    public abstract string GetDescription(Rarity rarity, int level, ModuleRuntimeState state);
+
+    protected float GetFinalStat(float[] baseStatPerRarity, float levelMultiplier, Rarity rarity, int level)
     {
-        target.OnBuffReceived(percent, stats);
+        if (baseStatPerRarity == null || baseStatPerRarity.Length == 0) return 0f;
+        int index = Mathf.Clamp((int)rarity, 0, baseStatPerRarity.Length - 1);
+        return baseStatPerRarity[index] * (1f + level * levelMultiplier);
     }
-
-    public void RemoveBuff(ModuleEffect target, PlayerStats stats, float percent)
-    {
-        target.OnBuffRemoved(percent, stats);
-    }
-
-    public virtual void OnUpdate(PlayerStats stats) { }
-    public virtual void OnBuffReceived(float percent, PlayerStats stats) { }
-    public virtual void OnBuffRemoved(float percent, PlayerStats stats) { }
-
-    protected abstract void OnEquip(PlayerStats stats);
-    protected abstract void OnUnequip(PlayerStats stats);
 }
