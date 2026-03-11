@@ -13,9 +13,44 @@ public class ModuleData : ScriptableObject
     public string moduleName = "New Module";
     public Sprite icon;
     public ModuleEffect moduleEffect;
+    public Color moduleColor = Color.white;
 
-    [Header("Shape  (5×5 — tick cells to form the shape)")]
+    [Header("Module Buff")]
+    public bool isBuffAdjacent;
+    [SerializeField] private ModuleShapeRow[] buffGrid = DefaultShape();
+
+    [Header("Shape (5×5 — tick cells to form the shape)")]
     [SerializeField] private ModuleShapeRow[] shapeGrid = DefaultShape();
+
+    public List<Vector2Int> GetBuffCells()
+    {
+        int shapeMinX = int.MaxValue, shapeMinY = int.MaxValue;
+        for (int row = 0; row < 5; row++)
+        {
+            if (shapeGrid == null || row >= shapeGrid.Length) continue;
+            var r = shapeGrid[row];
+            if (r == null) continue;
+            for (int col = 0; col < 5; col++)
+                if (col < r.cells.Length && r.cells[col])
+                {
+                    if (col < shapeMinX) shapeMinX = col;
+                    if (row < shapeMinY) shapeMinY = row;
+                }
+        }
+        if (shapeMinX == int.MaxValue) { shapeMinX = 0; shapeMinY = 0; }
+
+        var result = new List<Vector2Int>();
+        for (int row = 0; row < 5; row++)
+        {
+            if (buffGrid == null || row >= buffGrid.Length) continue;
+            var r = buffGrid[row];
+            if (r == null) continue;
+            for (int col = 0; col < 5; col++)
+                if (col < r.cells.Length && r.cells[col])
+                    result.Add(new Vector2Int(col - shapeMinX, row - shapeMinY));
+        }
+        return result;
+    }
 
     public List<Vector2Int> GetShapeCells()
     {
@@ -50,7 +85,6 @@ public class ModuleData : ScriptableObject
     {
         var g = new ModuleShapeRow[5];
         for (int i = 0; i < 5; i++) g[i] = new ModuleShapeRow();
-        g[0].cells[0] = true;
         return g;
     }
 

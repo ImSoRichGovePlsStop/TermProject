@@ -32,13 +32,14 @@ public class PlayerStats : MonoBehaviour
     private void OnGUI()
     {
         if (!showDebugUI) return;
-        GUI.Box(new Rect(10, 10, 220, 160), "Player Stats");
-        GUI.Label(new Rect(20, 30, 200, 20), $"HP:    {CurrentHealth:F1} / {MaxHealth:F1}");
-        GUI.Label(new Rect(20, 50, 200, 20), $"DMG:   {Damage:F1}");
-        GUI.Label(new Rect(20, 70, 200, 20), $"ASPD:  {AttackSpeed:F2}");
-        GUI.Label(new Rect(20, 90, 200, 20), $"SPD:   {MoveSpeed:F2}");
-        GUI.Label(new Rect(20, 110, 200, 20), $"CRIT:  {CritChance:P0} / {CritDamage:P0}");
-        GUI.Label(new Rect(20, 130, 200, 20), $"EVADE: {EvadeChance:P0}  INV: {IsInvincible}");
+        GUI.Box(new Rect(10, 10, 300, 220), "Player Stats");
+        GUI.skin.label.fontSize = 16;
+        GUI.Label(new Rect(20, 40, 280, 25), $"HP:    {CurrentHealth:F1} / {MaxHealth:F1}");
+        GUI.Label(new Rect(20, 70, 280, 25), $"DMG:   {Damage:F1}");
+        GUI.Label(new Rect(20, 100, 280, 25), $"ASPD:  {AttackSpeed:F2}");
+        GUI.Label(new Rect(20, 130, 280, 25), $"SPD:   {MoveSpeed:F2}");
+        GUI.Label(new Rect(20, 160, 280, 25), $"CRIT:  {CritChance:P0} / {CritDamage:P0}");
+        GUI.Label(new Rect(20, 190, 280, 25), $"EVADE: {EvadeChance:P0}  INV: {IsInvincible}");
     }
 
     [ContextMenu("Test: +10 Damage")]
