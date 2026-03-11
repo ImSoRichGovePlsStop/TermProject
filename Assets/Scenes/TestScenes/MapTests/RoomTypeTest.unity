@@ -1412,7 +1412,7 @@ PrefabInstance:
     - target: {fileID: 193443651079528124, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
       propertyPath: m_ActionEvents.Array.data[4].m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 1804546462}
+      objectReference: {fileID: 1461039391149267031, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
     - target: {fileID: 193443651079528124, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
       propertyPath: m_ActionEvents.Array.data[4].m_PersistentCalls.m_Calls.Array.data[0].m_CallState
       value: 2
@@ -1423,11 +1423,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 193443651079528124, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
       propertyPath: m_ActionEvents.Array.data[4].m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: Interactor, Assembly-CSharp
+      value: PlayerController, Assembly-CSharp
       objectReference: {fileID: 0}
     - target: {fileID: 193443651079528124, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
       propertyPath: m_ActionEvents.Array.data[4].m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 1461039391149267031, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
+      propertyPath: interactableLayer.m_Bits
+      value: 4294967295
       objectReference: {fileID: 0}
     - target: {fileID: 2634401423236395427, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1476,10 +1480,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6821820435605495984, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1804546462}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
 --- !u!1 &1635312989
 GameObject:
@@ -2011,27 +2012,6 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
---- !u!1 &1804546453 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6821820435605495984, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
-  m_PrefabInstance: {fileID: 1601628761}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1804546462
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1804546453}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 50adf709b77c0c941ba7bca8c54a9176, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Interactor
-  interactRange: 2
-  interactableLayer:
-    serializedVersion: 2
-    m_Bits: 4294967295
 --- !u!1 &1834843374
 GameObject:
   m_ObjectHideFlags: 0

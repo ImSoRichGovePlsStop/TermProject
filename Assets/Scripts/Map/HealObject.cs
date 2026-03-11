@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class HealObject : MonoBehaviour, IInteractable
 {
-    public void Interact(Interactor interactor)
+    public void Interact(PlayerController playerController)
     {
         GameObject player = GameObject.FindWithTag("Player");
         PlayerStats playerStatus =  player.GetComponent<PlayerStats>();

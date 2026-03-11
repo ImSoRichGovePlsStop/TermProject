@@ -1,6 +1,11 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+
+public interface IInteractable
+{
+    void Interact(PlayerController playerController);
+}
 public class PlayerController : MonoBehaviour
 {
     private Vector2 move;
@@ -22,6 +27,11 @@ public class PlayerController : MonoBehaviour
     private float dashTimer = 0f;
     private float dashCooldownTimer = 0f;
     private Vector3 dashDirection;
+
+
+    [Header("Interaction")]
+    public float interactRange = 2f;
+    public LayerMask interactableLayer;
 
     void Start()
     {
@@ -130,6 +140,40 @@ public class PlayerController : MonoBehaviour
         isSecondaryAttacking = true;
 
         comboIndex = 0;
+    }
+
+
+    public void OnInteract(InputAction.CallbackContext ctx)
+    {
+        if (!ctx.started) return;
+
+        Collider[] hits = Physics.OverlapSphere(transform.position, interactRange, interactableLayer);
+
+        IInteractable closest = null;
+        float closestDist = Mathf.Infinity;
+
+        foreach (Collider hit in hits)
+        {
+            IInteractable interactable = hit.GetComponent<IInteractable>();
+            if (interactable == null) continue;
+
+            float dist = Vector3.Distance(transform.position, hit.transform.position);
+            if (dist < closestDist)
+            {
+                closestDist = dist;
+                closest = interactable;
+            }
+        }
+
+        closest?.Interact(this);
+
+        Debug.Log("casting");
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, interactRange);
     }
 
     public void OnAttackActive()
