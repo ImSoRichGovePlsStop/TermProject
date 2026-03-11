@@ -16,7 +16,7 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private float loseTargetRange = 8f;
 
     [Header("References")]
-    [SerializeField] private Transform player;
+    private Transform player;
     [SerializeField] private EnemyMovement movement;
     [SerializeField] private EnemyAttack enemyAttack;
     [SerializeField] private Animator animator;
@@ -28,6 +28,10 @@ public class EnemyController : MonoBehaviour
 
     private void Awake()
     {
+        GameObject playerInScene = GameObject.FindWithTag("Player");
+        if (playerInScene != null)
+            player = playerInScene.transform;
+
         if (movement == null)
             movement = GetComponent<EnemyMovement>();
 

@@ -3,7 +3,7 @@ using UnityEngine;
 public class EnemyHealth : MonoBehaviour
 {
     [Header("Health")]
-    [SerializeField] private int maxHP = 30;
+    [SerializeField] private float maxHP = 30;
     [SerializeField] private float destroyDelay = 2f;
 
     [Header("References")]
@@ -12,11 +12,11 @@ public class EnemyHealth : MonoBehaviour
     [SerializeField] private Collider enemyCollider;
     [SerializeField] private Rigidbody rb;
 
-    private int currentHP;
+    private float currentHP;
     private bool isDead = false;
 
-    public int CurrentHP => currentHP;
-    public int MaxHP => maxHP;
+    public float CurrentHP => currentHP;
+    public float MaxHP => maxHP;
     public bool IsDead => isDead;
 
     private void Awake()
@@ -36,7 +36,7 @@ public class EnemyHealth : MonoBehaviour
             rb = GetComponent<Rigidbody>();
     }
 
-    public void TakeDamage(int damage)
+    public void TakeDamage(float damage)
     {
         if (isDead) return;
         if (damage <= 0) return;

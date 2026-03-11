@@ -80,6 +80,8 @@ public class EnemyMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (rb.isKinematic) return;
+
         if (!canMove || moveDirection.sqrMagnitude < 0.001f)
         {
             // rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);

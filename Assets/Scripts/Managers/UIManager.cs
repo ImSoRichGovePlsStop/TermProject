@@ -24,5 +24,8 @@ public class UIManager : MonoBehaviour
         if (inventoryPanel == null) return;
         IsInventoryOpen = !IsInventoryOpen;
         inventoryPanel.SetActive(IsInventoryOpen);
+
+        if (!IsInventoryOpen)
+            ModuleTooltipUI.Instance?.Hide();
     }
 }
