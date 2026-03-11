@@ -1,16 +1,10 @@
 using UnityEngine;
 
-public class GroundLoot : MonoBehaviour
-{
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
 
-    // Update is called once per frame
-    void Update()
+public class GroundLoot : MonoBehaviour, IInteractable
+{
+    public void Interact(Interactor interactor)
     {
-        
+        Debug.Log("Item interacted");
     }
 }
