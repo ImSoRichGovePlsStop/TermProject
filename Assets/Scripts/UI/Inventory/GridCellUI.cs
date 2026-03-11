@@ -39,4 +39,10 @@ public class GridCellUI : MonoBehaviour
 
     public void Refresh(GridData grid)
         => SetState(grid.GetModuleAt(GridCoord) != null ? State.Occupied : State.Empty);
+
+    public void SetColor(Color color)
+    {
+        if (_img == null) _img = GetComponent<Image>();
+        _img.color = color;
+    }
 }

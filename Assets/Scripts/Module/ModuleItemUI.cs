@@ -6,7 +6,8 @@ using UnityEngine.UI;
 [RequireComponent(typeof(CanvasGroup))]
 [RequireComponent(typeof(Image))]
 public class ModuleItemUI : MonoBehaviour,
-    IBeginDragHandler, IDragHandler, IEndDragHandler
+    IBeginDragHandler, IDragHandler, IEndDragHandler,
+    IPointerEnterHandler, IPointerExitHandler
 {
     public ModuleInstance Instance { get; private set; }
 
@@ -229,6 +230,16 @@ public class ModuleItemUI : MonoBehaviour,
         var snapCell = moved ? Instance.GridPosition : _originCell;
 
         SnapToCell(snapGrid, snapCell);
+    }
+
+    public void OnPointerEnter(PointerEventData e)
+    {
+        ModuleTooltipUI.Instance.Show(Instance, WeaponGridUI, BagGridUI);
+    }
+
+    public void OnPointerExit(PointerEventData e)
+    {
+        ModuleTooltipUI.Instance.Hide();
     }
 
     private void UpdateHighlight(PointerEventData e)

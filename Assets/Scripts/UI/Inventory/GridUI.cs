@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,6 +12,7 @@ public class GridUI : MonoBehaviour
 
     private GridCellUI[,]   _cells;
     private GridLayoutGroup _layout;
+    private List<GameObject> _buffHighlights = new List<GameObject>();
 
     public void Init(GridData data)
     {
@@ -80,6 +82,49 @@ public class GridUI : MonoBehaviour
             if (!Data.IsInBounds(c)) continue;
             _cells[c.x, c.y].SetState(valid ? GridCellUI.State.Valid : GridCellUI.State.Invalid);
         }
+    }
+
+    public void HighlightBuffCells(ModuleInstance inst, Color color)
+    {
+        ClearBuffHighlights();
+        Color buffColor = new Color(color.r, color.g, color.b, 0.3f);
+        var canvas = GetComponentInParent<Canvas>();
+        var canvasRt = canvas.GetComponent<RectTransform>();
+
+        foreach (var cell in inst.GetAbsoluteBuffCells())
+        {
+            if (!Data.IsInBounds(cell)) continue;
+
+            var overlayGo = new GameObject("BuffHighlight", typeof(RectTransform), typeof(Image));
+            overlayGo.transform.SetParent(canvasRt, false);
+            overlayGo.transform.SetAsLastSibling();
+
+            var overlayRt = overlayGo.GetComponent<RectTransform>();
+            overlayRt.pivot = new Vector2(0f, 1f);
+            overlayRt.anchorMin = new Vector2(0f, 0f);
+            overlayRt.anchorMax = new Vector2(0f, 0f);
+            overlayRt.sizeDelta = new Vector2(cellSize, cellSize);
+
+            Vector3 worldPos = GetCellWorldTopLeft(cell);
+            Vector3 localPos = canvasRt.InverseTransformPoint(worldPos);
+            overlayRt.anchoredPosition = new Vector2(
+                localPos.x + canvasRt.rect.width * 0.5f,
+                localPos.y + canvasRt.rect.height * 0.5f
+            );
+
+            var overlayImg = overlayGo.GetComponent<Image>();
+            overlayImg.color = buffColor;
+            overlayImg.raycastTarget = false;
+
+            _buffHighlights.Add(overlayGo);
+        }
+    }
+
+    public void ClearBuffHighlights()
+    {
+        foreach (var go in _buffHighlights)
+            if (go != null) Destroy(go);
+        _buffHighlights.Clear();
     }
 
     public void ClearHighlights() => RefreshAll();
