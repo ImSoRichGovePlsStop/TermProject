@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class Harpy : MonoBehaviour
 {
@@ -21,7 +22,8 @@ public class Harpy : MonoBehaviour
     [SerializeField] float hoverSpeed = 2f;
     [SerializeField] float hoverAmplitude = 0.3f;
     [SerializeField] float wakeDistance = 5f;
-    [SerializeField] private Transform player;
+    [SerializeField] Transform player;
+    [SerializeField] SpriteRenderer spriteRenderer;
 
     float targetHoverY;
     private Vector3 startPosition;
@@ -39,10 +41,22 @@ public class Harpy : MonoBehaviour
     {
         startPosition = transform.position;
         baseY = transform.position.y;
+        currentState = HarpyState.IdleOnGround;
     }
 
     void Update()
     {
+        Vector3 dir = movement.MoveDirection;
+
+        if (dir.x > 0)
+        {
+            spriteRenderer.flipX = false;
+        }
+        else if (dir.x < 0)
+        {
+            spriteRenderer.flipX = true;
+        }
+
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
         
         switch (currentState)
