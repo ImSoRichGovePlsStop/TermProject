@@ -6,7 +6,7 @@ public class ModuleInstance
     public ModuleData Data { get; private set; }
     public Vector2Int GridPosition { get; private set; }
     public GridData CurrentGrid { get; private set; }
-    public ModuleItemUI UIElement { get; set; }
+    public MonoBehaviour UIElement { get; set; }
     public List<ModuleInstance> buffTargets { get; private set; } = new List<ModuleInstance>();
 
     public Rarity Rarity { get; private set; }
