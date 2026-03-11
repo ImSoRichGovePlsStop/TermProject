@@ -52,6 +52,13 @@ public class AttackHitbox : MonoBehaviour
             PlayerStats stats = GetComponentInParent<PlayerStats>();
             float dmg = stats.CalculateDamage(currentHit.damageScale);
             Debug.Log($"Hit {hit.name} for {dmg}!");
+            
+            EnemyHealth enemyHealth = hit.GetComponent<EnemyHealth>();
+
+            if (enemyHealth != null)
+            {
+                enemyHealth.TakeDamage((int)dmg);
+            }
         }
     }
 
