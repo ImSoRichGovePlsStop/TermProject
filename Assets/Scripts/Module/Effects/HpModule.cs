@@ -3,7 +3,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Module Effect/Hp")]
 public class HpModule : ModuleEffect
 {
-    [Header("Stat per Rarity (Common -> Legendary)")]
+    [Header("Stat per Rarity (Common -> GOD)")]
     public float[] baseStatPerRarity = { 50f, 80f, 120f, 170f, 230f };
     public float levelMultiplier = 0.10f;
 

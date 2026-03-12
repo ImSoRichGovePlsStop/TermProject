@@ -35,7 +35,7 @@ public class ModuleItemUI : MonoBehaviour,
         Rarity.Uncommon => new Color(0.30f, 0.80f, 0.30f),
         Rarity.Rare => new Color(0.20f, 0.50f, 1.00f),
         Rarity.Epic => new Color(0.65f, 0.25f, 0.90f),
-        Rarity.Legendary => new Color(1.00f, 0.75f, 0.10f),
+        Rarity.GOD => new Color(1.00f, 0.75f, 0.10f),
         _ => Color.white
     };
 

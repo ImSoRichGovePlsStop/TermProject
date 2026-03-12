@@ -3,7 +3,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Module Effect/Crit Chance")]
 public class CritChanceModule : ModuleEffect
 {
-    [Header("Stat per Rarity (Common -> Legendary)")]
+    [Header("Stat per Rarity (Common -> GOD)")]
     public float[] baseStatPerRarity = { 0.03f, 0.05f, 0.07f, 0.1f, 0.14f };
     public float levelMultiplier = 0.08f;
 
