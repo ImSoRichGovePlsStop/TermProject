@@ -3,11 +3,11 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Module Effect/Low HP Damage")]
 public class LowHpModule : ModuleEffect
 {
-    [Header("Stat per Rarity (Common -> Legendary)")]
+    [Header("Stat per Rarity (Common -> GOD)")]
     public float[] baseStatPerRarity = { 10f, 15f, 22f, 32f, 45f };
     public float levelMultiplier = 0.15f;
 
-    [Header("HP Threshold per Rarity (Common -> Legendary)")]
+    [Header("HP Threshold per Rarity (Common -> GOD)")]
     public float[] baseThresholdPerRarity = { 0.30f, 0.33f, 0.36f, 0.40f, 0.45f };
     public float thresholdPerLevel = 0.01f;
 

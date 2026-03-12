@@ -49,7 +49,7 @@ public class EnemyHealth : MonoBehaviour
             rb = GetComponent<Rigidbody>();
     }
 
-    public void TakeDamage(int damage)
+    public void TakeDamage(float damage)
     {
         if (isDead) return;
         if (damage <= 0) return;

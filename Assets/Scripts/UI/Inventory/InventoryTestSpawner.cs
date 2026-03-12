@@ -17,6 +17,12 @@ public class InventoryTestSpawner : MonoBehaviour
     {
         if (inventoryUI == null) { Debug.LogError("[TestSpawner] InventoryUI missing!"); return; }
         foreach (var entry in testModules)
-            if (entry.data != null) inventoryUI.SpawnModule(entry.data, entry.rarity, entry.level);
+        {
+            if (entry.data == null) continue;
+            if (entry.data is MaterialData mat)
+                inventoryUI.SpawnMaterial(mat);
+            else
+                inventoryUI.SpawnModule(entry.data, entry.rarity, entry.level);
+        }
     }
 }

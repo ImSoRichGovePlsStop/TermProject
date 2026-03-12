@@ -22,7 +22,7 @@ public class ModuleTooltipUI : MonoBehaviour
             case Rarity.Uncommon: return new Color(0.30f, 0.80f, 0.30f);
             case Rarity.Rare: return new Color(0.20f, 0.50f, 1.00f);
             case Rarity.Epic: return new Color(0.65f, 0.25f, 0.90f);
-            case Rarity.Legendary: return new Color(1.00f, 0.75f, 0.10f);
+            case Rarity.GOD: return new Color(1.00f, 0.75f, 0.10f);
             default: return Color.white;
         }
     }
@@ -84,6 +84,18 @@ public class ModuleTooltipUI : MonoBehaviour
             currentBuffGridUI = grid;
             grid.HighlightBuffCells(inst, inst.Data.moduleColor);
         }
+    }
+
+    public void Show(MaterialInstance inst)
+    {
+        nameText.text  = inst.MaterialData.moduleName;
+        nameText.color = RarityColor(inst.Rarity);
+        rarityLevelText.text = $"{inst.Rarity}  {inst.StackCount}/{inst.MaxStack}";
+        descriptionText.text = inst.Cost > 0
+            ? $"Total cost: {inst.Cost * inst.StackCount}g"
+            : "";
+
+        gameObject.SetActive(true);
     }
 
     public void Hide()
