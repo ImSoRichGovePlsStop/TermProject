@@ -86,6 +86,18 @@ public class ModuleTooltipUI : MonoBehaviour
         }
     }
 
+    public void Show(MaterialInstance inst)
+    {
+        nameText.text  = inst.MaterialData.moduleName;
+        nameText.color = RarityColor(inst.Rarity);
+        rarityLevelText.text = $"{inst.Rarity}  {inst.StackCount}/{inst.MaxStack}";
+        descriptionText.text = inst.Cost > 0
+            ? $"Total cost: {inst.Cost * inst.StackCount}g"
+            : "";
+
+        gameObject.SetActive(true);
+    }
+
     public void Hide()
     {
         gameObject.SetActive(false);
