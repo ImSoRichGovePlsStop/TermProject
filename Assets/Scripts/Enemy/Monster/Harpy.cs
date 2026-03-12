@@ -46,17 +46,6 @@ public class Harpy : MonoBehaviour
 
     void Update()
     {
-        Vector3 dir = movement.MoveDirection;
-
-        if (dir.x > 0)
-        {
-            spriteRenderer.flipX = false;
-        }
-        else if (dir.x < 0)
-        {
-            spriteRenderer.flipX = true;
-        }
-
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
         
         switch (currentState)
