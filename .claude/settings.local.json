@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/Users/jaruk/Desktop/Unity/test_material/TermProject/Assets -type f -name \"*Module*\" -o -name \"*Grid*\" -o -name \"*Inventory*\" | grep -i \"\\\\.cs$\")"
+    ]
+  }
+}

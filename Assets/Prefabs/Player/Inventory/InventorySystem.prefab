@@ -673,6 +673,33 @@ MonoBehaviour:
   - data: {fileID: 11400000, guid: e1267ca0edfb29c4b9cba9c671477460, type: 2}
     rarity: 1
     level: 8
+  - data: {fileID: 11400000, guid: f439c86ccca0c0249861a81cd15cbed8, type: 2}
+    rarity: 1
+    level: 8
+  - data: {fileID: 11400000, guid: 73742e4c8bcda604e83131e8ea451330, type: 2}
+    rarity: 1
+    level: 8
+  - data: {fileID: 11400000, guid: 73742e4c8bcda604e83131e8ea451330, type: 2}
+    rarity: 1
+    level: 8
+  - data: {fileID: 11400000, guid: 73742e4c8bcda604e83131e8ea451330, type: 2}
+    rarity: 1
+    level: 8
+  - data: {fileID: 11400000, guid: 73742e4c8bcda604e83131e8ea451330, type: 2}
+    rarity: 1
+    level: 8
+  - data: {fileID: 11400000, guid: 73742e4c8bcda604e83131e8ea451330, type: 2}
+    rarity: 1
+    level: 8
+  - data: {fileID: 11400000, guid: 73742e4c8bcda604e83131e8ea451330, type: 2}
+    rarity: 1
+    level: 8
+  - data: {fileID: 11400000, guid: 73742e4c8bcda604e83131e8ea451330, type: 2}
+    rarity: 1
+    level: 8
+  - data: {fileID: 11400000, guid: f0ca83b97b25b5d49a5f13cfa1e2ee1e, type: 2}
+    rarity: 2
+    level: 8
   inventoryUI: {fileID: 6974604651814624824}
 --- !u!114 &3458281353720568475
 MonoBehaviour:
@@ -705,6 +732,7 @@ MonoBehaviour:
   weaponGridUI: {fileID: 8546374899932569028}
   bagGridUI: {fileID: 1646127900905442606}
   moduleItemPrefab: {fileID: 2996288814634159331, guid: 2e667019bf23b8743b2e3414548beeeb, type: 3}
+  materialItemPrefab: {fileID: 8151539626362182282, guid: f9a8e3b4fa5f32e49ad4294a914dc9ef, type: 3}
 --- !u!114 &5111823582727986639
 MonoBehaviour:
   m_ObjectHideFlags: 0
