@@ -5,15 +5,15 @@ public class EnemyMovement : MonoBehaviour
 {
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 2.5f;
-    [SerializeField] private float stopDistance = 1.2f;
+    [SerializeField] private float stopDistance = 0.8f;
 
     [Header("References")]
     [SerializeField] private Transform visualRoot;
+    [SerializeField] private SpriteRenderer spriteRenderer;
 
     private Rigidbody rb;
     private Vector3 moveDirection;
     private bool canMove = true;
-    private Vector3 defaultVisualScale;
 
     public float MoveSpeed => moveSpeed;
     public float StopDistance => stopDistance;
@@ -25,8 +25,8 @@ public class EnemyMovement : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.FreezeRotation;
 
-        if (visualRoot != null)
-            defaultVisualScale = visualRoot.localScale;
+        if (spriteRenderer == null && visualRoot != null)
+            spriteRenderer = visualRoot.GetComponentInChildren<SpriteRenderer>();
     }
 
     public void SetCanMove(bool value)
@@ -36,7 +36,7 @@ public class EnemyMovement : MonoBehaviour
         if (!canMove)
         {
             moveDirection = Vector3.zero;
-            rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+            rb.linearVelocity = Vector3.zero;
         }
     }
 
@@ -75,7 +75,7 @@ public class EnemyMovement : MonoBehaviour
     public void StopMoving()
     {
         moveDirection = Vector3.zero;
-        rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+        rb.linearVelocity = Vector3.zero;
     }
 
     private void FixedUpdate()
@@ -84,27 +84,20 @@ public class EnemyMovement : MonoBehaviour
 
         if (!canMove || moveDirection.sqrMagnitude < 0.001f)
         {
+            rb.linearVelocity = Vector3.zero;
             return;
         }
-        
-        Vector3 move = moveSpeed * Time.fixedDeltaTime * moveDirection;
-        rb.MovePosition(rb.position + move);
+
+        rb.linearVelocity = moveDirection * moveSpeed;
     }
 
     private void FaceDirection(Vector3 dir)
     {
-        if (visualRoot == null) return;
-        if (dir.sqrMagnitude < 0.001f) return;
-
-        Vector3 scale = defaultVisualScale;
+        if (spriteRenderer == null) return;
 
         if (dir.x > 0.05f)
-            scale.x = Mathf.Abs(defaultVisualScale.x);   // หันขวา
+            spriteRenderer.flipX = false;
         else if (dir.x < -0.05f)
-            scale.x = -Mathf.Abs(defaultVisualScale.x);  // หันซ้าย
-        else
-            scale.x = visualRoot.localScale.x; // ถ้าแทบไม่ขยับแกน x ก็ไม่เปลี่ยนหน้า
-
-        visualRoot.localScale = scale;
+            spriteRenderer.flipX = true;
     }
 }
