@@ -84,13 +84,11 @@ public class EnemyMovement : MonoBehaviour
 
         if (!canMove || moveDirection.sqrMagnitude < 0.001f)
         {
-            rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
             return;
         }
-
-        Vector3 velocity = moveDirection * moveSpeed;
-        velocity.y = rb.linearVelocity.y;
-        rb.linearVelocity = velocity;
+        
+        Vector3 move = moveSpeed * Time.fixedDeltaTime * moveDirection;
+        rb.MovePosition(rb.position + move);
     }
 
     private void FaceDirection(Vector3 dir)
