@@ -13,8 +13,13 @@ public class InventoryManager : MonoBehaviour
     [SerializeField] private int bagCols = 8;
     [SerializeField] private int bagRows = 8;
 
+    [Header("Env Grid")]
+    [SerializeField] private int envCols = 5;
+    [SerializeField] private int envRows = 8;
+
     public GridData WeaponGrid { get; private set; }
     public GridData BagGrid    { get; private set; }
+    public GridData EnvGrid    { get; private set; }
 
     public event System.Action<ModuleInstance> OnModuleEquipped;
     public event System.Action<ModuleInstance> OnModuleUnequipped;
@@ -26,9 +31,12 @@ public class InventoryManager : MonoBehaviour
 
         WeaponGrid = new GridData(weaponCols, weaponRows, isWeaponGrid: true);
         BagGrid    = new GridData(bagCols,    bagRows,    isWeaponGrid: false);
+        EnvGrid    = new GridData(envCols,    envRows,    isWeaponGrid: false);
 
         WeaponGrid.OnModulePlaced  += inst => OnModuleEquipped?.Invoke(inst);
         WeaponGrid.OnModuleRemoved += inst => OnModuleUnequipped?.Invoke(inst);
+
+        GetComponent<InventoryLayout>()?.ApplyLayout(weaponCols, weaponRows, bagCols, bagRows, envCols, envRows);
     }
 
     public bool TryMoveModule(ModuleInstance inst, GridData targetGrid, Vector2Int pivot)

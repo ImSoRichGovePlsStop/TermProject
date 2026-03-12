@@ -6,36 +6,28 @@ public class InventoryLayout : MonoBehaviour
     [Header("Grid Objects")]
     [SerializeField] private RectTransform weaponGridRect;
     [SerializeField] private RectTransform bagGridRect;
+    [SerializeField] private RectTransform envGridRect;
 
     [Header("Layout Settings")]
-    [SerializeField] private float cellSize    = 64f;
-    [SerializeField] private float cellSpacing = 2f;
+    [SerializeField] private float cellSize        = 64f;
+    [SerializeField] private float cellSpacing     = 2f;
     [SerializeField] private float gapBetweenGrids = 24f;
 
-    [Header("Weapon Grid Size")]
-    [SerializeField] private int weaponCols = 5;
-    [SerializeField] private int weaponRows = 5;
+    public float CellSize    => cellSize;
+    public float CellSpacing => cellSpacing;
 
-    [Header("Bag Grid Size")]
-    [SerializeField] private int bagCols = 8;
-    [SerializeField] private int bagRows = 8;
-
-    private void Awake()
-    {
-        ApplyLayout();
-    }
-
-    [ContextMenu("Apply Layout")]
-    public void ApplyLayout()
+    public void ApplyLayout(int weaponCols, int weaponRows, int bagCols, int bagRows, int envCols, int envRows)
     {
         if (weaponGridRect == null || bagGridRect == null) return;
 
         Vector2 weaponSize = CalcGridSize(weaponCols, weaponRows);
         Vector2 bagSize    = CalcGridSize(bagCols,    bagRows);
 
-        float totalHeight = weaponSize.y + gapBetweenGrids + bagSize.y;
-        float topY        =  totalHeight * 0.5f; 
+        float totalHeight  = weaponSize.y + gapBetweenGrids + bagSize.y;
+        float topY         = totalHeight * 0.5f;
+        float centerY      = 0f;
 
+        // weapon และ bag ยังอยู่กลางเหมือนเดิม (posX = 0)
         SetRect(weaponGridRect, weaponSize,
             anchorX: 0.5f, anchorY: 0.5f,
             posX: 0f,
@@ -45,6 +37,17 @@ public class InventoryLayout : MonoBehaviour
             anchorX: 0.5f, anchorY: 0.5f,
             posX: 0f,
             posY: topY - weaponSize.y - gapBetweenGrids - bagSize.y * 0.5f);
+
+        // envGrid อยู่ซ้าย ชิดกับ weaponGrid โดยใช้ gap เดิม
+        if (envGridRect != null)
+        {
+            Vector2 envSize = CalcGridSize(envCols, envRows);
+            float envPosX   = -(bagSize.x * 0.5f + gapBetweenGrids + envSize.x * 0.5f);
+            SetRect(envGridRect, envSize,
+                anchorX: 0.5f, anchorY: 0.5f,
+                posX: envPosX,
+                posY: centerY);
+        }
     }
 
     private Vector2 CalcGridSize(int cols, int rows)
