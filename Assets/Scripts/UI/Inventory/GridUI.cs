@@ -5,18 +5,20 @@ using UnityEngine.UI;
 public class GridUI : MonoBehaviour
 {
     [SerializeField] public GridCellUI cellPrefab;
-    [SerializeField] public float cellSize    = 64f;
-    [SerializeField] public float cellSpacing = 2f;
 
+    public float CellSize    { get; private set; }
+    public float CellSpacing { get; private set; }
     public GridData Data { get; private set; }
 
     private GridCellUI[,]   _cells;
     private GridLayoutGroup _layout;
     private List<GameObject> _buffHighlights = new List<GameObject>();
 
-    public void Init(GridData data)
+    public void Init(GridData data, float cellSize, float cellSpacing)
     {
-        Data = data;
+        Data        = data;
+        CellSize    = cellSize;
+        CellSpacing = cellSpacing;
 
         _layout = GetComponent<GridLayoutGroup>() ?? gameObject.AddComponent<GridLayoutGroup>();
         _layout.cellSize        = new Vector2(cellSize, cellSize);
@@ -28,8 +30,8 @@ public class GridUI : MonoBehaviour
         _layout.childAlignment  = TextAnchor.UpperLeft;
 
         var rt = GetComponent<RectTransform>();
-        rt.sizeDelta = new Vector2(data.Width  * (cellSize + cellSpacing) - cellSpacing,
-                                   data.Height * (cellSize + cellSpacing) - cellSpacing);
+        rt.sizeDelta = new Vector2(data.Width  * (CellSize + CellSpacing) - CellSpacing,
+                                   data.Height * (CellSize + CellSpacing) - CellSpacing);
         BuildCells();
 
         data.OnModulePlaced  += _ => RefreshAll();
@@ -66,8 +68,8 @@ public class GridUI : MonoBehaviour
         if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rt, screenPos, uiCam, out var local))
             return false;
 
-        int col = Mathf.FloorToInt((local.x - rt.rect.xMin) / (cellSize + cellSpacing));
-        int row = Mathf.FloorToInt((rt.rect.yMax - local.y) / (cellSize + cellSpacing));
+        int col = Mathf.FloorToInt((local.x - rt.rect.xMin) / (CellSize + CellSpacing));
+        int row = Mathf.FloorToInt((rt.rect.yMax - local.y) / (CellSize + CellSpacing));
 
         if (col < 0 || col >= Data.Width || row < 0 || row >= Data.Height) return false;
         coord = new Vector2Int(col, row);
@@ -103,7 +105,7 @@ public class GridUI : MonoBehaviour
             overlayRt.pivot = new Vector2(0f, 1f);
             overlayRt.anchorMin = new Vector2(0f, 0f);
             overlayRt.anchorMax = new Vector2(0f, 0f);
-            overlayRt.sizeDelta = new Vector2(cellSize, cellSize);
+            overlayRt.sizeDelta = new Vector2(CellSize, CellSize);
 
             Vector3 worldPos = GetCellWorldTopLeft(cell);
             Vector3 localPos = canvasRt.InverseTransformPoint(worldPos);

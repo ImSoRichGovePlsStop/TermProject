@@ -1,5 +1,94 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &404663899651289580
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7391241484814586548}
+  - component: {fileID: 2866959181288576491}
+  - component: {fileID: 8292277474327768585}
+  - component: {fileID: 6378104958825151772}
+  m_Layer: 5
+  m_Name: EnvGridObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &7391241484814586548
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 404663899651289580}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6023145053737864822}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 275}
+  m_SizeDelta: {x: 328, y: 328}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &2866959181288576491
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 404663899651289580}
+  m_CullTransparentMesh: 1
+--- !u!114 &8292277474327768585
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 404663899651289580}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!114 &6378104958825151772
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 404663899651289580}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e9fb0b1bc59a5546b3ae9be0dc50785, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GridUI
+  cellPrefab: {fileID: 911464501582109872, guid: dcb2ef1993f2aa2478bb55cdc829a191, type: 3}
 --- !u!1 &2374361725371525308
 GameObject:
   m_ObjectHideFlags: 0
@@ -89,8 +178,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridUI
   cellPrefab: {fileID: 911464501582109872, guid: dcb2ef1993f2aa2478bb55cdc829a191, type: 3}
-  cellSize: 64
-  cellSpacing: 2
 --- !u!1 &3330747744787228378
 GameObject:
   m_ObjectHideFlags: 0
@@ -180,8 +267,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridUI
   cellPrefab: {fileID: 911464501582109872, guid: dcb2ef1993f2aa2478bb55cdc829a191, type: 3}
-  cellSize: 64
-  cellSpacing: 2
 --- !u!1 &4301095472411739895
 GameObject:
   m_ObjectHideFlags: 0
@@ -592,6 +677,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 684233276577009487}
+  - {fileID: 7391241484814586548}
   - {fileID: 7230163854174725956}
   - {fileID: 7079208976954885554}
   m_Father: {fileID: 6237723510180618025}
@@ -717,6 +803,8 @@ MonoBehaviour:
   weaponRows: 5
   bagCols: 8
   bagRows: 8
+  envCols: 5
+  envRows: 10
 --- !u!114 &6974604651814624824
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -731,6 +819,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventoryUI
   weaponGridUI: {fileID: 8546374899932569028}
   bagGridUI: {fileID: 1646127900905442606}
+  envGridUI: {fileID: 6378104958825151772}
   moduleItemPrefab: {fileID: 2996288814634159331, guid: 2e667019bf23b8743b2e3414548beeeb, type: 3}
   materialItemPrefab: {fileID: 8151539626362182282, guid: f9a8e3b4fa5f32e49ad4294a914dc9ef, type: 3}
 --- !u!114 &5111823582727986639
@@ -747,13 +836,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventoryLayout
   weaponGridRect: {fileID: 684233276577009487}
   bagGridRect: {fileID: 7230163854174725956}
+  envGridRect: {fileID: 7391241484814586548}
   cellSize: 64
   cellSpacing: 2
   gapBetweenGrids: 24
-  weaponCols: 5
-  weaponRows: 5
-  bagCols: 8
-  bagRows: 8
 --- !u!1 &6801916140743155540
 GameObject:
   m_ObjectHideFlags: 0

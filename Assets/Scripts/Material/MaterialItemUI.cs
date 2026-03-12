@@ -13,6 +13,7 @@ public class MaterialItemUI : MonoBehaviour,
 
     [HideInInspector] public GridUI WeaponGridUI;
     [HideInInspector] public GridUI BagGridUI;
+    [HideInInspector] public GridUI EnvGridUI;
 
     [SerializeField] private float dragAlpha = 0.6f;
     [SerializeField] private float borderSize = 4f;
@@ -21,6 +22,7 @@ public class MaterialItemUI : MonoBehaviour,
     private RectTransform _canvasRt;
     private CanvasGroup _cg;
     private Canvas _canvas;
+    private GridUI _originGrid;
     private Vector2Int _originCell;
     private Vector2 _dragOffset;
     private Vector2Int _clickedCell;
@@ -38,12 +40,13 @@ public class MaterialItemUI : MonoBehaviour,
         _                => Color.white
     };
 
-    public void Init(MaterialInstance instance, GridUI weaponGridUI, GridUI bagGridUI)
+    public void Init(MaterialInstance instance, GridUI weaponGridUI, GridUI bagGridUI, GridUI envGridUI = null)
     {
         Instance      = instance;
         instance.UIElement = this;
         WeaponGridUI  = weaponGridUI;
         BagGridUI     = bagGridUI;
+        EnvGridUI     = envGridUI;
 
         _rt       = GetComponent<RectTransform>();
         _cg       = GetComponent<CanvasGroup>();
@@ -53,8 +56,8 @@ public class MaterialItemUI : MonoBehaviour,
         _rt.pivot = new Vector2(0f, 1f);
 
         var bound = instance.Data.GetBoundingSize();
-        float cs = bagGridUI.cellSize;
-        float sp = bagGridUI.cellSpacing;
+        float cs = bagGridUI.CellSize;
+        float sp = bagGridUI.CellSpacing;
         _rt.sizeDelta = new Vector2(bound.x * (cs + sp) - sp,
                                     bound.y * (cs + sp) - sp);
 
@@ -174,8 +177,8 @@ public class MaterialItemUI : MonoBehaviour,
 
     public void OnBeginDrag(PointerEventData e)
     {
-        // Material is always in BagGrid
-        _originCell = Instance.GridPosition;
+        _originGrid  = Instance.CurrentGrid == InventoryManager.Instance.EnvGrid ? EnvGridUI : BagGridUI;
+        _originCell  = Instance.GridPosition;
         _clickedCell = GetClickedLocalCell(e);
 
         _rt.SetParent(_canvas.transform, worldPositionStays: true);
@@ -204,27 +207,28 @@ public class MaterialItemUI : MonoBehaviour,
         _cg.blocksRaycasts = true;
         ClearHighlights();
 
-        if (BagGridUI.ScreenToCell(e.position, UICam(), out var hoveredCell))
+        foreach (var g in new[] { BagGridUI, EnvGridUI })
         {
-            // Check stacking first — same material type + not full
-            var existing = BagGridUI.Data.GetModuleAt(hoveredCell);
+            if (g == null) continue;
+            if (!g.ScreenToCell(e.position, UICam(), out var hoveredCell)) continue;
+
+            // Check stacking (only within same grid type)
+            var existing = g.Data.GetModuleAt(hoveredCell);
             if (existing is MaterialInstance target && Instance.CanStackOnto(target))
             {
-                InventoryManager.Instance.BagGrid.Remove(Instance);
+                _originGrid.Data.Remove(Instance);
                 target.AddStack();
                 Destroy(gameObject);
                 return;
             }
 
-            // Normal placement
             var pivot = hoveredCell - _clickedCell;
-            bool moved = InventoryManager.Instance.TryMoveModule(Instance, BagGridUI.Data, pivot);
-            SnapToCell(BagGridUI, moved ? Instance.GridPosition : _originCell);
+            bool moved = InventoryManager.Instance.TryMoveModule(Instance, g.Data, pivot);
+            SnapToCell(g, moved ? Instance.GridPosition : _originCell);
+            return;
         }
-        else
-        {
-            SnapToCell(BagGridUI, _originCell);
-        }
+
+        SnapToCell(_originGrid, _originCell);
     }
 
     public void OnPointerEnter(PointerEventData e) => ModuleTooltipUI.Instance.Show(Instance);
@@ -234,24 +238,27 @@ public class MaterialItemUI : MonoBehaviour,
     {
         ClearHighlights();
 
-        // Hovering WeaponGrid → show invalid (red)
+        // WeaponGrid → invalid เสมอ (material ลาก weapon grid ไม่ได้)
         if (WeaponGridUI.ScreenToCell(e.position, UICam(), out var weaponCell))
         {
             WeaponGridUI.HighlightCells(Instance.Data, weaponCell - _clickedCell, valid: false);
             return;
         }
 
-        // Hovering BagGrid → check stacking or normal placement
-        if (BagGridUI.ScreenToCell(e.position, UICam(), out var bagCell))
+        foreach (var g in new[] { BagGridUI, EnvGridUI })
         {
-            var existing = BagGridUI.Data.GetModuleAt(bagCell);
+            if (g == null) continue;
+            if (!g.ScreenToCell(e.position, UICam(), out var hoveredCell)) continue;
+
+            var existing = g.Data.GetModuleAt(hoveredCell);
             if (existing is MaterialInstance target && Instance.CanStackOnto(target))
-                BagGridUI.HighlightCells(target.Data, target.GridPosition, valid: true);
+                g.HighlightCells(target.Data, target.GridPosition, valid: true);
             else
             {
-                var pivot = bagCell - _clickedCell;
-                BagGridUI.HighlightCells(Instance.Data, pivot, BagGridUI.Data.CanPlace(Instance, pivot));
+                var pivot = hoveredCell - _clickedCell;
+                g.HighlightCells(Instance.Data, pivot, g.Data.CanPlace(Instance, pivot));
             }
+            return;
         }
     }
 
@@ -259,12 +266,13 @@ public class MaterialItemUI : MonoBehaviour,
     {
         WeaponGridUI?.ClearHighlights();
         BagGridUI?.ClearHighlights();
+        EnvGridUI?.ClearHighlights();
     }
 
     private Vector2Int GetClickedLocalCell(PointerEventData e)
     {
-        float cs = BagGridUI.cellSize;
-        float sp = BagGridUI.cellSpacing;
+        float cs = BagGridUI.CellSize;
+        float sp = BagGridUI.CellSpacing;
 
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             _rt, e.position, UICam(), out var localPoint);
