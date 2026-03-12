@@ -45,13 +45,6 @@ public class EnemyController : MonoBehaviour
 
         if (animator == null)
             animator = GetComponentInChildren<Animator>();
-
-        if (player == null)
-        {
-            GameObject playerInScene = GameObject.FindWithTag("Player");
-            if (playerInScene != null)
-                player = playerInScene.transform;
-        }
     }
 
     private void Update()
