@@ -13,7 +13,11 @@ public class EnemyAttack : MonoBehaviour
     [SerializeField] private Animator animator;
     [SerializeField] private EnemyHealth enemyHealth;
 
-    private float attackTimer = 0f;
+    private bool isAttacking = false;
+
+    public float AttackRange => attackRange;
+    public float AttackCooldown => attackCooldown;
+    public bool IsAttacking => isAttacking;
 
     private void Awake()
     {
@@ -24,36 +28,42 @@ public class EnemyAttack : MonoBehaviour
             enemyHealth = GetComponent<EnemyHealth>();
     }
 
-    private void Update()
-    {
-        if (attackTimer > 0f)
-            attackTimer -= Time.deltaTime;
-    }
-
     public bool CanAttack()
     {
-        if (enemyHealth != null && enemyHealth.IsDead)
-            return false;
-
-        return attackTimer <= 0f;
+        if (enemyHealth != null && enemyHealth.IsDead) return false;
+        if (enemyHealth != null && enemyHealth.IsHurt) return false;
+        if (isAttacking) return false;
+        return true;
     }
 
-    public void Attack()
+    public void StartAttack()
     {
         if (!CanAttack()) return;
 
+        isAttacking = true;
+        Debug.Log("Attack started");
+
         if (animator != null)
             animator.SetTrigger("Attack");
-
-        DoDamage();
-        attackTimer = attackCooldown;
+        else
+        {
+            DealDamage();
+            FinishAttack();
+        }
     }
 
-    private void DoDamage()
+    // Animation Event กลางคลิป
+    public void DealDamage()
     {
-        Vector3 center = attackPoint != null ? attackPoint.position : transform.position;
+        Debug.Log("DealDamage called");
 
+        if (enemyHealth != null && enemyHealth.IsDead)
+            return;
+
+        Vector3 center = attackPoint != null ? attackPoint.position : transform.position;
         Collider[] hits = Physics.OverlapSphere(center, attackRange, playerLayer);
+
+        Debug.Log("Player hits found = " + hits.Length);
 
         for (int i = 0; i < hits.Length; i++)
         {
@@ -64,10 +74,23 @@ public class EnemyAttack : MonoBehaviour
 
             if (playerStats != null)
             {
+                Debug.Log("Damage applied to player");
                 playerStats.TakeDamage(attackDamage);
                 break;
             }
         }
+    }
+
+    // Animation Event ท้ายคลิป
+    public void FinishAttack()
+    {
+        Debug.Log("FinishAttack called");
+        isAttacking = false;
+    }
+
+    public void ForceStopAttack()
+    {
+        isAttacking = false;
     }
 
     private void OnDrawGizmosSelected()

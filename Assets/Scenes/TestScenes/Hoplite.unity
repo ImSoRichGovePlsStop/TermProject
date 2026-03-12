@@ -119,6 +119,16 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!212 &309302877 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 4503767847614671692, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
+  m_PrefabInstance: {fileID: 6565738395724233830}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &381125011 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4208694052222620245, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
+  m_PrefabInstance: {fileID: 6565738395724233830}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &818867815
 GameObject:
   m_ObjectHideFlags: 0
@@ -494,6 +504,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c65b852d3a2bae428945d227f9476ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+--- !u!114 &1843933596 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2661486428939378519, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
+  m_PrefabInstance: {fileID: 6565738395724233830}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee6edaea5bd16b34baf25fde6cd779d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+--- !u!114 &1843933597 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5751372851717793496, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
+  m_PrefabInstance: {fileID: 6565738395724233830}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01d9481acd7b70d44adce2c5de1258fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyMovement
 --- !u!1001 &1913161345
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -583,8 +615,20 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1101255891078100918, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
-      propertyPath: m_Enabled
+    - target: {fileID: 61150285569358350, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
+      propertyPath: attackPoint
+      value: 
+      objectReference: {fileID: 381125011}
+    - target: {fileID: 61150285569358350, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
+      propertyPath: attackRange
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 61150285569358350, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
+      propertyPath: attackCooldown
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 61150285569358350, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
+      propertyPath: playerLayer.m_Bits
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1157175084331872940, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
@@ -631,14 +675,30 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2661486428939378519, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
+      propertyPath: enemyAttack
+      value: 
+      objectReference: {fileID: 1843933595}
+    - target: {fileID: 2661486428939378519, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
+      propertyPath: enemyMovement
+      value: 
+      objectReference: {fileID: 1843933597}
+    - target: {fileID: 5751372851717793496, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
+      propertyPath: stopDistance
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5751372851717793496, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
+      propertyPath: spriteRenderer
+      value: 
+      objectReference: {fileID: 309302877}
     - target: {fileID: 7960103508822112348, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
       propertyPath: player
       value: 
       objectReference: {fileID: 1232818349}
     - target: {fileID: 7960103508822112348, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
-      propertyPath: enemyAttack
+      propertyPath: enemyHealth
       value: 
-      objectReference: {fileID: 1843933595}
+      objectReference: {fileID: 1843933596}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
