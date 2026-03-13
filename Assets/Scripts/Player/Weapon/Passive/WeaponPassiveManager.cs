@@ -6,7 +6,12 @@ public class WeaponPassiveManager : MonoBehaviour
     private Dictionary<WeaponPassiveData, PassiveTreeState> states
         = new Dictionary<WeaponPassiveData, PassiveTreeState>();
 
-    public int startingPoints = 5;
+    private int startingPoints = 12;
+
+    private void Start()
+    {
+        states.Clear();
+    }
 
     public PassiveTreeState GetState(WeaponPassiveData data)
     {
@@ -24,8 +29,13 @@ public class WeaponPassiveManager : MonoBehaviour
         return GetState(data).TryUnlock(node, tree);
     }
 
+    public bool TryRefund(PassiveNode node, PassiveTree tree, WeaponPassiveData data)
+    {
+        return GetState(data).TryRefund(node, tree);
+    }
+
     public void ResetPassive(WeaponPassiveData data)
     {
-        GetState(data).Reset(data);
+        GetState(data).Reset(startingPoints);
     }
 }

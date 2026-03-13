@@ -16,13 +16,20 @@ public class PassiveScreenUI : MonoBehaviour
 
     private void Awake()
     {
-        if (manager == null)
-            manager = FindFirstObjectByType<WeaponPassiveManager>();
         panel.SetActive(false);
+    }
+
+    private void Start()
+    {
+        if (manager == null)
+            manager = FindFirstObjectByType<WeaponPassiveManager>(FindObjectsInactive.Include);
     }
 
     public void Open(WeaponPassiveData data)
     {
+        if (manager == null)
+            manager = FindFirstObjectByType<WeaponPassiveManager>(FindObjectsInactive.Include);
+
         IsOpen = true;
         panel.SetActive(true);
 
@@ -59,7 +66,7 @@ public class PassiveScreenUI : MonoBehaviour
     private void Setup(WeaponPassiveData data)
     {
         for (int i = 0; i < treeUIs.Length; i++)
-            treeUIs[i].Setup(data.trees[i], manager, this, data);
+            treeUIs[i].Setup(data.trees[i], manager, this, data, tooltipAnchorLeft: i == treeUIs.Length - 1);
     }
 
     public void RefreshPoints()
