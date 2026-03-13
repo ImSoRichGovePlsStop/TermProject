@@ -15,6 +15,7 @@ public class EnemyHealth : MonoBehaviour
     [SerializeField] private Animator animator;
     [SerializeField] private Collider enemyCollider;
     [SerializeField] private Rigidbody rb;
+    private EnemyStatusHandler statusHandler;
 
     private float currentHP;
     private bool isDead = false;
@@ -47,6 +48,9 @@ public class EnemyHealth : MonoBehaviour
 
         if (rb == null)
             rb = GetComponent<Rigidbody>();
+
+        if (statusHandler == null)
+            statusHandler = GetComponent<EnemyStatusHandler>();
     }
 
     public void TakeDamage(float damage)
@@ -54,7 +58,11 @@ public class EnemyHealth : MonoBehaviour
         if (isDead) return;
         if (damage <= 0) return;
 
-        currentHP -= damage;
+        float finalDamage = damage;
+        if (statusHandler != null)
+            finalDamage *= statusHandler.DamageTakenMultiplier;
+
+        currentHP -= finalDamage;
 
         if (currentHP <= 0)
         {

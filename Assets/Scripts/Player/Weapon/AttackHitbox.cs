@@ -4,6 +4,14 @@ using System.Collections.Generic;
 public class AttackHitbox : MonoBehaviour
 {
     private ComboHit currentHit;
+    private PlayerStats stats;
+    private PlayerCombatContext context;
+
+    private void Awake()
+    {
+        stats = GetComponentInParent<PlayerStats>();
+        context = GetComponentInParent<PlayerCombatContext>();
+    }
 
     public void SetComboHit(ComboHit hit)
     {
@@ -14,11 +22,10 @@ public class AttackHitbox : MonoBehaviour
     {
         if (currentHit == null) return;
 
-        HashSet<Collider> hitEnemies = new HashSet<Collider>();
+        var result = new HashSet<EnemyHealth>();
+        var hitEnemies = new HashSet<Collider>();
 
-        Collider[] sphereHits = Physics.OverlapSphere(
-            transform.position, currentHit.range
-        );
+        Collider[] sphereHits = Physics.OverlapSphere(transform.position, currentHit.range);
         foreach (Collider hit in sphereHits)
         {
             if (!hit.CompareTag("Enemy")) continue;
@@ -33,8 +40,7 @@ public class AttackHitbox : MonoBehaviour
         {
             float width = 2 * currentHit.range * Mathf.Sin(currentHit.angle * 0.5f * Mathf.Deg2Rad);
             float angleOffset = Mathf.Cos(currentHit.angle * 0.5f * Mathf.Deg2Rad) * currentHit.range;
-            Vector3 center = transform.position +
-                             transform.forward * (angleOffset + currentHit.extraRange / 2f);
+            Vector3 center = transform.position + transform.forward * (angleOffset + currentHit.extraRange / 2f);
             Collider[] boxHits = Physics.OverlapBox(
                 center,
                 new Vector3(width / 2f, 0.05f, currentHit.extraRange / 2f),
@@ -49,28 +55,28 @@ public class AttackHitbox : MonoBehaviour
 
         foreach (Collider hit in hitEnemies)
         {
-            PlayerStats stats = GetComponentInParent<PlayerStats>();
-            float dmg = stats.CalculateDamage(currentHit.damageScale);
-            Debug.Log($"Hit {hit.name} for {dmg}!");
-
             var enemyHealth = hit.GetComponent<EnemyHealth>();
-            if (enemyHealth != null)
-                enemyHealth.TakeDamage(dmg);
+            if (enemyHealth == null) continue;
+
+            float dmg = stats.CalculateDamage(currentHit.damageScale);
+            enemyHealth.TakeDamage(dmg);
+            result.Add(enemyHealth);
         }
+
+        if (context != null)
+            context.NotifyAttack(result);
     }
 
     void OnDrawGizmosSelected()
     {
         if (currentHit == null) return;
 
-        // Sector gizmo with height
         Gizmos.color = new Color(1, 0, 0, 0.3f);
         int segments = 20;
         float halfAngle = currentHit.angle / 2f;
         float height = 0.1f;
         Vector3 origin = transform.position;
 
-        // Draw top and bottom arcs
         for (int h = 0; h <= 1; h++)
         {
             float yOffset = h == 0 ? -height / 2f : height / 2f;
@@ -90,7 +96,6 @@ public class AttackHitbox : MonoBehaviour
             }
         }
 
-        // Connect top and bottom with vertical lines at edges
         Vector3 leftDir = Quaternion.Euler(0, -halfAngle, 0) * transform.forward;
         Vector3 rightDir = Quaternion.Euler(0, halfAngle, 0) * transform.forward;
         Gizmos.DrawLine(origin + new Vector3(0, -height / 2f, 0) + leftDir * currentHit.range,
@@ -98,17 +103,14 @@ public class AttackHitbox : MonoBehaviour
         Gizmos.DrawLine(origin + new Vector3(0, -height / 2f, 0) + rightDir * currentHit.range,
                         origin + new Vector3(0, height / 2f, 0) + rightDir * currentHit.range);
 
-        // Rectangle gizmo
         if (currentHit.extraRange > 0)
         {
             float width = 2 * currentHit.range * Mathf.Sin(currentHit.angle * 0.5f * Mathf.Deg2Rad);
             float angleOffset = Mathf.Cos(currentHit.angle * 0.5f * Mathf.Deg2Rad) * currentHit.range;
             Gizmos.color = new Color(0, 1, 0, 0.3f);
-            Vector3 center = transform.position +
-                             transform.forward * (angleOffset + currentHit.extraRange / 2f);
+            Vector3 center = transform.position + transform.forward * (angleOffset + currentHit.extraRange / 2f);
             Gizmos.matrix = Matrix4x4.TRS(center, transform.rotation, Vector3.one);
-            Gizmos.DrawCube(Vector3.zero,
-                new Vector3(width, 0.1f, currentHit.extraRange));
+            Gizmos.DrawCube(Vector3.zero, new Vector3(width, 0.1f, currentHit.extraRange));
         }
     }
 }

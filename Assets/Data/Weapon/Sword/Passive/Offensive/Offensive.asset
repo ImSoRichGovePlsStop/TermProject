@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 795b38daab500fb45a7cc0b63959a39f, type: 3}
+  m_Name: Offensive
+  m_EditorClassIdentifier: Assembly-CSharp::PassiveTree
+  treeName: Offensive
+  nodes:
+  - {fileID: 11400000, guid: 0fc7b2572d334a2419bc7cac5b32b69c, type: 2}
+  - {fileID: 11400000, guid: bc5b5f946b2522b4db80f4e25d619e9b, type: 2}
+  - {fileID: 11400000, guid: 7b0296d8994c7b34ba43ba0ec8e36a71, type: 2}
+  - {fileID: 11400000, guid: de4aa01594fb0224b9c9ded31bc0cb79, type: 2}
+  - {fileID: 11400000, guid: 724f1f2b44562c044963f937f4bfe1ae, type: 2}
+  - {fileID: 11400000, guid: 0e7390407d037cd4193075ba9879c9a0, type: 2}
+  - {fileID: 11400000, guid: f8e9a495fa29873458fc85a1bf66f5fe, type: 2}
+  - {fileID: 11400000, guid: 4b75afbb933a2cc4a8f5398176f7ed0e, type: 2}

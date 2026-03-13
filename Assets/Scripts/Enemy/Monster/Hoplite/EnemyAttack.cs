@@ -75,7 +75,7 @@ public class EnemyAttack : MonoBehaviour
             if (playerStats != null)
             {
                 Debug.Log("Damage applied to player");
-                playerStats.TakeDamage(attackDamage);
+                playerStats.TakeDamage(attackDamage, enemyHealth);
                 break;
             }
         }
