@@ -22,7 +22,7 @@ public class ModuleTooltipUI : MonoBehaviour
             case Rarity.Uncommon: return new Color(0.30f, 0.80f, 0.30f);
             case Rarity.Rare: return new Color(0.20f, 0.50f, 1.00f);
             case Rarity.Epic: return new Color(0.65f, 0.25f, 0.90f);
-            case Rarity.Legendary: return new Color(1.00f, 0.75f, 0.10f);
+            case Rarity.GOD: return new Color(1.00f, 0.75f, 0.10f);
             default: return Color.white;
         }
     }

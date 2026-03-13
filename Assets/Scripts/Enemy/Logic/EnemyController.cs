@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class EnemyController : MonoBehaviour
@@ -7,24 +8,25 @@ public class EnemyController : MonoBehaviour
         Idle,
         Chase,
         Attack,
+        Hurt,
         Dead
     }
 
     [Header("Detection")]
     [SerializeField] private float detectRange = 6f;
-    [SerializeField] private float attackRange = 1.2f;
     [SerializeField] private float loseTargetRange = 8f;
+    [SerializeField] private float attackBuffer = 0.2f;
 
     [Header("References")]
     private Transform player;
     [SerializeField] private EnemyMovement movement;
     [SerializeField] private EnemyAttack enemyAttack;
+    [SerializeField] private EnemyHealth enemyHealth;
     [SerializeField] private Animator animator;
 
     private EnemyState currentState = EnemyState.Idle;
     private bool isDead = false;
-
-    public EnemyState CurrentState => currentState;
+    private Coroutine attackLoopCoroutine;
 
     private void Awake()
     {
@@ -38,6 +40,9 @@ public class EnemyController : MonoBehaviour
         if (enemyAttack == null)
             enemyAttack = GetComponent<EnemyAttack>();
 
+        if (enemyHealth == null)
+            enemyHealth = GetComponent<EnemyHealth>();
+
         if (animator == null)
             animator = GetComponentInChildren<Animator>();
     }
@@ -47,96 +52,130 @@ public class EnemyController : MonoBehaviour
         if (isDead || player == null)
             return;
 
-        float distanceToPlayer = Vector3.Distance(
+        if (enemyHealth != null && enemyHealth.IsDead)
+        {
+            ChangeState(EnemyState.Dead);
+            return;
+        }
+
+        if (enemyHealth != null && enemyHealth.IsHurt)
+        {
+            ChangeState(EnemyState.Hurt);
+            movement.StopMoving();
+            UpdateAnimation();
+            return;
+        }
+
+        float distance = Vector3.Distance(
             GetFlatPosition(transform.position),
             GetFlatPosition(player.position)
         );
 
+        float attackRange = enemyAttack != null ? enemyAttack.AttackRange : 1.2f;
+        float attackExitRange = attackRange + attackBuffer;
+
+        if (distance > loseTargetRange)
+        {
+            ChangeState(EnemyState.Idle);
+        }
+        else if (currentState == EnemyState.Attack)
+        {
+            ChangeState(distance <= attackExitRange ? EnemyState.Attack : EnemyState.Chase);
+        }
+        else
+        {
+            ChangeState(distance <= attackRange ? EnemyState.Attack : EnemyState.Chase);
+        }
+
         switch (currentState)
         {
             case EnemyState.Idle:
-                HandleIdle(distanceToPlayer);
+                movement.SetCanMove(true);
+                movement.StopMoving();
                 break;
 
             case EnemyState.Chase:
-                HandleChase(distanceToPlayer);
+                movement.SetCanMove(true);
+                movement.MoveToTarget(player.position);
                 break;
 
             case EnemyState.Attack:
-                HandleAttack(distanceToPlayer);
+                movement.StopMoving();
+                movement.FaceTarget(player.position);
                 break;
         }
 
-        UpdateAnimation(distanceToPlayer);
-    }
-
-    private void HandleIdle(float distanceToPlayer)
-    {
-        movement.StopMoving();
-
-        if (distanceToPlayer <= detectRange)
-            ChangeState(EnemyState.Chase);
-    }
-
-    private void HandleChase(float distanceToPlayer)
-    {
-        if (distanceToPlayer > loseTargetRange)
-        {
-            movement.StopMoving();
-            ChangeState(EnemyState.Idle);
-            return;
-        }
-
-        if (distanceToPlayer <= attackRange)
-        {
-            movement.StopMoving();
-            ChangeState(EnemyState.Attack);
-            return;
-        }
-
-        movement.SetCanMove(true);
-        movement.MoveToTarget(player.position);
-    }
-
-    private void HandleAttack(float distanceToPlayer)
-    {
-        movement.StopMoving();
-        movement.SetCanMove(false);
-        movement.FaceTarget(player.position);
-
-        if (distanceToPlayer > attackRange)
-        {
-            movement.SetCanMove(true);
-            ChangeState(EnemyState.Chase);
-            return;
-        }
-
-        if (enemyAttack != null && enemyAttack.CanAttack())
-        {
-            DoAttack();
-        }
-    }
-
-    private void DoAttack()
-    {
-        if (enemyAttack != null)
-            enemyAttack.Attack();
-    }
-
-    private void UpdateAnimation(float distanceToPlayer)
-    {
-        if (animator == null) return;
-
-        bool isMoving = movement != null && movement.IsMoving;
-
-        animator.SetBool("IsMoving", isMoving);
-        animator.SetBool("IsAttacking", currentState == EnemyState.Attack && distanceToPlayer <= attackRange);
+        UpdateAnimation();
     }
 
     private void ChangeState(EnemyState newState)
     {
-        if (currentState == newState) return;
+        if (currentState == newState)
+            return;
+
+        ExitState(currentState);
         currentState = newState;
+        EnterState(newState);
+    }
+
+    private void EnterState(EnemyState state)
+    {
+        switch (state)
+        {
+            case EnemyState.Attack:
+                if (attackLoopCoroutine == null)
+                    attackLoopCoroutine = StartCoroutine(AttackLoop());
+                break;
+
+            case EnemyState.Hurt:
+            case EnemyState.Dead:
+                StopAttackLoop();
+                break;
+        }
+    }
+
+    private void ExitState(EnemyState state)
+    {
+        if (state == EnemyState.Attack)
+            StopAttackLoop();
+    }
+
+    private IEnumerator AttackLoop()
+    {
+        while (currentState == EnemyState.Attack && !isDead)
+        {
+            if (enemyHealth != null && (enemyHealth.IsDead || enemyHealth.IsHurt))
+                yield break;
+
+            if (enemyAttack != null && enemyAttack.CanAttack())
+            {
+                Debug.Log("Controller starts attack loop hit");
+                enemyAttack.StartAttack();
+            }
+
+            float waitTime = enemyAttack != null ? enemyAttack.AttackCooldown : 1f;
+            yield return new WaitForSeconds(waitTime);
+        }
+
+        attackLoopCoroutine = null;
+    }
+
+    private void StopAttackLoop()
+    {
+        if (attackLoopCoroutine != null)
+        {
+            StopCoroutine(attackLoopCoroutine);
+            attackLoopCoroutine = null;
+        }
+
+        if (enemyAttack != null)
+            enemyAttack.ForceStopAttack();
+    }
+
+    private void UpdateAnimation()
+    {
+        if (animator == null) return;
+        animator.SetBool("IsMoving", movement != null && movement.IsMoving);
     }
 
     private Vector3 GetFlatPosition(Vector3 pos)
@@ -144,34 +183,17 @@ public class EnemyController : MonoBehaviour
         return new Vector3(pos.x, 0f, pos.z);
     }
 
-    public void SetTarget(Transform newTarget)
-    {
-        player = newTarget;
-    }
-
     public void Die()
     {
         if (isDead) return;
 
         isDead = true;
-        currentState = EnemyState.Dead;
+        ChangeState(EnemyState.Dead);
 
         if (movement != null)
         {
             movement.StopMoving();
             movement.SetCanMove(false);
         }
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, detectRange);
-
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, attackRange);
-
-        Gizmos.color = Color.gray;
-        Gizmos.DrawWireSphere(transform.position, loseTargetRange);
     }
 }

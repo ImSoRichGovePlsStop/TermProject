@@ -6,6 +6,7 @@ public class InventoryUI : MonoBehaviour
     [Header("Grid UI")]
     [SerializeField] private GridUI weaponGridUI;
     [SerializeField] private GridUI bagGridUI;
+    [SerializeField] private GridUI envGridUI;
 
     [Header("Prefabs")]
     [SerializeField] private ModuleItemUI  moduleItemPrefab;
@@ -13,11 +14,16 @@ public class InventoryUI : MonoBehaviour
 
     private void Awake()
     {
-        var mgr = InventoryManager.Instance;
-        if (mgr == null) { Debug.LogError("[InventoryUI] InventoryManager missing!"); return; }
+        var mgr    = InventoryManager.Instance;
+        if (mgr == null) { return; }
 
-        weaponGridUI.Init(mgr.WeaponGrid);
-        bagGridUI.Init(mgr.BagGrid);
+        var layout = GetComponentInParent<InventoryLayout>();
+        float cellSize    = layout != null ? layout.CellSize    : 64f;
+        float cellSpacing = layout != null ? layout.CellSpacing : 2f;
+
+        weaponGridUI.Init(mgr.WeaponGrid, cellSize, cellSpacing);
+        bagGridUI.Init(mgr.BagGrid,       cellSize, cellSpacing);
+        envGridUI?.Init(mgr.EnvGrid,      cellSize, cellSpacing);
 
         Debug.Log("[InventoryUI] Initialized.");
     }
@@ -27,14 +33,14 @@ public class InventoryUI : MonoBehaviour
         var inst = new ModuleInstance(data, rarity, level);
         if (!InventoryManager.Instance.TryAddToBag(inst))
         {
-            Debug.LogWarning($"[InventoryUI] Bag full — {data.moduleName}");
+            Debug.LogWarning($"[InventoryUI] Bag full leaew — {data.moduleName}");
             return null;
         }
 
         var go = Instantiate(moduleItemPrefab, transform);
         var ui = go.GetComponent<ModuleItemUI>();
         ui.InventoryPanelRt = GetComponent<RectTransform>();
-        ui.Init(inst, weaponGridUI, bagGridUI);
+        ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
 
         StartCoroutine(SnapNextFrame(ui, bagGridUI, inst.GridPosition));
         return ui;
@@ -56,14 +62,14 @@ public class InventoryUI : MonoBehaviour
         var inst = new MaterialInstance(data);
         if (!InventoryManager.Instance.TryAddToBag(inst))
         {
-            Debug.LogWarning($"[InventoryUI] Bag full — {data.moduleName}");
+            Debug.LogWarning($"[InventoryUI] Bag full leaw — {data.moduleName}");
             return null;
         }
 
         var go = Instantiate(materialItemPrefab, transform);
         var ui = go.GetComponent<MaterialItemUI>();
         ui.InventoryPanelRt = GetComponent<RectTransform>();
-        ui.Init(inst, weaponGridUI, bagGridUI);
+        ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
 
         StartCoroutine(SnapNextFrame(ui, bagGridUI, inst.GridPosition));
         return ui;
