@@ -18,13 +18,19 @@ public class WeaponStand : MonoBehaviour, IInteractable
         if (weaponEquip == null)
             weaponEquip = playerController.GetComponent<WeaponEquip>();
 
+        if (passiveScreenUI == null)
+            passiveScreenUI = FindFirstObjectByType<PassiveScreenUI>(FindObjectsInactive.Include);
+
         if (weaponEquip.GetCurrentWeapon() == weaponData)
         {
             UIManager uiManager = FindFirstObjectByType<UIManager>();
             if (uiManager != null && uiManager.IsInventoryOpen)
                 uiManager.ToggleInventory();
 
-            passiveScreenUI.Open(passiveData);
+            if (passiveScreenUI != null)
+                passiveScreenUI.Open(passiveData);
+            else
+                Debug.LogWarning("PassiveScreenUI not found in scene!");
         }
         else
         {
