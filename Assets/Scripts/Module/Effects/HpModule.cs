@@ -3,9 +3,10 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Module Effect/Hp")]
 public class HpModule : ModuleEffect
 {
-    [Header("Stat per Rarity (Common -> GOD)")]
-    public float[] baseStatPerRarity = { 50f, 80f, 120f, 170f, 230f };
-    public float levelMultiplier = 0.10f;
+    [Header("Stat per Rarity (Common -> Legendary)")]
+    public float[] baseStatPerRarity = {0f, 0f, 0f, 0f, 0f};
+    public float levelMultiplier;
+    public int[] cost = {0,0,0,0,0};
 
     protected override void OnEquip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state)
     {

@@ -3,13 +3,15 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Module Effect/Low HP Damage")]
 public class LowHpModule : ModuleEffect
 {
-    [Header("Stat per Rarity (Common -> GOD)")]
-    public float[] baseStatPerRarity = { 10f, 15f, 22f, 32f, 45f };
+    [Header("Stat per Rarity (Uncommon -> Legendary)")]
+    public float[] baseStatPerRarity = { 0f, 0f, 0f, 0f, 0f };
     public float levelMultiplier = 0.15f;
 
-    [Header("HP Threshold per Rarity (Common -> GOD)")]
-    public float[] baseThresholdPerRarity = { 0.30f, 0.33f, 0.36f, 0.40f, 0.45f };
+    [Header("HP Threshold per Rarity (Uncommon -> Legendary)")]
+    public float[] baseThresholdPerRarity = { 0f, 0f, 0f, 0f, 0f };
     public float thresholdPerLevel = 0.01f;
+
+    public int[] cost = { 0, 0, 0, 0, 0 };
 
     protected override void OnEquip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state)
     {
@@ -22,7 +24,7 @@ public class LowHpModule : ModuleEffect
     {
         if (state.buffActive)
         {
-            stats.RemoveFlatModifier(new StatModifier { damage = GetEffectiveDamage(state) });
+            stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveDamage(state) });
             state.buffActive = false;
         }
     }
@@ -34,22 +36,22 @@ public class LowHpModule : ModuleEffect
         if (belowThreshold && !state.buffActive)
         {
             state.buffActive = true;
-            stats.AddFlatModifier(new StatModifier { damage = GetEffectiveDamage(state) });
+            stats.AddMultiplierModifier(new StatModifier { damage = GetEffectiveDamage(state) });
         }
         else if (!belowThreshold && state.buffActive)
         {
             state.buffActive = false;
-            stats.RemoveFlatModifier(new StatModifier { damage = GetEffectiveDamage(state) });
+            stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveDamage(state) });
         }
     }
 
     public override void OnBuffReceived(float percent, PlayerStats stats, ModuleRuntimeState state)
     {
         if (state.buffActive)
-            stats.RemoveFlatModifier(new StatModifier { damage = GetEffectiveDamage(state) });
+            stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveDamage(state) });
         state.totalBuffPercent += percent;
         if (state.buffActive)
-            stats.AddFlatModifier(new StatModifier { damage = GetEffectiveDamage(state) });
+            stats.AddMultiplierModifier(new StatModifier { damage = GetEffectiveDamage(state) });
     }
 
     public override void OnBuffRemoved(float percent, PlayerStats stats, ModuleRuntimeState state)
@@ -60,10 +62,10 @@ public class LowHpModule : ModuleEffect
             return;
         }
         if (state.buffActive)
-            stats.RemoveFlatModifier(new StatModifier { damage = GetEffectiveDamage(state) });
+            stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveDamage(state) });
         state.totalBuffPercent -= percent;
         if (state.buffActive)
-            stats.AddFlatModifier(new StatModifier { damage = GetEffectiveDamage(state) });
+            stats.AddMultiplierModifier(new StatModifier { damage = GetEffectiveDamage(state) });
     }
 
     public override string GetDescription(Rarity rarity, int level, ModuleRuntimeState state)
@@ -74,8 +76,8 @@ public class LowHpModule : ModuleEffect
         float threshold = (baseThresholdPerRarity[index] + level * thresholdPerLevel) * 100f;
 
         if (state.totalBuffPercent > 0f)
-            return $"When below {threshold:F0}% HP:\n<s>+{baseStat:F0}</s> +{effective:F0} Damage";
-        return $"When below {threshold:F0}% HP: +{baseStat:F0} Damage";
+            return $"When below {threshold:F0}% HP:\n<s>+{baseStat:F0}</s> +{effective * 100f:F0}% Damage";
+        return $"When below {threshold:F0}% HP: +{baseStat * 100f:F0}% Damage";
     }
 
     private float GetEffectiveDamage(ModuleRuntimeState state)

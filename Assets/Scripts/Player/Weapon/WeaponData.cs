@@ -5,6 +5,7 @@ public class WeaponData : ScriptableObject
 {
     [Header("Info")]
     public string weaponName;
+    public Sprite icon;
 
     [Header("Stats")]
     public float health;
@@ -14,6 +15,7 @@ public class WeaponData : ScriptableObject
     public float critChance;
     public float critDamage;
     public float evadeChance;
+    public float damageTaken;
 
     [Header("Dash")]
     public float dashSpeed;

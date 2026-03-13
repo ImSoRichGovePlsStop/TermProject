@@ -4,6 +4,14 @@ using System.Collections.Generic;
 public class AttackHitbox : MonoBehaviour
 {
     private ComboHit currentHit;
+    private PlayerStats stats;
+    private PlayerCombatContext context;
+
+    private void Awake()
+    {
+        stats = GetComponentInParent<PlayerStats>();
+        context = GetComponentInParent<PlayerCombatContext>();
+    }
 
     public void SetComboHit(ComboHit hit)
     {
@@ -14,11 +22,10 @@ public class AttackHitbox : MonoBehaviour
     {
         if (currentHit == null) return;
 
-        HashSet<Collider> hitEnemies = new HashSet<Collider>();
+        var result = new HashSet<EnemyHealth>();
+        var hitEnemies = new HashSet<Collider>();
 
-        Collider[] sphereHits = Physics.OverlapSphere(
-            transform.position, currentHit.range
-        );
+        Collider[] sphereHits = Physics.OverlapSphere(transform.position, currentHit.range);
         foreach (Collider hit in sphereHits)
         {
             if (!hit.CompareTag("Enemy")) continue;
@@ -33,8 +40,7 @@ public class AttackHitbox : MonoBehaviour
         {
             float width = 2 * currentHit.range * Mathf.Sin(currentHit.angle * 0.5f * Mathf.Deg2Rad);
             float angleOffset = Mathf.Cos(currentHit.angle * 0.5f * Mathf.Deg2Rad) * currentHit.range;
-            Vector3 center = transform.position +
-                             transform.forward * (angleOffset + currentHit.extraRange / 2f);
+            Vector3 center = transform.position + transform.forward * (angleOffset + currentHit.extraRange / 2f);
             Collider[] boxHits = Physics.OverlapBox(
                 center,
                 new Vector3(width / 2f, 0.05f, currentHit.extraRange / 2f),
@@ -57,6 +63,7 @@ public class AttackHitbox : MonoBehaviour
             if (enemyHealth != null)
             {
                 enemyHealth.TakeDamage(dmg);
+                result.Add(enemyHealth);
                 continue;
             }
 
@@ -66,6 +73,9 @@ public class AttackHitbox : MonoBehaviour
                 medusaHealth.TakeDamage(dmg);
             }
         }
+
+        if (context != null)
+            context.NotifyAttack(result);
     }
 
     void OnDrawGizmosSelected()
@@ -109,11 +119,9 @@ public class AttackHitbox : MonoBehaviour
             float width = 2 * currentHit.range * Mathf.Sin(currentHit.angle * 0.5f * Mathf.Deg2Rad);
             float angleOffset = Mathf.Cos(currentHit.angle * 0.5f * Mathf.Deg2Rad) * currentHit.range;
             Gizmos.color = new Color(0, 1, 0, 0.3f);
-            Vector3 center = transform.position +
-                             transform.forward * (angleOffset + currentHit.extraRange / 2f);
+            Vector3 center = transform.position + transform.forward * (angleOffset + currentHit.extraRange / 2f);
             Gizmos.matrix = Matrix4x4.TRS(center, transform.rotation, Vector3.one);
-            Gizmos.DrawCube(Vector3.zero,
-                new Vector3(width, 0.1f, currentHit.extraRange));
+            Gizmos.DrawCube(Vector3.zero, new Vector3(width, 0.1f, currentHit.extraRange));
         }
     }
 }
