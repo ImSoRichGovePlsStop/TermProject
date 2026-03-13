@@ -11,6 +11,7 @@ public class EnemyMovement : MonoBehaviour
     [SerializeField] private Transform visualRoot;
     [SerializeField] private SpriteRenderer spriteRenderer;
 
+    private EnemyStatusHandler statusHandler;
     private Rigidbody rb;
     private Vector3 moveDirection;
     private bool canMove = true;
@@ -24,6 +25,7 @@ public class EnemyMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.FreezeRotation;
+        statusHandler = GetComponent<EnemyStatusHandler>();
 
         if (spriteRenderer == null && visualRoot != null)
             spriteRenderer = visualRoot.GetComponentInChildren<SpriteRenderer>();
@@ -81,14 +83,19 @@ public class EnemyMovement : MonoBehaviour
     private void FixedUpdate()
     {
         if (rb.isKinematic) return;
-
         if (!canMove || moveDirection.sqrMagnitude < 0.001f)
         {
-            rb.linearVelocity = Vector3.zero;
+            rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
             return;
         }
 
-        rb.linearVelocity = moveDirection * moveSpeed;
+        float currentSpeed = moveSpeed;
+        if (statusHandler != null)
+            currentSpeed *= statusHandler.MoveSpeedMultiplier;
+
+        Vector3 velocity = moveDirection * currentSpeed;
+        velocity.y = rb.linearVelocity.y;
+        rb.linearVelocity = velocity;
     }
 
     private void FaceDirection(Vector3 dir)
