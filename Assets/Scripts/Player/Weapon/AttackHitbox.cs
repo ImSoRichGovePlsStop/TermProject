@@ -53,9 +53,18 @@ public class AttackHitbox : MonoBehaviour
             float dmg = stats.CalculateDamage(currentHit.damageScale);
             Debug.Log($"Hit {hit.name} for {dmg}!");
 
-            var enemyHealth = hit.GetComponent<EnemyHealth>();
+            var enemyHealth = hit.GetComponentInParent<EnemyHealth>();
             if (enemyHealth != null)
+            {
                 enemyHealth.TakeDamage(dmg);
+                continue;
+            }
+
+            var medusaHealth = hit.GetComponentInParent<MedusaHealth>();
+            if (medusaHealth != null)
+            {
+                medusaHealth.TakeDamage(dmg);
+            }
         }
     }
 
@@ -63,14 +72,12 @@ public class AttackHitbox : MonoBehaviour
     {
         if (currentHit == null) return;
 
-        // Sector gizmo with height
         Gizmos.color = new Color(1, 0, 0, 0.3f);
         int segments = 20;
         float halfAngle = currentHit.angle / 2f;
         float height = 0.1f;
         Vector3 origin = transform.position;
 
-        // Draw top and bottom arcs
         for (int h = 0; h <= 1; h++)
         {
             float yOffset = h == 0 ? -height / 2f : height / 2f;
@@ -90,7 +97,6 @@ public class AttackHitbox : MonoBehaviour
             }
         }
 
-        // Connect top and bottom with vertical lines at edges
         Vector3 leftDir = Quaternion.Euler(0, -halfAngle, 0) * transform.forward;
         Vector3 rightDir = Quaternion.Euler(0, halfAngle, 0) * transform.forward;
         Gizmos.DrawLine(origin + new Vector3(0, -height / 2f, 0) + leftDir * currentHit.range,
@@ -98,7 +104,6 @@ public class AttackHitbox : MonoBehaviour
         Gizmos.DrawLine(origin + new Vector3(0, -height / 2f, 0) + rightDir * currentHit.range,
                         origin + new Vector3(0, height / 2f, 0) + rightDir * currentHit.range);
 
-        // Rectangle gizmo
         if (currentHit.extraRange > 0)
         {
             float width = 2 * currentHit.range * Mathf.Sin(currentHit.angle * 0.5f * Mathf.Deg2Rad);
