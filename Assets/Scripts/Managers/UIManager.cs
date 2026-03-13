@@ -26,6 +26,8 @@ public class UIManager : MonoBehaviour
         {
             if (!passiveScreenUI.IsOpen)
                 ToggleInventory();
+            else
+                passiveScreenUI.Close();
         }
 
         if (Keyboard.current[Key.Escape].wasPressedThisFrame)
