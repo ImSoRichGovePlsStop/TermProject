@@ -277,8 +277,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   playerPrefab: {fileID: 6821820435605495984, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
   enemiesPrefab: {fileID: 1157175084331872940, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
-  spawnRoomSize: {x: 20, y: 20}
-  battleRoomSize: {x: 10, y: 10}
+  spawnRoomSize: {x: 10, y: 10}
+  battleRoomSize: {x: 5, y: 5}
   roomSpacing: 0
   triggerHeight: 3
 --- !u!4 &393293302
