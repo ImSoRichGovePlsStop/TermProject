@@ -8,4 +8,5 @@ public class StatModifier
     public float critChance;
     public float critDamage;
     public float evadeChance;
+    public float damageTaken;
 }

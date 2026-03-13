@@ -14,6 +14,7 @@ public class WeaponData : ScriptableObject
     public float critChance;
     public float critDamage;
     public float evadeChance;
+    public float damageTaken;
 
     [Header("Dash")]
     public float dashSpeed;
