@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4b7eed258015d6e43af3e1877b980b72, type: 3}
-  m_Name: CritChance_O
+  m_Name: LowHpMoreDmg_2x1
   m_EditorClassIdentifier: Assembly-CSharp::ModuleData
   moduleName: New Module
   icon: {fileID: 0}
-  moduleEffect: {fileID: 11400000, guid: cd889655f90a8434daca5de9ba49b5fc, type: 2}
-  moduleColor: {r: 1, g: 0.69974035, b: 0.2971698, a: 1}
+  moduleEffect: {fileID: 11400000, guid: 44c2d4a20513fcd46aa8a8575eddf333, type: 2}
+  moduleColor: {r: 0.77915984, g: 0.7830189, b: 0.15881987, a: 1}
   isBuffAdjacent: 0
   buffGrid:
   - cells: 0000000000
@@ -24,8 +24,8 @@ MonoBehaviour:
   - cells: 0000000000
   - cells: 0000000000
   shapeGrid:
-  - cells: 0101010000
-  - cells: 0100010000
-  - cells: 0101010000
+  - cells: 0000000000
+  - cells: 0101000000
+  - cells: 0000000000
   - cells: 0000000000
   - cells: 0000000000
