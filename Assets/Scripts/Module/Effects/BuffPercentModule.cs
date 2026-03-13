@@ -3,9 +3,11 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Module Effect/Buff Percent")]
 public class BuffPercentModule : ModuleEffect
 {
-    [Header("Buff Percent per Rarity (Common -> GOD)")]
-    public float[] baseStatPerRarity = { 0.05f, 0.08f, 0.12f, 0.17f, 0.25f };
-    public float levelMultiplier = 0.10f;
+    [Header("Buff Percent per Rarity (UnCommon -> Legendary)")]
+    public float[] baseStatPerRarity = { 0f, 0f, 0f, 0f, 0f };
+    public float levelMultiplier;
+
+    public int[] cost = { 0, 0, 0, 0, 0 };
 
     protected override void OnEquip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state)
     {

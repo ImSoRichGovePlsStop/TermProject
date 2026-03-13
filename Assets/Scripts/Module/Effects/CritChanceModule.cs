@@ -1,11 +1,12 @@
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Module Effect/Crit Chance")]
+[CreateAssetMenu(menuName = "Module Effect/CritRate")]
 public class CritChanceModule : ModuleEffect
 {
-    [Header("Stat per Rarity (Common -> GOD)")]
-    public float[] baseStatPerRarity = { 0.03f, 0.05f, 0.07f, 0.1f, 0.14f };
-    public float levelMultiplier = 0.08f;
+    [Header("Stat per Rarity (Rare -> Legendary)")]
+    public float[] baseStatPerRarity = { 0f, 0f, 0f, 0f };
+    public float levelMultiplier;
+    public int[] cost = { 0, 0, 0, 0 };
 
     protected override void OnEquip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state)
     {

@@ -10,7 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2790f1fd81b03e9418f4b43befdf3702, type: 3}
-  m_Name: LowHpDmg
+  m_Name: LowHpMoreDmg (2x1)
   m_EditorClassIdentifier: Assembly-CSharp::LowHpDamageModule
-  healthThreshold: 0.4
-  bonusDamage: 20
+  baseStatPerRarity:
+  - 0
+  - 0
+  - 0.5
+  - 0.75
+  - 1
+  levelMultiplier: 0.2
+  baseThresholdPerRarity:
+  - 0
+  - 0
+  - 0.1
+  - 0.2
+  - 0.3
+  thresholdPerLevel: 0.2
+  cost: 00000000000000007d000000c8000000fa000000
