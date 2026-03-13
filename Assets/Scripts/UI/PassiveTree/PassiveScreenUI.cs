@@ -7,9 +7,12 @@ public class PassiveScreenUI : MonoBehaviour
     [SerializeField] private GameObject panel;
     [SerializeField] private TextMeshProUGUI pointsText;
     [SerializeField] private PassiveTreeUI[] treeUIs; // 3 elements
+    [SerializeField] private PassiveLeftPanelUI leftPanelUI;
 
     private WeaponPassiveManager manager;
     private WeaponPassiveData currentData;
+    private WeaponData currentWeaponData;
+    private PlayerStats playerStats;
     private bool isSetup = false;
 
     public bool IsOpen { get; private set; }
@@ -23,15 +26,21 @@ public class PassiveScreenUI : MonoBehaviour
     {
         if (manager == null)
             manager = FindFirstObjectByType<WeaponPassiveManager>(FindObjectsInactive.Include);
+        if (playerStats ==  null)
+            playerStats = FindFirstObjectByType<PlayerStats>(FindObjectsInactive.Include);
     }
 
-    public void Open(WeaponPassiveData data)
+    public void Open(WeaponPassiveData data, WeaponData weaponData = null)
     {
         if (manager == null)
             manager = FindFirstObjectByType<WeaponPassiveManager>(FindObjectsInactive.Include);
+        if (playerStats == null)
+            playerStats = FindFirstObjectByType<PlayerStats>(FindObjectsInactive.Include);
 
+        playerStats?.SetDebugUI(false);
         IsOpen = true;
         panel.SetActive(true);
+        currentWeaponData = weaponData;
 
         if (!isSetup || currentData != data)
         {
@@ -46,12 +55,14 @@ public class PassiveScreenUI : MonoBehaviour
             isSetup = true;
         }
 
+        leftPanelUI?.Setup(data, weaponData);
         RefreshAll();
         RefreshPoints();
     }
 
     public void Close()
     {
+        playerStats?.SetDebugUI(true);
         IsOpen = false;
         panel.SetActive(false);
         PassiveTooltipUI.Instance?.Hide();
@@ -72,6 +83,7 @@ public class PassiveScreenUI : MonoBehaviour
     public void RefreshPoints()
     {
         pointsText.text = $"Points: {manager.GetState(currentData).availablePoints}";
+        leftPanelUI?.Refresh();
     }
 
     public void OnResetHeld()
@@ -85,5 +97,6 @@ public class PassiveScreenUI : MonoBehaviour
     {
         foreach (var treeUI in treeUIs)
             treeUI.RefreshAll();
+        leftPanelUI?.Refresh();
     }
 }

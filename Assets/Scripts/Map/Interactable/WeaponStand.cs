@@ -28,7 +28,7 @@ public class WeaponStand : MonoBehaviour, IInteractable
                 uiManager.ToggleInventory();
 
             if (passiveScreenUI != null)
-                passiveScreenUI.Open(passiveData);
+                passiveScreenUI.Open(passiveData, weaponData);
             else
                 Debug.LogWarning("PassiveScreenUI not found in scene!");
         }
