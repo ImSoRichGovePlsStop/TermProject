@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Stack Frenzy
   description: Each hit grants 1 stack. Each stack gives +2% bonus damage. Stacks
-    reset on hit or after 30s. Max 10 stacks.
+    reset on hit or after 15s. Max 10 stacks.
   layer: 1
   branch: 0

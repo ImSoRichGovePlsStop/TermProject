@@ -6,6 +6,7 @@ public class AttackHitbox : MonoBehaviour
     private ComboHit currentHit;
     private PlayerStats stats;
     private PlayerCombatContext context;
+    private int currentComboIndex = 0;
 
     private void Awake()
     {
@@ -13,9 +14,10 @@ public class AttackHitbox : MonoBehaviour
         context = GetComponentInParent<PlayerCombatContext>();
     }
 
-    public void SetComboHit(ComboHit hit)
+    public void SetComboHit(ComboHit hit, int comboIndex = 0)
     {
         currentHit = hit;
+        currentComboIndex = comboIndex;
     }
 
     public void Attack()
@@ -64,7 +66,7 @@ public class AttackHitbox : MonoBehaviour
         }
 
         if (context != null)
-            context.NotifyAttack(result);
+            context.NotifyAttack(result, currentComboIndex);
     }
 
     void OnDrawGizmosSelected()

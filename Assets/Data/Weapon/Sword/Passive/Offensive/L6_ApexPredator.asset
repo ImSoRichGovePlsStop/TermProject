@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: L6_ApexPredator
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Apex Predator
-  description: 'Reaching max stacks triggers Apex State (4s). All hits always crit.
-    CD: 30s.'
+  description: 'Reaching max stacks triggers Apex State (5s). Gain +35% attack speed
+    and all hits always crit. CD: 30s.'
   layer: 6
   branch: 0

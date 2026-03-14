@@ -3,7 +3,6 @@ using UnityEngine;
 public class WeaponStand : MonoBehaviour, IInteractable
 {
     [SerializeField] private WeaponData weaponData;
-    [SerializeField] private WeaponPassiveData passiveData;
 
     private PassiveScreenUI passiveScreenUI;
     private WeaponEquip weaponEquip;
@@ -28,7 +27,7 @@ public class WeaponStand : MonoBehaviour, IInteractable
                 uiManager.ToggleInventory();
 
             if (passiveScreenUI != null)
-                passiveScreenUI.Open(passiveData, weaponData);
+                passiveScreenUI.Open(weaponData.passiveData, weaponData);
             else
                 Debug.LogWarning("PassiveScreenUI not found in scene!");
         }
