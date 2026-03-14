@@ -66,12 +66,6 @@ public class AttackHitbox : MonoBehaviour
                 result.Add(enemyHealth);
                 continue;
             }
-
-            var medusaHealth = hit.GetComponentInParent<MedusaHealth>();
-            if (medusaHealth != null)
-            {
-                medusaHealth.TakeDamage(dmg);
-            }
         }
 
         if (context != null)

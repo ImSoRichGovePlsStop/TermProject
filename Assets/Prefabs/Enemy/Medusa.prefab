@@ -181,16 +181,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MedusaHealth
   maxHP: 400
   hurtStunDuration: 0.2
+  destroyDelay: 2
   animator: {fileID: 991223759832276831}
-  mainCollider: {fileID: 1959485915728602061}
+  enemyCollider: {fileID: 1959485915728602061}
   rb: {fileID: 8707815493549904683}
   arcAttack: {fileID: 158273407855635283}
   backAttack: {fileID: 6941809184712143000}
-  hurtTriggerName: Hurt
   scriptsToDisableOnDeath:
   - {fileID: 5080540314668863887}
   - {fileID: 158273407855635283}
   - {fileID: 6941809184712143000}
+  hurtTriggerName: Hurt
 --- !u!1 &2830874054287219323
 GameObject:
   m_ObjectHideFlags: 0

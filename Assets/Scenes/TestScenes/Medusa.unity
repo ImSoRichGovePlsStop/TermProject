@@ -732,6 +732,10 @@ PrefabInstance:
       propertyPath: m_TagString
       value: Enemy
       objectReference: {fileID: 0}
+    - target: {fileID: 1048630739644869455, guid: 0a732bcad8eab62418a4d1e10c25585e, type: 3}
+      propertyPath: enemyCollider
+      value: 
+      objectReference: {fileID: 641190405065531046}
     - target: {fileID: 1293830461619555230, guid: 0a732bcad8eab62418a4d1e10c25585e, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -781,6 +785,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0a732bcad8eab62418a4d1e10c25585e, type: 3}
+--- !u!65 &641190405065531046 stripped
+BoxCollider:
+  m_CorrespondingSourceObject: {fileID: 1959485915728602061, guid: 0a732bcad8eab62418a4d1e10c25585e, type: 3}
+  m_PrefabInstance: {fileID: 641190405065531045}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
