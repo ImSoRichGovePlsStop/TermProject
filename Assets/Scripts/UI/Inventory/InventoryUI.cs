@@ -75,6 +75,31 @@ public class InventoryUI : MonoBehaviour
         return ui;
     }
 
+    public ModuleItemUI SpawnModuleToEnv(ModuleData data, Rarity rarity = Rarity.Common, int level = 0)
+    {
+        var inst = new ModuleInstance(data, rarity, level);
+
+        var mgr = InventoryManager.Instance;
+        bool placed = false;
+        for (int row = 0; row < mgr.EnvGrid.Height && !placed; row++)
+            for (int col = 0; col < mgr.EnvGrid.Width && !placed; col++)
+                if (mgr.EnvGrid.TryPlace(inst, new Vector2Int(col, row)))
+                    placed = true;
+
+        if (!placed)
+        {
+            Debug.LogWarning($"[InventoryUI] EnvGrid full leaw — {data.moduleName}");
+            return null;
+        }
+
+        var go = Instantiate(moduleItemPrefab, transform);
+        var ui = go.GetComponent<ModuleItemUI>();
+        ui.InventoryPanelRt = GetComponent<RectTransform>();
+        ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
+        StartCoroutine(SnapNextFrame(ui, envGridUI, inst.GridPosition));
+        return ui;
+    }
+
     private IEnumerator SnapNextFrame(MaterialItemUI ui, GridUI gridUI, Vector2Int cell)
     {
         ui.GetComponent<CanvasGroup>().alpha = 0f;
