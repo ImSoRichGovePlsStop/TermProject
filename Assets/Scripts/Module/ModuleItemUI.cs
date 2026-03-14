@@ -180,8 +180,13 @@ public class ModuleItemUI : MonoBehaviour,
 
     public void OnBeginDrag(PointerEventData e)
     {
-        _originGrid = Instance.CurrentGrid == InventoryManager.Instance.WeaponGrid
-            ? WeaponGridUI : BagGridUI;
+        var mgr = InventoryManager.Instance;
+        if (Instance.CurrentGrid == mgr.WeaponGrid)
+            _originGrid = WeaponGridUI;
+        else if (EnvGridUI != null && Instance.CurrentGrid == mgr.EnvGrid)
+            _originGrid = EnvGridUI;
+        else
+            _originGrid = BagGridUI;
         _originCell = Instance.GridPosition;
 
         _clickedCell = GetClickedLocalCell(e);
