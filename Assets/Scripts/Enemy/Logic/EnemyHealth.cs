@@ -1,44 +1,31 @@
 using System.Collections;
 using UnityEngine;
 
-public class EnemyHealth : MonoBehaviour
+public abstract class EnemyHealth : MonoBehaviour
 {
     [Header("Health")]
-    [SerializeField] private float maxHP = 30;
-    [SerializeField] private float hurtStunDuration = 0.2f;
-    [SerializeField] private float destroyDelay = 2f;
+    [SerializeField] protected float maxHP = 30f;
+    [SerializeField] protected float hurtStunDuration = 0.2f;
+    [SerializeField] protected float destroyDelay = 2f;
 
     [Header("References")]
-    [SerializeField] private EnemyController enemyController;
-    [SerializeField] private EnemyMovement enemyMovement;
-    [SerializeField] private EnemyAttack enemyAttack;
-    [SerializeField] private Animator animator;
-    [SerializeField] private Collider enemyCollider;
-    [SerializeField] private Rigidbody rb;
-    private EnemyStatusHandler statusHandler;
+    [SerializeField] protected Animator animator;
+    [SerializeField] protected Collider enemyCollider;
+    [SerializeField] protected Rigidbody rb;
 
-    private float currentHP;
-    private bool isDead = false;
-    private bool isHurt = false;
-    private Coroutine hurtCoroutine;
+    protected float currentHP;
+    protected bool isDead;
+    protected bool isHurt;
+    protected Coroutine hurtCoroutine;
 
     public float CurrentHP => currentHP;
     public float MaxHP => maxHP;
     public bool IsDead => isDead;
     public bool IsHurt => isHurt;
 
-    private void Awake()
+    protected virtual void Awake()
     {
         currentHP = maxHP;
-
-        if (enemyController == null)
-            enemyController = GetComponent<EnemyController>();
-
-        if (enemyMovement == null)
-            enemyMovement = GetComponent<EnemyMovement>();
-
-        if (enemyAttack == null)
-            enemyAttack = GetComponent<EnemyAttack>();
 
         if (animator == null)
             animator = GetComponentInChildren<Animator>();
@@ -49,24 +36,25 @@ public class EnemyHealth : MonoBehaviour
         if (rb == null)
             rb = GetComponent<Rigidbody>();
 
-        if (statusHandler == null)
-            statusHandler = GetComponent<EnemyStatusHandler>();
+        CacheComponents();
     }
 
-    public void TakeDamage(float damage)
+    protected virtual void CacheComponents() { }
+
+    public virtual void TakeDamage(float damage)
     {
         if (isDead) return;
-        if (damage <= 0) return;
+        if (damage <= 0f) return;
 
-        float finalDamage = damage;
-        if (statusHandler != null)
-            finalDamage *= statusHandler.DamageTakenMultiplier;
+        float finalDamage = ModifyIncomingDamage(damage);
+        if (finalDamage <= 0f) return;
 
         currentHP -= finalDamage;
+        OnDamageTaken(finalDamage);
 
-        if (currentHP <= 0)
+        if (currentHP <= 0f)
         {
-            currentHP = 0;
+            currentHP = 0f;
             Die();
             return;
         }
@@ -77,55 +65,74 @@ public class EnemyHealth : MonoBehaviour
         hurtCoroutine = StartCoroutine(HurtRoutine());
     }
 
-    private IEnumerator HurtRoutine()
+    protected virtual float ModifyIncomingDamage(float damage)
+    {
+        return damage;
+    }
+
+    protected virtual void OnDamageTaken(float finalDamage) { }
+
+    protected virtual IEnumerator HurtRoutine()
     {
         isHurt = true;
-
-        if (enemyAttack != null)
-            enemyAttack.ForceStopAttack();
-
-        if (enemyMovement != null)
-        {
-            enemyMovement.StopMoving();
-            enemyMovement.SetCanMove(false);
-        }
-
-        if (animator != null)
-            animator.SetTrigger("Hurt");
+        OnHurtStart();
+        TriggerHurtAnimation();
 
         yield return new WaitForSeconds(hurtStunDuration);
 
-        if (!isDead && enemyMovement != null)
-            enemyMovement.SetCanMove(true);
-
+        OnHurtEnd();
         isHurt = false;
         hurtCoroutine = null;
     }
 
-    private void Die()
+    protected virtual void OnHurtStart() { }
+    protected virtual void OnHurtEnd() { }
+
+    protected virtual void TriggerHurtAnimation()
+    {
+        if (animator != null)
+            animator.SetTrigger("Hurt");
+    }
+
+    protected virtual void Die()
     {
         if (isDead) return;
+
         isDead = true;
         isHurt = false;
 
-        if (enemyAttack != null)
-            enemyAttack.ForceStopAttack();
-
-        if (enemyController != null)
-            enemyController.Die();
-
-        if (enemyCollider != null)
-            enemyCollider.enabled = false;
-
-        if (rb != null)
+        if (hurtCoroutine != null)
         {
-            rb.linearVelocity = Vector3.zero;
-            rb.isKinematic = true;
+            StopCoroutine(hurtCoroutine);
+            hurtCoroutine = null;
         }
 
+        OnDeathStart();
+        DisableMainCollider();
+        HandleRigidbodyOnDeath();
+        TriggerDeathAnimation();
+        Destroy(gameObject, destroyDelay);
+    }
+
+    protected virtual void OnDeathStart() { }
+
+    protected virtual void DisableMainCollider()
+    {
+        if (enemyCollider != null)
+            enemyCollider.enabled = false;
+    }
+
+    protected virtual void HandleRigidbodyOnDeath()
+    {
+        if (rb == null) return;
+
+        rb.linearVelocity = Vector3.zero;
+        rb.isKinematic = true;
+    }
+
+    protected virtual void TriggerDeathAnimation()
+    {
         if (animator != null)
             animator.SetTrigger("Die");
-
-        Destroy(gameObject, destroyDelay);
     }
 }

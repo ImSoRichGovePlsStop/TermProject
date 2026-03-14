@@ -92,7 +92,7 @@ SpriteRenderer:
   m_Size: {x: 1.5, y: 1.5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!95 &10322713608333756
 Animator:
@@ -153,9 +153,9 @@ GameObject:
   - component: {fileID: 4673700319721669437}
   - component: {fileID: 7083260652499963011}
   - component: {fileID: 4697386833514586463}
-  - component: {fileID: 8400163130886316761}
   - component: {fileID: 5619929725966229942}
   - component: {fileID: 6146847390516208723}
+  - component: {fileID: 1989088080729489867}
   m_Layer: 0
   m_Name: Enemy_Harpy
   m_TagString: Enemy
@@ -243,10 +243,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyController
   detectRange: 6
-  attackRange: 1.2
   loseTargetRange: 8
+  attackBuffer: 0.2
   movement: {fileID: 4697386833514586463}
   enemyAttack: {fileID: 5619929725966229942}
+  enemyHealth: {fileID: 1989088080729489867}
   animator: {fileID: 10322713608333756}
 --- !u!114 &4697386833514586463
 MonoBehaviour:
@@ -263,24 +264,7 @@ MonoBehaviour:
   moveSpeed: 2.5
   stopDistance: 1.2
   visualRoot: {fileID: 4687005075917632078}
---- !u!114 &8400163130886316761
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4095530523079436333}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ee6edaea5bd16b34baf25fde6cd779d2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
-  maxHP: 30
-  destroyDelay: 2
-  enemyController: {fileID: 7083260652499963011}
-  animator: {fileID: 10322713608333756}
-  enemyCollider: {fileID: 4673700319721669437}
-  rb: {fileID: 5053443925488620176}
+  spriteRenderer: {fileID: 3569610816988692554}
 --- !u!114 &5619929725966229942
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -301,7 +285,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   animator: {fileID: 10322713608333756}
-  enemyHealth: {fileID: 8400163130886316761}
+  enemyHealth: {fileID: 1989088080729489867}
 --- !u!114 &6146847390516208723
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -320,6 +304,27 @@ MonoBehaviour:
   wakeDistance: 5
   player: {fileID: 0}
   spriteRenderer: {fileID: 3569610816988692554}
+--- !u!114 &1989088080729489867
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4095530523079436333}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9921e65ddddf68d4da421c6941cc4cee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DefaultEnemyHealth
+  maxHP: 30
+  hurtStunDuration: 0.2
+  destroyDelay: 2
+  animator: {fileID: 10322713608333756}
+  enemyCollider: {fileID: 4673700319721669437}
+  rb: {fileID: 5053443925488620176}
+  enemyController: {fileID: 7083260652499963011}
+  enemyMovement: {fileID: 4697386833514586463}
+  enemyAttack: {fileID: 5619929725966229942}
 --- !u!1 &8230643764656374392
 GameObject:
   m_ObjectHideFlags: 0

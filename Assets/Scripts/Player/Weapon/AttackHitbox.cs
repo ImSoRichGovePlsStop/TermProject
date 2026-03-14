@@ -55,12 +55,17 @@ public class AttackHitbox : MonoBehaviour
 
         foreach (Collider hit in hitEnemies)
         {
-            var enemyHealth = hit.GetComponent<EnemyHealth>();
-            if (enemyHealth == null) continue;
-
+            PlayerStats stats = GetComponentInParent<PlayerStats>();
             float dmg = stats.CalculateDamage(currentHit.damageScale);
-            enemyHealth.TakeDamage(dmg);
-            result.Add(enemyHealth);
+            Debug.Log($"Hit {hit.name} for {dmg}!");
+
+            var enemyHealth = hit.GetComponentInParent<EnemyHealth>();
+            if (enemyHealth != null)
+            {
+                enemyHealth.TakeDamage(dmg);
+                result.Add(enemyHealth);
+                continue;
+            }
         }
 
         if (context != null)
