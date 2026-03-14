@@ -16,9 +16,12 @@ public class GroundLoot : MonoBehaviour, IInteractable
         if (!uiManager.IsInventoryOpen)
             uiManager.ToggleInventory();
 
-       
         foreach (var inst in new List<ModuleInstance>(mgr.EnvGrid.GetAllModules()))
+        {
+            if (inst.UIElement != null)
+                Object.Destroy(inst.UIElement.gameObject);
             mgr.EnvGrid.Remove(inst);
+        }
 
         if (!_hasBeenOpened)
         {
