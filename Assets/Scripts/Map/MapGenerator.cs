@@ -38,19 +38,28 @@ public class MapGenerator : MonoBehaviour
         BoxCollider trigger = battleRoomObj.AddComponent<BoxCollider>();
         trigger.isTrigger = true;
         trigger.size = new Vector3(battleRoomSize.x, triggerHeight, battleRoomSize.y);
-        trigger.center = new Vector3(0, triggerHeight / 2f, 0); 
+        trigger.center = new Vector3(0, triggerHeight / 2f, 0);
+
+        battleRoomObj.GetComponent<BattleRoom>().SetRoomSize(new Vector3(
+                battleRoomSize.x,
+                triggerHeight,
+                battleRoomSize.y
+            ));
 
         ///
     }
 
     GameObject CreateRoom(string name, Vector2 size, Vector3 position)
     {
-
-        GameObject room = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        room.name = name;
+        GameObject room = new GameObject(name);
         room.transform.position = position;
-        room.transform.localScale = new Vector3(size.x / 10f, 1f, size.y / 10f);
+
  
+        GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        floor.transform.SetParent(room.transform);
+        floor.transform.localPosition = Vector3.zero;
+
+        floor.transform.localScale = new Vector3(size.x / 10f, 1f, size.y / 10f);
 
         return room;
     }

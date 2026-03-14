@@ -14,10 +14,12 @@ public class PlayerStats : MonoBehaviour
     private float weaponCritChance;
     private float weaponCritDamage;
     private float weaponEvadeChance;
+    private float weaponDamageTaken;
 
     private StatModifier flatModifier = new StatModifier();
-
     private StatModifier multiplierModifier = new StatModifier();
+
+    private PlayerCombatContext context;
 
     public bool IsInvincible { get; private set; }
 
@@ -40,6 +42,11 @@ public class PlayerStats : MonoBehaviour
         GUI.Label(new Rect(20, 130, 280, 25), $"SPD:   {MoveSpeed:F2}");
         GUI.Label(new Rect(20, 160, 280, 25), $"CRIT:  {CritChance:P0} / {CritDamage:P0}");
         GUI.Label(new Rect(20, 190, 280, 25), $"EVADE: {EvadeChance:P0}  INV: {IsInvincible}");
+    }
+
+    public void SetDebugUI(bool enabled)
+    {
+        showDebugUI = enabled;
     }
 
     [ContextMenu("Test: +10 Damage")]
@@ -88,10 +95,16 @@ public class PlayerStats : MonoBehaviour
         (weaponCritDamage + flatModifier.critDamage) * (1 + multiplierModifier.critDamage);
     public float EvadeChance =>
         (weaponEvadeChance + flatModifier.evadeChance) * (1 + multiplierModifier.evadeChance);
+    public float DamageTaken =>
+        (weaponDamageTaken + flatModifier.damageTaken) * (1 + multiplierModifier.damageTaken);
 
     public float CurrentHealth { get; private set; }
 
-    void Awake() => ApplyDefault();
+    void Awake()
+    {
+        context = GetComponent<PlayerCombatContext>();
+        ApplyDefault();
+    }
 
     void ApplyDefault()
     {
@@ -102,6 +115,7 @@ public class PlayerStats : MonoBehaviour
         weaponCritChance = 0;
         weaponCritDamage = 1f;
         weaponEvadeChance = 0;
+        weaponDamageTaken = 0;
         CurrentHealth = MaxHealth;
     }
 
@@ -116,12 +130,18 @@ public class PlayerStats : MonoBehaviour
         weaponCritChance = weapon.critChance;
         weaponCritDamage = weapon.critDamage;
         weaponEvadeChance = weapon.evadeChance;
+        weaponDamageTaken = weapon.damageTaken;
         CurrentHealth = MaxHealth;
 
         Debug.Log($"Stats applied from {weapon.weaponName}");
     }
 
     // buffs/debuffs from modules (Don't check for invincibility)
+
+    public void AddFlatModifier(StatModifier bonus, float duration)
+    {
+        StartCoroutine(TimedModifierCoroutine(bonus, duration, false));
+    }
 
     public void AddFlatModifier(StatModifier bonus)
     {
@@ -137,6 +157,11 @@ public class PlayerStats : MonoBehaviour
 
         CurrentHealth = MaxHealth * ratio;
         CurrentHealth = Mathf.Clamp(CurrentHealth, 0, MaxHealth);
+    }
+
+    public void AddMultiplierModifier(StatModifier bonus, float duration)
+    {
+        StartCoroutine(TimedModifierCoroutine(bonus, duration, true));
     }
 
     public void AddMultiplierModifier(StatModifier bonus)
@@ -192,7 +217,7 @@ public class PlayerStats : MonoBehaviour
     public void TakeDebuff(StatModifier debuff, float duration)
     {
         if (IsInvincible) return;
-        StartCoroutine(DebuffCoroutine(debuff, duration, false));
+        StartCoroutine(TimedModifierCoroutine(debuff, duration, false));
     }
 
     public bool TakeDebuff(StatModifier debuff)
@@ -205,7 +230,7 @@ public class PlayerStats : MonoBehaviour
     public void TakeDebuffMultiplier(StatModifier debuff, float duration)
     {
         if (IsInvincible) return;
-        StartCoroutine(DebuffCoroutine(debuff, duration, true));
+        StartCoroutine(TimedModifierCoroutine(debuff, duration, true));
     }
 
     public bool TakeDebuffMultiplier(StatModifier debuff)
@@ -215,19 +240,19 @@ public class PlayerStats : MonoBehaviour
         return true;
     }
 
-    private IEnumerator DebuffCoroutine(StatModifier debuff, float duration, bool isMultiplier)
+    private IEnumerator TimedModifierCoroutine(StatModifier modifier, float duration, bool isMultiplier)
     {
         if (isMultiplier)
-            AddMultiplierModifier(debuff);
+            AddMultiplierModifier(modifier);
         else
-            AddFlatModifier(debuff);
+            AddFlatModifier(modifier);
 
         yield return new WaitForSeconds(duration);
 
         if (isMultiplier)
-            RemoveMultiplierModifier(debuff);
+            RemoveMultiplierModifier(modifier);
         else
-            RemoveFlatModifier(debuff);
+            RemoveFlatModifier(modifier);
     }
 
     public void ResetModifiers()
@@ -256,7 +281,7 @@ public class PlayerStats : MonoBehaviour
         Debug.Log($"Fully healed, HP: {CurrentHealth}/{MaxHealth}");
     }
 
-    public void TakeDamage(float amount)
+    public void TakeDamage(float amount, EnemyHealth attacker = null)
     {
         if (IsInvincible) return;
 
@@ -266,8 +291,12 @@ public class PlayerStats : MonoBehaviour
             return;
         }
 
-        CurrentHealth = Mathf.Max(0, CurrentHealth - amount);
-        Debug.Log($"Took {amount} damage, HP: {CurrentHealth}/{MaxHealth}");
+        float finalDamage = amount * (1f + DamageTaken);
+        CurrentHealth = Mathf.Max(0, CurrentHealth - finalDamage);
+        Debug.Log($"Took {finalDamage} damage, HP: {CurrentHealth}/{MaxHealth}");
+
+        if (context != null)
+            context.NotifyTakeDamage(attacker);
 
         if (CurrentHealth <= 0)
             Debug.Log("Player died!");

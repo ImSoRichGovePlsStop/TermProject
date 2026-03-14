@@ -8,7 +8,7 @@ public class BattleRoom : MonoBehaviour
     public bool isCleared = false;
 
     [Header("Room")]
-    public Vector3 roomSize = new Vector3(10f, 5f, 10f);
+    private Vector3 roomSize;
     private List<GameObject> invisibleWalls = new List<GameObject>();
 
     [Header("Enemy Spawning")]
@@ -45,26 +45,50 @@ public class BattleRoom : MonoBehaviour
         }
     }
 
+
+    public void SetRoomSize(Vector3 size)
+    {
+        roomSize = size;
+    }
     private void CreateInvisibleWalls()
     {
         (Vector3 pos, Vector3 size)[] wallConfigs = new[]
         {
-            (new Vector3(-roomSize.x / 2f, roomSize.y / 2f, 0f), new Vector3(0.1f, roomSize.y, roomSize.z)),
-            (new Vector3( roomSize.x / 2f, roomSize.y / 2f, 0f), new Vector3(0.1f, roomSize.y, roomSize.z)),
-            (new Vector3(0f, roomSize.y / 2f,  roomSize.z / 2f), new Vector3(roomSize.x, roomSize.y, 0.1f)),
-            (new Vector3(0f, roomSize.y / 2f, -roomSize.z / 2f), new Vector3(roomSize.x, roomSize.y, 0.1f)),
-            (new Vector3(0f, 0f, 0f),                            new Vector3(roomSize.x, 0.1f, roomSize.z)),
-            (new Vector3(0f, roomSize.y, 0f),                    new Vector3(roomSize.x, 0.1f, roomSize.z)),
-        };
+        // Left
+        (
+            new Vector3(-10 / 2f, roomSize.y / 2f, 0f),
+            new Vector3(0.1f, roomSize.y, roomSize.z)
+        ),
+
+        // Right
+        (
+            new Vector3(roomSize.x / 2f, roomSize.y / 2f, 0f),
+            new Vector3(0.1f, roomSize.y, roomSize.z)
+        ),
+
+        // Front
+        (
+            new Vector3(0f, roomSize.y / 2f, roomSize.z / 2f),
+            new Vector3(roomSize.x, roomSize.y, 0.1f)
+        ),
+
+        // Back
+        (
+            new Vector3(0f, roomSize.y / 2f, -roomSize.z / 2f),
+            new Vector3(roomSize.x, roomSize.y, 0.1f)
+        ),
+    };
 
         foreach (var (localPos, size) in wallConfigs)
         {
             GameObject wall = new GameObject("InvisibleWall");
+
             wall.transform.SetParent(transform);
             wall.transform.localPosition = localPos;
+
             BoxCollider col = wall.AddComponent<BoxCollider>();
             col.size = size;
-            col.isTrigger = false;
+
             invisibleWalls.Add(wall);
         }
     }
@@ -100,10 +124,10 @@ public class BattleRoom : MonoBehaviour
 
         for (int i = 0; i < enemyCount; i++)
         {
-            // Pick a random prefab from the array
+            
             GameObject prefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
 
-            // Random position within spawnRadius, avoiding center
+            
             Vector2 randomCircle = Random.insideUnitCircle.normalized * Random.Range(1f, spawnRadius);
             Vector3 spawnPosition = transform.position + new Vector3(randomCircle.x, 0f, randomCircle.y);
 

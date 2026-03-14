@@ -452,8 +452,8 @@ Canvas:
   m_GameObject: {fileID: 4475479428734478226}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 0
-  m_Camera: {fileID: 5143899279005939996, guid: 9088ebf4d76fa9c49a234a6e60bef19e, type: 3}
+  m_RenderMode: 1
+  m_Camera: {fileID: 0}
   m_PlaneDistance: 1
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
@@ -747,7 +747,7 @@ MonoBehaviour:
   - data: {fileID: 11400000, guid: af4800c36aeb47d408dc1191678b70d6, type: 2}
     rarity: 2
     level: 5
-  - data: {fileID: 11400000, guid: eae87b6b9927a9b40a9a59db03ebec77, type: 2}
+  - data: {fileID: 0}
     rarity: 4
     level: 6
   - data: {fileID: 11400000, guid: 1d243e7d7b341be449d37d37fef2448d, type: 2}
