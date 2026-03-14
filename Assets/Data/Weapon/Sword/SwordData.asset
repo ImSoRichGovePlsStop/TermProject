@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: SwordData
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   weaponName: Sword
+  icon: {fileID: 1959525896, guid: b89aa0b26b063984c94fcbb3b42461fa, type: 3}
   health: 100
   damage: 10
   attackSpeed: 1
@@ -20,6 +21,7 @@ MonoBehaviour:
   critChance: 0.1
   critDamage: 1.5
   evadeChance: 0.05
+  damageTaken: 0
   dashSpeed: 25
   dashDuration: 0.15
   dashCooldown: 1.5

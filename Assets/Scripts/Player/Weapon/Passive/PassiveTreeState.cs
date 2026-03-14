@@ -43,10 +43,37 @@ public class PassiveTreeState
         return true;
     }
 
-    public void Reset(WeaponPassiveData data)
+    public bool TryRefund(PassiveNode node, PassiveTree tree)
     {
-        foreach (var node in unlockedNodes)
-            availablePoints += node.Cost;
+        if (!IsUnlocked(node)) return false;
+
+        foreach (var n in tree.nodes)
+        {
+            if (!IsUnlocked(n)) continue;
+            if (n.layer != node.layer + 1) continue;
+
+            bool hasOtherSupport = false;
+            foreach (var other in tree.nodes)
+            {
+                if (other == node) continue;
+                if (other.layer == node.layer && IsUnlocked(other))
+                {
+                    hasOtherSupport = true;
+                    break;
+                }
+            }
+
+            if (!hasOtherSupport) return false;
+        }
+
+        unlockedNodes.Remove(node);
+        availablePoints += node.Cost;
+        return true;
+    }
+
+    public void Reset(int startingPoints)
+    {
         unlockedNodes.Clear();
+        availablePoints = startingPoints;
     }
 }

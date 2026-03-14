@@ -44,6 +44,11 @@ public class PlayerStats : MonoBehaviour
         GUI.Label(new Rect(20, 190, 280, 25), $"EVADE: {EvadeChance:P0}  INV: {IsInvincible}");
     }
 
+    public void SetDebugUI(bool enabled)
+    {
+        showDebugUI = enabled;
+    }
+
     [ContextMenu("Test: +10 Damage")]
     private void Debug_AddDamage()
         => AddFlatModifier(new StatModifier { damage = 10f });
