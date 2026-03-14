@@ -19,12 +19,10 @@ public class OffensivePassiveHandler : PassiveHandlerBase
 
         bool wasEnabled = stackFrenzy.enabled;
         bool nowEnabled = IsUnlocked(1, 0);
-
         if (wasEnabled && !nowEnabled)
             stackFrenzy.ForceClean();
 
         stackFrenzy.enabled = nowEnabled;
-
         stackFrenzy.maxStacks = IsUnlocked(2, 0) ? 15 : 10;
         if (stackFrenzy.CurrentStacks > stackFrenzy.maxStacks)
             stackFrenzy.ClampStacks();
@@ -32,14 +30,18 @@ public class OffensivePassiveHandler : PassiveHandlerBase
         stackFrenzy.bonusPerStack = IsUnlocked(3, 1) ? 0.03f : 0.02f;
         stackFrenzy.SetStacks(stackFrenzy.CurrentStacks);
 
+        bool newFrenzyRush = IsUnlocked(4, 0);
+        if (!newFrenzyRush && stackFrenzy.frenzyRush)
+            stackFrenzy.RemoveFrenzyRush();
+        stackFrenzy.frenzyRush = newFrenzyRush;
+
+        bool newGlassCannon = IsUnlocked(5, 1);
+        if (!newGlassCannon && stackFrenzy.glassCannon)
+            stackFrenzy.RemoveGlassCannon();
+        stackFrenzy.glassCannon = newGlassCannon;
+
         stackFrenzy.thirdHitTripleStack = IsUnlocked(3, 2);
-
-        stackFrenzy.frenzyRush = IsUnlocked(4, 0);
-
-        stackFrenzy.glassCannon = IsUnlocked(5, 1);
-
         stackFrenzy.resilientFury = IsUnlocked(5, 2);
-
         stackFrenzy.apexPredator = IsUnlocked(6, 0);
     }
 }

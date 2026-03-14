@@ -113,14 +113,15 @@ public class StackFrenzyPassive : MonoBehaviour
         if (frenzyRush)
         {
             RemoveFrenzyRush();
-            frenzyRushModifier = new StatModifier { attackSpeed = 0.15f };
+            frenzyRushModifier.attackSpeed = 0.15f;
             stats.AddMultiplierModifier(frenzyRushModifier);
         }
 
         if (glassCannon)
         {
             RemoveGlassCannon();
-            glassCannonModifier = new StatModifier { critDamage = 0.5f, damageTaken = 0.1f };
+            glassCannonModifier.critDamage = 0.5f;
+            glassCannonModifier.damageTaken = 0.1f;
             stats.AddMultiplierModifier(glassCannonModifier);
         }
 
@@ -131,13 +132,13 @@ public class StackFrenzyPassive : MonoBehaviour
         }
     }
 
-    private void RemoveFrenzyRush()
+    public void RemoveFrenzyRush()
     {
         stats.RemoveMultiplierModifier(frenzyRushModifier);
         frenzyRushModifier.attackSpeed = 0f;
     }
 
-    private void RemoveGlassCannon()
+    public void RemoveGlassCannon()
     {
         stats.RemoveMultiplierModifier(glassCannonModifier);
         glassCannonModifier.critDamage = 0f;
@@ -153,8 +154,8 @@ public class StackFrenzyPassive : MonoBehaviour
     private IEnumerator ApexState()
     {
         IsApexActive = true;
-        apexCritModifier = new StatModifier { critChance = 1f };
-        apexAttackSpeedModifier = new StatModifier { attackSpeed = 0.35f };
+        apexCritModifier.critChance = 1f;
+        apexAttackSpeedModifier.attackSpeed = 0.35f;
         stats.AddFlatModifier(apexCritModifier);
         stats.AddMultiplierModifier(apexAttackSpeedModifier);
 
@@ -162,8 +163,8 @@ public class StackFrenzyPassive : MonoBehaviour
 
         stats.RemoveFlatModifier(apexCritModifier);
         stats.RemoveMultiplierModifier(apexAttackSpeedModifier);
-        apexCritModifier = new StatModifier();
-        apexAttackSpeedModifier = new StatModifier();
+        apexCritModifier.critChance = 0f;
+        apexAttackSpeedModifier.attackSpeed = 0f;
         IsApexActive = false;
         apexCooldownTimer = apexCooldown;
     }
