@@ -4,6 +4,7 @@ using UnityEngine;
 public class PassiveTree : ScriptableObject
 {
     public string treeName;
-    public PassiveNode[] nodes; // 8 nodes per tree
+    public PassiveHandlerBase handlerPrefab;
+    public PassiveNode[] nodes;
     public Color treeColor = Color.white;
 }
