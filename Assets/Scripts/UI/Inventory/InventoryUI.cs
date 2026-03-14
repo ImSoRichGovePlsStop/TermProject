@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class InventoryUI : MonoBehaviour
 {
@@ -37,9 +38,8 @@ public class InventoryUI : MonoBehaviour
             return null;
         }
 
-        var go = Instantiate(moduleItemPrefab, transform);
-        var ui = go.GetComponent<ModuleItemUI>();
-        ui.InventoryPanelRt = GetComponent<RectTransform>();
+        var ui = Instantiate(moduleItemPrefab, bagGridUI.transform);
+        ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
         ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
 
         StartCoroutine(SnapNextFrame(ui, bagGridUI, inst.GridPosition));
@@ -66,9 +66,8 @@ public class InventoryUI : MonoBehaviour
             return null;
         }
 
-        var go = Instantiate(materialItemPrefab, transform);
-        var ui = go.GetComponent<MaterialItemUI>();
-        ui.InventoryPanelRt = GetComponent<RectTransform>();
+        var ui = Instantiate(materialItemPrefab, bagGridUI.transform);
+        ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
         ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
 
         StartCoroutine(SnapNextFrame(ui, bagGridUI, inst.GridPosition));
@@ -86,9 +85,8 @@ public class InventoryUI : MonoBehaviour
 
         if (!placed) return null;
 
-        var go = Instantiate(materialItemPrefab, transform);
-        var ui = go.GetComponent<MaterialItemUI>();
-        ui.InventoryPanelRt = GetComponent<RectTransform>();
+        var ui = Instantiate(materialItemPrefab, envGridUI.transform);
+        ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
         ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
         StartCoroutine(SnapNextFrame(ui, envGridUI, inst.GridPosition));
         return ui;
@@ -108,9 +106,8 @@ public class InventoryUI : MonoBehaviour
             return null;
         }
 
-        var go = Instantiate(moduleItemPrefab, transform);
-        var ui = go.GetComponent<ModuleItemUI>();
-        ui.InventoryPanelRt = GetComponent<RectTransform>();
+        var ui = Instantiate(moduleItemPrefab, envGridUI.transform);
+        ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
         ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
         StartCoroutine(SnapNextFrame(ui, envGridUI, inst.GridPosition));
         return ui;
@@ -133,9 +130,8 @@ public class InventoryUI : MonoBehaviour
             return null;
         }
 
-        var go = Instantiate(moduleItemPrefab, transform);
-        var ui = go.GetComponent<ModuleItemUI>();
-        ui.InventoryPanelRt = GetComponent<RectTransform>();
+        var ui = Instantiate(moduleItemPrefab, envGridUI.transform);
+        ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
         ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
         StartCoroutine(SnapNextFrame(ui, envGridUI, inst.GridPosition));
         return ui;
