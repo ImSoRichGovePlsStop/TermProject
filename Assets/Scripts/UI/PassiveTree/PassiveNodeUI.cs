@@ -50,15 +50,14 @@ public class PassiveNodeUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
     private void OnClick()
     {
         var state = manager.GetState(passiveData);
+        bool changed = false;
+
         if (state.IsUnlocked(node))
-        {
-            if (manager.TryRefund(node, tree, passiveData))
-            {
-                screenUI.RefreshAll();
-                screenUI.RefreshPoints();
-            }
-        }
-        else if (manager.TryUnlock(node, tree, passiveData))
+            changed = manager.TryRefund(node, tree, passiveData);
+        else
+            changed = manager.TryUnlock(node, tree, passiveData);
+
+        if (changed)
         {
             screenUI.RefreshAll();
             screenUI.RefreshPoints();
