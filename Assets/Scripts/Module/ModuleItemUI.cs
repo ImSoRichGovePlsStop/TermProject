@@ -27,7 +27,6 @@ public class ModuleItemUI : MonoBehaviour,
     private Vector2 _dragOffset;
     private Vector2Int _clickedCell;
 
-    [HideInInspector] public RectTransform InventoryPanelRt;
 
     // Rarity Colors
     private static Color RarityColor(Rarity r) => r switch
@@ -171,10 +170,11 @@ public class ModuleItemUI : MonoBehaviour,
 
     public void SnapToCell(GridUI gridUI, Vector2Int cell)
     {
-        _rt.SetParent(InventoryPanelRt, worldPositionStays: false);
+        var gridRt = gridUI.GetComponent<RectTransform>();
+        _rt.SetParent(gridRt, worldPositionStays: false);
 
         Vector3 worldPos = gridUI.GetCellWorldTopLeft(cell);
-        Vector3 localPos = InventoryPanelRt.InverseTransformPoint(worldPos);
+        Vector3 localPos = gridRt.InverseTransformPoint(worldPos);
         _rt.anchoredPosition = new Vector2(localPos.x, localPos.y);
     }
 
