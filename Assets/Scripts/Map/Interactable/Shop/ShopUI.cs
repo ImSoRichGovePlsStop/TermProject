@@ -44,11 +44,14 @@ public class ShopUI : MonoBehaviour
         _initialized = true;
     }
 
-    private void OnEnable()
+
+    private void Update()
     {
         if (!_initialized) return;
         MoveItemsBetweenGrids(inventoryBagGridUI, shopBagGridUI);
     }
+
+
 
     private void OnDisable()
     {
@@ -64,6 +67,18 @@ public class ShopUI : MonoBehaviour
             _activeSeller = null;
             shopBagGridUI.ClearHighlights();
         }
+    }
+
+    public void ForceMoveToBag()
+    {
+        if (!_initialized) return;
+        MoveItemsBetweenGrids(shopBagGridUI, inventoryBagGridUI);
+    }
+
+    public void ForceMoveToShop()
+    {
+        if (!_initialized) return;
+        MoveItemsBetweenGrids(inventoryBagGridUI, shopBagGridUI);
     }
 
     public void Populate(TestModuleEntry[] entries, HashSet<int> soldIndices, ShopInteractable interactable)

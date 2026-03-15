@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -58,20 +59,25 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    [SerializeField] private ShopUI shopUI;
+
     public void ToggleInventory()
     {
         if (inventoryPanel == null) return;
 
-        // Close shop if open
         if (_activeShopUI != null && _activeShopUI.gameObject.activeSelf)
             CloseShop();
 
         IsInventoryOpen = !IsInventoryOpen;
         inventoryPanel.SetActive(IsInventoryOpen);
 
+        if (IsInventoryOpen)
+            StartCoroutine(ForceMoveToBagNextFrame()); // <-- move items to inventory bag grid on open
+
         if (!IsInventoryOpen)
         {
             ModuleTooltipUI.Instance?.Hide();
+
         }
     }
 
@@ -81,6 +87,7 @@ public class UIManager : MonoBehaviour
         if (IsInventoryOpen) ToggleInventory();
         _activeShopUI = shopUI;
         shopUI.gameObject.SetActive(true);
+        shopUI.ForceMoveToShop();
     }
 
     public void CloseShop()
@@ -88,5 +95,12 @@ public class UIManager : MonoBehaviour
         if (_activeShopUI == null) return;
         _activeShopUI.gameObject.SetActive(false);
         _activeShopUI = null;
+    }
+
+    private IEnumerator ForceMoveToBagNextFrame()
+    {
+        yield return null;
+        Canvas.ForceUpdateCanvases();
+        shopUI?.ForceMoveToBag();
     }
 }
