@@ -28,7 +28,8 @@ public static class Randomizer
         int minCount,
         int maxCount,
         float meanCost,
-        float sd)
+        float sd,
+        bool allowDuplicates = false)
     {
         var result = new List<TestModuleEntry>();
         var pool = GetPool();
@@ -36,48 +37,56 @@ public static class Randomizer
         if (pool.Length == 0)
             return result;
 
-        int count = Mathf.Min(Random.Range(minCount, maxCount + 1), pool.Length);
+        int returnCount = Random.Range(minCount, maxCount + 1);
+        int candidateCount = maxCount * 2;
 
-        var shuffled = new List<TestModuleEntry>(pool);
-        for (int i = shuffled.Count - 1; i > 0; i--)
-        {
-            int j = Random.Range(0, i + 1);
-            (shuffled[i], shuffled[j]) = (shuffled[j], shuffled[i]);
-        }
+        var candidates = new List<(TestModuleEntry entry, float delta)>();
+        var seen = new HashSet<ModuleData>();
 
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < candidateCount; i++)
         {
-            var entry = new TestModuleEntry
+            int j = Random.Range(0, pool.Length);
+            var data = pool[j].data;
+
+            if (!allowDuplicates && seen.Contains(data)) continue;
+
+            float sampledCost = SampleGaussian(meanCost, sd);
+
+            int bestIndex = -1;
+            float bestDelta = float.MaxValue;
+
+            for (int r = 0; r < data.cost.Length; r++)
             {
-                data = shuffled[i].data,
-                rarity = CostToRarity(shuffled[i].data, meanCost, sd)
-            };
-            result.Add(entry);
+                if (data.cost[r] <= 0) continue;
+
+                float delta = Mathf.Abs(data.cost[r] - sampledCost);
+                if (delta < bestDelta)
+                {
+                    bestDelta = delta;
+                    bestIndex = r;
+                }
+            }
+
+            if (bestIndex == -1) continue;
+
+            seen.Add(data);
+
+            candidates.Add((new TestModuleEntry
+            {
+                data = data,
+                rarity = IndexToRarity(bestIndex)
+            }, bestDelta));
         }
+
+        for (int i = 0; i < candidates.Count; i++)
+            Debug.Log($"Candidate {i}: {candidates[i].entry.data.moduleName} (Rarity: {candidates[i].entry.rarity}, Delta: {candidates[i].delta})");
+
+        candidates.Sort((a, b) => a.delta.CompareTo(b.delta));
+
+        for (int i = 0; i < Mathf.Min(returnCount, candidates.Count); i++)
+            result.Add(candidates[i].entry);
 
         return result;
-    }
-
-    private static Rarity CostToRarity(ModuleData data, float meanCost, float sd)
-    {
-        float sampledCost = SampleGaussian(meanCost, sd);
-
-        int bestIndex = 0;
-        float bestDelta = float.MaxValue;
-
-        for (int i = 0; i < data.cost.Length; i++)
-        {
-            if (data.cost[i] <= 0) continue; 
-
-            float delta = Mathf.Abs(data.cost[i] - sampledCost);
-            if (delta < bestDelta)
-            {
-                bestDelta = delta;
-                bestIndex = i;
-            }
-        }
-
-        return IndexToRarity(bestIndex);
     }
 
     private static float SampleGaussian(float mean, float sd)

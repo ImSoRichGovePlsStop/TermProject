@@ -1,15 +1,17 @@
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
 
 public class RandomLoot : MonoBehaviour, IInteractable
 {
     [Header("Loot Settings")]
     [SerializeField] private int minLootCount = 1;
     [SerializeField] private int maxLootCount = 3;
+    [SerializeField] private bool allowDuplicates = false;
 
-    [Header("Rarity Distribution")]
-    [SerializeField] private float meanRarity = 1f;  // 0=Common 1=Uncommon 2=Rare 3=Epic 4=GOD
-    [SerializeField] private float sd = 0.8f;
+    [Header("Cost Distribution")]
+    [SerializeField] private float meanCost = 10f;
+    [SerializeField] private float sd = 10f;
 
     [Header("Debug")]
     [SerializeField] private bool debugLog = false;
@@ -58,10 +60,10 @@ public class RandomLoot : MonoBehaviour, IInteractable
 
         if (!_hasBeenOpened)
         {
-            var rolled = Randomizer.Roll(minLootCount, maxLootCount, meanRarity, sd);
+            var rolled = Randomizer.Roll(minLootCount, maxLootCount, meanCost, sd, allowDuplicates);
 
             if (debugLog)
-                Debug.Log($"[RandomLoot] {gameObject.name} — spawning {rolled.Count} item(s) | mean={meanRarity} sd={sd}");
+                Debug.Log($"[RandomLoot] {gameObject.name} — spawning {rolled.Count} item(s) | mean={meanCost} sd={sd}");
 
             foreach (var entry in rolled)
             {
