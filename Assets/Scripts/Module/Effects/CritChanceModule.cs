@@ -6,7 +6,6 @@ public class CritChanceModule : ModuleEffect
     [Header("Stat per Rarity (Rare -> Legendary)")]
     public float[] baseStatPerRarity = { 0f, 0f, 0f, 0f };
     public float levelMultiplier;
-    public int[] cost = { 0, 0, 0, 0 };
 
     protected override void OnEquip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state)
     {

@@ -11,7 +11,6 @@ public class LowHpModule : ModuleEffect
     public float[] baseThresholdPerRarity = { 0f, 0f, 0f, 0f, 0f };
     public float thresholdPerLevel = 0.01f;
 
-    public int[] cost = { 0, 0, 0, 0, 0 };
 
     protected override void OnEquip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state)
     {

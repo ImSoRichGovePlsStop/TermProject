@@ -14,6 +14,7 @@ public class ModuleData : ScriptableObject
     public Sprite icon;
     public ModuleEffect moduleEffect;
     public Color moduleColor = Color.white;
+    public int[] cost = { 0, 0, 0, 0, 0 };
 
     [Header("Module Buff")]
     public bool isBuffAdjacent;
