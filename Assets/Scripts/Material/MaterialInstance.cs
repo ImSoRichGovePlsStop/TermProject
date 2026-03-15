@@ -1,9 +1,8 @@
 public class MaterialInstance : ModuleInstance
 {
     public MaterialData MaterialData => (MaterialData)Data;
-    public int Cost      => MaterialData.cost;
     public int MaxStack  => MaterialData.maxStack;
-
+    public int Cost => MaterialData.cost[0];
     public int StackCount { get; private set; } = 1;
 
     public event System.Action OnStackChanged;
