@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Defensive
   m_EditorClassIdentifier: Assembly-CSharp::PassiveTree
   treeName: Defensive
+  handlerPrefab: {fileID: 2003039466345877053, guid: 56289c0f1fd96e54981f056026be9361, type: 3}
   nodes:
   - {fileID: 11400000, guid: b7c0a259e93f71043992c26d37956dbe, type: 2}
   - {fileID: 11400000, guid: 8762c78173d2188468456d71ca72265c, type: 2}

@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: L1_ShatterField
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Shatter Field
-  description: Each Secondary hit slows nearby enemies by 20% for 3s. Max 2 stacks.
+  description: 'Secondary attack leaves a field that deals 15% weapon damage every
+    0.5s for 3s. CD: 3s.'
   layer: 1
   branch: 0

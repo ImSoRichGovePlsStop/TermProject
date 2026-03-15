@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: L2_DeepChill
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Deep Chill
-  description: Slow duration increased from 3s to 5s.
+  description: Field also slows enemy movement speed by 15% per stack, up to 4 stacks
+    (max 60% slow)
   layer: 2
   branch: 0

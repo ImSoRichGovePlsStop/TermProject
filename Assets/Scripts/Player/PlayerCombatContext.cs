@@ -8,25 +8,31 @@ public class PlayerCombatContext : MonoBehaviour
     public EnemyHealth LastAttacker { get; set; }
     public List<EnemyHealth> EnemiesAround { get; private set; } = new List<EnemyHealth>();
     public int LastComboIndex { get; private set; } = 0;
+    public Vector3 LastSecondaryPosition { get; private set; }
 
     [SerializeField] private float aroundRadius = 5f;
 
     public event Action OnAttack;
     public event Action OnTakeDamage;
+    public event Action OnSecondaryAttack;
 
     public void NotifyAttack(HashSet<EnemyHealth> hitEnemies, int comboIndex = 0)
     {
         LastHitEnemies = hitEnemies;
         LastComboIndex = comboIndex;
-        if (OnAttack != null)
-            OnAttack.Invoke();
+        OnAttack?.Invoke();
+    }
+
+    public void NotifySecondaryAttack(Vector3 position)
+    {
+        LastSecondaryPosition = position;
+        OnSecondaryAttack?.Invoke();
     }
 
     public void NotifyTakeDamage(EnemyHealth attacker)
     {
         LastAttacker = attacker;
-        if (OnTakeDamage != null)
-            OnTakeDamage.Invoke();
+        OnTakeDamage?.Invoke();
     }
 
     public void RefreshEnemiesAround()
