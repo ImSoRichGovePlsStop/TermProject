@@ -7,6 +7,9 @@ public class WeaponData : ScriptableObject
     public string weaponName;
     public Sprite icon;
 
+    [Header("Passive")]
+    public WeaponPassiveData passiveData;
+
     [Header("Stats")]
     public float health;
     public float damage;

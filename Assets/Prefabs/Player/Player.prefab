@@ -44,6 +44,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 418cbc4948ad13848ba197a12c120637, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AttackHitbox
+--- !u!1 &5864165986853357452
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7423755363756834439}
+  m_Layer: 0
+  m_Name: PassiveHandlerContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7423755363756834439
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5864165986853357452}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2634401423236395427}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6821820435605495984
 GameObject:
   m_ObjectHideFlags: 0
@@ -60,7 +91,8 @@ GameObject:
   - component: {fileID: 6699237877294229590}
   - component: {fileID: 2787225686031908883}
   - component: {fileID: 2654450303875858809}
-  - component: {fileID: 8186592957062887727}
+  - component: {fileID: 3563984915877921471}
+  - component: {fileID: 6499088522283101609}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -83,6 +115,7 @@ Transform:
   m_Children:
   - {fileID: 8562309434232008577}
   - {fileID: 453814550232931400}
+  - {fileID: 7423755363756834439}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &193443651079528124
@@ -301,7 +334,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44a05885d64e0d6489b17783328e4d14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ModuleEffectHandler
---- !u!114 &8186592957062887727
+--- !u!114 &3563984915877921471
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -313,6 +346,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8f52d163fc1b6342a496e26de805802, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponPassiveManager
+  passiveHandlerContainer: {fileID: 7423755363756834439}
+  startingPoints: 0
+--- !u!114 &6499088522283101609
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6821820435605495984}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5519dbc46ea6ee34294aefc15d05530a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerCombatContext
+  aroundRadius: 5
 --- !u!1 &7199941304210273291
 GameObject:
   m_ObjectHideFlags: 0

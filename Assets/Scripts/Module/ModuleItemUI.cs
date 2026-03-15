@@ -27,7 +27,6 @@ public class ModuleItemUI : MonoBehaviour,
     private Vector2 _dragOffset;
     private Vector2Int _clickedCell;
 
-    [HideInInspector] public RectTransform InventoryPanelRt;
 
     // Rarity Colors
     private static Color RarityColor(Rarity r) => r switch
@@ -171,17 +170,23 @@ public class ModuleItemUI : MonoBehaviour,
 
     public void SnapToCell(GridUI gridUI, Vector2Int cell)
     {
-        _rt.SetParent(InventoryPanelRt, worldPositionStays: false);
+        var gridRt = gridUI.GetComponent<RectTransform>();
+        _rt.SetParent(gridRt, worldPositionStays: false);
 
         Vector3 worldPos = gridUI.GetCellWorldTopLeft(cell);
-        Vector3 localPos = InventoryPanelRt.InverseTransformPoint(worldPos);
+        Vector3 localPos = gridRt.InverseTransformPoint(worldPos);
         _rt.anchoredPosition = new Vector2(localPos.x, localPos.y);
     }
 
     public void OnBeginDrag(PointerEventData e)
     {
-        _originGrid = Instance.CurrentGrid == InventoryManager.Instance.WeaponGrid
-            ? WeaponGridUI : BagGridUI;
+        var mgr = InventoryManager.Instance;
+        if (Instance.CurrentGrid == mgr.WeaponGrid)
+            _originGrid = WeaponGridUI;
+        else if (EnvGridUI != null && Instance.CurrentGrid == mgr.EnvGrid)
+            _originGrid = EnvGridUI;
+        else
+            _originGrid = BagGridUI;
         _originCell = Instance.GridPosition;
 
         _clickedCell = GetClickedLocalCell(e);

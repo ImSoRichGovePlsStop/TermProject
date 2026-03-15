@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class InventoryUI : MonoBehaviour
 {
@@ -37,9 +38,8 @@ public class InventoryUI : MonoBehaviour
             return null;
         }
 
-        var go = Instantiate(moduleItemPrefab, transform);
-        var ui = go.GetComponent<ModuleItemUI>();
-        ui.InventoryPanelRt = GetComponent<RectTransform>();
+        var ui = Instantiate(moduleItemPrefab, bagGridUI.transform);
+        ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
         ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
 
         StartCoroutine(SnapNextFrame(ui, bagGridUI, inst.GridPosition));
@@ -66,12 +66,74 @@ public class InventoryUI : MonoBehaviour
             return null;
         }
 
-        var go = Instantiate(materialItemPrefab, transform);
-        var ui = go.GetComponent<MaterialItemUI>();
-        ui.InventoryPanelRt = GetComponent<RectTransform>();
+        var ui = Instantiate(materialItemPrefab, bagGridUI.transform);
+        ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
         ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
 
         StartCoroutine(SnapNextFrame(ui, bagGridUI, inst.GridPosition));
+        return ui;
+    }
+
+    public MaterialItemUI SpawnExistingMaterialToEnv(MaterialInstance inst)
+    {
+        var mgr = InventoryManager.Instance;
+        bool placed = false;
+        for (int row = 0; row < mgr.EnvGrid.Height && !placed; row++)
+            for (int col = 0; col < mgr.EnvGrid.Width && !placed; col++)
+                if (mgr.EnvGrid.TryPlace(inst, new Vector2Int(col, row)))
+                    placed = true;
+
+        if (!placed) return null;
+
+        var ui = Instantiate(materialItemPrefab, envGridUI.transform);
+        ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+        ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
+        StartCoroutine(SnapNextFrame(ui, envGridUI, inst.GridPosition));
+        return ui;
+    }
+
+    public ModuleItemUI SpawnExistingModuleToEnv(ModuleInstance inst)
+    {
+        var mgr = InventoryManager.Instance;
+        bool placed = false;
+        for (int row = 0; row < mgr.EnvGrid.Height && !placed; row++)
+            for (int col = 0; col < mgr.EnvGrid.Width && !placed; col++)
+                if (mgr.EnvGrid.TryPlace(inst, new Vector2Int(col, row)))
+                    placed = true;
+
+        if (!placed)
+        {
+            return null;
+        }
+
+        var ui = Instantiate(moduleItemPrefab, envGridUI.transform);
+        ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+        ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
+        StartCoroutine(SnapNextFrame(ui, envGridUI, inst.GridPosition));
+        return ui;
+    }
+
+    public ModuleItemUI SpawnModuleToEnv(ModuleData data, Rarity rarity = Rarity.Common, int level = 0)
+    {
+        var inst = new ModuleInstance(data, rarity, level);
+
+        var mgr = InventoryManager.Instance;
+        bool placed = false;
+        for (int row = 0; row < mgr.EnvGrid.Height && !placed; row++)
+            for (int col = 0; col < mgr.EnvGrid.Width && !placed; col++)
+                if (mgr.EnvGrid.TryPlace(inst, new Vector2Int(col, row)))
+                    placed = true;
+
+        if (!placed)
+        {
+            Debug.LogWarning($"[InventoryUI] EnvGrid full leaw — {data.moduleName}");
+            return null;
+        }
+
+        var ui = Instantiate(moduleItemPrefab, envGridUI.transform);
+        ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+        ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
+        StartCoroutine(SnapNextFrame(ui, envGridUI, inst.GridPosition));
         return ui;
     }
 

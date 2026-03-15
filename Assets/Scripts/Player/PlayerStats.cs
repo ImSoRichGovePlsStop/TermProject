@@ -34,7 +34,7 @@ public class PlayerStats : MonoBehaviour
     private void OnGUI()
     {
         if (!showDebugUI) return;
-        GUI.Box(new Rect(10, 10, 300, 220), "Player Stats");
+        GUI.Box(new Rect(10, 10, 300, 250), "Player Stats");
         GUI.skin.label.fontSize = 16;
         GUI.Label(new Rect(20, 40, 280, 25), $"HP:    {CurrentHealth:F1} / {MaxHealth:F1}");
         GUI.Label(new Rect(20, 70, 280, 25), $"DMG:   {Damage:F1}");
@@ -42,6 +42,7 @@ public class PlayerStats : MonoBehaviour
         GUI.Label(new Rect(20, 130, 280, 25), $"SPD:   {MoveSpeed:F2}");
         GUI.Label(new Rect(20, 160, 280, 25), $"CRIT:  {CritChance:P0} / {CritDamage:P0}");
         GUI.Label(new Rect(20, 190, 280, 25), $"EVADE: {EvadeChance:P0}  INV: {IsInvincible}");
+        GUI.Label(new Rect(20, 220, 280, 25), $"DMG TAKEN:  {DamageTaken:F2}");
     }
 
     public void SetDebugUI(bool enabled)
@@ -115,7 +116,7 @@ public class PlayerStats : MonoBehaviour
         weaponCritChance = 0;
         weaponCritDamage = 1f;
         weaponEvadeChance = 0;
-        weaponDamageTaken = 0;
+        weaponDamageTaken = 1;
         CurrentHealth = MaxHealth;
     }
 
@@ -154,6 +155,7 @@ public class PlayerStats : MonoBehaviour
         flatModifier.critChance += bonus.critChance;
         flatModifier.critDamage += bonus.critDamage;
         flatModifier.evadeChance += bonus.evadeChance;
+        flatModifier.damageTaken += bonus.damageTaken;
 
         CurrentHealth = MaxHealth * ratio;
         CurrentHealth = Mathf.Clamp(CurrentHealth, 0, MaxHealth);
@@ -175,6 +177,7 @@ public class PlayerStats : MonoBehaviour
         multiplierModifier.critChance += bonus.critChance;
         multiplierModifier.critDamage += bonus.critDamage;
         multiplierModifier.evadeChance += bonus.evadeChance;
+        multiplierModifier.damageTaken += bonus.damageTaken;
 
         CurrentHealth = MaxHealth * ratio;
         CurrentHealth = Mathf.Clamp(CurrentHealth, 0, MaxHealth);
@@ -191,6 +194,7 @@ public class PlayerStats : MonoBehaviour
         flatModifier.critChance -= bonus.critChance;
         flatModifier.critDamage -= bonus.critDamage;
         flatModifier.evadeChance -= bonus.evadeChance;
+        flatModifier.damageTaken -= bonus.damageTaken;
 
         CurrentHealth = MaxHealth * ratio;
         CurrentHealth = Mathf.Clamp(CurrentHealth, 0, MaxHealth);
@@ -207,6 +211,7 @@ public class PlayerStats : MonoBehaviour
         multiplierModifier.critChance -= bonus.critChance;
         multiplierModifier.critDamage -= bonus.critDamage;
         multiplierModifier.evadeChance -= bonus.evadeChance;
+        multiplierModifier.damageTaken -= bonus.damageTaken;
 
         CurrentHealth = MaxHealth * ratio;
         CurrentHealth = Mathf.Clamp(CurrentHealth, 0, MaxHealth);
@@ -291,7 +296,7 @@ public class PlayerStats : MonoBehaviour
             return;
         }
 
-        float finalDamage = amount * (1f + DamageTaken);
+        float finalDamage = amount * DamageTaken;
         CurrentHealth = Mathf.Max(0, CurrentHealth - finalDamage);
         Debug.Log($"Took {finalDamage} damage, HP: {CurrentHealth}/{MaxHealth}");
 

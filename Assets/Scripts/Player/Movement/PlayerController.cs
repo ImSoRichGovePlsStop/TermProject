@@ -88,7 +88,7 @@ public class PlayerController : MonoBehaviour
 
         Vector3 exactDir = GetExactMouseDirection();
         attackHitbox.transform.rotation = Quaternion.LookRotation(exactDir);
-        attackHitbox.SetComboHit(hit);
+        attackHitbox.SetComboHit(hit, comboIndex);
 
         Vector2 mouseDir = GetMouseDirection(exactDir);
         lastDir = mouseDir;

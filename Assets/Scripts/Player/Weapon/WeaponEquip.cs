@@ -7,11 +7,13 @@ public class WeaponEquip : MonoBehaviour
     private WeaponData currentWeapon;
     private PlayerStats stats;
     private AttackHitbox hitbox;
+    private WeaponPassiveManager passiveManager;
 
     void Awake()
     {
         stats = GetComponent<PlayerStats>();
         hitbox = GetComponentInChildren<AttackHitbox>();
+        passiveManager = FindFirstObjectByType<WeaponPassiveManager>();
     }
 
     void Start()
@@ -24,6 +26,7 @@ public class WeaponEquip : MonoBehaviour
     {
         currentWeapon = weapon;
         stats.ApplyWeapon(weapon);
+        passiveManager?.OnWeaponEquipped(weapon.passiveData);
         Debug.Log($"Equipped {weapon.weaponName}");
     }
 
@@ -31,6 +34,7 @@ public class WeaponEquip : MonoBehaviour
     {
         currentWeapon = null;
         stats.ApplyWeapon(null);
+        passiveManager?.OnWeaponEquipped(null);
         Debug.Log("Unequipped weapon");
     }
 

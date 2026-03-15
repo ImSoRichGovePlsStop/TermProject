@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Offensive
   m_EditorClassIdentifier: Assembly-CSharp::PassiveTree
   treeName: Offensive
+  handlerPrefab: {fileID: 4843651138477072584, guid: 4e709f5adb046534f99d1e5d325a7104, type: 3}
   nodes:
   - {fileID: 11400000, guid: 0fc7b2572d334a2419bc7cac5b32b69c, type: 2}
   - {fileID: 11400000, guid: bc5b5f946b2522b4db80f4e25d619e9b, type: 2}
