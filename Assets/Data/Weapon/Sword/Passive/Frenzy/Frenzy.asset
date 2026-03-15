@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 795b38daab500fb45a7cc0b63959a39f, type: 3}
-  m_Name: Offensive
+  m_Name: Frenzy
   m_EditorClassIdentifier: Assembly-CSharp::PassiveTree
-  treeName: Offensive
+  treeName: Frenzy
   handlerPrefab: {fileID: 4843651138477072584, guid: 4e709f5adb046534f99d1e5d325a7104, type: 3}
   nodes:
   - {fileID: 11400000, guid: 0fc7b2572d334a2419bc7cac5b32b69c, type: 2}
@@ -23,4 +23,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 0e7390407d037cd4193075ba9879c9a0, type: 2}
   - {fileID: 11400000, guid: f8e9a495fa29873458fc85a1bf66f5fe, type: 2}
   - {fileID: 11400000, guid: 4b75afbb933a2cc4a8f5398176f7ed0e, type: 2}
-  treeColor: {r: 0.735849, g: 0.40557045, b: 0.07289071, a: 1}
+  treeColor: {r: 1, g: 0.16470589, b: 0.25882354, a: 1}

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class DefensivePassiveHandler : PassiveHandlerBase
+public class ControlPassiveHandler : PassiveHandlerBase
 {
     [SerializeField] private ShatterFieldZone fieldPrefab;
     [SerializeField] private float baseRadius = 1f;

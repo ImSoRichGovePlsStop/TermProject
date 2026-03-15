@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class OffensivePassiveHandler : PassiveHandlerBase
+public class FrenzyPassiveHandler : PassiveHandlerBase
 {
     private StackFrenzyPassive stackFrenzy;
 

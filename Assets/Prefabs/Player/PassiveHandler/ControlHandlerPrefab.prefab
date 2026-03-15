@@ -9,9 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2248243367791708038}
-  - component: {fileID: 2003039466345877053}
+  - component: {fileID: -5174957227494554484}
   m_Layer: 0
-  m_Name: DefensiveHandlerPrefab
+  m_Name: ControlHandlerPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -32,7 +32,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2003039466345877053
+--- !u!114 &-5174957227494554484
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
