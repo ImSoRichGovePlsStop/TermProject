@@ -9,14 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 54589f639dfb81c4089e316e5058b47a, type: 3}
-  m_Name: sdick
-  m_EditorClassIdentifier: Assembly-CSharp::MaterialData
-  moduleName: sdick
+  m_Script: {fileID: 11500000, guid: 4b7eed258015d6e43af3e1877b980b72, type: 3}
+  m_Name: CritDmg_1x1
+  m_EditorClassIdentifier: Assembly-CSharp::ModuleData
+  moduleName: New Module
   icon: {fileID: 0}
-  moduleEffect: {fileID: 0}
-  moduleColor: {r: 0, g: 0, b: 0, a: 1}
-  cost: 1e000000
+  moduleEffect: {fileID: 11400000, guid: e11d40bf1050a9e48995d38e3cc863b8, type: 2}
+  moduleColor: {r: 0.509434, g: 0.32187545, b: 0.040850844, a: 1}
+  cost: 0000000019000000320000004b0000007d000000
   isBuffAdjacent: 0
   buffGrid:
   - cells: 0000000000
@@ -25,10 +25,8 @@ MonoBehaviour:
   - cells: 0000000000
   - cells: 0000000000
   shapeGrid:
-  - cells: 0001000000
-  - cells: 0001000000
-  - cells: 0101010000
+  - cells: 0100000000
   - cells: 0000000000
   - cells: 0000000000
-  rarity: 4
-  maxStack: 3
+  - cells: 0000000000
+  - cells: 0000000000

@@ -16,6 +16,7 @@ MonoBehaviour:
   icon: {fileID: 0}
   moduleEffect: {fileID: 0}
   moduleColor: {r: 0.335849, g: 0, b: 0, a: 1}
+  cost: 32000000
   isBuffAdjacent: 0
   buffGrid:
   - cells: 0000000000
@@ -30,5 +31,4 @@ MonoBehaviour:
   - cells: 0000000000
   - cells: 0000000000
   rarity: 2
-  cost: 100
   maxStack: 1

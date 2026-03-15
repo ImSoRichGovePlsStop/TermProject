@@ -10,21 +10,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4b7eed258015d6e43af3e1877b980b72, type: 3}
-  m_Name: HP_1x1
+  m_Name: AtkSpd_2x1
   m_EditorClassIdentifier: Assembly-CSharp::ModuleData
   moduleName: New Module
   icon: {fileID: 0}
-  moduleEffect: {fileID: 11400000, guid: cd81ab2cfe2a09a40bcc0f442468e6a7, type: 2}
-  moduleColor: {r: 0.09967959, g: 0.6037736, b: 0.20857403, a: 1}
+  moduleEffect: {fileID: 11400000, guid: 3a432ce80650985419d19d5ecc5ffe82, type: 2}
+  moduleColor: {r: 0.1804913, g: 0.95101726, b: 0.9811321, a: 1}
+  cost: 000000004b0000007d000000c8000000fa000000
   isBuffAdjacent: 0
   buffGrid:
-  - cells: 0100000000
+  - cells: 0000000000
   - cells: 0000000000
   - cells: 0000000000
   - cells: 0000000000
   - cells: 0000000000
   shapeGrid:
-  - cells: 0100000000
+  - cells: 0101000000
   - cells: 0000000000
   - cells: 0000000000
   - cells: 0000000000
