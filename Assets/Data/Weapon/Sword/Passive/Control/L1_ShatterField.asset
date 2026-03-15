@@ -10,9 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L2_DeepChill
+  m_Name: L1_ShatterField
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Deep Chill
-  description: Slow duration increased from 3s to 5s.
-  layer: 2
+  nodeName: Shatter Field
+  description: 'Secondary attack leaves a field that deals 15% weapon damage every
+    0.5s for 3s. CD: 3s.'
+  layer: 1
   branch: 0

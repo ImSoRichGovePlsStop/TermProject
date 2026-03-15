@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L5B_Exploit
+  m_Name: L3B_WideField
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Exploit
-  description: Hitting a slowed enemy with Primary restores 1.5% missing HP.
-  layer: 5
+  nodeName: Wide Field
+  description: Secondary AoE radius increased by 50%.
+  layer: 3
   branch: 2

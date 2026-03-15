@@ -13,7 +13,11 @@ MonoBehaviour:
   m_Name: L6_ShatterStrike
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Shatter Strike
-  description: Killing a slowed enemy causes them to explode, dealing 40% of their
-    max HP to nearby enemies.
+  description: 'Increase field duration from 3s to 5s.
+
+    Reduce field CD from
+    3s to 1.5s.
+
+    Field damage now counts as player attack'
   layer: 6
   branch: 0

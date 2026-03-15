@@ -3,41 +3,23 @@ using UnityEngine;
 
 public class EnemyStatusHandler : MonoBehaviour
 {
-    private EnemyStatModifier flatModifier = new EnemyStatModifier();
     private EnemyStatModifier multiplierModifier = new EnemyStatModifier();
+
+    public bool IsRooted => multiplierModifier.moveSpeed <= -1f;
 
     public float MoveSpeedMultiplier
     {
-        get { return 1f + multiplierModifier.moveSpeed + flatModifier.moveSpeed; }
+        get { return Mathf.Max(0f, (1f + multiplierModifier.moveSpeed)); }
     }
 
     public float AttackSpeedMultiplier
     {
-        get { return 1f + multiplierModifier.attackSpeed + flatModifier.attackSpeed; }
+        get { return Mathf.Max(0f, (1f + multiplierModifier.attackSpeed)); }
     }
 
     public float DamageTakenMultiplier
     {
-        get { return 1f + multiplierModifier.damageTaken + flatModifier.damageTaken; }
-    }
-
-    public void AddFlatModifier(EnemyStatModifier modifier)
-    {
-        flatModifier.moveSpeed += modifier.moveSpeed;
-        flatModifier.attackSpeed += modifier.attackSpeed;
-        flatModifier.damageTaken += modifier.damageTaken;
-    }
-
-    public void AddFlatModifier(EnemyStatModifier modifier, float duration)
-    {
-        StartCoroutine(TimedModifierCoroutine(modifier, duration, false));
-    }
-
-    public void RemoveFlatModifier(EnemyStatModifier modifier)
-    {
-        flatModifier.moveSpeed -= modifier.moveSpeed;
-        flatModifier.attackSpeed -= modifier.attackSpeed;
-        flatModifier.damageTaken -= modifier.damageTaken;
+        get { return Mathf.Max(0f, (1f + multiplierModifier.damageTaken)); }
     }
 
     public void AddMultiplierModifier(EnemyStatModifier modifier)
@@ -49,7 +31,7 @@ public class EnemyStatusHandler : MonoBehaviour
 
     public void AddMultiplierModifier(EnemyStatModifier modifier, float duration)
     {
-        StartCoroutine(TimedModifierCoroutine(modifier, duration, true));
+        StartCoroutine(TimedModifierCoroutine(modifier, duration));
     }
 
     public void RemoveMultiplierModifier(EnemyStatModifier modifier)
@@ -59,18 +41,10 @@ public class EnemyStatusHandler : MonoBehaviour
         multiplierModifier.damageTaken -= modifier.damageTaken;
     }
 
-    private IEnumerator TimedModifierCoroutine(EnemyStatModifier modifier, float duration, bool isMultiplier)
+    private IEnumerator TimedModifierCoroutine(EnemyStatModifier modifier, float duration)
     {
-        if (isMultiplier)
-            AddMultiplierModifier(modifier);
-        else
-            AddFlatModifier(modifier);
-
+        AddMultiplierModifier(modifier);
         yield return new WaitForSeconds(duration);
-
-        if (isMultiplier)
-            RemoveMultiplierModifier(modifier);
-        else
-            RemoveFlatModifier(modifier);
+        RemoveMultiplierModifier(modifier);
     }
 }

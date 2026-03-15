@@ -10,9 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L3A_DulledStrikes
+  m_Name: L2_DeepChill
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Dulled Strikes
-  description: Slow attack speed 15% (max 30%).
-  layer: 3
-  branch: 1
+  nodeName: Deep Chill
+  description: Field also slows enemy movement speed by 15% per stack, up to 4 stacks
+    (max 60% slow)
+  layer: 2
+  branch: 0

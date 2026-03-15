@@ -7,6 +7,7 @@ public class AttackHitbox : MonoBehaviour
     private PlayerStats stats;
     private PlayerCombatContext context;
     private int currentComboIndex = 0;
+    private bool isSecondary = false;
 
     private void Awake()
     {
@@ -14,10 +15,11 @@ public class AttackHitbox : MonoBehaviour
         context = GetComponentInParent<PlayerCombatContext>();
     }
 
-    public void SetComboHit(ComboHit hit, int comboIndex = 0)
+    public void SetComboHit(ComboHit hit, int comboIndex = 0, bool secondary = false)
     {
         currentHit = hit;
         currentComboIndex = comboIndex;
+        isSecondary = secondary;
     }
 
     public void Attack()
@@ -49,29 +51,29 @@ public class AttackHitbox : MonoBehaviour
                 transform.rotation
             );
             foreach (Collider hit in boxHits)
-            {
                 if (hit.CompareTag("Enemy"))
                     hitEnemies.Add(hit);
-            }
         }
 
         foreach (Collider hit in hitEnemies)
         {
-            PlayerStats stats = GetComponentInParent<PlayerStats>();
             float dmg = stats.CalculateDamage(currentHit.damageScale);
             Debug.Log($"Hit {hit.name} for {dmg}!");
-
             var enemyHealth = hit.GetComponentInParent<EnemyHealth>();
             if (enemyHealth != null)
             {
                 enemyHealth.TakeDamage(dmg);
                 result.Add(enemyHealth);
-                continue;
             }
         }
 
         if (context != null)
-            context.NotifyAttack(result, currentComboIndex);
+        {
+            if (isSecondary)
+                context.NotifySecondaryAttack(transform.position);
+            else
+                context.NotifyAttack(result, currentComboIndex);
+        }
     }
 
     void OnDrawGizmosSelected()
