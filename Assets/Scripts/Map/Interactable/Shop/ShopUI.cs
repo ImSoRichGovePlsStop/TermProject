@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -7,6 +8,9 @@ public class ShopUI : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private GridUI shopBagGridUI;
+    [SerializeField] private GridUI inventoryBagGridUI;
+    [SerializeField] private GridUI inventoryWeaponGridUI;
+    [SerializeField] private GridUI inventoryEnvGridUI;
     [SerializeField] private Transform itemListContainer;
     [SerializeField] private ShopItemUI shopItemPrefab;
 
@@ -20,8 +24,16 @@ public class ShopUI : MonoBehaviour
     private RectTransform _canvasRt;
     private Vector2 _dragOffset;
     private Vector2Int _clickedCell;
+    private bool _initialized = false;
+    private ShopInteractable _currentInteractable;
 
     private void Awake()
+    {
+        _canvas = GetComponentInParent<Canvas>();
+        _canvasRt = _canvas.GetComponent<RectTransform>();
+    }
+
+    private void Start()
     {
         var mgr = InventoryManager.Instance;
         var layout = GetComponentInParent<InventoryLayout>();
@@ -29,25 +41,57 @@ public class ShopUI : MonoBehaviour
         float cellSpacing = layout != null ? layout.CellSpacing : 2f;
 
         shopBagGridUI.Init(mgr.BagGrid, cellSize, cellSpacing);
-
-        _canvas = GetComponentInParent<Canvas>();
-        _canvasRt = _canvas.GetComponent<RectTransform>();
+        _initialized = true;
     }
 
-    public void Populate(ShopEntry[] entries)
+    private void OnEnable()
     {
-        foreach (Transform child in itemListContainer)
-            Destroy(child.gameObject);
+        if (!_initialized) return;
+        MoveItemsBetweenGrids(inventoryBagGridUI, shopBagGridUI);
+    }
 
-        foreach (var entry in entries)
+    private void OnDisable()
+    {
+        if (!_initialized) return;
+        MoveItemsBetweenGrids(shopBagGridUI, inventoryBagGridUI);
+
+        // Destroy ghost if shop closed mid-drag
+        if (_ghostUI != null)
         {
-            if (entry.data == null) continue;
-            var item = Instantiate(shopItemPrefab, itemListContainer);
-            item.Init(entry, this);
+            Destroy(_ghostUI.gameObject);
+            _ghostUI = null;
+            _ghostInst = null;
+            _activeSeller = null;
+            shopBagGridUI.ClearHighlights();
         }
     }
 
-    public void BeginShopDrag(ShopEntry entry, PointerEventData e, ShopItemUI seller)
+    public void Populate(TestModuleEntry[] entries, HashSet<int> soldIndices, ShopInteractable interactable)
+    {
+        _currentInteractable = interactable;
+
+        foreach (Transform child in itemListContainer)
+            Destroy(child.gameObject);
+
+        for (int i = 0; i < entries.Length; i++)
+        {
+            var entry = entries[i];
+            if (entry.data == null) continue;
+
+            var item = Instantiate(shopItemPrefab, itemListContainer);
+            item.Init(entry, this, i);
+
+            if (soldIndices.Contains(i))
+                item.MarkPurchased();
+        }
+    }
+
+    public void RegisterSold(int index)
+    {
+        _currentInteractable?.RegisterSold(index);
+    }
+
+    public void BeginShopDrag(TestModuleEntry entry, PointerEventData e, ShopItemUI seller)
     {
         _activeSeller = seller;
         _ghostInst = new ModuleInstance(entry.data, entry.rarity, entry.level);
@@ -120,6 +164,36 @@ public class ShopUI : MonoBehaviour
 
         _ghostUI = null;
         _ghostInst = null;
+    }
+
+
+
+    private void MoveItemsBetweenGrids(GridUI from, GridUI to)
+    {
+        bool goingToShop = to == shopBagGridUI;
+        foreach (var inst in InventoryManager.Instance.BagGrid.GetAllModules())
+        {
+            if (inst is MaterialInstance)
+            {
+                var ui = inst.UIElement as MaterialItemUI;
+                if (ui == null) continue;
+                ui.BagGridUI = to;
+                ui.WeaponGridUI = goingToShop ? to : inventoryWeaponGridUI;
+                ui.EnvGridUI = goingToShop ? null : inventoryEnvGridUI;
+                ui.transform.SetParent(to.transform, false);
+                ui.SnapToCell(to, inst.GridPosition);
+            }
+            else
+            {
+                var ui = inst.UIElement as ModuleItemUI;
+                if (ui == null) continue;
+                ui.BagGridUI = to;
+                ui.WeaponGridUI = goingToShop ? to : inventoryWeaponGridUI;
+                ui.EnvGridUI = goingToShop ? null : inventoryEnvGridUI;
+                ui.transform.SetParent(to.transform, false);
+                ui.SnapToCell(to, inst.GridPosition);
+            }
+        }
     }
 
     private IEnumerator SnapNextFrame(ModuleItemUI ui, GridUI gridUI, Vector2Int cell)

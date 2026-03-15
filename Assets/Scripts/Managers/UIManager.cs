@@ -61,13 +61,20 @@ public class UIManager : MonoBehaviour
     public void ToggleInventory()
     {
         if (inventoryPanel == null) return;
+
+        // Close shop if open
+        if (_activeShopUI != null && _activeShopUI.gameObject.activeSelf)
+            CloseShop();
+
         IsInventoryOpen = !IsInventoryOpen;
         inventoryPanel.SetActive(IsInventoryOpen);
+
         if (!IsInventoryOpen)
+        {
             ModuleTooltipUI.Instance?.Hide();
+        }
     }
 
-    
 
     public void OpenShop(ShopUI shopUI)
     {

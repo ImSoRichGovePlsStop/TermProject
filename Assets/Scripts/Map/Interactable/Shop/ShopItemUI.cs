@@ -3,26 +3,21 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[System.Serializable]
-public struct ShopEntry
-{
-    public ModuleData data;
-    public Rarity rarity;
-    public int level;
-}
 public class ShopItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     [SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private RectTransform shapePreviewRoot;
 
-    private ShopEntry _entry;
+    private TestModuleEntry _entry;
     private ShopUI _shopUI;
+    private int _entryIndex;
     private bool _purchased = false;
 
-    public void Init(ShopEntry entry, ShopUI shopUI)
+    public void Init(TestModuleEntry entry, ShopUI shopUI, int entryIndex)
     {
         _entry = entry;
         _shopUI = shopUI;
+        _entryIndex = entryIndex;
 
         if (nameText != null)
             nameText.text = entry.data.moduleName;
@@ -50,9 +45,12 @@ public class ShopItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     public void MarkPurchased()
     {
+        if (_purchased) return;
         _purchased = true;
+        _shopUI.RegisterSold(_entryIndex);
 
-        var cg = gameObject.AddComponent<CanvasGroup>();
+        var cg = GetComponent<CanvasGroup>();
+        if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
         cg.alpha = 0.4f;
         cg.blocksRaycasts = false;
 
@@ -78,7 +76,6 @@ public class ShopItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         Color borderColor = RarityColor(rarity);
 
-        // Border layer
         foreach (var cell in shapeCells)
         {
             var borderGo = new GameObject($"border_{cell.x}_{cell.y}",
@@ -112,7 +109,6 @@ public class ShopItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             borderImg.raycastTarget = false;
         }
 
-        // Cell layer
         foreach (var cell in shapeCells)
         {
             var go = new GameObject($"cell_{cell.x}_{cell.y}",
