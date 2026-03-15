@@ -3,9 +3,6 @@ using UnityEngine;
 
 public class CerberusHealth : BaseBossHealth
 {
-    [Header("Debug")]
-    [SerializeField] private bool enableDebugLog = true;
-
     [Header("Cerberus Phase Threshold")]
     [SerializeField] private float phase2Threshold = 0.5f;
     [SerializeField] private float phase3Threshold = 0.2f;
@@ -18,9 +15,9 @@ public class CerberusHealth : BaseBossHealth
     private bool phase2Triggered = false;
     private bool phase3Triggered = false;
 
-    protected override void Awake()
+    protected override void CacheComponents()
     {
-        base.Awake();
+        base.CacheComponents();
 
         if (controller == null)
             controller = GetComponent<CerberusController>();
@@ -31,20 +28,17 @@ public class CerberusHealth : BaseBossHealth
         if (attack == null)
             attack = GetComponent<CerberusAttack>();
     }
-    private void Log(string msg)
-    {
-        if (!enableDebugLog) return;
-        Debug.Log($"[CerberusHealth] {msg}");
-    }
 
     public override void TakeDamage(float damage)
     {
         if (isDead) return;
         if (damage <= 0f) return;
 
-        currentHP -= damage;
-        Log($"Cerberus took {damage} damage, current HP: {currentHP}/{maxHP}");
-        currentHP = Mathf.Max(0f, currentHP);
+        float finalDamage = ModifyIncomingDamage(damage);
+        if (finalDamage <= 0f) return;
+
+        currentHP -= finalDamage;
+        OnDamageTaken(finalDamage);
 
         float hpPercent = currentHP / maxHP;
 
@@ -52,6 +46,12 @@ public class CerberusHealth : BaseBossHealth
         {
             phase2Triggered = true;
             isHurt = false;
+
+            if (hurtCoroutine != null)
+            {
+                StopCoroutine(hurtCoroutine);
+                hurtCoroutine = null;
+            }
 
             if (attack != null)
                 attack.ForceStopAllAttacks();
@@ -70,6 +70,12 @@ public class CerberusHealth : BaseBossHealth
             phase3Triggered = true;
             isHurt = false;
 
+            if (hurtCoroutine != null)
+            {
+                StopCoroutine(hurtCoroutine);
+                hurtCoroutine = null;
+            }
+
             if (attack != null)
                 attack.ForceStopAllAttacks();
 
@@ -84,60 +90,47 @@ public class CerberusHealth : BaseBossHealth
 
         if (currentHP <= 0f)
         {
+            currentHP = 0f;
             Die();
             return;
         }
 
-        if (hurtRoutine != null)
-            StopCoroutine(hurtRoutine);
+        if (hurtCoroutine != null)
+            StopCoroutine(hurtCoroutine);
 
-        hurtRoutine = StartCoroutine(HurtCoroutine());
+        hurtCoroutine = StartCoroutine(HurtRoutine());
     }
 
-    protected override IEnumerator HurtCoroutine()
+    protected override void OnHurtStart()
     {
-        isHurt = true;
-
         if (attack != null)
             attack.ForceStopAllAttacks();
 
         if (movement != null)
             movement.StopMoving();
-
-        if (animator != null)
-            animator.SetTrigger("Hurt");
-
-        yield return new WaitForSeconds(hurtDuration);
-
-        isHurt = false;
-        hurtRoutine = null;
     }
 
-    protected override void Die()
+    protected override void OnHurtEnd()
     {
-        if (isDead) return;
+        base.OnHurtEnd();
+    }
 
-        isDead = true;
-        isHurt = false;
-
+    protected override void OnDeathStart()
+    {
         if (controller != null)
             controller.Die();
 
         if (attack != null)
             attack.ForceStopAllAttacks();
 
-        if (bossCollider != null)
-            bossCollider.enabled = false;
+        base.OnDeathStart();
+    }
 
-        if (rb != null)
-        {
-            rb.linearVelocity = Vector3.zero;
-            rb.isKinematic = true;
-        }
+    protected override void HandleRigidbodyOnDeath()
+    {
+        if (rb == null) return;
 
-        if (animator != null)
-            animator.SetTrigger("Die");
-
-        Destroy(gameObject, destroyDelay);
+        rb.linearVelocity = Vector3.zero;
+        rb.isKinematic = true;
     }
 }
