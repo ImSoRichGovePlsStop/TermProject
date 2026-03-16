@@ -26,6 +26,7 @@ public class ShopUI : MonoBehaviour
     private Vector2Int _clickedCell;
     private bool _initialized = false;
     private ShopInteractable _currentInteractable;
+    private int _pendingPrice;
 
     private void Awake()
     {
@@ -44,21 +45,17 @@ public class ShopUI : MonoBehaviour
         _initialized = true;
     }
 
-
     private void Update()
     {
         if (!_initialized) return;
         MoveItemsBetweenGrids(inventoryBagGridUI, shopBagGridUI);
     }
 
-
-
     private void OnDisable()
     {
         if (!_initialized) return;
         MoveItemsBetweenGrids(shopBagGridUI, inventoryBagGridUI);
 
-        // Destroy ghost if shop closed mid-drag
         if (_ghostUI != null)
         {
             Destroy(_ghostUI.gameObject);
@@ -111,6 +108,7 @@ public class ShopUI : MonoBehaviour
         _activeSeller = seller;
         _ghostInst = new ModuleInstance(entry.data, entry.rarity, entry.level);
         _clickedCell = Vector2Int.zero;
+        _pendingPrice = entry.data.cost[(int)entry.rarity];
 
         _ghostUI = Instantiate(moduleItemPrefab, _canvas.transform);
         _ghostUI.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
@@ -160,6 +158,17 @@ public class ShopUI : MonoBehaviour
             var pivot = hoveredCell - _clickedCell;
             if (shopBagGridUI.Data.TryPlace(_ghostInst, pivot))
             {
+                // Deduct coins
+                if (CurrencyManager.Instance != null && !CurrencyManager.Instance.TrySpend(_pendingPrice))
+                {
+                    shopBagGridUI.Data.Remove(_ghostInst);
+                    Destroy(_ghostUI.gameObject);
+                    _ghostUI = null;
+                    _ghostInst = null;
+                    _activeSeller = null;
+                    return;
+                }
+
                 _activeSeller?.MarkPurchased();
                 _activeSeller = null;
 
@@ -180,8 +189,6 @@ public class ShopUI : MonoBehaviour
         _ghostUI = null;
         _ghostInst = null;
     }
-
-
 
     private void MoveItemsBetweenGrids(GridUI from, GridUI to)
     {

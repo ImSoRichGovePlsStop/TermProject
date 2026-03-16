@@ -6,12 +6,15 @@ using UnityEngine.UI;
 public class ShopItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     [SerializeField] private TextMeshProUGUI nameText;
+    [SerializeField] private TextMeshProUGUI priceText;
     [SerializeField] private RectTransform shapePreviewRoot;
 
     private TestModuleEntry _entry;
     private ShopUI _shopUI;
     private int _entryIndex;
     private bool _purchased = false;
+
+    private int GetPrice() => _entry.data.cost[(int)_entry.rarity];
 
     public void Init(TestModuleEntry entry, ShopUI shopUI, int entryIndex)
     {
@@ -22,12 +25,47 @@ public class ShopItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         if (nameText != null)
             nameText.text = entry.data.moduleName;
 
+        if (priceText != null)
+            priceText.text = $"{GetPrice()} coins";
+
         BuildShapePreview(entry.data, entry.rarity);
+
+        if (CurrencyManager.Instance != null)
+            CurrencyManager.Instance.OnCoinsChanged += OnCoinsChanged;
+
+        RefreshAffordability();
+    }
+
+    private void OnDestroy()
+    {
+        if (CurrencyManager.Instance != null)
+            CurrencyManager.Instance.OnCoinsChanged -= OnCoinsChanged;
+    }
+
+    private void OnCoinsChanged(int newAmount) => RefreshAffordability();
+
+    private CanvasGroup GetOrAddCanvasGroup()
+    {
+        var cg = GetComponent<CanvasGroup>();
+        if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
+        return cg;
+    }
+
+    private void RefreshAffordability()
+    {
+        if (_purchased) return;
+        if (CurrencyManager.Instance == null) return;
+
+        bool canAfford = CurrencyManager.Instance.Coins >= GetPrice();
+        var cg = GetOrAddCanvasGroup();
+        cg.alpha = canAfford ? 1f : 0.5f;
+        cg.blocksRaycasts = canAfford;
     }
 
     public void OnBeginDrag(PointerEventData e)
     {
         if (_purchased) return;
+        if (CurrencyManager.Instance != null && CurrencyManager.Instance.Coins < GetPrice()) return;
         _shopUI.BeginShopDrag(_entry, e, this);
     }
 
@@ -49,13 +87,18 @@ public class ShopItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         _purchased = true;
         _shopUI.RegisterSold(_entryIndex);
 
-        var cg = GetComponent<CanvasGroup>();
-        if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
+        if (CurrencyManager.Instance != null)
+            CurrencyManager.Instance.OnCoinsChanged -= OnCoinsChanged;
+
+        var cg = GetOrAddCanvasGroup();
         cg.alpha = 0.4f;
         cg.blocksRaycasts = false;
 
         if (nameText != null)
             nameText.text = $"{_entry.data.moduleName} [SOLD]";
+
+        if (priceText != null)
+            priceText.text = "";
     }
 
     private void BuildShapePreview(ModuleData data, Rarity rarity)

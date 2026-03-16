@@ -1188,7 +1188,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RandomLoot
   minLootCount: 4
   maxLootCount: 4
-  meanRarity: 1
+  allowDuplicates: 0
+  meanCost: 10
   sd: 20
   debugLog: 0
   inventoryUI: {fileID: 0}
