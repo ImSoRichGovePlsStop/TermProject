@@ -188,6 +188,7 @@ GameObject:
   - component: {fileID: 3284016510012141865}
   - component: {fileID: 9148782344846074252}
   - component: {fileID: 5445258974235246989}
+  - component: {fileID: 5370978875187286121}
   m_Layer: 0
   m_Name: Boss_Ceberus
   m_TagString: Enemy
@@ -255,6 +256,7 @@ MonoBehaviour:
   stopDistance: 2
   visualRoot: {fileID: 9187155898941612886}
   spriteRenderer: {fileID: 8226527542330403868}
+  invertFacing: 1
 --- !u!114 &578609061290140448
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -365,3 +367,15 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   swordProjectilePrefab: {fileID: 0}
+--- !u!114 &5370978875187286121
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4735553728804478809}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e903ec0e7e24faa4b9575d53a558ffc3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyStatusHandler
