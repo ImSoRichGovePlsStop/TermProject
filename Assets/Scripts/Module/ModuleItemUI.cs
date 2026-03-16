@@ -7,7 +7,7 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Image))]
 public class ModuleItemUI : MonoBehaviour,
     IBeginDragHandler, IDragHandler, IEndDragHandler,
-    IPointerEnterHandler, IPointerExitHandler
+    IPointerEnterHandler, IPointerExitHandler,IPointerClickHandler
 {
     public ModuleInstance Instance { get; private set; }
 
@@ -26,6 +26,8 @@ public class ModuleItemUI : MonoBehaviour,
     private Vector2Int _originCell;
     private Vector2 _dragOffset;
     private Vector2Int _clickedCell;
+
+    [SerializeField] private bool allowSell = false;
 
 
     // Rarity Colors
@@ -248,6 +250,19 @@ public class ModuleItemUI : MonoBehaviour,
     public void OnPointerExit(PointerEventData e)
     {
         ModuleTooltipUI.Instance.Hide();
+    }
+
+
+    /// needed for selling
+    /// 
+    public void SetAllowSell(bool allow) => allowSell = allow;
+    [HideInInspector] public SellConfirmationUI SellConfirmationUI;
+    public void OnPointerClick(PointerEventData e)
+    {
+        if (e.button != PointerEventData.InputButton.Right) return;
+        if (!allowSell) return;
+        if (Instance.CurrentGrid != InventoryManager.Instance.BagGrid) return;
+        SellConfirmationUI?.Show(Instance, e.position);
     }
 
     private void UpdateHighlight(PointerEventData e)

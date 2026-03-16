@@ -25,6 +25,13 @@ public class UIManager : MonoBehaviour
 
         inventoryPanel?.SetActive(false);
         _activeShopUI?.gameObject.SetActive(false);
+
+        var sellUI = FindObjectsByType<SellConfirmationUI>(FindObjectsSortMode.None);
+        foreach (var ui in sellUI)
+        {
+            ui.gameObject.SetActive(true);
+            ui.gameObject.SetActive(false);
+        }
     }
 
     private void Update()

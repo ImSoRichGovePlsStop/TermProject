@@ -13,6 +13,7 @@ public class ShopUI : MonoBehaviour
     [SerializeField] private GridUI inventoryEnvGridUI;
     [SerializeField] private Transform itemListContainer;
     [SerializeField] private ShopItemUI shopItemPrefab;
+    [SerializeField] private SellConfirmationUI sellConfirmationUI;
 
     [Header("Prefabs")]
     [SerializeField] private ModuleItemUI moduleItemPrefab;
@@ -151,17 +152,13 @@ public class ShopUI : MonoBehaviour
     public void EndShopDrag(PointerEventData e)
     {
         shopBagGridUI.ClearHighlights();
-
         if (_ghostUI == null) return;
-
         bool bought = false;
-
         if (shopBagGridUI.ScreenToCell(e.position, UICam(), out var hoveredCell))
         {
             var pivot = hoveredCell - _clickedCell;
             if (shopBagGridUI.Data.TryPlace(_ghostInst, pivot))
             {
-                // Deduct coins
                 if (CurrencyManager.Instance != null && !CurrencyManager.Instance.TrySpend(_pendingPrice))
                 {
                     shopBagGridUI.Data.Remove(_ghostInst);
@@ -171,9 +168,11 @@ public class ShopUI : MonoBehaviour
                     _activeSeller = null;
                     return;
                 }
-
                 _activeSeller?.MarkPurchased();
                 _activeSeller = null;
+
+                _ghostUI.SetAllowSell(true);
+                _ghostUI.SellConfirmationUI = sellConfirmationUI;
 
                 var cg = _ghostUI.GetComponent<CanvasGroup>();
                 cg.alpha = 1f;
@@ -182,13 +181,11 @@ public class ShopUI : MonoBehaviour
                 bought = true;
             }
         }
-
         if (!bought)
         {
             _activeSeller = null;
             Destroy(_ghostUI.gameObject);
         }
-
         _ghostUI = null;
         _ghostInst = null;
     }
@@ -215,6 +212,8 @@ public class ShopUI : MonoBehaviour
                 ui.BagGridUI = to;
                 ui.WeaponGridUI = goingToShop ? to : inventoryWeaponGridUI;
                 ui.EnvGridUI = goingToShop ? null : inventoryEnvGridUI;
+                ui.SellConfirmationUI = goingToShop ? sellConfirmationUI : null;
+                ui.SetAllowSell(goingToShop);
                 ui.transform.SetParent(to.transform, false);
                 ui.SnapToCell(to, inst.GridPosition);
             }
