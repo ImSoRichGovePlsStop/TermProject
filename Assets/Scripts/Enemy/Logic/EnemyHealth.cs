@@ -70,7 +70,10 @@ public abstract class EnemyHealth : MonoBehaviour
         return damage;
     }
 
-    protected virtual void OnDamageTaken(float finalDamage) { }
+    protected virtual void OnDamageTaken(float finalDamage)
+    {
+        //Debug.Log($"[{gameObject.name}] TakeDamage: {finalDamage:F1} HP: {currentHP:F1}/{maxHP:F1}");
+    }
 
     protected virtual IEnumerator HurtRoutine()
     {

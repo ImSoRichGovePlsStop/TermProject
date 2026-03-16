@@ -56,7 +56,7 @@ public class BattleRoom : MonoBehaviour
         {
         // Left
         (
-            new Vector3(-10 / 2f, roomSize.y / 2f, 0f),
+            new Vector3(-roomSize.x / 2f, roomSize.y / 2f, 0f),
             new Vector3(0.1f, roomSize.y, roomSize.z)
         ),
 

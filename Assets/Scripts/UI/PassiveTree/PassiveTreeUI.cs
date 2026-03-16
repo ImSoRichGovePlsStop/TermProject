@@ -35,6 +35,7 @@ public class PassiveTreeUI : MonoBehaviour
         this.tooltipAnchorLeft = tooltipAnchorLeft;
 
         treeNameText.text = tree.treeName;
+        treeNameText.color = tree.treeColor;
         nodeUIs = new PassiveNodeUI[tree.nodes.Length];
         nodeRects.Clear();
         lineImages.Clear();
