@@ -44,7 +44,10 @@ public class EnemyAttack : MonoBehaviour
         Debug.Log("Attack started");
 
         if (animator != null)
+        {
             animator.SetTrigger("Attack");
+            animator.SetTrigger("isAttacking");
+        }
         else
         {
             DealDamage();
