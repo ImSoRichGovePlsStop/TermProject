@@ -149,7 +149,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6004093055370628203, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
       propertyPath: testModules.Array.size
-      value: 8
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6004093055370628203, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
       propertyPath: testModules.Array.data[1].data
@@ -162,19 +162,19 @@ PrefabInstance:
     - target: {fileID: 6004093055370628203, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
       propertyPath: testModules.Array.data[3].data
       value: 
-      objectReference: {fileID: 11400000, guid: e1267ca0edfb29c4b9cba9c671477460, type: 2}
+      objectReference: {fileID: 11400000, guid: cae40120dbcd13e4488970f681d48405, type: 2}
     - target: {fileID: 6004093055370628203, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
       propertyPath: testModules.Array.data[4].data
       value: 
-      objectReference: {fileID: 11400000, guid: cae40120dbcd13e4488970f681d48405, type: 2}
+      objectReference: {fileID: 11400000, guid: f0ca83b97b25b5d49a5f13cfa1e2ee1e, type: 2}
     - target: {fileID: 6004093055370628203, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
       propertyPath: testModules.Array.data[5].data
       value: 
-      objectReference: {fileID: 11400000, guid: f0ca83b97b25b5d49a5f13cfa1e2ee1e, type: 2}
+      objectReference: {fileID: 11400000, guid: d4d0375eff7d1be46b939ae4354eaba6, type: 2}
     - target: {fileID: 6004093055370628203, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
       propertyPath: testModules.Array.data[6].data
       value: 
-      objectReference: {fileID: 11400000, guid: d4d0375eff7d1be46b939ae4354eaba6, type: 2}
+      objectReference: {fileID: 11400000, guid: 1d243e7d7b341be449d37d37fef2448d, type: 2}
     - target: {fileID: 6004093055370628203, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
       propertyPath: testModules.Array.data[7].data
       value: 
@@ -213,11 +213,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6004093055370628203, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
       propertyPath: testModules.Array.data[3].rarity
-      value: 2
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 6004093055370628203, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
       propertyPath: testModules.Array.data[4].rarity
-      value: 4
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6004093055370628203, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
       propertyPath: testModules.Array.data[5].rarity
@@ -225,7 +225,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6004093055370628203, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
       propertyPath: testModules.Array.data[6].rarity
-      value: 0
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 6004093055370628203, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
       propertyPath: testModules.Array.data[7].rarity
@@ -1123,7 +1123,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 7.3113174e+34, y: 0.0000023908444, z: 1.3555853e-19, w: 1.5423301e+25}
+  m_BoundingSphereOverride: {x: 6.976833e+22, y: 1.61e-43, z: 7e-45, w: 1e-45}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
@@ -1986,10 +1986,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fa232b32c07ca94eaa1206750fdefe4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RandomLoot
-  minLootCount: 4
-  maxLootCount: 6
-  meanRarity: 100
-  sd: 10
+  minLootCount: 5
+  maxLootCount: 5
+  allowDuplicates: 1
+  meanCost: 1
+  sd: 1
   debugLog: 0
   inventoryUI: {fileID: 353357470}
   uiManager: {fileID: 1196691563}
