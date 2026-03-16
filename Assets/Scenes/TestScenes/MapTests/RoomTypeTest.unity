@@ -156,6 +156,12 @@ MonoBehaviour:
   - data: {fileID: 11400000, guid: 6cc165b14d327ed44a13d8eeeb68ee3b, type: 2}
     rarity: 3
     level: 3
+  useRandomizer: 1
+  minCount: 4
+  maxCount: 4
+  meanCost: 100
+  sd: 30
+  allowDuplicates: 0
   shopUI: {fileID: 198916572}
   uiManager: {fileID: 1196691563}
 --- !u!65 &28730680
@@ -2220,13 +2226,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58f716e55c505164a9c3a11af4051ca9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopInteractable
-  shopEntries:
-  - data: {fileID: 11400000, guid: 744b4204843706649a80b0b97eb4b8bd, type: 2}
-    rarity: 3
-    level: 1
-  - data: {fileID: 11400000, guid: 1d243e7d7b341be449d37d37fef2448d, type: 2}
-    rarity: 3
-    level: 3
+  shopEntries: []
+  useRandomizer: 1
+  minCount: 10
+  maxCount: 10
+  meanCost: 100
+  sd: 30
+  allowDuplicates: 0
   shopUI: {fileID: 198916572}
   uiManager: {fileID: 1196691563}
 --- !u!114 &1196691563 stripped
@@ -2352,6 +2358,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 855195807208430767, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: m_VerticalFit
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 2914437790657376851, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -2375,6 +2385,22 @@ PrefabInstance:
     - target: {fileID: 4475479428734478226, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
       propertyPath: m_Name
       value: InventorySystem
+      objectReference: {fileID: 0}
+    - target: {fileID: 4891799811571717688, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: shopItemPrefab
+      value: 
+      objectReference: {fileID: 144267872769034241, guid: b8c4c7b18ad9d194a944bee6009ec47c, type: 3}
+    - target: {fileID: 6115411382885905073, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: m_ChildControlWidth
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6115411382885905073, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: m_ChildControlHeight
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6115411382885905073, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: m_ChildForceExpandHeight
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6237723510180618025, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
       propertyPath: m_Pivot.x
@@ -2454,6 +2480,22 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6237723510180618025, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6406393345939432309, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: m_Elasticity
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6406393345939432309, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: m_Horizontal
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6406393345939432309, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: m_MovementType
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6406393345939432309, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+      propertyPath: m_VerticalScrollbarVisibility
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6925631347457222457, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
