@@ -55,6 +55,8 @@ public class ShopUI : MonoBehaviour
     {
         if (!_initialized) return;
         MoveItemsBetweenGrids(shopBagGridUI, inventoryBagGridUI);
+        shopBagGridUI.ClearHighlights();
+        shopBagGridUI.ClearBuffHighlights();
 
         if (_ghostUI != null)
         {
@@ -133,6 +135,7 @@ public class ShopUI : MonoBehaviour
             _canvasRt, e.position, UICam(), out var local))
             _ghostUI.GetComponent<RectTransform>().anchoredPosition = local - _dragOffset;
 
+        shopBagGridUI.ClearHighlights();
         if (shopBagGridUI.ScreenToCell(e.position, UICam(), out var hoveredCell))
         {
             var pivot = hoveredCell - _clickedCell;
