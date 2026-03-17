@@ -29,4 +29,9 @@ public class CurrencyManager : MonoBehaviour
         Coins += amount;
         OnCoinsChanged?.Invoke(Coins);
     }
+
+
+    [ContextMenu("Add100coins")]
+    private void Add100coins()
+    => AddCoins(100);
 }
