@@ -46,6 +46,11 @@ public class Harpy : MonoBehaviour
 
     void Update()
     {
+        if(player == null)
+        {
+            GameObject playerOBJ = GameObject.FindWithTag("Player");
+            player = playerOBJ.transform;
+        }
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
         
         switch (currentState)
@@ -54,9 +59,9 @@ public class Harpy : MonoBehaviour
                 CheckWakeUp(distanceToPlayer);
                 break;
 
-            case HarpyState.Hover:
-                Hover();
-                break;
+            // case HarpyState.Hover:
+            //     Hover();
+            //     break;
         }
     }
 

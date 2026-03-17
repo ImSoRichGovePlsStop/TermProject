@@ -30,6 +30,14 @@ public class RandomLoot : MonoBehaviour, IInteractable
         InventoryManager.Instance.EnvGrid.OnModulePlaced += OnEnvModulePlaced;
     }
 
+    private void Update()
+    {
+        if (inventoryUI == null)
+            inventoryUI = Object.FindFirstObjectByType<InventoryUI>(FindObjectsInactive.Include);
+        if (uiManager == null)
+            uiManager = Object.FindFirstObjectByType<UIManager>(FindObjectsInactive.Include);
+    }
+
     private void OnDestroy()
     {
         if (InventoryManager.Instance != null)

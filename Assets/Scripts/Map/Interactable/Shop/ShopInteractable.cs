@@ -27,6 +27,13 @@ public class ShopInteractable : MonoBehaviour, IInteractable
     {
         GenerateEntries();
     }
+    private void Update()
+    {
+        if (shopUI == null)
+            shopUI = Object.FindFirstObjectByType<ShopUI>(FindObjectsInactive.Include);
+        if (uiManager == null)
+            uiManager = Object.FindFirstObjectByType<UIManager>(FindObjectsInactive.Include);
+    }
 
     public void SetRandomizerSettings(
         int minCount,
@@ -71,8 +78,6 @@ public class ShopInteractable : MonoBehaviour, IInteractable
 
     public void Interact(PlayerController playerController)
     {
-        if (shopUI == null) { Debug.LogError("[ShopInteractable] ShopUI is missing!"); return; }
-        if (uiManager == null) { Debug.LogError("[ShopInteractable] UIManager is missing!"); return; }
 
         uiManager.OpenShop(shopUI);
         shopUI.Populate(_generatedEntries, _soldIndices, this);

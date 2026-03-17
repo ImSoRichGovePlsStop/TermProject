@@ -13,6 +13,7 @@ public class BattleRoom : MonoBehaviour
 
     [Header("Enemy Spawning")]
     public GameObject[] enemyPrefabs;
+    public GameObject lootPrefab;
     public int enemyCount = 3;
     public float spawnRadius = 3f;
 
@@ -112,6 +113,8 @@ public class BattleRoom : MonoBehaviour
         isLocked = false;
         RemoveInvisibleWalls();
         Debug.Log("Battle room cleared!");
+        GameObject lootbox = Instantiate(lootPrefab, transform.position, Quaternion.identity);
+
     }
 
     private void SpawnEnemies()
