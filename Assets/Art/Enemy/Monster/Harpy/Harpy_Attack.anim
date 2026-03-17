@@ -22,21 +22,21 @@ AnimationClip:
     curve:
     - time: 0
       value: {fileID: -55456880, guid: cec478b58d30ad542b509e5d9480bba6, type: 3}
-    - time: 0.25
+    - time: 0.16666667
       value: {fileID: -291821254, guid: cec478b58d30ad542b509e5d9480bba6, type: 3}
-    - time: 0.41666666
+    - time: 0.33333334
       value: {fileID: -175154245, guid: cec478b58d30ad542b509e5d9480bba6, type: 3}
-    - time: 0.75
+    - time: 0.6666667
       value: {fileID: 1510913771, guid: cec478b58d30ad542b509e5d9480bba6, type: 3}
     - time: 1
       value: {fileID: -1049417312, guid: cec478b58d30ad542b509e5d9480bba6, type: 3}
-    - time: 1.1666666
+    - time: 1
       value: {fileID: -316555375, guid: cec478b58d30ad542b509e5d9480bba6, type: 3}
-    - time: 1.4166666
+    - time: 1.5
       value: {fileID: 335815408, guid: cec478b58d30ad542b509e5d9480bba6, type: 3}
-    - time: 1.75
+    - time: 1.8333334
       value: {fileID: -1638470804, guid: cec478b58d30ad542b509e5d9480bba6, type: 3}
-    - time: 1.9166666
+    - time: 2
       value: {fileID: 1647824099, guid: cec478b58d30ad542b509e5d9480bba6, type: 3}
     - time: 2.1666667
       value: {fileID: -1638470804, guid: cec478b58d30ad542b509e5d9480bba6, type: 3}
@@ -97,7 +97,7 @@ AnimationClip:
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
   m_Events:
-  - time: 1.75
+  - time: 1.8333334
     functionName: DealDamage
     data: 
     objectReferenceParameter: {fileID: 0}
