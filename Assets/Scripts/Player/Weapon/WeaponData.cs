@@ -10,7 +10,6 @@ public class WeaponData : ScriptableObject
     [Header("Passive")]
     public WeaponPassiveData passiveData;
 
-    [Header("Stats")]
     public float health;
     public float damage;
     public float attackSpeed;
@@ -20,20 +19,17 @@ public class WeaponData : ScriptableObject
     public float evadeChance;
     public float damageTaken;
 
-    [Header("Dash")]
     public float dashSpeed;
     public float dashDuration;
     public float dashCooldown;
 
-    [Header("Primary Combo")]
     public ComboHit[] combo;
 
-    [Header("Secondary Attack")]
     public ComboHit secondaryAttack;
 
-    [Header("Attack Cooldowns")]
     public float comboCooldown;
     public float secondaryCooldown;
+    public float comboResetTime;
 }
 
 [System.Serializable]

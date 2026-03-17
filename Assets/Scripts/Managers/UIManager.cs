@@ -8,6 +8,7 @@ public class UIManager : MonoBehaviour
     private PassiveScreenUI passiveScreenUI;
     private ShopUI _activeShopUI;
     public bool IsInventoryOpen { get; private set; }
+    public bool IsShopOpen => _activeShopUI != null && _activeShopUI.gameObject.activeSelf;
 
     private float holdTime = 0f;
     private float holdDuration = 1f;
