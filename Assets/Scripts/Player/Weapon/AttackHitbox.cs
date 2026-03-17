@@ -76,6 +76,39 @@ public class AttackHitbox : MonoBehaviour
         }
     }
 
+    public void PlayHitVFX()
+    {
+        if (currentHit?.hitVFXPrefab == null) return;
+
+        Vector3 spawnPos = transform.position + transform.forward * currentHit.vfxOffset;
+        Quaternion prefabRot = currentHit.hitVFXPrefab.transform.rotation;
+        Quaternion spawnRot = Quaternion.Euler(
+            prefabRot.eulerAngles.x,
+            transform.rotation.eulerAngles.y + prefabRot.eulerAngles.y,
+            prefabRot.eulerAngles.z
+        );
+        GameObject vfx = Instantiate(currentHit.hitVFXPrefab, spawnPos, spawnRot);
+
+        float totalDuration = (currentHit.animationDuration / stats.AttackSpeed) * currentHit.vfxDurationMultiplier;
+        float totalLoops = Mathf.Max(0.01f, currentHit.vfxLoops * currentHit.vfxDurationMultiplier);
+        float singleLoopDuration = totalDuration / totalLoops;
+
+        var ps = vfx.GetComponent<ParticleSystem>();
+        if (ps != null)
+        {
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+
+            var main = ps.main;
+            main.duration = singleLoopDuration;
+            main.startLifetime = singleLoopDuration;
+            main.loop = totalLoops > 1;
+
+            ps.Play();
+        }
+
+        Destroy(vfx, totalDuration);
+    }
+
     void OnDrawGizmosSelected()
     {
         if (currentHit == null) return;

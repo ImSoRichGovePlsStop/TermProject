@@ -5,6 +5,5 @@ public class MaterialData : ModuleData
 {
     [Header("Material")]
     public Rarity rarity = Rarity.Common;
-    public int cost;
     public int maxStack = 3;
 }

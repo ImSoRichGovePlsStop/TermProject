@@ -1,0 +1,219 @@
+using TMPro;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+
+public class ShopItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
+{
+    [SerializeField] private TextMeshProUGUI nameText;
+    [SerializeField] private TextMeshProUGUI priceText;
+    [SerializeField] private RectTransform shapePreviewRoot;
+
+    private TestModuleEntry _entry;
+    private ShopUI _shopUI;
+    private int _entryIndex;
+    private bool _purchased = false;
+
+    private int GetPrice() => _entry.data.cost[(int)_entry.rarity];
+
+
+    public void Init(TestModuleEntry entry, ShopUI shopUI, int entryIndex)
+    {
+        _entry = entry;
+        _shopUI = shopUI;
+        _entryIndex = entryIndex;
+
+        if (nameText != null)
+            nameText.text = entry.data.moduleName;
+
+        if (priceText != null)
+            priceText.text = $"{GetPrice()} coins";
+
+        BuildShapePreview(entry.data, entry.rarity);
+
+        if (CurrencyManager.Instance != null)
+            CurrencyManager.Instance.OnCoinsChanged += OnCoinsChanged;
+
+        RefreshAffordability();
+    }
+
+    private void OnDestroy()
+    {
+        if (CurrencyManager.Instance != null)
+            CurrencyManager.Instance.OnCoinsChanged -= OnCoinsChanged;
+    }
+
+    private void OnCoinsChanged(int newAmount) => RefreshAffordability();
+
+    private CanvasGroup GetOrAddCanvasGroup()
+    {
+        var cg = GetComponent<CanvasGroup>();
+        if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
+        return cg;
+    }
+
+    public void OnPointerEnter(PointerEventData e)
+    {
+      
+        if (_purchased) return;
+        var tempInst = new ModuleInstance(_entry.data, _entry.rarity, _entry.level);
+        int price = _entry.data.cost[(int)_entry.rarity];
+        ShopTooltipUI.Instance?.ShowModule(tempInst, price);
+    }
+
+    public void OnPointerExit(PointerEventData e)
+    {
+        ShopTooltipUI.Instance?.Hide();
+    }
+
+    private void RefreshAffordability()
+    {
+        if (_purchased) return;
+        if (CurrencyManager.Instance == null) return;
+
+        bool canAfford = CurrencyManager.Instance.Coins >= GetPrice();
+        var cg = GetOrAddCanvasGroup();
+        cg.alpha = 1f;
+        cg.blocksRaycasts = true;
+
+        var img = GetComponent<Image>();
+        if (img != null)
+            img.color = canAfford ? Color.white : new Color(1f, 0.3f, 0.3f, 0.8f);
+    }
+
+    public void OnBeginDrag(PointerEventData e)
+    {
+        if (_purchased) return;
+        if (CurrencyManager.Instance != null && CurrencyManager.Instance.Coins < GetPrice()) return;
+        _shopUI.BeginShopDrag(_entry, e, this);
+    }
+
+    public void OnDrag(PointerEventData e)
+    {
+        if (_purchased) return;
+        _shopUI.UpdateShopDrag(e);
+    }
+
+    public void OnEndDrag(PointerEventData e)
+    {
+        if (_purchased) return;
+        _shopUI.EndShopDrag(e);
+    }
+
+    public void MarkPurchased()
+    {
+        if (_purchased) return;
+        _purchased = true;
+        _shopUI.RegisterSold(_entryIndex);
+
+        if (CurrencyManager.Instance != null)
+            CurrencyManager.Instance.OnCoinsChanged -= OnCoinsChanged;
+
+        var cg = GetOrAddCanvasGroup();
+        cg.alpha = 1f;
+        cg.blocksRaycasts = true;
+
+        var img = GetComponent<Image>();
+        if (img != null)
+            img.color = new Color(0.2f, 0.2f, 0.2f, 0.8f);
+
+        if (nameText != null)
+            nameText.text = $"[SOLD]";
+    }
+
+    private void BuildShapePreview(ModuleData data, Rarity rarity)
+    {
+        foreach (Transform child in shapePreviewRoot)
+            Destroy(child.gameObject);
+
+        float cs = 20f;
+        float sp = 2f;
+        float borderSize = 2f;
+
+        var shapeCells = data.GetShapeCells();
+        var bound = data.GetBoundingSize();
+
+        shapePreviewRoot.sizeDelta = new Vector2(
+            bound.x * (cs + sp) - sp,
+            bound.y * (cs + sp) - sp);
+
+        Color borderColor = RarityColor(rarity);
+
+        foreach (var cell in shapeCells)
+        {
+            var borderGo = new GameObject($"border_{cell.x}_{cell.y}",
+                                          typeof(RectTransform), typeof(Image));
+            var borderRt = borderGo.GetComponent<RectTransform>();
+            borderRt.SetParent(shapePreviewRoot, false);
+            borderRt.pivot = new Vector2(0f, 1f);
+            borderRt.anchorMin = new Vector2(0f, 1f);
+            borderRt.anchorMax = new Vector2(0f, 1f);
+
+            bool bHasRight = shapeCells.Contains(new Vector2Int(cell.x + 1, cell.y));
+            bool bHasLeft = shapeCells.Contains(new Vector2Int(cell.x - 1, cell.y));
+            bool bHasBottom = shapeCells.Contains(new Vector2Int(cell.x, cell.y + 1));
+            bool bHasTop = shapeCells.Contains(new Vector2Int(cell.x, cell.y - 1));
+
+            float bExtraRight = bHasRight ? borderSize + sp : 0f;
+            float bExtraLeft = bHasLeft ? borderSize + sp : 0f;
+            float bExtraBottom = bHasBottom ? borderSize + sp : 0f;
+            float bExtraTop = bHasTop ? borderSize + sp : 0f;
+
+            borderRt.sizeDelta = new Vector2(
+                cs + bExtraLeft + bExtraRight,
+                cs + bExtraTop + bExtraBottom);
+
+            borderRt.anchoredPosition = new Vector2(
+                 cell.x * (cs + sp) - bExtraLeft,
+                -cell.y * (cs + sp) + bExtraTop);
+
+            var borderImg = borderGo.GetComponent<Image>();
+            borderImg.color = borderColor;
+            borderImg.raycastTarget = false;
+        }
+
+        foreach (var cell in shapeCells)
+        {
+            var go = new GameObject($"cell_{cell.x}_{cell.y}",
+                                    typeof(RectTransform), typeof(Image));
+            var cellRt = go.GetComponent<RectTransform>();
+            cellRt.SetParent(shapePreviewRoot, false);
+            cellRt.pivot = new Vector2(0f, 1f);
+            cellRt.anchorMin = new Vector2(0f, 1f);
+            cellRt.anchorMax = new Vector2(0f, 1f);
+
+            bool hasRight = shapeCells.Contains(new Vector2Int(cell.x + 1, cell.y));
+            bool hasLeft = shapeCells.Contains(new Vector2Int(cell.x - 1, cell.y));
+            bool hasBottom = shapeCells.Contains(new Vector2Int(cell.x, cell.y + 1));
+            bool hasTop = shapeCells.Contains(new Vector2Int(cell.x, cell.y - 1));
+
+            float extraRight = hasRight ? borderSize + sp : 0f;
+            float extraLeft = hasLeft ? borderSize + sp : 0f;
+            float extraBottom = hasBottom ? borderSize + sp : 0f;
+            float extraTop = hasTop ? borderSize + sp : 0f;
+
+            cellRt.sizeDelta = new Vector2(
+                cs - borderSize * 2f + extraLeft + extraRight,
+                cs - borderSize * 2f + extraTop + extraBottom);
+
+            cellRt.anchoredPosition = new Vector2(
+                 cell.x * (cs + sp) + borderSize - extraLeft,
+                -cell.y * (cs + sp) - borderSize + extraTop);
+
+            var cellImg = go.GetComponent<Image>();
+            if (data.icon != null) cellImg.sprite = data.icon;
+            cellImg.color = data.moduleColor;
+            cellImg.raycastTarget = false;
+        }
+    }
+
+    private static Color RarityColor(Rarity r) => r switch
+    {
+        Rarity.Common => new Color(0.75f, 0.75f, 0.75f),
+        Rarity.Uncommon => new Color(0.30f, 0.80f, 0.30f),
+        Rarity.Rare => new Color(0.20f, 0.50f, 1.00f),
+        Rarity.Epic => new Color(0.65f, 0.25f, 0.90f),
+        Rarity.GOD => new Color(1.00f, 0.75f, 0.10f),
+        _ => Color.white
+    };
+}

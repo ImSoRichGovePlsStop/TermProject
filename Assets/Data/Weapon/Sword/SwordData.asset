@@ -23,34 +23,50 @@ MonoBehaviour:
   critDamage: 1.5
   evadeChance: 0.05
   damageTaken: 1
-  dashSpeed: 25
+  dashSpeed: 20
   dashDuration: 0.15
-  dashCooldown: 1.5
+  dashCooldown: 0.8
   combo:
   - damageScale: 1
     range: 0.8
     angle: 90
     extraRange: 0
     animationTrigger: attack1
-    animationDuration: 0.5
+    animationDuration: 0.4
+    hitVFXPrefab: {fileID: 0}
+    vfxOffset: 0
+    vfxDurationMultiplier: 1
+    vfxLoops: 1
   - damageScale: 1
     range: 0.8
     angle: 90
     extraRange: 0
     animationTrigger: attack2
-    animationDuration: 0.5
+    animationDuration: 0.4
+    hitVFXPrefab: {fileID: 0}
+    vfxOffset: 0
+    vfxDurationMultiplier: 1
+    vfxLoops: 1
   - damageScale: 2
     range: 0.8
     angle: 90
     extraRange: 0.7
     animationTrigger: attack3
-    animationDuration: 0.8
+    animationDuration: 0.6
+    hitVFXPrefab: {fileID: 1336314832455193772, guid: d9986bad3100d0f448b9029aa743ceb1, type: 3}
+    vfxOffset: 1
+    vfxDurationMultiplier: 1
+    vfxLoops: 1
   secondaryAttack:
     damageScale: 0.6
     range: 1
     angle: 360
     extraRange: 0
     animationTrigger: attack_secondary
-    animationDuration: 1
-  comboCooldown: 0.5
+    animationDuration: 0.8
+    hitVFXPrefab: {fileID: 8020102270209620949, guid: 872beaff7bd510c4c88e5050b29e1d2f, type: 3}
+    vfxOffset: 0.2
+    vfxDurationMultiplier: 0.6
+    vfxLoops: 3
+  comboCooldown: 0.2
   secondaryCooldown: 0.5

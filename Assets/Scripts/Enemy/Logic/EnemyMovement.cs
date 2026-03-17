@@ -4,24 +4,24 @@ using UnityEngine;
 public class EnemyMovement : MonoBehaviour
 {
     [Header("Movement")]
-    [SerializeField] private float moveSpeed = 2.5f;
-    [SerializeField] private float stopDistance = 0.8f;
+    [SerializeField] protected float moveSpeed = 2.5f;
+    [SerializeField] protected float stopDistance = 0.8f;
 
     [Header("References")]
-    [SerializeField] private Transform visualRoot;
-    [SerializeField] private SpriteRenderer spriteRenderer;
+    [SerializeField] protected Transform visualRoot;
+    [SerializeField] protected SpriteRenderer spriteRenderer;
 
-    private EnemyStatusHandler statusHandler;
-    private Rigidbody rb;
-    private Vector3 moveDirection;
-    private bool canMove = true;
+    protected EnemyStatusHandler statusHandler;
+    protected Rigidbody rb;
+    protected Vector3 moveDirection;
+    protected bool canMove = true;
 
     public float MoveSpeed => moveSpeed;
     public float StopDistance => stopDistance;
     public Vector3 MoveDirection => moveDirection;
     public bool IsMoving => canMove && moveDirection.sqrMagnitude > 0.001f;
 
-    private void Awake()
+    protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.FreezeRotation;
@@ -31,7 +31,17 @@ public class EnemyMovement : MonoBehaviour
             spriteRenderer = visualRoot.GetComponentInChildren<SpriteRenderer>();
     }
 
-    public void SetCanMove(bool value)
+    public virtual void SetMoveSpeed(float newSpeed)
+    {
+        moveSpeed = Mathf.Max(0f, newSpeed);
+    }
+
+    public virtual void MultiplyMoveSpeed(float multiplier)
+    {
+        moveSpeed = Mathf.Max(0f, moveSpeed * multiplier);
+    }
+
+    public virtual void SetCanMove(bool value)
     {
         canMove = value;
 
@@ -42,7 +52,7 @@ public class EnemyMovement : MonoBehaviour
         }
     }
 
-    public void MoveToTarget(Vector3 targetPosition)
+    public virtual void MoveToTarget(Vector3 targetPosition)
     {
         if (!canMove)
         {
@@ -65,7 +75,7 @@ public class EnemyMovement : MonoBehaviour
         FaceDirection(moveDirection);
     }
 
-    public void FaceTarget(Vector3 targetPosition)
+    public virtual void FaceTarget(Vector3 targetPosition)
     {
         Vector3 direction = targetPosition - transform.position;
         direction.y = 0f;
@@ -74,31 +84,40 @@ public class EnemyMovement : MonoBehaviour
             FaceDirection(direction.normalized);
     }
 
-    public void StopMoving()
+    public virtual void StopMoving()
     {
         moveDirection = Vector3.zero;
         rb.linearVelocity = Vector3.zero;
     }
 
-    private void FixedUpdate()
+    protected virtual float GetCurrentMoveSpeed()
+    {
+        float currentSpeed = moveSpeed;
+
+        if (statusHandler != null)
+            currentSpeed *= statusHandler.MoveSpeedMultiplier;
+
+        return currentSpeed;
+    }
+
+    protected virtual void FixedUpdate()
     {
         if (rb.isKinematic) return;
+
         if (!canMove || moveDirection.sqrMagnitude < 0.001f)
         {
             rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
             return;
         }
 
-        float currentSpeed = moveSpeed;
-        if (statusHandler != null)
-            currentSpeed *= statusHandler.MoveSpeedMultiplier;
+        float currentSpeed = GetCurrentMoveSpeed();
 
         Vector3 velocity = moveDirection * currentSpeed;
         velocity.y = rb.linearVelocity.y;
         rb.linearVelocity = velocity;
     }
 
-    private void FaceDirection(Vector3 dir)
+    protected virtual void FaceDirection(Vector3 dir)
     {
         if (spriteRenderer == null) return;
 

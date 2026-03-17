@@ -8,6 +8,7 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private GridUI weaponGridUI;
     [SerializeField] private GridUI bagGridUI;
     [SerializeField] private GridUI envGridUI;
+    [SerializeField] private ShopUI shopUI;
 
     [Header("Prefabs")]
     [SerializeField] private ModuleItemUI  moduleItemPrefab;
@@ -27,6 +28,15 @@ public class InventoryUI : MonoBehaviour
         envGridUI?.Init(mgr.EnvGrid,      cellSize, cellSpacing);
 
         Debug.Log("[InventoryUI] Initialized.");
+    }
+
+
+    
+
+    private void Update()
+    {
+        if (shopUI == null) return;
+        shopUI.ForceMoveToBag();
     }
 
     public ModuleItemUI SpawnModule(ModuleData data, Rarity rarity = Rarity.Common, int level = 0)
