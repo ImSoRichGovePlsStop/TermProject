@@ -184,6 +184,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1461039391149267031, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
+      propertyPath: interactPrompt
+      value: 
+      objectReference: {fileID: 1582566150}
     - target: {fileID: 2634401423236395427, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -2399,6 +2403,17 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!114 &1582566150 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2224056604952306775, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
+  m_PrefabInstance: {fileID: 2137763168}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14493978039785347896e7499d7ae89e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InteractPromptUI
 --- !u!1 &1738234027 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1157175084331872940, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
@@ -2739,10 +2754,6 @@ PrefabInstance:
     - target: {fileID: 7079208976954885554, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
       propertyPath: m_SizeDelta.y
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7533609410028744600, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 240.99998
       objectReference: {fileID: 0}
     - target: {fileID: 8716575607065278296, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
       propertyPath: m_AnchorMax.y
@@ -3124,6 +3135,10 @@ PrefabInstance:
     - target: {fileID: 5782212143713118314, guid: 4fa3b75d014f39f4a86924ee396d47ab, type: 3}
       propertyPath: m_Name
       value: PassiveSystem
+      objectReference: {fileID: 0}
+    - target: {fileID: 5782212143713118314, guid: 4fa3b75d014f39f4a86924ee396d47ab, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6544958919815613296, guid: 4fa3b75d014f39f4a86924ee396d47ab, type: 3}
       propertyPath: m_AnchorMax.y

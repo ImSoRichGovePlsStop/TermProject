@@ -31,7 +31,8 @@ public class PlayerController : MonoBehaviour
     [Header("Interaction")]
     public float interactRange = 2f;
     public LayerMask interactableLayer;
-    [SerializeField] private InteractPromptUI interactPrompt;
+    private InteractPromptUI interactPrompt;
+    private UIManager uiManager;
 
     void Start()
     {
@@ -40,6 +41,8 @@ public class PlayerController : MonoBehaviour
         stats = GetComponent<PlayerStats>();
         weaponEquip = GetComponent<WeaponEquip>();
         attackHitbox = GetComponentInChildren<AttackHitbox>();
+        interactPrompt = FindFirstObjectByType<InteractPromptUI>(FindObjectsInactive.Include);
+        uiManager = FindFirstObjectByType<UIManager>();
 
         anim.SetFloat("moveX", 0);
         anim.SetFloat("moveY", -1);
@@ -268,6 +271,12 @@ public class PlayerController : MonoBehaviour
 
     private void CheckInteractable()
     {
+        if (uiManager != null && (uiManager.IsInventoryOpen || uiManager.IsShopOpen))
+        {
+            interactPrompt?.Hide();
+            return;
+        }
+
         Collider[] hits = Physics.OverlapSphere(transform.position, interactRange, interactableLayer);
 
         IInteractable closest = null;
