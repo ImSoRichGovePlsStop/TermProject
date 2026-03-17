@@ -1,137 +1,98 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class ShopItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
+public class SellConfirmationUI : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI nameText;
-    [SerializeField] private TextMeshProUGUI priceText;
+    public static SellConfirmationUI Instance { get; private set; }
+
+    [SerializeField] private TextMeshProUGUI itemNameText;
+    [SerializeField] private TextMeshProUGUI sellPriceText;
     [SerializeField] private RectTransform shapePreviewRoot;
+    [SerializeField] private Button confirmButton;
+    [SerializeField] private Button cancelButton;
 
-    private TestModuleEntry _entry;
-    private ShopUI _shopUI;
-    private int _entryIndex;
-    private bool _purchased = false;
+    private ModuleInstance _pendingInstance;
 
-    private int GetPrice() => _entry.data.cost[(int)_entry.rarity];
-
-
-    public void Init(TestModuleEntry entry, ShopUI shopUI, int entryIndex)
+    private void Awake()
     {
-        _entry = entry;
-        _shopUI = shopUI;
-        _entryIndex = entryIndex;
-
-        if (nameText != null)
-            nameText.text = entry.data.moduleName;
-
-        if (priceText != null)
-            priceText.text = $"{GetPrice()} coins";
-
-        BuildShapePreview(entry.data, entry.rarity);
-
-        if (CurrencyManager.Instance != null)
-            CurrencyManager.Instance.OnCoinsChanged += OnCoinsChanged;
-
-        RefreshAffordability();
+        Instance = this;
+        confirmButton.onClick.AddListener(OnConfirm);
+        cancelButton.onClick.AddListener(OnCancel);
+        gameObject.SetActive(false);
     }
 
-    private void OnDestroy()
+    public void Show(ModuleInstance inst, Vector2 screenPos)
     {
-        if (CurrencyManager.Instance != null)
-            CurrencyManager.Instance.OnCoinsChanged -= OnCoinsChanged;
+        _pendingInstance = inst;
+
+        itemNameText.text = "Selling: "+ inst.Data.moduleName;
+        int sellPrice = Mathf.RoundToInt(inst.Data.cost[(int)inst.Rarity] * 0.5f);
+        sellPriceText.text = $"Selling for: {sellPrice} coins";
+
+        BuildShapePreview(inst.Data, inst.Rarity);
+
+        
+        GetComponent<RectTransform>().position = screenPos;
+
+        gameObject.SetActive(true);
     }
 
-    private void OnCoinsChanged(int newAmount) => RefreshAffordability();
-
-    private CanvasGroup GetOrAddCanvasGroup()
+    public void Hide()
     {
-        var cg = GetComponent<CanvasGroup>();
-        if (cg == null) cg = gameObject.AddComponent<CanvasGroup>();
-        return cg;
+        _pendingInstance = null;
+        ClearPreview();
+        gameObject.SetActive(false);
     }
 
-    public void OnPointerEnter(PointerEventData e)
+    private void OnConfirm()
     {
-      
-        if (_purchased) return;
-        var tempInst = new ModuleInstance(_entry.data, _entry.rarity, _entry.level);
-        int price = _entry.data.cost[(int)_entry.rarity];
-        ShopTooltipUI.Instance?.ShowModule(tempInst, price);
+        if (_pendingInstance == null) return;
+
+        int sellPrice = Mathf.RoundToInt(_pendingInstance.Data.cost[(int)_pendingInstance.Rarity] * 0.5f);
+        CurrencyManager.Instance?.AddCoins(sellPrice);
+
+        var grid = _pendingInstance.CurrentGrid;
+        grid?.Remove(_pendingInstance);
+
+        var ui = _pendingInstance.UIElement as MonoBehaviour;
+        if (ui != null) Object.Destroy(ui.gameObject);
+
+        Hide();
     }
 
-    public void OnPointerExit(PointerEventData e)
+    private void OnCancel()
     {
-        ShopTooltipUI.Instance?.Hide();
+        Hide();
     }
 
-    private void RefreshAffordability()
+    private void ClearPreview()
     {
-        if (_purchased) return;
-        if (CurrencyManager.Instance == null) return;
-
-        bool canAfford = CurrencyManager.Instance.Coins >= GetPrice();
-        var cg = GetOrAddCanvasGroup();
-        cg.alpha = 1f;
-        cg.blocksRaycasts = true;
-
-        var img = GetComponent<Image>();
-        if (img != null)
-            img.color = canAfford ? Color.white : new Color(1f, 0.3f, 0.3f, 0.8f);
-    }
-
-    public void OnBeginDrag(PointerEventData e)
-    {
-        if (_purchased) return;
-        if (CurrencyManager.Instance != null && CurrencyManager.Instance.Coins < GetPrice()) return;
-        _shopUI.BeginShopDrag(_entry, e, this);
-    }
-
-    public void OnDrag(PointerEventData e)
-    {
-        if (_purchased) return;
-        _shopUI.UpdateShopDrag(e);
-    }
-
-    public void OnEndDrag(PointerEventData e)
-    {
-        if (_purchased) return;
-        _shopUI.EndShopDrag(e);
-    }
-
-    public void MarkPurchased()
-    {
-        if (_purchased) return;
-        _purchased = true;
-        _shopUI.RegisterSold(_entryIndex);
-
-        if (CurrencyManager.Instance != null)
-            CurrencyManager.Instance.OnCoinsChanged -= OnCoinsChanged;
-
-        var cg = GetOrAddCanvasGroup();
-        cg.alpha = 1f;
-        cg.blocksRaycasts = true;
-
-        var img = GetComponent<Image>();
-        if (img != null)
-            img.color = new Color(0.2f, 0.2f, 0.2f, 0.8f);
-
-        if (nameText != null)
-            nameText.text = $"[SOLD]";
+        foreach (Transform child in shapePreviewRoot)
+            Destroy(child.gameObject);
     }
 
     private void BuildShapePreview(ModuleData data, Rarity rarity)
     {
-        foreach (Transform child in shapePreviewRoot)
-            Destroy(child.gameObject);
+        ClearPreview();
 
-        float cs = 20f;
-        float sp = 2f;
-        float borderSize = 2f;
+        float sp = 3f;
+        float borderSize = 3f;
+
 
         var shapeCells = data.GetShapeCells();
         var bound = data.GetBoundingSize();
+
+        float availableWidth = shapePreviewRoot.rect.width-2;
+        float availableHeight = shapePreviewRoot.rect.height-2;
+
+        float csFromWidth = (availableWidth + sp) / bound.x - sp;
+        float csFromHeight = (availableHeight + sp) / bound.y - sp;
+        float cs = Mathf.Min(csFromWidth, csFromHeight); 
+
+        shapePreviewRoot.sizeDelta = new Vector2(
+            bound.x * (cs + sp) - sp,
+            bound.y * (cs + sp) - sp);
 
         shapePreviewRoot.sizeDelta = new Vector2(
             bound.x * (cs + sp) - sp,
@@ -175,7 +136,7 @@ public class ShopItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         foreach (var cell in shapeCells)
         {
             var go = new GameObject($"cell_{cell.x}_{cell.y}",
-                                    typeof(RectTransform), typeof(Image));
+            typeof(RectTransform), typeof(Image));
             var cellRt = go.GetComponent<RectTransform>();
             cellRt.SetParent(shapePreviewRoot, false);
             cellRt.pivot = new Vector2(0f, 1f);

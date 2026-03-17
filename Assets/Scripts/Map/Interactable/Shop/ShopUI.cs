@@ -13,6 +13,8 @@ public class ShopUI : MonoBehaviour
     [SerializeField] private GridUI inventoryEnvGridUI;
     [SerializeField] private Transform itemListContainer;
     [SerializeField] private ShopItemUI shopItemPrefab;
+    [SerializeField] private SellConfirmationUI sellConfirmationUI;
+    [SerializeField] private ShopTooltipUI shopTooltipUI;
 
     [Header("Prefabs")]
     [SerializeField] private ModuleItemUI moduleItemPrefab;
@@ -26,6 +28,8 @@ public class ShopUI : MonoBehaviour
     private Vector2Int _clickedCell;
     private bool _initialized = false;
     private ShopInteractable _currentInteractable;
+    private int _pendingPrice;
+    private TestModuleEntry[] _currentEntries;
 
     private void Awake()
     {
@@ -44,21 +48,19 @@ public class ShopUI : MonoBehaviour
         _initialized = true;
     }
 
-
     private void Update()
     {
         if (!_initialized) return;
         MoveItemsBetweenGrids(inventoryBagGridUI, shopBagGridUI);
     }
 
-
-
     private void OnDisable()
     {
         if (!_initialized) return;
         MoveItemsBetweenGrids(shopBagGridUI, inventoryBagGridUI);
+        shopBagGridUI.ClearHighlights();
+        shopBagGridUI.ClearBuffHighlights();
 
-        // Destroy ghost if shop closed mid-drag
         if (_ghostUI != null)
         {
             Destroy(_ghostUI.gameObject);
@@ -84,21 +86,40 @@ public class ShopUI : MonoBehaviour
     public void Populate(TestModuleEntry[] entries, HashSet<int> soldIndices, ShopInteractable interactable)
     {
         _currentInteractable = interactable;
+        _currentEntries = entries;
 
         foreach (Transform child in itemListContainer)
             Destroy(child.gameObject);
 
+        var indexed = new List<(TestModuleEntry entry, int originalIndex)>();
         for (int i = 0; i < entries.Length; i++)
+            indexed.Add((entries[i], i));
+
+        indexed.Sort((a, b) =>
         {
-            var entry = entries[i];
+            int priorityA = GetSortPriority(a.originalIndex, soldIndices);
+            int priorityB = GetSortPriority(b.originalIndex, soldIndices);
+            return priorityA.CompareTo(priorityB);
+        });
+
+        foreach (var (entry, originalIndex) in indexed)
+        {
             if (entry.data == null) continue;
-
             var item = Instantiate(shopItemPrefab, itemListContainer);
-            item.Init(entry, this, i);
+            item.Init(entry, this, originalIndex);
 
-            if (soldIndices.Contains(i))
+            if (soldIndices.Contains(originalIndex))
                 item.MarkPurchased();
         }
+    }
+
+    private int GetSortPriority(int index, HashSet<int> soldIndices)
+    {
+        if (soldIndices.Contains(index)) return 2;         
+        if (CurrencyManager.Instance == null) return 0;
+        var entry = _currentEntries[index];
+        int price = entry.data.cost[(int)entry.rarity];
+        return CurrencyManager.Instance.Coins >= price ? 0 : 1; 
     }
 
     public void RegisterSold(int index)
@@ -111,6 +132,7 @@ public class ShopUI : MonoBehaviour
         _activeSeller = seller;
         _ghostInst = new ModuleInstance(entry.data, entry.rarity, entry.level);
         _clickedCell = Vector2Int.zero;
+        _pendingPrice = entry.data.cost[(int)entry.rarity];
 
         _ghostUI = Instantiate(moduleItemPrefab, _canvas.transform);
         _ghostUI.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
@@ -135,6 +157,7 @@ public class ShopUI : MonoBehaviour
             _canvasRt, e.position, UICam(), out var local))
             _ghostUI.GetComponent<RectTransform>().anchoredPosition = local - _dragOffset;
 
+        shopBagGridUI.ClearHighlights();
         if (shopBagGridUI.ScreenToCell(e.position, UICam(), out var hoveredCell))
         {
             var pivot = hoveredCell - _clickedCell;
@@ -150,18 +173,28 @@ public class ShopUI : MonoBehaviour
     public void EndShopDrag(PointerEventData e)
     {
         shopBagGridUI.ClearHighlights();
-
         if (_ghostUI == null) return;
-
         bool bought = false;
-
         if (shopBagGridUI.ScreenToCell(e.position, UICam(), out var hoveredCell))
         {
             var pivot = hoveredCell - _clickedCell;
             if (shopBagGridUI.Data.TryPlace(_ghostInst, pivot))
             {
+                if (CurrencyManager.Instance != null && !CurrencyManager.Instance.TrySpend(_pendingPrice))
+                {
+                    shopBagGridUI.Data.Remove(_ghostInst);
+                    Destroy(_ghostUI.gameObject);
+                    _ghostUI = null;
+                    _ghostInst = null;
+                    _activeSeller = null;
+                    return;
+                }
                 _activeSeller?.MarkPurchased();
                 _activeSeller = null;
+
+                _ghostUI.SetAllowSell(true);
+                _ghostUI.SellConfirmationUI = sellConfirmationUI;
+                _ghostUI.ShopTooltipUI = shopTooltipUI;
 
                 var cg = _ghostUI.GetComponent<CanvasGroup>();
                 cg.alpha = 1f;
@@ -170,18 +203,14 @@ public class ShopUI : MonoBehaviour
                 bought = true;
             }
         }
-
         if (!bought)
         {
             _activeSeller = null;
             Destroy(_ghostUI.gameObject);
         }
-
         _ghostUI = null;
         _ghostInst = null;
     }
-
-
 
     private void MoveItemsBetweenGrids(GridUI from, GridUI to)
     {
@@ -205,6 +234,9 @@ public class ShopUI : MonoBehaviour
                 ui.BagGridUI = to;
                 ui.WeaponGridUI = goingToShop ? to : inventoryWeaponGridUI;
                 ui.EnvGridUI = goingToShop ? null : inventoryEnvGridUI;
+                ui.SellConfirmationUI = goingToShop ? sellConfirmationUI : null;
+                ui.ShopTooltipUI = goingToShop ? shopTooltipUI : null;
+                ui.SetAllowSell(goingToShop);
                 ui.transform.SetParent(to.transform, false);
                 ui.SnapToCell(to, inst.GridPosition);
             }

@@ -7,7 +7,7 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Image))]
 public class ModuleItemUI : MonoBehaviour,
     IBeginDragHandler, IDragHandler, IEndDragHandler,
-    IPointerEnterHandler, IPointerExitHandler
+    IPointerEnterHandler, IPointerExitHandler,IPointerClickHandler
 {
     public ModuleInstance Instance { get; private set; }
 
@@ -26,6 +26,8 @@ public class ModuleItemUI : MonoBehaviour,
     private Vector2Int _originCell;
     private Vector2 _dragOffset;
     private Vector2Int _clickedCell;
+
+    [SerializeField] private bool allowSell = false;
 
 
     // Rarity Colors
@@ -240,14 +242,41 @@ public class ModuleItemUI : MonoBehaviour,
         SnapToCell(snapGrid, snapCell);
     }
 
+
+    //check if it should show the shop version or inventory version
+    [HideInInspector] public ShopTooltipUI ShopTooltipUI;
     public void OnPointerEnter(PointerEventData e)
     {
-        ModuleTooltipUI.Instance.Show(Instance, WeaponGridUI, BagGridUI);
+        if (ShopTooltipUI != null)
+        {
+            int price = Instance.Data.cost[(int)Instance.Rarity];
+            ShopTooltipUI.ShowModule(Instance, price);
+        }
+        else
+        {
+            ModuleTooltipUI.Instance.Show(Instance, WeaponGridUI, BagGridUI);
+        }
     }
 
     public void OnPointerExit(PointerEventData e)
     {
-        ModuleTooltipUI.Instance.Hide();
+        if (ShopTooltipUI != null)
+            ShopTooltipUI.Hide();
+        else
+            ModuleTooltipUI.Instance.Hide();
+    }
+
+
+    /// needed for selling
+    /// 
+    public void SetAllowSell(bool allow) => allowSell = allow;
+    [HideInInspector] public SellConfirmationUI SellConfirmationUI;
+    public void OnPointerClick(PointerEventData e)
+    {
+        if (e.button != PointerEventData.InputButton.Right) return;
+        if (!allowSell) return;
+        if (Instance.CurrentGrid != InventoryManager.Instance.BagGrid) return;
+        SellConfirmationUI?.Show(Instance, e.position);
     }
 
     private void UpdateHighlight(PointerEventData e)

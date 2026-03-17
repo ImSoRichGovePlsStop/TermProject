@@ -19,6 +19,19 @@ public class UIManager : MonoBehaviour
             inventoryPanel.SetActive(false);
 
         passiveScreenUI = FindFirstObjectByType<PassiveScreenUI>(FindObjectsInactive.Include);
+
+        if (inventoryPanel != null) inventoryPanel.SetActive(true);
+        if (_activeShopUI != null) _activeShopUI.gameObject.SetActive(true);
+
+        inventoryPanel?.SetActive(false);
+        _activeShopUI?.gameObject.SetActive(false);
+
+        var sellUI = FindObjectsByType<SellConfirmationUI>(FindObjectsSortMode.None);
+        foreach (var ui in sellUI)
+        {
+            ui.gameObject.SetActive(true);
+            ui.gameObject.SetActive(false);
+        }
     }
 
     private void Update()
