@@ -646,7 +646,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2058558544051176065, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.1
+      value: 1.2
       objectReference: {fileID: 0}
     - target: {fileID: 2058558544051176065, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
       propertyPath: m_LocalPosition.z
@@ -707,6 +707,14 @@ PrefabInstance:
     - target: {fileID: 4095530523079436333, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
       propertyPath: m_Name
       value: Enemy_Harpy
+      objectReference: {fileID: 0}
+    - target: {fileID: 4673700319721669437, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
+      propertyPath: m_Height
+      value: 1.4971495
+      objectReference: {fileID: 0}
+    - target: {fileID: 4673700319721669437, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
+      propertyPath: m_Center.y
+      value: -0.133098
       objectReference: {fileID: 0}
     - target: {fileID: 5619929725966229942, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
       propertyPath: m_Enabled
