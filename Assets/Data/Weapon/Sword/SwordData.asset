@@ -18,12 +18,12 @@ MonoBehaviour:
   health: 100
   damage: 10
   attackSpeed: 1
-  moveSpeed: 8
+  moveSpeed: 5
   critChance: 0.1
   critDamage: 1.5
   evadeChance: 0.05
   damageTaken: 1
-  dashSpeed: 20
+  dashSpeed: 12
   dashDuration: 0.15
   dashCooldown: 0.8
   combo:
@@ -37,7 +37,7 @@ MonoBehaviour:
     vfxOffset: 0
     vfxDurationMultiplier: 1
     vfxLoops: 1
-  - damageScale: 1
+  - damageScale: 1.2
     range: 0.8
     angle: 90
     extraRange: 0
@@ -70,3 +70,4 @@ MonoBehaviour:
     vfxLoops: 3
   comboCooldown: 0.2
   secondaryCooldown: 0.5
+  comboResetTime: 0.8

@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 public interface IInteractable
 {
     void Interact(PlayerController playerController);
+    string GetPromptText();
 }
 public class PlayerController : MonoBehaviour
 {
@@ -20,7 +21,6 @@ public class PlayerController : MonoBehaviour
     private bool isSecondaryAttacking = false;
     private int comboIndex = 0;
     private float lastAttackTime = 0f;
-    private float comboResetTime = 1f;
     private float attackCooldownTimer = 0f;
 
     private bool isDashing = false;
@@ -31,6 +31,7 @@ public class PlayerController : MonoBehaviour
     [Header("Interaction")]
     public float interactRange = 2f;
     public LayerMask interactableLayer;
+    [SerializeField] private InteractPromptUI interactPrompt;
 
     void Start()
     {
@@ -80,7 +81,7 @@ public class PlayerController : MonoBehaviour
         WeaponData weapon = weaponEquip.GetCurrentWeapon();
         if (weapon == null || weapon.combo.Length == 0) return;
 
-        if (Time.time - lastAttackTime > comboResetTime)
+        if (Time.time - lastAttackTime > weapon.comboResetTime)
             comboIndex = 0;
 
         ComboHit hit = weapon.combo[comboIndex];
@@ -261,6 +262,32 @@ public class PlayerController : MonoBehaviour
         {
             anim.SetBool("isMoving", false);
         }
+
+        CheckInteractable();
+    }
+
+    private void CheckInteractable()
+    {
+        Collider[] hits = Physics.OverlapSphere(transform.position, interactRange, interactableLayer);
+
+        IInteractable closest = null;
+        float closestDist = Mathf.Infinity;
+        foreach (Collider hit in hits)
+        {
+            var interactable = hit.GetComponent<IInteractable>();
+            if (interactable == null) continue;
+            float dist = Vector3.Distance(transform.position, hit.transform.position);
+            if (dist < closestDist)
+            {
+                closestDist = dist;
+                closest = interactable;
+            }
+        }
+
+        if (closest != null)
+            interactPrompt?.Show(closest.GetPromptText());
+        else
+            interactPrompt?.Hide();
     }
 
     Vector3 GetExactMouseDirection()

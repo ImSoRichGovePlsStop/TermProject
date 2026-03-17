@@ -7,6 +7,8 @@ public class WeaponStand : MonoBehaviour, IInteractable
     private PassiveScreenUI passiveScreenUI;
     private WeaponEquip weaponEquip;
 
+    public string GetPromptText() => "[ E ]  Pick Up Weapon";
+
     private void Awake()
     {
         passiveScreenUI = FindFirstObjectByType<PassiveScreenUI>();

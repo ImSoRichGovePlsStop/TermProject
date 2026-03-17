@@ -23,6 +23,8 @@ public class RandomLoot : MonoBehaviour, IInteractable
     private readonly HashSet<ModuleInstance> lootItems = new HashSet<ModuleInstance>();
     private static RandomLoot _activeBox;
 
+    public string GetPromptText() => "[ E ]  Open Loot";
+
     private void Start()
     {
         InventoryManager.Instance.EnvGrid.OnModulePlaced += OnEnvModulePlaced;

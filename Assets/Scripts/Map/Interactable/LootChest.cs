@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class LootChest : MonoBehaviour
 {
+    public string GetPromptText() => "[ E ]  Open Chest";
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {

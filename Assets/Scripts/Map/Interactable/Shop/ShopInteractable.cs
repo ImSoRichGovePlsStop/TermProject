@@ -21,6 +21,8 @@ public class ShopInteractable : MonoBehaviour, IInteractable
     private readonly HashSet<int> _soldIndices = new HashSet<int>();
     private TestModuleEntry[] _generatedEntries;
 
+    public string GetPromptText() => "[ E ]  Open Shop";
+
     private void Start()
     {
         GenerateEntries();
