@@ -12,7 +12,7 @@ public static class Randomizer
         var data = Resources.LoadAll<ModuleData>("Module");
         if (data == null || data.Length == 0)
         {
-            Debug.LogWarning("[Randomizer] No ModuleData found in Resources/Module");
+            
             return System.Array.Empty<TestModuleEntry>();
         }
 
@@ -20,7 +20,7 @@ public static class Randomizer
         for (int i = 0; i < data.Length; i++)
             _cachedPool[i] = new TestModuleEntry { data = data[i] };
 
-        Debug.Log($"[Randomizer] Loaded {_cachedPool.Length} modules from Resources/Module");
+        
         return _cachedPool;
     }
 
@@ -78,8 +78,6 @@ public static class Randomizer
             }, bestDelta));
         }
 
-        for (int i = 0; i < candidates.Count; i++)
-            Debug.Log($"Candidate {i}: {candidates[i].entry.data.moduleName} (Rarity: {candidates[i].entry.rarity}, Delta: {candidates[i].delta})");
 
         candidates.Sort((a, b) => a.delta.CompareTo(b.delta));
 
