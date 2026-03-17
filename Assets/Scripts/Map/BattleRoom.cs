@@ -154,7 +154,7 @@ public class BattleRoom : MonoBehaviour
 
             
             Vector2 randomCircle = Random.insideUnitCircle.normalized * Random.Range(1f, spawnRadius);
-            Vector3 spawnPosition = transform.position + new Vector3(randomCircle.x, 0f, randomCircle.y);
+            Vector3 spawnPosition = transform.position + new Vector3(randomCircle.x, 0.5f, randomCircle.y);
 
             GameObject enemy = Instantiate(prefab, spawnPosition, Quaternion.identity);
             spawnedEnemies.Add(enemy);

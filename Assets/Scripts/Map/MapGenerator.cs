@@ -4,7 +4,8 @@ public class MapGenerator : MonoBehaviour
 {
     [Header("Player")]
     public GameObject playerPrefab;
-    public GameObject enemiesPrefab;
+    public GameObject[] enemiesPrefab;
+    public GameObject bossPrefab;
     public GameObject lootPrefab;
 
     [Header("room sizes")]
@@ -33,7 +34,7 @@ public class MapGenerator : MonoBehaviour
         float battleRoomX = (spawnRoomSize.x / 2f) + roomSpacing + (battleRoomSize.x / 2f);
         GameObject battleRoomObj = CreateRoom("BattleRoom", battleRoomSize, new Vector3(battleRoomX, 0, 0));
         battleRoomObj.AddComponent<BattleRoom>();
-        battleRoomObj.GetComponent<BattleRoom>().enemyPrefabs = new GameObject[] { enemiesPrefab };
+        battleRoomObj.GetComponent<BattleRoom>().enemyPrefabs = new GameObject[] { enemiesPrefab[1] };
         battleRoomObj.GetComponent<BattleRoom>().lootPrefab = lootPrefab;
         battleRoomObj.GetComponent<BattleRoom>().boundaryMaterial = boundaryMaterial;
 
@@ -44,7 +45,8 @@ public class MapGenerator : MonoBehaviour
 
         GameObject battleRoomObj2 = CreateRoom("BattleRoom", battleRoomSize, new Vector3(40, 0, 0));
         battleRoomObj2.AddComponent<BattleRoom>();
-        battleRoomObj2.GetComponent<BattleRoom>().enemyPrefabs = new GameObject[] { enemiesPrefab };
+        battleRoomObj2.GetComponent<BattleRoom>().enemyPrefabs =  new GameObject[] { enemiesPrefab[0],enemiesPrefab[1] };
+        battleRoomObj2.GetComponent<BattleRoom>().enemyCount = 2;
         battleRoomObj2.GetComponent<BattleRoom>().lootPrefab = lootPrefab;
         battleRoomObj2.GetComponent<BattleRoom>().boundaryMaterial = boundaryMaterial;
 
@@ -52,6 +54,20 @@ public class MapGenerator : MonoBehaviour
         trigger1.isTrigger = true;
         trigger1.size = new Vector3(battleRoomSize.x, triggerHeight, battleRoomSize.y);
         trigger1.center = new Vector3(0, triggerHeight / 2f, 0);
+
+
+
+        
+        GameObject bossRoomObj = CreateRoom("BossRoom", battleRoomSize, new Vector3(60, 0, 0));
+        bossRoomObj.AddComponent<BattleRoom>();
+        bossRoomObj.GetComponent<BattleRoom>().enemyPrefabs = new GameObject[] { enemiesPrefab[2] };
+        bossRoomObj.GetComponent<BattleRoom>().lootPrefab = lootPrefab;
+        bossRoomObj.GetComponent<BattleRoom>().boundaryMaterial = boundaryMaterial;
+
+        BoxCollider trigger3 = bossRoomObj.AddComponent<BoxCollider>();
+        trigger3.isTrigger = true;
+        trigger3.size = new Vector3(battleRoomSize.x, triggerHeight, battleRoomSize.y);
+        trigger3.center = new Vector3(0, triggerHeight / 2f, 0);
 
 
 
