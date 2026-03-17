@@ -240,7 +240,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 125be61d71b02194aaf28eb936b9fa6c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  interactRange: 2
+  interactRange: 1
   interactableLayer:
     serializedVersion: 2
     m_Bits: 4294967295
