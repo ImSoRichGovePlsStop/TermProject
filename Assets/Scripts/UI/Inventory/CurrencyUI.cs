@@ -1,4 +1,4 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 
 public class CurrencyUI : MonoBehaviour
@@ -20,5 +20,5 @@ public class CurrencyUI : MonoBehaviour
             CurrencyManager.Instance.OnCoinsChanged -= Refresh;
     }
 
-    private void Refresh(int amount) => coinsText.text = $"{amount}";
+    private void Refresh(int amount) => coinsText.text = $"Gold: {amount}";
 }
