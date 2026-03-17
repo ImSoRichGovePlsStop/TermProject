@@ -22,7 +22,7 @@ public class MapGenerator : MonoBehaviour
 
     void GenerateMap()
     {
-        ///ตรงนี้มันแค่เป็นการลองเรียกห้องออกมาเฉยๆยังไม่ทันมีระบบสุ่ม
+        
 
         GameObject spawnRoomObj = CreateRoom("SpawnRoom", spawnRoomSize, new Vector3(0, 0, 0));
         SpawnRoom spawnRoom = spawnRoomObj.AddComponent<SpawnRoom>();
@@ -46,7 +46,7 @@ public class MapGenerator : MonoBehaviour
                 battleRoomSize.y
             ));
 
-        ///
+      
     }
 
     GameObject CreateRoom(string name, Vector2 size, Vector3 position)
@@ -55,11 +55,11 @@ public class MapGenerator : MonoBehaviour
         room.transform.position = position;
 
  
-        GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        floor.transform.SetParent(room.transform);
-        floor.transform.localPosition = Vector3.zero;
+        //GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        //floor.transform.SetParent(room.transform);
+        //floor.transform.localPosition = Vector3.zero;
 
-        floor.transform.localScale = new Vector3(size.x / 10f, 1f, size.y / 10f);
+        //floor.transform.localScale = new Vector3(size.x / 10f, 1f, size.y / 10f);
 
         return room;
     }
