@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class ShopItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class ShopItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private TextMeshProUGUI priceText;
@@ -15,6 +15,7 @@ public class ShopItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     private bool _purchased = false;
 
     private int GetPrice() => _entry.data.cost[(int)_entry.rarity];
+
 
     public void Init(TestModuleEntry entry, ShopUI shopUI, int entryIndex)
     {
@@ -51,6 +52,20 @@ public class ShopItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         return cg;
     }
 
+    public void OnPointerEnter(PointerEventData e)
+    {
+      
+        if (_purchased) return;
+        var tempInst = new ModuleInstance(_entry.data, _entry.rarity, _entry.level);
+        int price = _entry.data.cost[(int)_entry.rarity];
+        ShopTooltipUI.Instance?.ShowModule(tempInst, price);
+    }
+
+    public void OnPointerExit(PointerEventData e)
+    {
+        ShopTooltipUI.Instance?.Hide();
+    }
+
     private void RefreshAffordability()
     {
         if (_purchased) return;
@@ -58,8 +73,12 @@ public class ShopItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
         bool canAfford = CurrencyManager.Instance.Coins >= GetPrice();
         var cg = GetOrAddCanvasGroup();
-        cg.alpha = canAfford ? 1f : 0.5f;
-        cg.blocksRaycasts = canAfford;
+        cg.alpha = 1f;
+        cg.blocksRaycasts = true;
+
+        var img = GetComponent<Image>();
+        if (img != null)
+            img.color = canAfford ? Color.white : new Color(1f, 0.3f, 0.3f, 0.8f);
     }
 
     public void OnBeginDrag(PointerEventData e)
@@ -91,14 +110,15 @@ public class ShopItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             CurrencyManager.Instance.OnCoinsChanged -= OnCoinsChanged;
 
         var cg = GetOrAddCanvasGroup();
-        cg.alpha = 0.4f;
-        cg.blocksRaycasts = false;
+        cg.alpha = 1f;
+        cg.blocksRaycasts = true;
+
+        var img = GetComponent<Image>();
+        if (img != null)
+            img.color = new Color(0.2f, 0.2f, 0.2f, 0.8f);
 
         if (nameText != null)
-            nameText.text = $"{_entry.data.moduleName} [SOLD]";
-
-        if (priceText != null)
-            priceText.text = "";
+            nameText.text = $"[SOLD]";
     }
 
     private void BuildShapePreview(ModuleData data, Rarity rarity)

@@ -242,14 +242,28 @@ public class ModuleItemUI : MonoBehaviour,
         SnapToCell(snapGrid, snapCell);
     }
 
+
+    //check if it should show the shop version or inventory version
+    [HideInInspector] public ShopTooltipUI ShopTooltipUI;
     public void OnPointerEnter(PointerEventData e)
     {
-        ModuleTooltipUI.Instance.Show(Instance, WeaponGridUI, BagGridUI);
+        if (ShopTooltipUI != null)
+        {
+            int price = Instance.Data.cost[(int)Instance.Rarity];
+            ShopTooltipUI.ShowModule(Instance, price);
+        }
+        else
+        {
+            ModuleTooltipUI.Instance.Show(Instance, WeaponGridUI, BagGridUI);
+        }
     }
 
     public void OnPointerExit(PointerEventData e)
     {
-        ModuleTooltipUI.Instance.Hide();
+        if (ShopTooltipUI != null)
+            ShopTooltipUI.Hide();
+        else
+            ModuleTooltipUI.Instance.Hide();
     }
 
 
