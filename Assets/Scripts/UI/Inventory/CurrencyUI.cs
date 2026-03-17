@@ -20,5 +20,14 @@ public class CurrencyUI : MonoBehaviour
             CurrencyManager.Instance.OnCoinsChanged -= Refresh;
     }
 
+    private void Update()
+    {
+        if (CurrencyManager.Instance == null)
+        {
+            CurrencyManager.Instance.OnCoinsChanged += Refresh;
+            Refresh(CurrencyManager.Instance.Coins);
+        }
+    }
+
     private void Refresh(int amount) => coinsText.text = $"Gold: {amount}";
 }

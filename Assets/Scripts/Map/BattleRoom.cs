@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.ProBuilder;
+using UnityEngine.ProBuilder.MeshOperations;
 
 public class BattleRoom : MonoBehaviour
 {
@@ -19,6 +21,7 @@ public class BattleRoom : MonoBehaviour
 
     private Transform player;
     private List<GameObject> spawnedEnemies = new List<GameObject>();
+    public Material boundaryMaterial;
 
     void Start()
     {
@@ -53,37 +56,23 @@ public class BattleRoom : MonoBehaviour
     }
     private void CreateInvisibleWalls()
     {
+        CreateRoomBoundary();
+
         (Vector3 pos, Vector3 size)[] wallConfigs = new[]
         {
         // Left
-        (
-            new Vector3(-roomSize.x / 2f, roomSize.y / 2f, 0f),
-            new Vector3(0.1f, roomSize.y, roomSize.z)
-        ),
-
+        (new Vector3(-roomSize.x / 2f, roomSize.y / 2f, 0f), new Vector3(0.01f, roomSize.y, 2)),
         // Right
-        (
-            new Vector3(roomSize.x / 2f, roomSize.y / 2f, 0f),
-            new Vector3(0.1f, roomSize.y, roomSize.z)
-        ),
-
+        (new Vector3(roomSize.x / 2f, roomSize.y / 2f, 0f),  new Vector3(0.01f, roomSize.y, 2)),
         // Front
-        (
-            new Vector3(0f, roomSize.y / 2f, roomSize.z / 2f),
-            new Vector3(roomSize.x, roomSize.y, 0.1f)
-        ),
-
+        (new Vector3(0f, roomSize.y / 2f, roomSize.z / 2f),  new Vector3(2, roomSize.y, 0.01f)),
         // Back
-        (
-            new Vector3(0f, roomSize.y / 2f, -roomSize.z / 2f),
-            new Vector3(roomSize.x, roomSize.y, 0.1f)
-        ),
+        (new Vector3(0f, roomSize.y / 2f, -roomSize.z / 2f), new Vector3(2, roomSize.y, 0.01f)),
     };
 
         foreach (var (localPos, size) in wallConfigs)
         {
             GameObject wall = new GameObject("InvisibleWall");
-
             wall.transform.SetParent(transform);
             wall.transform.localPosition = localPos;
 
@@ -92,6 +81,37 @@ public class BattleRoom : MonoBehaviour
 
             invisibleWalls.Add(wall);
         }
+    }
+
+    private void CreateRoomBoundary()
+    {
+        ProBuilderMesh pbMesh = ProBuilderMesh.Create();
+        PolyShape polyShape = pbMesh.gameObject.AddComponent<PolyShape>();
+
+        float halfX = (roomSize.x / 2f) + 0.01f;
+        float halfZ = (roomSize.z / 2f) + 0.01f;
+
+        polyShape.SetControlPoints(new Vector3[]
+        {
+        new Vector3(-halfX, 0, -halfZ),
+        new Vector3(-halfX, 0,  halfZ),
+        new Vector3( halfX, 0,  halfZ),
+        new Vector3( halfX, 0, -halfZ),
+        });
+
+        polyShape.extrude = 10;
+        polyShape.flipNormals = true;
+
+        pbMesh.CreateShapeFromPolygon(polyShape.controlPoints, polyShape.extrude, polyShape.flipNormals);
+        pbMesh.transform.SetParent(transform);
+        pbMesh.transform.localPosition = new Vector3(0f, - 0.01f, 0f);
+        pbMesh.ToMesh();
+        pbMesh.Refresh();
+
+        if (boundaryMaterial != null)
+            pbMesh.GetComponent<Renderer>().material = boundaryMaterial;
+
+        invisibleWalls.Add(pbMesh.gameObject);
     }
 
     private void RemoveInvisibleWalls()
@@ -112,8 +132,10 @@ public class BattleRoom : MonoBehaviour
         isCleared = true;
         isLocked = false;
         RemoveInvisibleWalls();
-        Debug.Log("Battle room cleared!");
         GameObject lootbox = Instantiate(lootPrefab, transform.position, Quaternion.identity);
+
+        CurrencyManager wallet = Object.FindFirstObjectByType<CurrencyManager>();
+        wallet.AddCoins(Random.Range(50, 251));
 
     }
 
@@ -121,7 +143,7 @@ public class BattleRoom : MonoBehaviour
     {
         if (enemyPrefabs == null || enemyPrefabs.Length == 0)
         {
-            Debug.LogWarning("No enemy prefabs assigned to BattleRoom!");
+            Debug.LogWarning("enemy prefabs missing");
             return;
         }
 

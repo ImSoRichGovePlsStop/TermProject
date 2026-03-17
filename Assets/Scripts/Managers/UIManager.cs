@@ -7,6 +7,7 @@ public class UIManager : MonoBehaviour
     private GameObject inventoryPanel;
     private PassiveScreenUI passiveScreenUI;
     private ShopUI _activeShopUI;
+    [SerializeField] private GameObject hud;
     public bool IsInventoryOpen { get; private set; }
     public bool IsShopOpen => _activeShopUI != null && _activeShopUI.gameObject.activeSelf;
 
@@ -93,6 +94,7 @@ public class UIManager : MonoBehaviour
             ModuleTooltipUI.Instance?.Hide();
 
         }
+        UpdateHUDVisibility();
     }
 
 
@@ -102,6 +104,7 @@ public class UIManager : MonoBehaviour
         _activeShopUI = shopUI;
         shopUI.gameObject.SetActive(true);
         shopUI.ForceMoveToShop();
+        UpdateHUDVisibility();
     }
 
     public void CloseShop()
@@ -109,6 +112,18 @@ public class UIManager : MonoBehaviour
         if (_activeShopUI == null) return;
         _activeShopUI.gameObject.SetActive(false);
         _activeShopUI = null;
+        UpdateHUDVisibility();
+    }
+
+    private void UpdateHUDVisibility()
+    {
+        bool shouldHide =
+            IsInventoryOpen ||
+            (passiveScreenUI != null && passiveScreenUI.IsOpen) ||
+            (_activeShopUI != null && _activeShopUI.gameObject.activeSelf);
+
+        if (hud != null)
+            hud.SetActive(!shouldHide);
     }
 
     private IEnumerator ForceMoveToBagNextFrame()

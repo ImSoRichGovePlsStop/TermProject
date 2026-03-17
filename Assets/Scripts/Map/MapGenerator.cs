@@ -13,8 +13,9 @@ public class MapGenerator : MonoBehaviour
 
     [Header("room spacing")]
     public float roomSpacing = 4f;
-
     public float triggerHeight = 3f;
+
+    public Material boundaryMaterial;
 
     void Start()
     {
@@ -34,6 +35,7 @@ public class MapGenerator : MonoBehaviour
         battleRoomObj.AddComponent<BattleRoom>();
         battleRoomObj.GetComponent<BattleRoom>().enemyPrefabs = new GameObject[] { enemiesPrefab };
         battleRoomObj.GetComponent<BattleRoom>().lootPrefab = lootPrefab;
+        battleRoomObj.GetComponent<BattleRoom>().boundaryMaterial = boundaryMaterial;
 
         BoxCollider trigger = battleRoomObj.AddComponent<BoxCollider>();
         trigger.isTrigger = true;
@@ -44,6 +46,7 @@ public class MapGenerator : MonoBehaviour
         battleRoomObj2.AddComponent<BattleRoom>();
         battleRoomObj2.GetComponent<BattleRoom>().enemyPrefabs = new GameObject[] { enemiesPrefab };
         battleRoomObj2.GetComponent<BattleRoom>().lootPrefab = lootPrefab;
+        battleRoomObj2.GetComponent<BattleRoom>().boundaryMaterial = boundaryMaterial;
 
         BoxCollider trigger1 = battleRoomObj2.AddComponent<BoxCollider>();
         trigger1.isTrigger = true;
@@ -74,10 +77,9 @@ public class MapGenerator : MonoBehaviour
         room.transform.position = position;
 
  
-        //GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        GameObject floor = GameObject.CreatePrimitive(PrimitiveType.Plane);
         //floor.transform.SetParent(room.transform);
         //floor.transform.localPosition = Vector3.zero;
-
         //floor.transform.localScale = new Vector3(size.x / 10f, 1f, size.y / 10f);
 
         return room;
