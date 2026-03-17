@@ -28,7 +28,6 @@ public class PlayerController : MonoBehaviour
     private float dashCooldownTimer = 0f;
     private Vector3 dashDirection;
 
-
     [Header("Interaction")]
     public float interactRange = 2f;
     public LayerMask interactableLayer;
@@ -294,5 +293,10 @@ public class PlayerController : MonoBehaviour
             if (clip.name == clipName)
                 return clip.length;
         return 1f;
+    }
+
+    public void OnHitVFX()
+    {
+        attackHitbox.PlayHitVFX();
     }
 }

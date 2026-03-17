@@ -23,4 +23,9 @@ public class PlayerAnimationEvents : MonoBehaviour
     {
         controller.OnSecondaryAttackEnd();
     }
+
+    public void OnHitVFX()
+    {
+        controller.OnHitVFX();
+    }
 }
