@@ -54,9 +54,9 @@ public class Harpy : MonoBehaviour
                 CheckWakeUp(distanceToPlayer);
                 break;
 
-            case HarpyState.Hover:
-                Hover();
-                break;
+            // case HarpyState.Hover:
+            //     Hover();
+            //     break;
         }
     }
 

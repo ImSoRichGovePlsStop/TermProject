@@ -44,7 +44,9 @@ public class EnemyAttack : MonoBehaviour
         Debug.Log("Attack started");
 
         if (animator != null)
+        {
             animator.SetTrigger("Attack");
+        }
         else
         {
             DealDamage();
@@ -84,13 +86,20 @@ public class EnemyAttack : MonoBehaviour
     // Animation Event ท้ายคลิป
     public void FinishAttack()
     {
-        Debug.Log("FinishAttack called");
         isAttacking = false;
+        Debug.Log("FinishAttack called");
     }
 
     public void ForceStopAttack()
     {
         isAttacking = false;
+
+        if (animator != null && gameObject.name.Contains("Harpy"))
+        {
+            animator.ResetTrigger("Attack");
+            // animator.SetBool("IsAttacking", false);
+            animator.Play("Harpy_Walk");
+        }
     }
 
     private void OnDrawGizmosSelected()
