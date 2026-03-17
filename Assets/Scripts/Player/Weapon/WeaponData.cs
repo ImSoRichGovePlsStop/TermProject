@@ -50,4 +50,10 @@ public class ComboHit
     [Header("Animation")]
     public string animationTrigger;
     public float animationDuration;
+
+    [Header("VFX")]
+    public GameObject hitVFXPrefab;
+    public float vfxOffset;
+    public float vfxDurationMultiplier = 1f;
+    public float vfxLoops = 1f;
 }
