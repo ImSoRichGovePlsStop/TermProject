@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -26,12 +27,26 @@ public class InventoryUI : MonoBehaviour
         weaponGridUI.Init(mgr.WeaponGrid, cellSize, cellSpacing);
         bagGridUI.Init(mgr.BagGrid,       cellSize, cellSpacing);
         envGridUI?.Init(mgr.EnvGrid,      cellSize, cellSpacing);
+        envGridUI?.gameObject.SetActive(false);
 
         Debug.Log("[InventoryUI] Initialized.");
     }
 
+    public void ClearEnvGrid()
+    {
+        var mgr = InventoryManager.Instance;
+        foreach (var inst in new List<ModuleInstance>(mgr.EnvGrid.GetAllModules()))
+        {
+            if (inst.UIElement != null)
+                Destroy(inst.UIElement.gameObject);
+            mgr.EnvGrid.Remove(inst);
+        }
+    }
 
-    
+    public void SetEnvGridVisible(bool visible)
+    {
+        envGridUI.gameObject.SetActive(visible);
+    }
 
     private void Update()
     {

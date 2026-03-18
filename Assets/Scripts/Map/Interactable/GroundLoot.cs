@@ -49,6 +49,8 @@ public class GroundLoot : MonoBehaviour, IInteractable
             mgr.EnvGrid.Remove(inst);
         }
 
+        inventoryUI.SetEnvGridVisible(true);
+
         if (!_hasBeenOpened)
         {
             foreach (var entry in lootModules)

@@ -75,6 +75,7 @@ public class UIManager : MonoBehaviour
     }
 
     [SerializeField] private ShopUI shopUI;
+    [SerializeField] private InventoryUI inventoryUI;
 
     public void ToggleInventory()
     {
@@ -92,7 +93,8 @@ public class UIManager : MonoBehaviour
         if (!IsInventoryOpen)
         {
             ModuleTooltipUI.Instance?.Hide();
-
+            inventoryUI?.ClearEnvGrid();
+            inventoryUI?.SetEnvGridVisible(false);
         }
         UpdateHUDVisibility();
     }
