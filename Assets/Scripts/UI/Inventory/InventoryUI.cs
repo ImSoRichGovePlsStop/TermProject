@@ -94,8 +94,42 @@ public class InventoryUI : MonoBehaviour
         var ui = Instantiate(materialItemPrefab, bagGridUI.transform);
         ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
         ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
+        ui.InventoryUI = this;
 
         StartCoroutine(SnapNextFrame(ui, bagGridUI, inst.GridPosition));
+        return ui;
+    }
+
+    public MaterialItemUI SpawnSplitMaterial(MaterialData data, GridUI targetGridUI)
+    {
+        var inst = new MaterialInstance(data); // count = 1 เสมอ
+        var mgr  = InventoryManager.Instance;
+
+        bool placed;
+        if (targetGridUI == envGridUI)
+        {
+            placed = false;
+            for (int row = 0; row < mgr.EnvGrid.Height && !placed; row++)
+                for (int col = 0; col < mgr.EnvGrid.Width && !placed; col++)
+                    if (mgr.EnvGrid.TryPlace(inst, new Vector2Int(col, row)))
+                        placed = true;
+        }
+        else
+        {
+            placed = mgr.TryAddToBag(inst);
+        }
+
+        if (!placed)
+        {
+            Debug.LogWarning($"[InventoryUI] Grid full — cannot split {data.moduleName}");
+            return null;
+        }
+
+        var ui = Instantiate(materialItemPrefab, targetGridUI.transform);
+        ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+        ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
+        ui.InventoryUI = this;
+        StartCoroutine(SnapNextFrame(ui, targetGridUI, inst.GridPosition));
         return ui;
     }
 
@@ -113,6 +147,7 @@ public class InventoryUI : MonoBehaviour
         var ui = Instantiate(materialItemPrefab, envGridUI.transform);
         ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
         ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
+        ui.InventoryUI = this;
         StartCoroutine(SnapNextFrame(ui, envGridUI, inst.GridPosition));
         return ui;
     }
