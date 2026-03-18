@@ -68,6 +68,8 @@ public class RandomLoot : MonoBehaviour, IInteractable
             mgr.EnvGrid.Remove(inst);
         }
 
+        inventoryUI.SetEnvGridVisible(true);
+
         if (!_hasBeenOpened)
         {
             var rolled = Randomizer.Roll(minLootCount, maxLootCount, meanCost, sd, allowDuplicates);
