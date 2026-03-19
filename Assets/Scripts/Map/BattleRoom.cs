@@ -23,6 +23,9 @@ public class BattleRoom : MonoBehaviour
     private List<GameObject> spawnedEnemies = new List<GameObject>();
     public Material boundaryMaterial;
 
+
+
+
     void Start()
     {
         GameObject playerObj = GameObject.FindWithTag("Player");
@@ -35,8 +38,12 @@ public class BattleRoom : MonoBehaviour
         if (isLocked && !isCleared)
         {
             spawnedEnemies.RemoveAll(e => e == null);
-            if (spawnedEnemies.Count == 0)
+            if (spawnedEnemies.Count == 0) {
+                UIManager _uiManager = FindFirstObjectByType<UIManager>();
+                _uiManager.isInBattle = false;
                 ClearRoom();
+            }
+                
         }
     }
 
@@ -46,7 +53,16 @@ public class BattleRoom : MonoBehaviour
         {
             LockRoom();
             SpawnEnemies();
+            UIManager _uiManager = FindFirstObjectByType<UIManager>();
+            _uiManager.isInBattle = true;
+            _uiManager.CloseShop();
+
+            if (_uiManager.IsInventoryOpen)
+            {
+                _uiManager.ToggleInventory();
+            }
         }
+
     }
 
 
