@@ -7,13 +7,14 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Image))]
 public class MaterialItemUI : MonoBehaviour,
     IBeginDragHandler, IDragHandler, IEndDragHandler,
-    IPointerEnterHandler, IPointerExitHandler
+    IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     public MaterialInstance Instance { get; private set; }
 
     [HideInInspector] public GridUI WeaponGridUI;
     [HideInInspector] public GridUI BagGridUI;
     [HideInInspector] public GridUI EnvGridUI;
+    [HideInInspector] public InventoryUI InventoryUI;
 
     [SerializeField] private float dragAlpha = 0.6f;
     [SerializeField] private float borderSize = 4f;
@@ -216,9 +217,19 @@ public class MaterialItemUI : MonoBehaviour,
             var existing = g.Data.GetModuleAt(hoveredCell);
             if (existing is MaterialInstance target && Instance.CanStackOnto(target))
             {
-                _originGrid.Data.Remove(Instance);
-                target.AddStack();
-                Destroy(gameObject);
+                int toAdd = Mathf.Min(Instance.StackCount, target.MaxStack - target.StackCount);
+                for (int i = 0; i < toAdd; i++) target.AddStack();
+
+                if (toAdd >= Instance.StackCount)
+                {
+                    _originGrid.Data.Remove(Instance);
+                    Destroy(gameObject);
+                }
+                else
+                {
+                    for (int i = 0; i < toAdd; i++) Instance.RemoveStack();
+                    SnapToCell(_originGrid, _originCell);
+                }
                 return;
             }
 
@@ -229,6 +240,20 @@ public class MaterialItemUI : MonoBehaviour,
         }
 
         SnapToCell(_originGrid, _originCell);
+    }
+
+    public void OnPointerClick(PointerEventData e)
+    {
+        if (e.button != PointerEventData.InputButton.Right) return;
+        if (Instance.StackCount <= 1) return;
+        if (InventoryUI == null) return;
+
+        var targetGrid = Instance.CurrentGrid == InventoryManager.Instance.EnvGrid ? EnvGridUI : BagGridUI;
+
+        Instance.RemoveStack();
+        var ui = InventoryUI.SpawnSplitMaterial(Instance.MaterialData, targetGrid);
+        if (ui == null) // grid เต็ม — rollback
+            Instance.AddStack();
     }
 
     public void OnPointerEnter(PointerEventData e) => ModuleTooltipUI.Instance.Show(Instance);

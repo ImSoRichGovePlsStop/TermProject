@@ -56,6 +56,9 @@ public class UIManager : MonoBehaviour
                 ToggleInventory();
         }
 
+        if (Keyboard.current[Key.F].wasPressedThisFrame && IsInventoryOpen)
+            inventoryUI?.TakeAllFromEnv();
+
         if (passiveScreenUI != null && passiveScreenUI.IsOpen)
         {
             if (Keyboard.current[Key.R].isPressed)
@@ -75,6 +78,7 @@ public class UIManager : MonoBehaviour
     }
 
     [SerializeField] private ShopUI shopUI;
+    [SerializeField] private InventoryUI inventoryUI;
 
     public void ToggleInventory()
     {
@@ -92,7 +96,8 @@ public class UIManager : MonoBehaviour
         if (!IsInventoryOpen)
         {
             ModuleTooltipUI.Instance?.Hide();
-
+            inventoryUI?.ClearEnvGrid();
+            inventoryUI?.SetEnvGridVisible(false);
         }
         UpdateHUDVisibility();
     }
