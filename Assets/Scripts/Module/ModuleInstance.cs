@@ -51,4 +51,23 @@ public class ModuleInstance
         foreach (var c in relative) absolute.Add(GridPosition + c);
         return absolute;
     }
+    public float GetCostAtLevel()
+    {
+        if (Data.cost == null || Data.cost.Length == 0) return 0;
+        float baseCost = Data.cost[(int)Rarity];
+        for (int i = 0; i < Level; i++)
+        {
+            baseCost *= 1.15f;
+        }
+        return baseCost;
+    }
+
+    public float GetSellValueAtLevel()
+    {
+        return Mathf.Floor(GetCostAtLevel() * 0.75f);
+    }
+    public float GetUpgradeCost()
+    {
+        return GetCostAtLevel() * 0.3f;
+    }
 }
