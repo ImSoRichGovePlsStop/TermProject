@@ -24,4 +24,13 @@ public class MaterialInstance : ModuleInstance
             OnStackChanged?.Invoke();
         }
     }
+
+    public void RemoveStack()
+    {
+        if (StackCount > 0)
+        {
+            StackCount--;
+            OnStackChanged?.Invoke();
+        }
+    }
 }

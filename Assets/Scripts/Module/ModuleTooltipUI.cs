@@ -9,6 +9,7 @@ public class ModuleTooltipUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private TextMeshProUGUI rarityLevelText;
     [SerializeField] private TextMeshProUGUI descriptionText;
+    [SerializeField] private TextMeshProUGUI costText;
 
     private GridUI currentBuffGridUI;
     private GridUI weaponGridUIRef;
@@ -60,6 +61,11 @@ public class ModuleTooltipUI : MonoBehaviour
         descriptionText.fontSize = 15f;
         descriptionText.color = Color.white;
 
+        // Style CostText
+        costText.fontSize = 15f;
+        costText.fontStyle = FontStyles.Bold;
+        costText.color = Color.yellow;
+
         Hide();
     }
 
@@ -74,7 +80,7 @@ public class ModuleTooltipUI : MonoBehaviour
         descriptionText.text = inst.Data.moduleEffect != null
             ? inst.Data.moduleEffect.GetDescription(inst.Rarity, inst.Level, inst.RuntimeState)
             : "";
-
+        costText.text = $"Cost : {(int)inst.GetCostAtLevel()}";
         gameObject.SetActive(true);
 
         // Highlight buff cells
