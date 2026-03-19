@@ -27,6 +27,11 @@ public class WeaponEquip : MonoBehaviour
         currentWeapon = weapon;
         stats.ApplyWeapon(weapon);
         passiveManager?.OnWeaponEquipped(weapon.passiveData);
+
+        int level = WeaponLevelManager.Instance?.GetLevel(weapon) ?? 1;
+        Vector2Int gridSize = weapon.GetGridSize(level);
+        InventoryManager.Instance?.ExpandWeaponGrid(gridSize.x, gridSize.y);
+
         Debug.Log($"Equipped {weapon.weaponName}");
     }
 
