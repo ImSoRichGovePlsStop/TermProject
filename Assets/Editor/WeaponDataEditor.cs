@@ -9,6 +9,7 @@ public class WeaponDataEditor : Editor
     private bool comboFoldout = true;
     private bool secondaryFoldout = true;
     private bool cooldownFoldout = true;
+    private bool gridFoldout = true;
     private int selectedComboIndex = 0;
 
     public override void OnInspectorGUI()
@@ -131,6 +132,33 @@ public class WeaponDataEditor : Editor
             EditorGUILayout.PropertyField(serializedObject.FindProperty("comboCooldown"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("secondaryCooldown"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("comboResetTime"));
+            EditorGUI.indentLevel--;
+        }
+
+        EditorGUILayout.Space();
+
+        gridFoldout = EditorGUILayout.Foldout(gridFoldout, "Grid", true, EditorStyles.foldoutHeader);
+        if (gridFoldout)
+        {
+            EditorGUI.indentLevel++;
+            var gridProp = serializedObject.FindProperty("gridSizePerLevel");
+            for (int i = 0; i < gridProp.arraySize; i++)
+            {
+                var element = gridProp.GetArrayElementAtIndex(i);
+                var xProp = element.FindPropertyRelative("x");
+                var yProp = element.FindPropertyRelative("y");
+                var centeredField = new GUIStyle(EditorStyles.numberField) { alignment = TextAnchor.MiddleCenter };
+
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField($"Level {i + 1}", GUILayout.Width(70));
+                EditorGUILayout.LabelField("Row", GUILayout.Width(40));
+                GUILayout.Space(-10);
+                yProp.intValue = EditorGUILayout.IntField(yProp.intValue, centeredField, GUILayout.Width(40));
+                EditorGUILayout.LabelField("Col", GUILayout.Width(40));
+                GUILayout.Space(-10);
+                xProp.intValue = EditorGUILayout.IntField(xProp.intValue, centeredField, GUILayout.Width(40));
+                EditorGUILayout.EndHorizontal();
+            }
             EditorGUI.indentLevel--;
         }
 

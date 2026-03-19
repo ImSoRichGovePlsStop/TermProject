@@ -61,6 +61,7 @@ public class MapGenerator : MonoBehaviour
         GameObject bossRoomObj = CreateRoom("BossRoom", battleRoomSize, new Vector3(60, 0, 0));
         bossRoomObj.AddComponent<BattleRoom>();
         bossRoomObj.GetComponent<BattleRoom>().enemyPrefabs = new GameObject[] { enemiesPrefab[2] };
+        bossRoomObj.GetComponent<BattleRoom>().enemyCount=1;
         bossRoomObj.GetComponent<BattleRoom>().lootPrefab = lootPrefab;
         bossRoomObj.GetComponent<BattleRoom>().boundaryMaterial = boundaryMaterial;
 

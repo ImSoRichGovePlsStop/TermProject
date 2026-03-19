@@ -23,6 +23,7 @@ public class PassiveLeftPanelUI : MonoBehaviour
     private WeaponPassiveManager manager;
     private PlayerStats playerStats;
     private WeaponPassiveData currentData;
+    private WeaponData currentWeaponData;
 
     private void Awake()
     {
@@ -54,6 +55,7 @@ public class PassiveLeftPanelUI : MonoBehaviour
     public void Setup(WeaponPassiveData data, WeaponData weaponData)
     {
         currentData = data;
+        currentWeaponData = weaponData;
 
         weaponNameText.text = weaponData != null ? weaponData.weaponName : "Unknown";
         if (weaponIcon != null && weaponData != null && weaponData.icon != null)
@@ -64,12 +66,11 @@ public class PassiveLeftPanelUI : MonoBehaviour
 
     public void Refresh()
     {
-        if (currentData == null) return;
+        if (currentData == null || currentWeaponData == null) return;
 
-        int level = manager.GetLevel(currentData);
+        int level = WeaponLevelManager.Instance?.GetLevel(currentWeaponData) ?? 1;
         weaponLevelText.text = $"Lv. {level}";
 
-        // stats
         if (playerStats != null)
         {
             hpText.text = $"HP:  {playerStats.MaxHealth:F0}";
@@ -78,13 +79,12 @@ public class PassiveLeftPanelUI : MonoBehaviour
             critText.text = $"CRIT:  {playerStats.CritChance:P0} / {playerStats.CritDamage:P0}";
         }
 
-        // upgrade button
-        bool canLevelUp = manager.CanLevelUp(currentData);
+        bool canLevelUp = WeaponLevelManager.Instance?.CanLevelUp(currentWeaponData) ?? false;
         upgradeButton.interactable = canLevelUp;
-        int nextLevel = manager.GetLevel(currentData) + 1;
+        int nextLevel = level + 1;
         if (canLevelUp)
         {
-            int pts = nextLevel <= 15 ? GetPointsForLevel(nextLevel) : 0;
+            int pts = WeaponLevelManager.Instance?.GetPointsForLevel(nextLevel) ?? 0;
             upgradeButtonText.text = $"Upgrade (Lv.{nextLevel} +{pts}pt)";
         }
         else
@@ -95,17 +95,10 @@ public class PassiveLeftPanelUI : MonoBehaviour
 
     private void OnUpgradeClick()
     {
-        if (manager.TryLevelUp(currentData))
+        if (WeaponLevelManager.Instance?.TryLevelUp(currentWeaponData) == true)
             Refresh();
 
         FindFirstObjectByType<PassiveScreenUI>()?.RefreshPoints();
         FindFirstObjectByType<PassiveScreenUI>()?.RefreshAll();
-    }
-
-    private int GetPointsForLevel(int level)
-    {
-        int[] table = { 0, 0, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5 };
-        if (level < 0 || level >= table.Length) return 0;
-        return table[level];
     }
 }

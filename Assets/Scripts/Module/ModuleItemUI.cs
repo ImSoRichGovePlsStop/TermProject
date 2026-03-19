@@ -221,11 +221,12 @@ public class ModuleItemUI : MonoBehaviour,
 
         GridUI targetGrid = null;
         Vector2Int pivot = Vector2Int.zero;
+        Vector2 sampleScreen = GetClickedCellCenterScreen();
 
         foreach (var g in new[] { WeaponGridUI, BagGridUI, EnvGridUI })
         {
             if (g == null) continue;
-            if (g.ScreenToCell(e.position, UICam(), out var hoveredCell))
+            if (g.ScreenToCell(sampleScreen, UICam(), out var hoveredCell))
             {
                 targetGrid = g;
                 pivot = hoveredCell - _clickedCell;
@@ -282,10 +283,12 @@ public class ModuleItemUI : MonoBehaviour,
     private void UpdateHighlight(PointerEventData e)
     {
         ClearHighlights();
+        Vector2 sampleScreen = GetClickedCellCenterScreen();
+
         foreach (var g in new[] { WeaponGridUI, BagGridUI, EnvGridUI })
         {
             if (g == null) continue;
-            if (g.ScreenToCell(e.position, UICam(), out var hoveredCell))
+            if (g.ScreenToCell(sampleScreen, UICam(), out var hoveredCell))
             {
                 var pivot = hoveredCell - _clickedCell;
                 g.HighlightCells(Instance.Data, pivot, g.Data.CanPlace(Instance, pivot));
@@ -313,6 +316,19 @@ public class ModuleItemUI : MonoBehaviour,
         int row = Mathf.FloorToInt(-localPoint.y / (cs + sp));
 
         return new Vector2Int(Mathf.Max(0, col), Mathf.Max(0, row));
+    }
+
+    private Vector2 GetClickedCellCenterScreen()
+    {
+        float cs = WeaponGridUI.CellSize;
+        float sp = WeaponGridUI.CellSpacing;
+
+        Vector2 cellCenterLocal = new Vector2(
+            (_clickedCell.x + 0.5f) * (cs + sp),
+           -(_clickedCell.y + 0.5f) * (cs + sp)
+        );
+        Vector3 worldCenter = _rt.TransformPoint(cellCenterLocal);
+        return RectTransformUtility.WorldToScreenPoint(UICam(), worldCenter);
     }
 
     private Camera UICam() =>
