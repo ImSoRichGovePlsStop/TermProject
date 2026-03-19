@@ -17,6 +17,27 @@ public class DamageModule : ModuleEffect
     {
         stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveDamage(state) });
     }
+    public override void OnLevelBuffReceived(int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
+    {
+        stats.RemoveFlatModifier(new StatModifier { health = GetEffectiveDamage(state) });
+        state.buffedLevel += levelBonus;
+        state.currentStat += levelBonus * levelMultiplier * baseStatPerRarity[(int)rarity];
+        stats.AddFlatModifier(new StatModifier { health = GetEffectiveDamage(state) });
+    }
+
+    public override void OnLevelBuffRemoved(int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
+    {
+        if (!state.isActive)
+        {
+            state.buffedLevel -= levelBonus;
+            state.currentStat -= levelBonus * levelMultiplier;
+            return;
+        }
+        stats.RemoveFlatModifier(new StatModifier { health = GetEffectiveDamage(state) });
+        state.buffedLevel -= levelBonus;
+        state.currentStat -= levelBonus * levelMultiplier * baseStatPerRarity[(int)rarity];
+        stats.AddFlatModifier(new StatModifier { health = GetEffectiveDamage(state) });
+    }
 
     public override void OnBuffReceived(float percent, PlayerStats stats, ModuleRuntimeState state)
     {
@@ -41,7 +62,7 @@ public class DamageModule : ModuleEffect
     {
         float baseStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
         float effective = GetEffectiveDamage(state);
-        if (state.totalBuffPercent > 0f)
+        if (effective != baseStat & state.isActive)
             return $"<s>+{baseStat * 100f:F0}%</s> +{effective * 100f:F0}% Damage";
         return $"+{baseStat * 100f:F0}% Damage";
     }
