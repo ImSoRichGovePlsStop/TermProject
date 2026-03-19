@@ -5,10 +5,6 @@ public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance { get; private set; }
 
-    [Header("Weapon Grid")]
-    [SerializeField] private int weaponCols = 5;
-    [SerializeField] private int weaponRows = 5;
-
     [Header("Bag Grid")]
     [SerializeField] private int bagCols = 8;
     [SerializeField] private int bagRows = 8;
@@ -29,14 +25,14 @@ public class InventoryManager : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
 
-        WeaponGrid = new GridData(weaponCols, weaponRows, isWeaponGrid: true);
+        WeaponGrid = new GridData(1, 1, isWeaponGrid: true);
         BagGrid    = new GridData(bagCols,    bagRows,    isWeaponGrid: false);
         EnvGrid    = new GridData(envCols,    envRows,    isWeaponGrid: false);
 
         WeaponGrid.OnModulePlaced  += inst => OnModuleEquipped?.Invoke(inst);
         WeaponGrid.OnModuleRemoved += inst => OnModuleUnequipped?.Invoke(inst);
 
-        GetComponent<InventoryLayout>()?.ApplyLayout(weaponCols, weaponRows, bagCols, bagRows, envCols, envRows);
+        GetComponent<InventoryLayout>()?.ApplyLayout(1, 1, bagCols, bagRows, envCols, envRows);
     }
 
     public bool TryMoveModule(ModuleInstance inst, GridData targetGrid, Vector2Int pivot)
@@ -67,5 +63,12 @@ public class InventoryManager : MonoBehaviour
         var evicted = new List<ModuleInstance>();
         WeaponGrid.Resize(newCols, newRows, evicted);
         foreach (var inst in evicted) TryAddToBag(inst);
+
+        var layout = GetComponent<InventoryLayout>();
+        var inventoryUI = FindFirstObjectByType<InventoryUI>(FindObjectsInactive.Include);
+        if (layout == null || inventoryUI == null) return;
+
+        inventoryUI.WeaponGridUI.Init(WeaponGrid, layout.CellSize, layout.CellSpacing);
+        layout.ApplyLayout(newCols, newRows, BagGrid.Width, BagGrid.Height, EnvGrid.Width, EnvGrid.Height);
     }
 }

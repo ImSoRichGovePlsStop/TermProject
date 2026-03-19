@@ -71,3 +71,19 @@ MonoBehaviour:
   comboCooldown: 0.2
   secondaryCooldown: 0.5
   comboResetTime: 0.8
+  gridSizePerLevel:
+  - {x: 4, y: 2}
+  - {x: 4, y: 2}
+  - {x: 4, y: 3}
+  - {x: 4, y: 3}
+  - {x: 4, y: 3}
+  - {x: 4, y: 3}
+  - {x: 5, y: 3}
+  - {x: 5, y: 3}
+  - {x: 5, y: 3}
+  - {x: 5, y: 4}
+  - {x: 5, y: 4}
+  - {x: 6, y: 4}
+  - {x: 6, y: 4}
+  - {x: 6, y: 4}
+  - {x: 6, y: 5}

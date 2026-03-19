@@ -29,11 +29,25 @@ public abstract class ModuleEffect : ScriptableObject
     public virtual void OnUpdate(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state) { }
     public virtual void OnBuffReceived(float percent, PlayerStats stats, ModuleRuntimeState state) { }
     public virtual void OnBuffRemoved(float percent, PlayerStats stats, ModuleRuntimeState state) { }
+    public virtual void OnLevelBuffReceived(int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state) { }
+    public virtual void OnLevelBuffRemoved(int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state) { }
 
     protected abstract void OnEquip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state);
     protected abstract void OnUnequip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state);
 
     public abstract string GetDescription(Rarity rarity, int level, ModuleRuntimeState state);
+
+    public virtual string GetLevelText( int level, ModuleRuntimeState state)
+    {
+        if (state.buffedLevel != 0)
+            return $"<s>Lv.{level}</s> Lv.{level + state.buffedLevel}";
+        return $"Lv.{level}";
+    }
+    public virtual string GetRarityText(Rarity rarity, ModuleRuntimeState state)
+    {
+        return $"{rarity}";
+    }
+
 
     protected float GetFinalStat(float[] baseStatPerRarity, float levelMultiplier, Rarity rarity, int level)
     {

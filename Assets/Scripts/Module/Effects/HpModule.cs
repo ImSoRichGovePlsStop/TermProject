@@ -4,7 +4,7 @@ using UnityEngine;
 public class HpModule : ModuleEffect
 {
     [Header("Stat per Rarity (Common -> Legendary)")]
-    public float[] baseStatPerRarity = {0f, 0f, 0f, 0f, 0f};
+    public float[] baseStatPerRarity = { 0f, 0f, 0f, 0f, 0f };
     public float levelMultiplier;
     public Color moduleColor = Color.green;
 
@@ -17,6 +17,28 @@ public class HpModule : ModuleEffect
     protected override void OnUnequip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state)
     {
         stats.RemoveFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
+    }
+
+    public override void OnLevelBuffReceived(int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
+    {
+        stats.RemoveFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
+        state.buffedLevel += levelBonus;
+        state.currentStat += levelBonus * levelMultiplier * baseStatPerRarity[(int)rarity];
+        stats.AddFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
+    }
+
+    public override void OnLevelBuffRemoved(int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
+    {
+        if (!state.isActive)
+        {
+            state.buffedLevel -= levelBonus;
+            state.currentStat -= levelBonus * levelMultiplier;
+            return;
+        }
+        stats.RemoveFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
+        state.buffedLevel -= levelBonus;
+        state.currentStat -= levelBonus * levelMultiplier * baseStatPerRarity[(int)rarity];
+        stats.AddFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
     }
 
     public override void OnBuffReceived(float percent, PlayerStats stats, ModuleRuntimeState state)
@@ -42,7 +64,7 @@ public class HpModule : ModuleEffect
     {
         float baseStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
         float effective = GetEffectiveStat(state);
-        if (state.totalBuffPercent > 0f)
+        if (effective!= baseStat&state.isActive)
             return $"<s>+{baseStat:F0}</s> +{effective:F0} HP";
         return $"+{baseStat:F0} HP";
     }
