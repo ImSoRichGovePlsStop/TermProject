@@ -53,15 +53,16 @@ public class BattleRoom : MonoBehaviour
         {
             LockRoom();
             SpawnEnemies();
-        }
-        UIManager _uiManager = FindFirstObjectByType<UIManager>();
-        _uiManager.isInBattle = true;
-        _uiManager.CloseShop();
+            UIManager _uiManager = FindFirstObjectByType<UIManager>();
+            _uiManager.isInBattle = true;
+            _uiManager.CloseShop();
 
-        if (_uiManager.IsInventoryOpen)
-        {
-            _uiManager.ToggleInventory();
+            if (_uiManager.IsInventoryOpen)
+            {
+                _uiManager.ToggleInventory();
+            }
         }
+
     }
 
 

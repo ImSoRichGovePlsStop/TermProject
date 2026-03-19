@@ -61,8 +61,8 @@ public class UIManager : MonoBehaviour
                     ToggleInventory();
             }
 
-        if (Keyboard.current[Key.F].wasPressedThisFrame && IsInventoryOpen)
-            inventoryUI?.TakeAllFromEnv();
+            if (Keyboard.current[Key.F].wasPressedThisFrame && IsInventoryOpen)
+            { inventoryUI?.TakeAllFromEnv(); }
 
             if (passiveScreenUI != null && passiveScreenUI.IsOpen)
             {
