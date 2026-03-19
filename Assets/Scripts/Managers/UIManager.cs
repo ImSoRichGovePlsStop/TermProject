@@ -8,6 +8,8 @@ public class UIManager : MonoBehaviour
     private PassiveScreenUI passiveScreenUI;
     private ShopUI _activeShopUI;
     [SerializeField] private GameObject hud;
+
+    public bool isInBattle { get; set; }
     public bool IsInventoryOpen { get; private set; }
     public bool IsShopOpen => _activeShopUI != null && _activeShopUI.gameObject.activeSelf;
 
@@ -38,40 +40,45 @@ public class UIManager : MonoBehaviour
 
     private void Update()
     {
-        if (Keyboard.current[Key.Tab].wasPressedThisFrame)
-        {
-            if (!passiveScreenUI.IsOpen)
-                ToggleInventory();
-            else
-                passiveScreenUI.Close();
-        }
 
-        if (Keyboard.current[Key.Escape].wasPressedThisFrame)
-        {
-            if (passiveScreenUI.IsOpen)
-                passiveScreenUI.Close();
-            else if (_activeShopUI != null && _activeShopUI.gameObject.activeSelf)
-                CloseShop();
-            else if (IsInventoryOpen)
-                ToggleInventory();
-        }
+        if (!isInBattle) {
 
-        if (passiveScreenUI != null && passiveScreenUI.IsOpen)
-        {
-            if (Keyboard.current[Key.R].isPressed)
+            if (Keyboard.current[Key.Tab].wasPressedThisFrame)
             {
-                holdTime += Time.deltaTime;
-                if (holdTime >= holdDuration)
+                if (!passiveScreenUI.IsOpen)
+                    ToggleInventory();
+                else
+                    passiveScreenUI.Close();
+            }
+
+            if (Keyboard.current[Key.Escape].wasPressedThisFrame)
+            {
+                if (passiveScreenUI.IsOpen)
+                    passiveScreenUI.Close();
+                else if (_activeShopUI != null && _activeShopUI.gameObject.activeSelf)
+                    CloseShop();
+                else if (IsInventoryOpen)
+                    ToggleInventory();
+            }
+
+            if (passiveScreenUI != null && passiveScreenUI.IsOpen)
+            {
+                if (Keyboard.current[Key.R].isPressed)
                 {
-                    passiveScreenUI.OnResetHeld();
+                    holdTime += Time.deltaTime;
+                    if (holdTime >= holdDuration)
+                    {
+                        passiveScreenUI.OnResetHeld();
+                        holdTime = 0f;
+                    }
+                }
+                else
+                {
                     holdTime = 0f;
                 }
             }
-            else
-            {
-                holdTime = 0f;
-            }
         }
+        
     }
 
     [SerializeField] private ShopUI shopUI;
