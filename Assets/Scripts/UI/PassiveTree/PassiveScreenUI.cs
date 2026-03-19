@@ -88,7 +88,8 @@ public class PassiveScreenUI : MonoBehaviour
 
     public void OnResetHeld()
     {
-        manager.ResetPassive(currentData);
+        int totalPoints = WeaponLevelManager.Instance.GetTotalPoints(currentWeaponData);
+        manager.ResetPassive(currentData, totalPoints);
         RefreshAll();
         RefreshPoints();
     }

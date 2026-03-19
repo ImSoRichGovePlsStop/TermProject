@@ -15,6 +15,8 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private ModuleItemUI  moduleItemPrefab;
     [SerializeField] private MaterialItemUI materialItemPrefab;
 
+    public GridUI WeaponGridUI => weaponGridUI;
+
     private void Awake()
     {
         var mgr    = InventoryManager.Instance;
