@@ -48,6 +48,36 @@ public class InventoryUI : MonoBehaviour
         envGridUI.gameObject.SetActive(visible);
     }
 
+    public void TakeAllFromEnv()
+    {
+        var mgr = InventoryManager.Instance;
+        var toTake = new List<ModuleInstance>(mgr.EnvGrid.GetAllModules());
+        if (toTake.Count == 0) return;
+
+        foreach (var inst in toTake)
+        {
+            var uiElem = inst.UIElement;
+            mgr.EnvGrid.Remove(inst);
+
+            if (!mgr.TryAddToBag(inst))
+            {
+                bool restored = false;
+                for (int row = 0; row < mgr.EnvGrid.Height && !restored; row++)
+                    for (int col = 0; col < mgr.EnvGrid.Width && !restored; col++)
+                        if (mgr.EnvGrid.TryPlace(inst, new Vector2Int(col, row)))
+                            restored = true;
+                continue;
+            }
+
+            if (uiElem == null) continue;
+            uiElem.transform.SetParent(bagGridUI.transform, false);
+            if (uiElem is MaterialItemUI matUI)
+                StartCoroutine(SnapNextFrame(matUI, bagGridUI, inst.GridPosition));
+            else if (uiElem is ModuleItemUI modUI)
+                StartCoroutine(SnapNextFrame(modUI, bagGridUI, inst.GridPosition));
+        }
+    }
+
     private void Update()
     {
         if (shopUI == null) return;
