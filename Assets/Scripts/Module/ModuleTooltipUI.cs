@@ -76,7 +76,7 @@ public class ModuleTooltipUI : MonoBehaviour
 
         nameText.text = inst.Data.moduleName;
         nameText.color = RarityColor(inst.Rarity);
-        rarityLevelText.text = $"{inst.Rarity}  Lv.{inst.Level}";
+        rarityLevelText.text = $"{inst.Data.moduleEffect.GetRarityText(inst.Rarity, inst.RuntimeState)} {inst.Data.moduleEffect.GetLevelText(inst.Level, inst.RuntimeState)}" ;
         descriptionText.text = inst.Data.moduleEffect != null
             ? inst.Data.moduleEffect.GetDescription(inst.Rarity, inst.Level, inst.RuntimeState)
             : "";

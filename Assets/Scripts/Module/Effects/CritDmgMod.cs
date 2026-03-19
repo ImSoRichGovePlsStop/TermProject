@@ -17,6 +17,27 @@ public class CritDmgMod : ModuleEffect
     {
         stats.RemoveFlatModifier(new StatModifier { critDamage = GetEffectiveStat(state) });
     }
+    public override void OnLevelBuffReceived(int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
+    {
+        stats.RemoveFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
+        state.buffedLevel += levelBonus;
+        state.currentStat += levelBonus * levelMultiplier * baseStatPerRarity[(int)rarity];
+        stats.AddFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
+    }
+
+    public override void OnLevelBuffRemoved(int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
+    {
+        if (!state.isActive)
+        {
+            state.buffedLevel -= levelBonus;
+            state.currentStat -= levelBonus * levelMultiplier;
+            return;
+        }
+        stats.RemoveFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
+        state.buffedLevel -= levelBonus;
+        state.currentStat -= levelBonus * levelMultiplier * baseStatPerRarity[(int)rarity];
+        stats.AddFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
+    }
 
     public override void OnBuffReceived(float percent, PlayerStats stats, ModuleRuntimeState state)
     {
@@ -41,7 +62,7 @@ public class CritDmgMod : ModuleEffect
     {
         float baseStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
         float effective = GetEffectiveStat(state);
-        if (state.totalBuffPercent > 0f)
+        if (effective != baseStat & state.isActive)
             return $"<s>+{baseStat * 100f:F0}%</s> +{effective * 100f:F0}% Critical Damage";
         return $"+{baseStat * 100f:F0}% Critical Damage";
     }
