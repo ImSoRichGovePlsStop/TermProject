@@ -346,7 +346,8 @@ public class PlayerController : MonoBehaviour
         if (uiManager == null) return false;
         return uiManager.IsInventoryOpen
             || uiManager.IsShopOpen
-            || (uiManager.GetPassiveScreen()?.IsOpen ?? false);
+            || (uiManager.GetPassiveScreen()?.IsOpen ?? false)
+            || (uiManager.GetGamblerScreen()?.IsOpen ?? false);
     }
 
     public void OnHitVFX()

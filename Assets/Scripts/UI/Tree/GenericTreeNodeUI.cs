@@ -52,8 +52,9 @@ public class GenericTreeNodeUI : MonoBehaviour, IPointerEnterHandler, IPointerEx
     private void OnClick()
     {
         var state = manager.GetState(owner, tree);
-        bool changed;
+        int pts = manager.GetAvailablePoints(owner);
 
+        bool changed;
         if (state.IsUnlocked(node))
             changed = manager.TryRefund(node, tree, owner);
         else

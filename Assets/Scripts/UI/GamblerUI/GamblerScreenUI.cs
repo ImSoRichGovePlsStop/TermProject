@@ -116,6 +116,7 @@ public class GamblerScreenUI : MonoBehaviour, IGenericTreeScreenUI
         currentStation?.TryLevelUp();
         RefreshLevel();
         RefreshPoints();
+        RefreshAll();
     }
 
     public void OnResetHeld()
