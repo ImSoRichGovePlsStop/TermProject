@@ -15,5 +15,9 @@ MonoBehaviour:
   nodeName: Ascension
   description: Hitting the mark upgrades that module to the next rarity for free.
     Once per shop.
+  cost: 3
+  parents:
+  - {fileID: 11400000, guid: b2d0339f36cf0d34b87968c52a5a33c4, type: 2}
+  requireAllParents: 0
   layer: 5
   branch: 1

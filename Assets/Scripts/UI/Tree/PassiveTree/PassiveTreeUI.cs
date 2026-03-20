@@ -15,19 +15,19 @@ public class PassiveTreeUI : MonoBehaviour
     private Color lineColor = new Color(0.4f, 0.4f, 0.4f, 0.3f);
     private float lineWidth = 3f;
 
-    private PassiveTree tree;
+    private GenericTreeData tree;
     private WeaponPassiveManager manager;
-    private PassiveNodeUI[] nodeUIs;
     private WeaponPassiveData passiveData;
     private bool tooltipAnchorLeft;
 
-    private Dictionary<(int layer, int branch), RectTransform> nodeRects
-        = new Dictionary<(int, int), RectTransform>();
+    private List<PassiveNodeUI> nodeUIs = new List<PassiveNodeUI>();
+    private Dictionary<GenericTreeNode, RectTransform> nodeRects
+        = new Dictionary<GenericTreeNode, RectTransform>();
+    private List<(Image line, GenericTreeNode fromNode, GenericTreeNode toNode)> lineImages
+        = new List<(Image, GenericTreeNode, GenericTreeNode)>();
 
-    private List<(Image line, PassiveNode fromNode, PassiveNode toNode)> lineImages
-    = new List<(Image, PassiveNode, PassiveNode)>();
-
-    public void Setup(PassiveTree tree, WeaponPassiveManager manager, PassiveScreenUI screenUI, WeaponPassiveData data, bool tooltipAnchorLeft = false)
+    public void Setup(GenericTreeData tree, WeaponPassiveManager manager, IGenericTreeScreenUI screenUI,
+                  WeaponPassiveData data, bool tooltipAnchorLeft = false)
     {
         this.tree = tree;
         this.manager = manager;
@@ -36,15 +36,23 @@ public class PassiveTreeUI : MonoBehaviour
 
         treeNameText.text = tree.treeName;
         treeNameText.color = tree.treeColor;
-        nodeUIs = new PassiveNodeUI[tree.nodes.Length];
+
+        nodeUIs.Clear();
         nodeRects.Clear();
         lineImages.Clear();
 
-        for (int layer = 1; layer <= 6; layer++)
+        Dictionary<GenericTreeNode, int> layerMap = ComputeLayers();
+        Dictionary<int, List<GenericTreeNode>> layers = GroupByLayer(layerMap);
+
+        int maxLayer = 0;
+        foreach (var k in layers.Keys)
+            if (k > maxLayer) maxLayer = k;
+
+        for (int layer = 0; layer <= maxLayer; layer++)
         {
-            List<PassiveNode> layerNodes = new List<PassiveNode>();
-            foreach (var node in tree.nodes)
-                if (node.layer == layer) layerNodes.Add(node);
+            if (!layers.ContainsKey(layer)) continue;
+
+            var layerNodes = layers[layer];
 
             RectTransform prefabRect = nodeUIPrefab.GetComponent<RectTransform>();
             float nodeHeight = prefabRect.sizeDelta.y;
@@ -64,26 +72,67 @@ public class PassiveTreeUI : MonoBehaviour
             hlg.childForceExpandWidth = false;
             hlg.childForceExpandHeight = false;
 
-            if (layerNodes.Count == 0) continue;
-
-            layerNodes.Sort((a, b) => a.branch.CompareTo(b.branch));
-
             foreach (var node in layerNodes)
             {
                 GameObject obj = Instantiate(nodeUIPrefab, row.transform);
                 PassiveNodeUI nodeUI = obj.GetComponent<PassiveNodeUI>();
                 nodeUI.Setup(node, tree, manager, screenUI, data, tooltipAnchorLeft);
 
-                nodeRects[(node.layer, node.branch)] = obj.GetComponent<RectTransform>();
-
-                for (int i = 0; i < nodeUIs.Length; i++)
-                {
-                    if (nodeUIs[i] == null) { nodeUIs[i] = nodeUI; break; }
-                }
+                nodeUIs.Add(nodeUI);
+                nodeRects[node] = obj.GetComponent<RectTransform>();
             }
         }
 
         StartCoroutine(DrawLinesAfterLayout());
+    }
+
+    private Dictionary<GenericTreeNode, int> ComputeLayers()
+    {
+        var layerMap = new Dictionary<GenericTreeNode, int>();
+        var visited = new HashSet<GenericTreeNode>();
+
+        foreach (var node in tree.nodes)
+            AssignLayer(node, layerMap, visited);
+
+        return layerMap;
+    }
+
+    private int AssignLayer(GenericTreeNode node, Dictionary<GenericTreeNode, int> layerMap,
+                             HashSet<GenericTreeNode> visited)
+    {
+        if (layerMap.ContainsKey(node)) return layerMap[node];
+        if (visited.Contains(node)) { layerMap[node] = 0; return 0; }
+
+        visited.Add(node);
+
+        if (node.parents == null || node.parents.Length == 0)
+        {
+            layerMap[node] = 0;
+            return 0;
+        }
+
+        int maxParentLayer = -1;
+        foreach (var parent in node.parents)
+        {
+            if (parent == null) continue;
+            int parentLayer = AssignLayer(parent, layerMap, visited);
+            if (parentLayer > maxParentLayer) maxParentLayer = parentLayer;
+        }
+
+        layerMap[node] = maxParentLayer + 1;
+        return maxParentLayer + 1;
+    }
+
+    private Dictionary<int, List<GenericTreeNode>> GroupByLayer(Dictionary<GenericTreeNode, int> layerMap)
+    {
+        var result = new Dictionary<int, List<GenericTreeNode>>();
+        foreach (var kvp in layerMap)
+        {
+            if (!result.ContainsKey(kvp.Value))
+                result[kvp.Value] = new List<GenericTreeNode>();
+            result[kvp.Value].Add(kvp.Key);
+        }
+        return result;
     }
 
     private IEnumerator DrawLinesAfterLayout()
@@ -93,50 +142,36 @@ public class PassiveTreeUI : MonoBehaviour
 
         if (lineContainer == null) yield break;
 
-        var connections = new List<((int l, int b) from, (int l, int b) to)>
+        foreach (var node in tree.nodes)
         {
-            ((1,0),(2,0)),
-            ((2,0),(3,1)),
-            ((2,0),(3,2)),
-            ((3,1),(4,0)),
-            ((3,2),(4,0)),
-            ((4,0),(5,1)),
-            ((4,0),(5,2)),
-            ((5,1),(6,0)),
-            ((5,2),(6,0)),
-        };
-
-        foreach (var (from, to) in connections)
-        {
-            if (!nodeRects.ContainsKey(from) || !nodeRects.ContainsKey(to)) continue;
-
-            PassiveNode fromNode = null, toNode = null;
-            foreach (var node in tree.nodes)
+            if (node.parents == null) continue;
+            foreach (var parent in node.parents)
             {
-                if (node.layer == from.l && node.branch == from.b) fromNode = node;
-                if (node.layer == to.l && node.branch == to.b) toNode = node;
+                if (parent == null) continue;
+                if (!nodeRects.ContainsKey(parent) || !nodeRects.ContainsKey(node)) continue;
+                DrawLine(nodeRects[parent], nodeRects[node], parent, node);
             }
-            DrawLine(nodeRects[from], nodeRects[to], fromNode, toNode);
         }
 
         RefreshLineColors();
     }
 
-    private void DrawLine(RectTransform fromRect, RectTransform toRect, PassiveNode fromNode, PassiveNode toNode)
+    private void DrawLine(RectTransform fromRect, RectTransform toRect,
+                           GenericTreeNode fromNode, GenericTreeNode toNode)
     {
         Vector2 fromPos = GetLocalPos(fromRect);
         Vector2 toPos = GetLocalPos(toRect);
 
-        Vector2 midFrom = new Vector2(fromPos.x, (fromPos.y + toPos.y) / 2f);
-        Vector2 midTo = new Vector2(toPos.x, (fromPos.y + toPos.y) / 2f);
+        Vector2 mid1 = new Vector2(fromPos.x, (fromPos.y + toPos.y) / 2f);
+        Vector2 mid2 = new Vector2(toPos.x, (fromPos.y + toPos.y) / 2f);
 
-        Image img1 = CreateLineSegment(fromPos, midFrom);
-        Image img2 = CreateLineSegment(midFrom, midTo);
-        Image img3 = CreateLineSegment(midTo, toPos);
+        Image seg1 = CreateLineSegment(fromPos, mid1);
+        Image seg2 = CreateLineSegment(mid1, mid2);
+        Image seg3 = CreateLineSegment(mid2, toPos);
 
-        lineImages.Add((img1, fromNode, toNode));
-        lineImages.Add((img2, fromNode, toNode));
-        lineImages.Add((img3, fromNode, toNode));
+        lineImages.Add((seg1, fromNode, toNode));
+        lineImages.Add((seg2, fromNode, toNode));
+        lineImages.Add((seg3, fromNode, toNode));
     }
 
     private Image CreateLineSegment(Vector2 from, Vector2 to)
@@ -169,12 +204,13 @@ public class PassiveTreeUI : MonoBehaviour
     private void RefreshLineColors()
     {
         if (manager == null || passiveData == null) return;
-        var state = manager.GetState(passiveData);
+        int pts = manager.GetAvailablePoints(passiveData);
+        var state = manager.GetState(passiveData, tree);
         foreach (var (img, fromNode, toNode) in lineImages)
         {
             if (fromNode == null || toNode == null) continue;
             bool fromActive = state.IsUnlocked(fromNode);
-            bool toActive = state.IsUnlocked(toNode) || state.CanUnlock(toNode, tree);
+            bool toActive = state.IsUnlocked(toNode) || state.CanUnlock(toNode, pts);
             Color litColor = tree.treeColor;
             litColor.a = 0.5f;
             img.color = (fromActive && toActive) ? litColor : lineColor;
@@ -183,7 +219,6 @@ public class PassiveTreeUI : MonoBehaviour
 
     public void RefreshAll()
     {
-        if (nodeUIs == null) return;
         foreach (var nodeUI in nodeUIs)
             nodeUI.Refresh();
         RefreshLineColors();
@@ -196,7 +231,7 @@ public class PassiveTreeUI : MonoBehaviour
         if (lineContainer != null)
             foreach (Transform child in lineContainer)
                 Destroy(child.gameObject);
-        nodeUIs = null;
+        nodeUIs.Clear();
         nodeRects.Clear();
         lineImages.Clear();
     }

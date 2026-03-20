@@ -14,5 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Max Stacks +5
   description: Maximum stacks increased from 10 to 15.
+  cost: 1
+  parents:
+  - {fileID: 11400000, guid: 0fc7b2572d334a2419bc7cac5b32b69c, type: 2}
+  requireAllParents: 0
   layer: 2
   branch: 0

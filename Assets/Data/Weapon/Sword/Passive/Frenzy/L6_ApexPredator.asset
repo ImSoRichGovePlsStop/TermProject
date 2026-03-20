@@ -15,5 +15,10 @@ MonoBehaviour:
   nodeName: Apex Predator
   description: 'Reaching max stacks triggers Apex State (5s). Gain +35% attack speed
     and all hits always crit. CD: 30s.'
+  cost: 4
+  parents:
+  - {fileID: 11400000, guid: 0e7390407d037cd4193075ba9879c9a0, type: 2}
+  - {fileID: 11400000, guid: f8e9a495fa29873458fc85a1bf66f5fe, type: 2}
+  requireAllParents: 0
   layer: 6
   branch: 0

@@ -15,5 +15,9 @@ MonoBehaviour:
   nodeName: 3rd Hit = 3 Stacks
   description: The 3rd hit of the primary combo (the final heavy hit) grants 3 stacks
     instead of 1.
+  cost: 2
+  parents:
+  - {fileID: 11400000, guid: bc5b5f946b2522b4db80f4e25d619e9b, type: 2}
+  requireAllParents: 0
   layer: 3
   branch: 2

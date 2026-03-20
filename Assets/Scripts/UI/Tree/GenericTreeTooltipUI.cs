@@ -1,9 +1,9 @@
 using UnityEngine;
 using TMPro;
 
-public class PassiveTooltipUI : MonoBehaviour
+public class GenericTreeTooltipUI : MonoBehaviour
 {
-    public static PassiveTooltipUI Instance;
+    public static GenericTreeTooltipUI Instance;
 
     [Header("References")]
     [SerializeField] private GameObject panel;
@@ -18,28 +18,25 @@ public class PassiveTooltipUI : MonoBehaviour
         Instance = this;
         panel.SetActive(false);
 
-        // Name
         nameText.fontSize = 20;
         nameText.fontStyle = FontStyles.Bold;
 
-        // Description
         descriptionText.fontSize = 14;
         descriptionText.fontStyle = FontStyles.Normal;
         descriptionText.color = new Color(0.88f, 0.88f, 0.88f);
 
-        // Cost
         costText.fontSize = 14;
         costText.fontStyle = FontStyles.Bold;
         costText.color = new Color(1f, 0.82f, 0.2f);
     }
 
-    public void Show(PassiveNode node, RectTransform nodeRect, bool anchorLeft = false, Color nameColor = default)
+    public void Show(GenericTreeNode node, RectTransform nodeRect, bool anchorLeft = false, Color nameColor = default)
     {
         nameText.text = node.nodeName;
         nameText.color = nameColor == default ? new Color(0.4f, 0.85f, 1f) : nameColor;
 
         descriptionText.text = node.description;
-        costText.text = $"Cost: {node.Cost} pt";
+        costText.text = $"Cost: {node.cost} pt";
         panel.SetActive(true);
 
         Vector2 screenPos = RectTransformUtility.WorldToScreenPoint(canvas.worldCamera, nodeRect.position);
