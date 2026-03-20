@@ -56,6 +56,7 @@ public class PlayerController : MonoBehaviour
     public void OnDash(InputAction.CallbackContext ctx)
     {
         if (!ctx.started) return;
+        if (IsAnyUIOpen()) return;
         if (isDashing) return;
         if (dashCooldownTimer > 0) return;
 
@@ -78,6 +79,7 @@ public class PlayerController : MonoBehaviour
     public void OnPrimaryAttack(InputAction.CallbackContext ctx)
     {
         if (!ctx.started) return;
+        if (IsAnyUIOpen()) return;
         if (isPrimaryAttacking || isSecondaryAttacking) return;
         if (attackCooldownTimer > 0) return;
 
@@ -115,6 +117,7 @@ public class PlayerController : MonoBehaviour
     public void OnSecondaryAttack(InputAction.CallbackContext ctx)
     {
         if (!ctx.started) return;
+        if (IsAnyUIOpen()) return;
         if (isPrimaryAttacking || isSecondaryAttacking) return;
         if (attackCooldownTimer > 0) return;
 
@@ -215,6 +218,13 @@ public class PlayerController : MonoBehaviour
 
         if (dashCooldownTimer > 0)
             dashCooldownTimer -= Time.fixedDeltaTime;
+
+        if (IsAnyUIOpen())
+        {
+            rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
+            anim.SetBool("isMoving", false);
+            return;
+        }
 
         if (isDashing)
         {
@@ -329,6 +339,14 @@ public class PlayerController : MonoBehaviour
             if (clip.name == clipName)
                 return clip.length;
         return 1f;
+    }
+
+    private bool IsAnyUIOpen()
+    {
+        if (uiManager == null) return false;
+        return uiManager.IsInventoryOpen
+            || uiManager.IsShopOpen
+            || (uiManager.GetPassiveScreen()?.IsOpen ?? false);
     }
 
     public void OnHitVFX()
