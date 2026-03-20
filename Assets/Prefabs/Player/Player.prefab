@@ -347,7 +347,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8f52d163fc1b6342a496e26de805802, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponPassiveManager
-  passiveHandlerContainer: {fileID: 7423755363756834439}
+  handlerContainer: {fileID: 7423755363756834439}
   startingPoints: 0
 --- !u!114 &6499088522283101609
 MonoBehaviour:
