@@ -85,9 +85,6 @@ public class GenericTreeUI : MonoBehaviour
         float cursor = 0f;
         AssignLeafPositions(maxLayer, xPositions, ref cursor, step);
 
-        foreach (var kvp in xPositions)
-            Debug.Log($"[Step1-Leaf] Node: {kvp.Key.nodeName} | X: {kvp.Value:F1}");
-
         // Step 2: bottom-up pass — parent X = median (odd) or average (even) of children X
         for (int layer = maxLayer - 1; layer >= 0; layer--)
         {
@@ -116,9 +113,6 @@ public class GenericTreeUI : MonoBehaviour
 
             EnsureMinSpacing(layers[layer], xPositions, step);
         }
-
-        foreach (var kvp in xPositions)
-            Debug.Log($"[Step2-Parent] Node: {kvp.Key.nodeName} | X: {kvp.Value:F1}");
 
         // Step 3: center multi-parent nodes between their parents
         for (int layer = 1; layer <= maxLayer; layer++)
@@ -170,8 +164,6 @@ public class GenericTreeUI : MonoBehaviour
             if (!xPositions.ContainsKey(node) || !nodeRects.ContainsKey(node)) continue;
             int layer = layerMap[node];
             nodeRects[node].anchoredPosition = new Vector2(xPositions[node] - offset, -layer * (nodeHeight + layerSpacing));
-
-            Debug.Log($"[TreeLayout] Node: {node.nodeName} | Layer: {layer} | X: {xPositions[node] - offset:F1} | Y: {-layer * (nodeHeight + layerSpacing):F1} | RawX: {xPositions[node]:F1} | Offset: {offset:F1}");
         }
 
         yield return null;
