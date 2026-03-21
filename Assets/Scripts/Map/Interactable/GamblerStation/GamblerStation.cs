@@ -41,8 +41,5 @@ public class GamblerStation : MonoBehaviour, IInteractable
         return levelManager.CanLevelUp(buildingData);
     }
 
-    public string GetPromptText()
-    {
-        return $"Open {buildingData?.buildingName ?? "Gambler's Den"}";
-    }
+    public string GetPromptText() => "[ E ]  Open Gambler Station";
 }

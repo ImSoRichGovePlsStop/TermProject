@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 179f47a07e6f20248ab1757f0d8ec260, type: 3}
   m_Name: Node 20
   m_EditorClassIdentifier: Assembly-CSharp::GenericTreeNode
-  nodeName: 
+  nodeName: 20
   description: 
   cost: 1
   parents:
-  - {fileID: 11400000, guid: 7046037640c39bc4d8d10ba3b8d84419, type: 2}
+  - {fileID: 11400000, guid: d79348d3d71192142b4b948aefda8fe1, type: 2}
   requireAllParents: 0
