@@ -53,8 +53,11 @@ public class GridData
     public IReadOnlyCollection<ModuleInstance> GetAllModules() => _placed;
 
     public bool CanPlace(ModuleInstance inst, Vector2Int pivot)
+        => CanPlace(inst, pivot, inst.Rotation);
+
+    public bool CanPlace(ModuleInstance inst, Vector2Int pivot, int rotationOverride)
     {
-        foreach (var c in GetAbsoluteCells(inst.Data, pivot))
+        foreach (var c in GetAbsoluteCells(inst.Data, pivot, rotationOverride))
         {
             if (!IsInBounds(c)) return false;
             var occ = _cells[c.x, c.y];
@@ -66,7 +69,7 @@ public class GridData
     public bool TryPlace(ModuleInstance inst, Vector2Int pivot)
     {
         if (!CanPlace(inst, pivot)) return false;
-        foreach (var c in GetAbsoluteCells(inst.Data, pivot))
+        foreach (var c in GetAbsoluteCells(inst.Data, pivot, inst.Rotation))
             _cells[c.x, c.y] = inst;
         _placed.Add(inst);
         inst.OnPlaced(this, pivot);
@@ -99,9 +102,9 @@ public class GridData
         return new List<ModuleInstance>(result);
     }
 
-    public List<Vector2Int> GetAbsoluteCells(ModuleData data, Vector2Int pivot)
+    public List<Vector2Int> GetAbsoluteCells(ModuleData data, Vector2Int pivot, int rotation = 0)
     {
-        var rel = data.GetShapeCells();
+        var rel = data.GetShapeCells(rotation);
         var abs = new List<Vector2Int>(rel.Count);
         foreach (var c in rel) abs.Add(pivot + c);
         return abs;
