@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CanvasGroup))]
 [RequireComponent(typeof(Image))]
@@ -24,8 +25,12 @@ public class ModuleItemUI : MonoBehaviour,
     private Canvas _canvas;
     private GridUI _originGrid;
     private Vector2Int _originCell;
+    private int _originRotation;
     private Vector2 _dragOffset;
     private Vector2Int _clickedCell;
+
+    private int  _dragRotation;
+    private bool _isDragging;
 
     [SerializeField] private bool allowSell = false;
 
@@ -56,18 +61,35 @@ public class ModuleItemUI : MonoBehaviour,
 
         _rt.pivot = new Vector2(0f, 1f);
 
-        var bound = instance.Data.GetBoundingSize();
-        float cs = weaponGridUI.CellSize;
-        float sp = weaponGridUI.CellSpacing;
-        _rt.sizeDelta = new Vector2(bound.x * (cs + sp) - sp,
-                                    bound.y * (cs + sp) - sp);
-
         var img = GetComponent<Image>();
         img.color = Color.clear;
         img.raycastTarget = false;
 
-        Color borderColor = RarityColor(instance.Rarity);
-        var shapeCells = instance.Data.GetShapeCells();
+        RebuildVisual(Instance.Rotation);
+
+        _cg.alpha = 0f;
+    }
+
+    private void RebuildVisual(int rotation)
+    {
+        for (int i = _rt.childCount - 1; i >= 0; i--)
+            Destroy(_rt.GetChild(i).gameObject);
+
+        float cs = WeaponGridUI.CellSize;
+        float sp = WeaponGridUI.CellSpacing;
+
+        var bound = Instance.Data.GetBoundingSize(rotation);
+        _rt.sizeDelta = new Vector2(bound.x * (cs + sp) - sp,
+                                    bound.y * (cs + sp) - sp);
+
+        BuildVisualCells(Instance.Data.GetShapeCells(rotation));
+    }
+
+    private void BuildVisualCells(System.Collections.Generic.List<Vector2Int> shapeCells)
+    {
+        float cs = WeaponGridUI.CellSize;
+        float sp = WeaponGridUI.CellSpacing;
+        Color borderColor = RarityColor(Instance.Rarity);
 
         // Border layer
         foreach (var cell in shapeCells)
@@ -138,14 +160,14 @@ public class ModuleItemUI : MonoBehaviour,
                -cell.y * (cs + sp) - borderSize + extraTop);
 
             var cellImg = go.GetComponent<Image>();
-            if (instance.Data.icon != null) cellImg.sprite = instance.Data.icon;
-            cellImg.color = instance.Data.moduleColor;
+            if (Instance.Data.icon != null) cellImg.sprite = Instance.Data.icon;
+            cellImg.color = Instance.Data.moduleColor;
             cellImg.raycastTarget = true;
 
             // Level text on first cell
             if (cell == topRightCell)
             {
-                if (instance.Level > 0)
+                if (Instance.Level > 0)
                 {
                     var textGo = new GameObject("LevelText",
                                                typeof(RectTransform), typeof(TextMeshProUGUI));
@@ -158,7 +180,7 @@ public class ModuleItemUI : MonoBehaviour,
                     textRt.sizeDelta = new Vector2(0f, 20f);
 
                     var tmp = textGo.GetComponent<TextMeshProUGUI>();
-                    tmp.text = $"+{instance.Level}";
+                    tmp.text = $"+{Instance.Level}";
                     tmp.fontSize = 24f;
                     tmp.color = Color.white;
                     tmp.alignment = TextAlignmentOptions.TopRight;
@@ -166,8 +188,17 @@ public class ModuleItemUI : MonoBehaviour,
                 }
             }
         }
+    }
 
-        _cg.alpha = 0f;
+    private void Update()
+    {
+        if (_isDragging && Keyboard.current != null && Keyboard.current[Key.R].wasPressedThisFrame)
+        {
+            _dragRotation = (_dragRotation + 1) % 4;
+            _clickedCell = Vector2Int.zero;
+            RebuildVisual(_dragRotation);
+            UpdateHighlightInternal();
+        }
     }
 
     public void SnapToCell(GridUI gridUI, Vector2Int cell)
@@ -190,6 +221,9 @@ public class ModuleItemUI : MonoBehaviour,
         else
             _originGrid = BagGridUI;
         _originCell = Instance.GridPosition;
+        _originRotation = Instance.Rotation;
+        _dragRotation = Instance.Rotation;
+        _isDragging = true;
 
         _clickedCell = GetClickedLocalCell(e);
 
@@ -215,6 +249,7 @@ public class ModuleItemUI : MonoBehaviour,
 
     public void OnEndDrag(PointerEventData e)
     {
+        _isDragging = false;
         _cg.alpha = 1f;
         _cg.blocksRaycasts = true;
         ClearHighlights();
@@ -234,8 +269,31 @@ public class ModuleItemUI : MonoBehaviour,
             }
         }
 
-        bool moved = targetGrid != null &&
-                     InventoryManager.Instance.TryMoveModule(Instance, targetGrid.Data, pivot);
+        bool moved = false;
+        if (targetGrid != null)
+        {
+            var prevGrid = Instance.CurrentGrid;
+            var prevPos  = Instance.GridPosition;
+
+            prevGrid?.Remove(Instance);
+            Instance.SetRotation(_dragRotation);
+
+            if (targetGrid.Data.TryPlace(Instance, pivot))
+            {
+                moved = true;
+            }
+            else
+            {
+                Instance.SetRotation(_originRotation);
+                prevGrid?.TryPlace(Instance, prevPos);
+            }
+        }
+
+        if (!moved)
+        {
+            _dragRotation = Instance.Rotation;
+            RebuildVisual(_dragRotation);
+        }
 
         var snapGrid = moved ? targetGrid : _originGrid;
         var snapCell = moved ? Instance.GridPosition : _originCell;
@@ -255,7 +313,7 @@ public class ModuleItemUI : MonoBehaviour,
         }
         else
         {
-            ModuleTooltipUI.Instance.Show(Instance, WeaponGridUI, BagGridUI);
+            ModuleTooltipUI.Instance.Show(Instance, WeaponGridUI, BagGridUI, EnvGridUI);
         }
     }
 
@@ -269,7 +327,7 @@ public class ModuleItemUI : MonoBehaviour,
 
 
     /// needed for selling
-    /// 
+    ///
     public void SetAllowSell(bool allow) => allowSell = allow;
     [HideInInspector] public SellConfirmationUI SellConfirmationUI;
     public void OnPointerClick(PointerEventData e)
@@ -280,7 +338,9 @@ public class ModuleItemUI : MonoBehaviour,
         SellConfirmationUI?.Show(Instance, e.position);
     }
 
-    private void UpdateHighlight(PointerEventData e)
+    private void UpdateHighlight(PointerEventData e) => UpdateHighlightInternal();
+
+    private void UpdateHighlightInternal()
     {
         ClearHighlights();
         Vector2 sampleScreen = GetClickedCellCenterScreen();
@@ -291,7 +351,7 @@ public class ModuleItemUI : MonoBehaviour,
             if (g.ScreenToCell(sampleScreen, UICam(), out var hoveredCell))
             {
                 var pivot = hoveredCell - _clickedCell;
-                g.HighlightCells(Instance.Data, pivot, g.Data.CanPlace(Instance, pivot));
+                g.HighlightCells(Instance.Data, pivot, g.Data.CanPlace(Instance, pivot, _dragRotation), _dragRotation);
                 return;
             }
         }
