@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-public class PassiveNodeUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class GenericTreeNodeUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("References")]
     [SerializeField] private Button button;
@@ -10,22 +10,22 @@ public class PassiveNodeUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     private Color lockedColor = new Color(0.3f, 0.3f, 0.3f);
     private Color availableColor = new Color(0.7f, 0.7f, 0.7f);
-    private Color unlockedColor = new Color(1f, 0.85f, 0f);
 
-    private PassiveNode node;
-    private PassiveTree tree;
-    private WeaponPassiveManager manager;
-    private PassiveScreenUI screenUI;
-    private WeaponPassiveData passiveData;
+    private GenericTreeNode node;
+    private GenericTreeData tree;
+    private GenericTreeManager manager;
+    private IGenericTreeScreenUI screenUI;
+    private object owner;
     private bool tooltipAnchorLeft;
 
-    public void Setup(PassiveNode node, PassiveTree tree, WeaponPassiveManager manager, PassiveScreenUI screenUI, WeaponPassiveData data, bool tooltipAnchorLeft = false)
+    public void Setup(GenericTreeNode node, GenericTreeData tree, GenericTreeManager manager,
+                  IGenericTreeScreenUI screenUI, object owner, bool tooltipAnchorLeft = false)
     {
         this.node = node;
         this.tree = tree;
         this.manager = manager;
         this.screenUI = screenUI;
-        this.passiveData = data;
+        this.owner = owner;
         this.tooltipAnchorLeft = tooltipAnchorLeft;
 
         button.onClick.AddListener(OnClick);
@@ -34,8 +34,10 @@ public class PassiveNodeUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     public void Refresh()
     {
-        bool unlocked = manager.GetState(passiveData).IsUnlocked(node);
-        bool available = manager.GetState(passiveData).CanUnlock(node, tree);
+        int pts = manager.GetAvailablePoints(owner);
+        var state = manager.GetState(owner, tree);
+        bool unlocked = state.IsUnlocked(node);
+        bool available = state.CanUnlock(node, pts);
 
         if (unlocked)
             background.color = tree.treeColor;
@@ -49,13 +51,14 @@ public class PassiveNodeUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     private void OnClick()
     {
-        var state = manager.GetState(passiveData);
-        bool changed = false;
+        var state = manager.GetState(owner, tree);
+        int pts = manager.GetAvailablePoints(owner);
 
+        bool changed;
         if (state.IsUnlocked(node))
-            changed = manager.TryRefund(node, tree, passiveData);
+            changed = manager.TryRefund(node, tree, owner);
         else
-            changed = manager.TryUnlock(node, tree, passiveData);
+            changed = manager.TryUnlock(node, tree, owner);
 
         if (changed)
         {
@@ -66,11 +69,11 @@ public class PassiveNodeUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHa
 
     public void OnPointerEnter(PointerEventData e)
     {
-        PassiveTooltipUI.Instance?.Show(node, GetComponent<RectTransform>(), tooltipAnchorLeft, tree.treeColor);
+        GenericTreeTooltipUI.Instance?.Show(node, GetComponent<RectTransform>(), tooltipAnchorLeft, tree.treeColor);
     }
 
     public void OnPointerExit(PointerEventData e)
     {
-        PassiveTooltipUI.Instance?.Hide();
+        GenericTreeTooltipUI.Instance?.Hide();
     }
 }

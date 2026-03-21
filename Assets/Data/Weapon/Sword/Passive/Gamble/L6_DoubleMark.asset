@@ -14,5 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Double Mark
   description: Every shop now has two marked modules.
+  cost: 4
+  parents:
+  - {fileID: 11400000, guid: 15964ee03192d8f48892d00395d06080, type: 2}
+  - {fileID: 11400000, guid: adcc19deca545b14789b9cb1f1e0c75e, type: 2}
+  requireAllParents: 0
   layer: 6
   branch: 0

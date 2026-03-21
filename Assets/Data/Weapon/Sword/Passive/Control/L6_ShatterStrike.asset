@@ -19,5 +19,10 @@ MonoBehaviour:
     3s to 1.5s.
 
     Field damage now counts as player attack'
+  cost: 4
+  parents:
+  - {fileID: 11400000, guid: 27ef2b727c6c2054fb59a626a6e1c94d, type: 2}
+  - {fileID: 11400000, guid: f2a1d232f25b9584dbc29701dba0c20d, type: 2}
+  requireAllParents: 0
   layer: 6
   branch: 0

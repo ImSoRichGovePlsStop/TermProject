@@ -14,5 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Shatter Point
   description: At max slow stacks, enemies are rooted for 3s instead of just slowed.
+  cost: 3
+  parents:
+  - {fileID: 11400000, guid: be866e7705f39c44d82c12ad5e37bca1, type: 2}
+  - {fileID: 11400000, guid: 469aaaba500bc2744bd9c05e0a1eb83a, type: 2}
+  requireAllParents: 0
   layer: 4
   branch: 0

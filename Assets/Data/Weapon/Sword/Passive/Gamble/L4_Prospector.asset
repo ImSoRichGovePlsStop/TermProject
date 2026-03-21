@@ -15,5 +15,10 @@ MonoBehaviour:
   nodeName: Prospector
   description: Hitting the mark grants +5% more coin from all sources for the rest
     of the run.
+  cost: 3
+  parents:
+  - {fileID: 11400000, guid: 526b6ea46cfc4b64d82d2b1d2cec89c1, type: 2}
+  - {fileID: 11400000, guid: 453a3c8bff585574294be4180375df20, type: 2}
+  requireAllParents: 0
   layer: 4
   branch: 0

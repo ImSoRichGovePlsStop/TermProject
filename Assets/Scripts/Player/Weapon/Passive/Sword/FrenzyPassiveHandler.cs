@@ -4,7 +4,7 @@ public class FrenzyPassiveHandler : PassiveHandlerBase
 {
     private StackFrenzyPassive stackFrenzy;
 
-    public override void Init(PassiveTree tree, WeaponPassiveData data,
+    public override void Init(GenericTreeData tree, WeaponPassiveData data,
                                WeaponPassiveManager manager,
                                PlayerStats stats, PlayerCombatContext context)
     {

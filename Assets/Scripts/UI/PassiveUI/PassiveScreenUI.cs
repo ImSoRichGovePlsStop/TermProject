@@ -1,12 +1,12 @@
 using UnityEngine;
 using TMPro;
 
-public class PassiveScreenUI : MonoBehaviour
+public class PassiveScreenUI : MonoBehaviour, IGenericTreeScreenUI
 {
     [Header("References")]
     [SerializeField] private GameObject panel;
     [SerializeField] private TextMeshProUGUI pointsText;
-    [SerializeField] private PassiveTreeUI[] treeUIs; // 3 elements
+    [SerializeField] private PassiveTreeUI[] treeUIs;
     [SerializeField] private PassiveLeftPanelUI leftPanelUI;
 
     private WeaponPassiveManager manager;
@@ -26,7 +26,7 @@ public class PassiveScreenUI : MonoBehaviour
     {
         if (manager == null)
             manager = FindFirstObjectByType<WeaponPassiveManager>(FindObjectsInactive.Include);
-        if (playerStats ==  null)
+        if (playerStats == null)
             playerStats = FindFirstObjectByType<PlayerStats>(FindObjectsInactive.Include);
     }
 
@@ -65,7 +65,7 @@ public class PassiveScreenUI : MonoBehaviour
         playerStats?.SetDebugUI(true);
         IsOpen = false;
         panel.SetActive(false);
-        PassiveTooltipUI.Instance?.Hide();
+        GenericTreeTooltipUI.Instance?.Hide();
     }
 
     private void ClearTrees()
@@ -82,7 +82,9 @@ public class PassiveScreenUI : MonoBehaviour
 
     public void RefreshPoints()
     {
-        pointsText.text = $"Points: {manager.GetState(currentData).availablePoints}";
+        if (currentData == null) return;
+        int points = manager.GetAvailablePoints(currentData);
+        pointsText.text = $"Points: {points}";
         leftPanelUI?.Refresh();
     }
 

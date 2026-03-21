@@ -7,11 +7,14 @@ public class UIManager : MonoBehaviour
     private GameObject inventoryPanel;
     private PassiveScreenUI passiveScreenUI;
     private ShopUI _activeShopUI;
+    private GamblerScreenUI gamblerScreenUI;
     [SerializeField] private GameObject hud;
 
     public bool isInBattle { get; set; }
     public bool IsInventoryOpen { get; private set; }
     public bool IsShopOpen => _activeShopUI != null && _activeShopUI.gameObject.activeSelf;
+    public PassiveScreenUI GetPassiveScreen() => passiveScreenUI;
+    public GamblerScreenUI GetGamblerScreen() => gamblerScreenUI;
 
     private float holdTime = 0f;
     private float holdDuration = 1f;
@@ -23,6 +26,7 @@ public class UIManager : MonoBehaviour
             inventoryPanel.SetActive(false);
 
         passiveScreenUI = FindFirstObjectByType<PassiveScreenUI>(FindObjectsInactive.Include);
+        gamblerScreenUI = FindFirstObjectByType<GamblerScreenUI>(FindObjectsInactive.Include);
 
         if (inventoryPanel != null) inventoryPanel.SetActive(true);
         if (_activeShopUI != null) _activeShopUI.gameObject.SetActive(true);
@@ -45,7 +49,9 @@ public class UIManager : MonoBehaviour
 
             if (Keyboard.current[Key.Tab].wasPressedThisFrame)
             {
-                if (!passiveScreenUI.IsOpen)
+                if (gamblerScreenUI != null && gamblerScreenUI.IsOpen)
+                    gamblerScreenUI.Close();
+                else if (!passiveScreenUI.IsOpen)
                     ToggleInventory();
                 else
                     passiveScreenUI.Close();
@@ -55,6 +61,8 @@ public class UIManager : MonoBehaviour
             {
                 if (passiveScreenUI.IsOpen)
                     passiveScreenUI.Close();
+                else if (gamblerScreenUI != null && gamblerScreenUI.IsOpen)
+                    gamblerScreenUI.Close();
                 else if (_activeShopUI != null && _activeShopUI.gameObject.activeSelf)
                     CloseShop();
                 else if (IsInventoryOpen)
@@ -132,6 +140,7 @@ public class UIManager : MonoBehaviour
         bool shouldHide =
             IsInventoryOpen ||
             (passiveScreenUI != null && passiveScreenUI.IsOpen) ||
+            (gamblerScreenUI != null && gamblerScreenUI.IsOpen) ||
             (_activeShopUI != null && _activeShopUI.gameObject.activeSelf);
 
         if (hud != null)
