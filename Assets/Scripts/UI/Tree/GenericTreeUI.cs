@@ -85,6 +85,9 @@ public class GenericTreeUI : MonoBehaviour
         float cursor = 0f;
         AssignLeafPositions(maxLayer, xPositions, ref cursor, step);
 
+        foreach (var kvp in xPositions)
+            Debug.Log($"[Step1-Leaf] Node: {kvp.Key.nodeName} | X: {kvp.Value:F1}");
+
         // Step 2: bottom-up pass — parent X = median (odd) or average (even) of children X
         for (int layer = maxLayer - 1; layer >= 0; layer--)
         {
@@ -114,41 +117,52 @@ public class GenericTreeUI : MonoBehaviour
             EnsureMinSpacing(layers[layer], xPositions, step);
         }
 
-        // Step 3: re-center parents after spacing adjustments (repeat bottom-up)
-        for (int layer = maxLayer - 1; layer >= 0; layer--)
+        foreach (var kvp in xPositions)
+            Debug.Log($"[Step2-Parent] Node: {kvp.Key.nodeName} | X: {kvp.Value:F1}");
+
+        // Step 3: center multi-parent nodes between their parents
+        for (int layer = 1; layer <= maxLayer; layer++)
         {
             if (!layers.ContainsKey(layer)) continue;
             foreach (var node in layers[layer])
             {
-                List<GenericTreeNode> children = GetChildren(node);
-                if (children.Count == 0) continue;
+                if (node.parents == null || node.parents.Length <= 1) continue;
 
-                List<float> childXList = new List<float>();
-                foreach (var child in children)
-                    if (xPositions.ContainsKey(child)) childXList.Add(xPositions[child]);
-                childXList.Sort();
+                List<float> parentXList = new List<float>();
+                foreach (var parent in node.parents)
+                    if (parent != null && xPositions.ContainsKey(parent))
+                        parentXList.Add(xPositions[parent]);
 
-                if (childXList.Count == 0) continue;
+                if (parentXList.Count == 0) continue;
+                parentXList.Sort();
 
-                if (childXList.Count % 2 == 1)
-                    xPositions[node] = childXList[childXList.Count / 2];
+                float newX;
+                if (parentXList.Count % 2 == 1)
+                    newX = parentXList[parentXList.Count / 2];
                 else
                 {
                     float sum = 0f;
-                    foreach (var x in childXList) sum += x;
-                    xPositions[node] = sum / childXList.Count;
+                    foreach (var x in parentXList) sum += x;
+                    newX = sum / parentXList.Count;
+                }
+
+                if (xPositions.ContainsKey(node))
+                {
+                    float delta = newX - xPositions[node];
+                    xPositions[node] = newX;
+                    ShiftSubtree(node, delta, xPositions);
                 }
             }
+
+            EnsureMinSpacing(layers[layer], xPositions, step);
         }
 
-        // Step 4: center the whole tree
-        float minX = float.MaxValue, maxX = float.MinValue;
-        foreach (var kvp in xPositions)
-        {
-            if (kvp.Value < minX) minX = kvp.Value;
-            if (kvp.Value > maxX) maxX = kvp.Value;
-        }
-        float offset = (minX + maxX) / 2f;
+        // Step 4: center based on root node
+        GenericTreeNode rootNode = null;
+        foreach (var node in tree.nodes)
+            if (node.parents == null || node.parents.Length == 0) { rootNode = node; break; }
+
+        float offset = rootNode != null && xPositions.ContainsKey(rootNode) ? xPositions[rootNode] : 0f;
 
         // Step 5: apply positions
         foreach (var node in tree.nodes)
@@ -156,6 +170,8 @@ public class GenericTreeUI : MonoBehaviour
             if (!xPositions.ContainsKey(node) || !nodeRects.ContainsKey(node)) continue;
             int layer = layerMap[node];
             nodeRects[node].anchoredPosition = new Vector2(xPositions[node] - offset, -layer * (nodeHeight + layerSpacing));
+
+            Debug.Log($"[TreeLayout] Node: {node.nodeName} | Layer: {layer} | X: {xPositions[node] - offset:F1} | Y: {-layer * (nodeHeight + layerSpacing):F1} | RawX: {xPositions[node]:F1} | Offset: {offset:F1}");
         }
 
         yield return null;
@@ -177,33 +193,40 @@ public class GenericTreeUI : MonoBehaviour
 
     private void AssignLeafPositions(int maxLayer, Dictionary<GenericTreeNode, float> xPos, ref float cursor, float step)
     {
-        // DFS from root to assign leaves in order
         var roots = new List<GenericTreeNode>();
         foreach (var node in tree.nodes)
             if (node.parents == null || node.parents.Length == 0) roots.Add(node);
 
+        var visitedForTraversal = new HashSet<GenericTreeNode>();
+        var assignedLeafs = new HashSet<GenericTreeNode>();
+
         foreach (var root in roots)
-            AssignLeafDFS(root, xPos, ref cursor, step);
+            AssignLeafDFS(root, xPos, ref cursor, step, visitedForTraversal, assignedLeafs);
     }
 
-    private void AssignLeafDFS(GenericTreeNode node, Dictionary<GenericTreeNode, float> xPos, ref float cursor, float step)
+    private void AssignLeafDFS(GenericTreeNode node, Dictionary<GenericTreeNode, float> xPos, ref float cursor, float step, HashSet<GenericTreeNode> visitedForTraversal, HashSet<GenericTreeNode> assignedLeafs)
     {
+        if (visitedForTraversal.Contains(node)) return;
+        visitedForTraversal.Add(node);
+
         List<GenericTreeNode> children = GetChildren(node);
         if (children.Count == 0)
         {
-            if (!xPos.ContainsKey(node))
+            if (!assignedLeafs.Contains(node))
             {
                 xPos[node] = cursor;
-                cursor += step;
+                int parentCount = (node.parents != null) ? node.parents.Length : 1;
+                cursor += step * Mathf.Max(1, parentCount);
+                assignedLeafs.Add(node);
             }
             return;
         }
 
         foreach (var child in children)
-            AssignLeafDFS(child, xPos, ref cursor, step);
+            AssignLeafDFS(child, xPos, ref cursor, step, visitedForTraversal, assignedLeafs);
     }
 
-    private void ShiftSubtree(GenericTreeNode root, float delta, Dictionary<GenericTreeNode, float> xPos, int maxLayer)
+    private void ShiftSubtree(GenericTreeNode root, float delta, Dictionary<GenericTreeNode, float> xPos)
     {
         var queue = new Queue<GenericTreeNode>();
         queue.Enqueue(root);
@@ -237,8 +260,8 @@ public class GenericTreeUI : MonoBehaviour
             if (diff < minDist)
             {
                 float shift = minDist - diff;
-                for (int j = i; j < positioned.Count; j++)
-                    xPos[positioned[j]] += shift;
+                xPos[positioned[i]] += shift;
+                ShiftSubtree(positioned[i], shift, xPos);
             }
         }
     }
@@ -255,13 +278,6 @@ public class GenericTreeUI : MonoBehaviour
         return children;
     }
 
-    private bool AllPositioned(List<GenericTreeNode> nodes, Dictionary<GenericTreeNode, float> xPos)
-    {
-        foreach (var n in nodes)
-            if (!xPos.ContainsKey(n)) return false;
-        return true;
-    }
-
     private void DrawLineFromPositions(GenericTreeNode fromNode, GenericTreeNode toNode)
     {
         float nodeH = nodeUIPrefab.GetComponent<RectTransform>().sizeDelta.y;
@@ -272,8 +288,10 @@ public class GenericTreeUI : MonoBehaviour
         Vector2 to = GetLocalPos(nodeRects[toNode]);
         to.y += nodeH / 2f;
 
-        Vector2 mid1 = new Vector2(from.x, (from.y + to.y) / 2f);
-        Vector2 mid2 = new Vector2(to.x, (from.y + to.y) / 2f);
+        float midY = to.y + layerSpacing / 2f;
+
+        Vector2 mid1 = new Vector2(from.x, midY);
+        Vector2 mid2 = new Vector2(to.x, midY);
 
         lineImages.Add((CreateLineSegment(from, mid1), fromNode, toNode));
         lineImages.Add((CreateLineSegment(mid1, mid2), fromNode, toNode));

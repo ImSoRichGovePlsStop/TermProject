@@ -16,6 +16,7 @@ public class GamblerScreenUI : MonoBehaviour, IGenericTreeScreenUI
     private GenericTreeConfig currentConfig;
     private object currentOwner;
     private GamblerStation currentStation;
+    private PlayerStats playerStats;
     private bool isSetup = false;
 
     public bool IsOpen { get; private set; }
@@ -37,6 +38,10 @@ public class GamblerScreenUI : MonoBehaviour, IGenericTreeScreenUI
     {
         if (manager == null)
             manager = FindFirstObjectByType<GamblerManager>(FindObjectsInactive.Include);
+        if (playerStats == null)
+            playerStats = FindFirstObjectByType<PlayerStats>(FindObjectsInactive.Include);
+
+        playerStats?.SetDebugUI(false);
 
         IsOpen = true;
         panel.SetActive(true);
@@ -63,6 +68,7 @@ public class GamblerScreenUI : MonoBehaviour, IGenericTreeScreenUI
 
     public void Close()
     {
+        playerStats?.SetDebugUI(true);
         IsOpen = false;
         panel.SetActive(false);
         GenericTreeTooltipUI.Instance?.Hide();

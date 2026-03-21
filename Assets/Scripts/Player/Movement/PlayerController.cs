@@ -223,6 +223,7 @@ public class PlayerController : MonoBehaviour
         {
             rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
             anim.SetBool("isMoving", false);
+            interactPrompt?.Hide();
             return;
         }
 
@@ -281,14 +282,6 @@ public class PlayerController : MonoBehaviour
 
     private void CheckInteractable()
     {
-        if (uiManager != null && (uiManager.IsInventoryOpen
-        || uiManager.IsShopOpen
-        || (uiManager.GetGamblerScreen()?.IsOpen ?? false)))
-        {
-            interactPrompt?.Hide();
-            return;
-        }
-
         Collider[] hits = Physics.OverlapSphere(transform.position, interactRange, interactableLayer);
 
         IInteractable closest = null;
