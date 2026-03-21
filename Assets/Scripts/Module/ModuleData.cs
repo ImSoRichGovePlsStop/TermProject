@@ -82,6 +82,72 @@ public class ModuleData : ScriptableObject
         return new Vector2Int(maxX + 1, maxY + 1);
     }
 
+    public static List<Vector2Int> RotateCells(List<Vector2Int> cells, int rotation)
+    {
+        var rotated = new List<Vector2Int>(cells.Count);
+        foreach (var c in cells)
+        {
+            Vector2Int r = rotation switch {
+                1 => new Vector2Int( c.y, -c.x),
+                2 => new Vector2Int(-c.x, -c.y), 
+                3 => new Vector2Int(-c.y,  c.x), 
+                _ => c
+            };
+            rotated.Add(r);
+        }
+        int minX = int.MaxValue, minY = int.MaxValue;
+        foreach (var c in rotated) { if (c.x < minX) minX = c.x; if (c.y < minY) minY = c.y; }
+        var result = new List<Vector2Int>(rotated.Count);
+        foreach (var c in rotated) result.Add(new Vector2Int(c.x - minX, c.y - minY));
+        return result;
+    }
+
+    public List<Vector2Int> GetShapeCells(int rotation) => RotateCells(GetShapeCells(), rotation);
+
+    public List<Vector2Int> GetBuffCells(int rotation)
+    {
+        if (rotation == 0) return GetBuffCells();
+
+        var buffCells = GetBuffCells();
+        var rotatedBuff = new List<Vector2Int>(buffCells.Count);
+        foreach (var c in buffCells)
+        {
+            rotatedBuff.Add(rotation switch {
+                1 => new Vector2Int( c.y, -c.x),
+                2 => new Vector2Int(-c.x, -c.y),
+                3 => new Vector2Int(-c.y,  c.x),
+                _ => c
+            });
+        }
+
+        var shapeCells = GetShapeCells();
+        int minX = int.MaxValue, minY = int.MaxValue;
+        foreach (var c in shapeCells)
+        {
+            Vector2Int r = rotation switch {
+                1 => new Vector2Int( c.y, -c.x),
+                2 => new Vector2Int(-c.x, -c.y),
+                3 => new Vector2Int(-c.y,  c.x),
+                _ => c
+            };
+            if (r.x < minX) minX = r.x;
+            if (r.y < minY) minY = r.y;
+        }
+        if (minX == int.MaxValue) { minX = 0; minY = 0; }
+
+        var result = new List<Vector2Int>(rotatedBuff.Count);
+        foreach (var c in rotatedBuff)
+            result.Add(new Vector2Int(c.x - minX, c.y - minY));
+        return result;
+    }
+
+    public Vector2Int GetBoundingSize(int rotation)
+    {
+        int maxX = 0, maxY = 0;
+        foreach (var c in GetShapeCells(rotation)) { if (c.x > maxX) maxX = c.x; if (c.y > maxY) maxY = c.y; }
+        return new Vector2Int(maxX + 1, maxY + 1);
+    }
+
     private static ModuleShapeRow[] DefaultShape()
     {
         var g = new ModuleShapeRow[5];

@@ -76,10 +76,10 @@ public class GridUI : MonoBehaviour
         return true;
     }
 
-    public void HighlightCells(ModuleData data, Vector2Int pivot, bool valid)
+    public void HighlightCells(ModuleData data, Vector2Int pivot, bool valid, int rotation = 0)
     {
         RefreshAll();
-        foreach (var c in Data.GetAbsoluteCells(data, pivot))
+        foreach (var c in Data.GetAbsoluteCells(data, pivot, rotation))
         {
             if (!Data.IsInBounds(c)) continue;
             _cells[c.x, c.y].SetState(valid ? GridCellUI.State.Valid : GridCellUI.State.Invalid);
