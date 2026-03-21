@@ -12,6 +12,10 @@ public class GamblerScreenUI : MonoBehaviour, IGenericTreeScreenUI
     [SerializeField] private Button upgradeButton;
     [SerializeField] private TextMeshProUGUI upgradeButtonText;
 
+    [Header("Card Phase")]
+    [SerializeField] private Button cardPhaseButton;
+    [SerializeField] private CardPhaseUI cardPhaseUI;
+
     private GamblerManager manager;
     private GenericTreeConfig currentConfig;
     private object currentOwner;
@@ -26,6 +30,8 @@ public class GamblerScreenUI : MonoBehaviour, IGenericTreeScreenUI
         panel.SetActive(false);
         if (upgradeButton != null)
             upgradeButton.onClick.AddListener(OnUpgradeClick);
+        if (cardPhaseButton != null)
+            cardPhaseButton.onClick.AddListener(OnCardPhaseClick);
     }
 
     private void Start()
@@ -123,6 +129,11 @@ public class GamblerScreenUI : MonoBehaviour, IGenericTreeScreenUI
         RefreshLevel();
         RefreshPoints();
         RefreshAll();
+    }
+
+    private void OnCardPhaseClick()
+    {
+        cardPhaseUI?.Open();
     }
 
     public void OnResetHeld()
