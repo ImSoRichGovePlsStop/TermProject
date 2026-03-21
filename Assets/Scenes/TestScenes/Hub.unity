@@ -3473,7 +3473,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1762161060}
-  - component: {fileID: 1762161061}
   m_Layer: 5
   m_Name: NodeContainer
   m_TagString: Untagged
@@ -3500,32 +3499,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -60}
   m_SizeDelta: {x: 0, y: -120}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1762161061
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1762161059}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
-  m_Padding:
-    m_Left: 0
-    m_Right: 0
-    m_Top: 0
-    m_Bottom: 0
-  m_ChildAlignment: 1
-  m_Spacing: 10
-  m_ChildForceExpandWidth: 0
-  m_ChildForceExpandHeight: 0
-  m_ChildControlWidth: 0
-  m_ChildControlHeight: 0
-  m_ChildScaleWidth: 0
-  m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
 --- !u!1 &1824813517
 GameObject:
   m_ObjectHideFlags: 0
@@ -3750,6 +3723,14 @@ PrefabInstance:
     - target: {fileID: 843303085880533874, guid: 6bbd880d5adf65247adf79a6c489885d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 964100889551923953, guid: 6bbd880d5adf65247adf79a6c489885d, type: 3}
+      propertyPath: nodeSpacing
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 964100889551923953, guid: 6bbd880d5adf65247adf79a6c489885d, type: 3}
+      propertyPath: layerSpacing
+      value: 60
       objectReference: {fileID: 0}
     - target: {fileID: 964100889551923953, guid: 6bbd880d5adf65247adf79a6c489885d, type: 3}
       propertyPath: treeNameText

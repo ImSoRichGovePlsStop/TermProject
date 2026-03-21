@@ -12,6 +12,10 @@ public class GenericTreeUI : MonoBehaviour
     [SerializeField] private GameObject nodeUIPrefab;
     [SerializeField] private Transform lineContainer;
 
+    [Header("Layout")]
+    [SerializeField] private float nodeSpacing = 50f;
+    [SerializeField] private float layerSpacing = 80f;
+
     private Color lineColorDefault = new Color(0.4f, 0.4f, 0.4f, 0.3f);
     private float lineWidth = 3f;
 
@@ -20,12 +24,12 @@ public class GenericTreeUI : MonoBehaviour
     private object owner;
     private bool tooltipAnchorLeft;
 
-    private Dictionary<GenericTreeNode, GenericTreeNodeUI> nodeUIMap
-        = new Dictionary<GenericTreeNode, GenericTreeNodeUI>();
-    private Dictionary<GenericTreeNode, RectTransform> nodeRects
-        = new Dictionary<GenericTreeNode, RectTransform>();
-    private List<(Image line, GenericTreeNode from, GenericTreeNode to)> lineImages
-        = new List<(Image, GenericTreeNode, GenericTreeNode)>();
+    private Dictionary<GenericTreeNode, GenericTreeNodeUI> nodeUIMap = new Dictionary<GenericTreeNode, GenericTreeNodeUI>();
+    private Dictionary<GenericTreeNode, RectTransform> nodeRects = new Dictionary<GenericTreeNode, RectTransform>();
+    private List<(Image line, GenericTreeNode from, GenericTreeNode to)> lineImages = new List<(Image, GenericTreeNode, GenericTreeNode)>();
+
+    private Dictionary<GenericTreeNode, int> layerMap;
+    private Dictionary<int, List<GenericTreeNode>> layers;
 
     public void Setup(GenericTreeData tree, GenericTreeManager manager, IGenericTreeScreenUI screenUI, object owner, bool tooltipAnchorLeft = false)
     {
@@ -41,108 +45,121 @@ public class GenericTreeUI : MonoBehaviour
         nodeRects.Clear();
         lineImages.Clear();
 
-        Dictionary<GenericTreeNode, int> layerMap = ComputeLayers();
-        Dictionary<int, List<GenericTreeNode>> layers = GroupByLayer(layerMap);
+        layerMap = ComputeLayers();
+        layers = GroupByLayer(layerMap);
+
+        RectTransform prefabRect = nodeUIPrefab.GetComponent<RectTransform>();
+        float nodeWidth = prefabRect.sizeDelta.x;
+        float nodeHeight = prefabRect.sizeDelta.y;
+
+        foreach (var node in tree.nodes)
+        {
+            GameObject obj = Instantiate(nodeUIPrefab, nodeContainer);
+            var nodeUI = obj.GetComponent<GenericTreeNodeUI>();
+            nodeUI.Setup(node, tree, manager, screenUI, owner, tooltipAnchorLeft);
+
+            RectTransform rt = obj.GetComponent<RectTransform>();
+            rt.anchorMin = new Vector2(0.5f, 1f);
+            rt.anchorMax = new Vector2(0.5f, 1f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+
+            nodeUIMap[node] = nodeUI;
+            nodeRects[node] = rt;
+        }
+
+        StartCoroutine(ApplyLayoutNextFrame(nodeWidth, nodeHeight));
+    }
+
+    private IEnumerator ApplyLayoutNextFrame(float nodeWidth, float nodeHeight)
+    {
+        yield return null;
 
         int maxLayer = 0;
         foreach (var k in layers.Keys)
             if (k > maxLayer) maxLayer = k;
 
-        for (int layer = 0; layer <= maxLayer; layer++)
+        float step = nodeWidth + nodeSpacing;
+        Dictionary<GenericTreeNode, float> xPositions = new Dictionary<GenericTreeNode, float>();
+
+        // Step 1: assign initial X to leaf nodes bottom-up left to right
+        float cursor = 0f;
+        AssignLeafPositions(maxLayer, xPositions, ref cursor, step);
+
+        // Step 2: bottom-up pass — parent X = median (odd) or average (even) of children X
+        for (int layer = maxLayer - 1; layer >= 0; layer--)
         {
             if (!layers.ContainsKey(layer)) continue;
-
-            var layerNodes = layers[layer];
-            RectTransform prefabRect = nodeUIPrefab.GetComponent<RectTransform>();
-            float nodeHeight = prefabRect.sizeDelta.y;
-
-            GameObject row = new GameObject("Layer" + layer, typeof(RectTransform));
-            row.transform.SetParent(nodeContainer, false);
-
-            LayoutElement rowLE = row.AddComponent<LayoutElement>();
-            rowLE.minHeight = nodeHeight;
-            rowLE.preferredHeight = nodeHeight;
-
-            HorizontalLayoutGroup hlg = row.AddComponent<HorizontalLayoutGroup>();
-            hlg.childAlignment = TextAnchor.MiddleCenter;
-            hlg.spacing = 50;
-            hlg.childControlWidth = false;
-            hlg.childControlHeight = false;
-            hlg.childForceExpandWidth = false;
-            hlg.childForceExpandHeight = false;
-
-            foreach (var node in layerNodes)
+            foreach (var node in layers[layer])
             {
-                GameObject obj = Instantiate(nodeUIPrefab, row.transform);
-                var nodeUI = obj.GetComponent<GenericTreeNodeUI>();
-                nodeUI.Setup(node, tree, manager, screenUI, owner, tooltipAnchorLeft);
+                List<GenericTreeNode> children = GetChildren(node);
+                if (children.Count == 0) continue;
 
-                nodeUIMap[node] = nodeUI;
-                nodeRects[node] = obj.GetComponent<RectTransform>();
+                List<float> childXList = new List<float>();
+                foreach (var child in children)
+                    if (xPositions.ContainsKey(child)) childXList.Add(xPositions[child]);
+                childXList.Sort();
+
+                if (childXList.Count == 0) continue;
+
+                if (childXList.Count % 2 == 1)
+                    xPositions[node] = childXList[childXList.Count / 2]; // odd → middle
+                else
+                {
+                    float sum = 0f;
+                    foreach (var x in childXList) sum += x;
+                    xPositions[node] = sum / childXList.Count; // even → average
+                }
+            }
+
+            EnsureMinSpacing(layers[layer], xPositions, step);
+        }
+
+        // Step 3: re-center parents after spacing adjustments (repeat bottom-up)
+        for (int layer = maxLayer - 1; layer >= 0; layer--)
+        {
+            if (!layers.ContainsKey(layer)) continue;
+            foreach (var node in layers[layer])
+            {
+                List<GenericTreeNode> children = GetChildren(node);
+                if (children.Count == 0) continue;
+
+                List<float> childXList = new List<float>();
+                foreach (var child in children)
+                    if (xPositions.ContainsKey(child)) childXList.Add(xPositions[child]);
+                childXList.Sort();
+
+                if (childXList.Count == 0) continue;
+
+                if (childXList.Count % 2 == 1)
+                    xPositions[node] = childXList[childXList.Count / 2];
+                else
+                {
+                    float sum = 0f;
+                    foreach (var x in childXList) sum += x;
+                    xPositions[node] = sum / childXList.Count;
+                }
             }
         }
 
-        StartCoroutine(DrawLinesAfterLayout());
-    }
+        // Step 4: center the whole tree
+        float minX = float.MaxValue, maxX = float.MinValue;
+        foreach (var kvp in xPositions)
+        {
+            if (kvp.Value < minX) minX = kvp.Value;
+            if (kvp.Value > maxX) maxX = kvp.Value;
+        }
+        float offset = (minX + maxX) / 2f;
 
-    private Dictionary<GenericTreeNode, int> ComputeLayers()
-    {
-        var layerMap = new Dictionary<GenericTreeNode, int>();
-        var visited = new HashSet<GenericTreeNode>();
-
+        // Step 5: apply positions
         foreach (var node in tree.nodes)
-            AssignLayer(node, layerMap, visited);
-
-        return layerMap;
-    }
-
-    private int AssignLayer(GenericTreeNode node, Dictionary<GenericTreeNode, int> layerMap, HashSet<GenericTreeNode> visited)
-    {
-        if (layerMap.ContainsKey(node)) return layerMap[node];
-        if (visited.Contains(node))
         {
-            layerMap[node] = 0;
-            return 0;
+            if (!xPositions.ContainsKey(node) || !nodeRects.ContainsKey(node)) continue;
+            int layer = layerMap[node];
+            nodeRects[node].anchoredPosition = new Vector2(xPositions[node] - offset, -layer * (nodeHeight + layerSpacing));
         }
 
-        visited.Add(node);
-
-        if (node.parents == null || node.parents.Length == 0)
-        {
-            layerMap[node] = 0;
-            return 0;
-        }
-
-        int maxParentLayer = -1;
-        foreach (var parent in node.parents)
-        {
-            if (parent == null) continue;
-            int parentLayer = AssignLayer(parent, layerMap, visited);
-            if (parentLayer > maxParentLayer) maxParentLayer = parentLayer;
-        }
-
-        layerMap[node] = maxParentLayer + 1;
-        return maxParentLayer + 1;
-    }
-
-    private Dictionary<int, List<GenericTreeNode>> GroupByLayer(Dictionary<GenericTreeNode, int> layerMap)
-    {
-        var result = new Dictionary<int, List<GenericTreeNode>>();
-        foreach (var kvp in layerMap)
-        {
-            if (!result.ContainsKey(kvp.Value))
-                result[kvp.Value] = new List<GenericTreeNode>();
-            result[kvp.Value].Add(kvp.Key);
-        }
-        return result;
-    }
-
-    private IEnumerator DrawLinesAfterLayout()
-    {
         yield return null;
         yield return null;
-
-        if (lineContainer == null) yield break;
 
         foreach (var node in tree.nodes)
         {
@@ -151,34 +168,129 @@ public class GenericTreeUI : MonoBehaviour
             {
                 if (parent == null) continue;
                 if (!nodeRects.ContainsKey(parent) || !nodeRects.ContainsKey(node)) continue;
-                DrawLine(nodeRects[parent], nodeRects[node], parent, node);
+                DrawLineFromPositions(parent, node);
             }
         }
 
         RefreshLineColors();
     }
 
-    private void DrawLine(RectTransform fromRect, RectTransform toRect, GenericTreeNode fromNode, GenericTreeNode toNode)
+    private void AssignLeafPositions(int maxLayer, Dictionary<GenericTreeNode, float> xPos, ref float cursor, float step)
     {
-        Vector2 fromPos = GetLocalPos(fromRect);
-        Vector2 toPos = GetLocalPos(toRect);
+        // DFS from root to assign leaves in order
+        var roots = new List<GenericTreeNode>();
+        foreach (var node in tree.nodes)
+            if (node.parents == null || node.parents.Length == 0) roots.Add(node);
 
-        Vector2 mid1 = new Vector2(fromPos.x, (fromPos.y + toPos.y) / 2f);
-        Vector2 mid2 = new Vector2(toPos.x, (fromPos.y + toPos.y) / 2f);
+        foreach (var root in roots)
+            AssignLeafDFS(root, xPos, ref cursor, step);
+    }
 
-        Image seg1 = CreateLineSegment(fromPos, mid1);
-        Image seg2 = CreateLineSegment(mid1, mid2);
-        Image seg3 = CreateLineSegment(mid2, toPos);
+    private void AssignLeafDFS(GenericTreeNode node, Dictionary<GenericTreeNode, float> xPos, ref float cursor, float step)
+    {
+        List<GenericTreeNode> children = GetChildren(node);
+        if (children.Count == 0)
+        {
+            if (!xPos.ContainsKey(node))
+            {
+                xPos[node] = cursor;
+                cursor += step;
+            }
+            return;
+        }
 
-        lineImages.Add((seg1, fromNode, toNode));
-        lineImages.Add((seg2, fromNode, toNode));
-        lineImages.Add((seg3, fromNode, toNode));
+        foreach (var child in children)
+            AssignLeafDFS(child, xPos, ref cursor, step);
+    }
+
+    private void ShiftSubtree(GenericTreeNode root, float delta, Dictionary<GenericTreeNode, float> xPos, int maxLayer)
+    {
+        var queue = new Queue<GenericTreeNode>();
+        queue.Enqueue(root);
+        var visited = new HashSet<GenericTreeNode>();
+        visited.Add(root);
+
+        while (queue.Count > 0)
+        {
+            var node = queue.Dequeue();
+            foreach (var child in GetChildren(node))
+            {
+                if (visited.Contains(child)) continue;
+                visited.Add(child);
+                if (xPos.ContainsKey(child)) xPos[child] += delta;
+                queue.Enqueue(child);
+            }
+        }
+    }
+
+    private void EnsureMinSpacing(List<GenericTreeNode> nodes, Dictionary<GenericTreeNode, float> xPos, float minDist)
+    {
+        var positioned = new List<GenericTreeNode>();
+        foreach (var n in nodes)
+            if (xPos.ContainsKey(n)) positioned.Add(n);
+
+        positioned.Sort((a, b) => xPos[a].CompareTo(xPos[b]));
+
+        for (int i = 1; i < positioned.Count; i++)
+        {
+            float diff = xPos[positioned[i]] - xPos[positioned[i - 1]];
+            if (diff < minDist)
+            {
+                float shift = minDist - diff;
+                for (int j = i; j < positioned.Count; j++)
+                    xPos[positioned[j]] += shift;
+            }
+        }
+    }
+
+    private List<GenericTreeNode> GetChildren(GenericTreeNode parent)
+    {
+        var children = new List<GenericTreeNode>();
+        foreach (var node in tree.nodes)
+        {
+            if (node.parents == null) continue;
+            foreach (var p in node.parents)
+                if (p == parent) { children.Add(node); break; }
+        }
+        return children;
+    }
+
+    private bool AllPositioned(List<GenericTreeNode> nodes, Dictionary<GenericTreeNode, float> xPos)
+    {
+        foreach (var n in nodes)
+            if (!xPos.ContainsKey(n)) return false;
+        return true;
+    }
+
+    private void DrawLineFromPositions(GenericTreeNode fromNode, GenericTreeNode toNode)
+    {
+        float nodeH = nodeUIPrefab.GetComponent<RectTransform>().sizeDelta.y;
+
+        Vector2 from = GetLocalPos(nodeRects[fromNode]);
+        from.y -= nodeH / 2f;
+
+        Vector2 to = GetLocalPos(nodeRects[toNode]);
+        to.y += nodeH / 2f;
+
+        Vector2 mid1 = new Vector2(from.x, (from.y + to.y) / 2f);
+        Vector2 mid2 = new Vector2(to.x, (from.y + to.y) / 2f);
+
+        lineImages.Add((CreateLineSegment(from, mid1), fromNode, toNode));
+        lineImages.Add((CreateLineSegment(mid1, mid2), fromNode, toNode));
+        lineImages.Add((CreateLineSegment(mid2, to), fromNode, toNode));
+    }
+
+    private Vector2 GetLocalPos(RectTransform rect)
+    {
+        Vector3 worldPos = rect.TransformPoint(Vector3.zero);
+        return lineContainer.InverseTransformPoint(worldPos);
     }
 
     private Image CreateLineSegment(Vector2 from, Vector2 to)
     {
         Vector2 dir = to - from;
         float distance = dir.magnitude;
+        if (distance < 0.01f) return null;
         float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
 
         GameObject lineObj = new GameObject("Line", typeof(RectTransform));
@@ -196,10 +308,51 @@ public class GenericTreeUI : MonoBehaviour
         return img;
     }
 
-    private Vector2 GetLocalPos(RectTransform rect)
+    private Dictionary<GenericTreeNode, int> ComputeLayers()
     {
-        Vector3 worldPos = rect.TransformPoint(Vector3.zero);
-        return lineContainer.InverseTransformPoint(worldPos);
+        var result = new Dictionary<GenericTreeNode, int>();
+        var visited = new HashSet<GenericTreeNode>();
+        foreach (var node in tree.nodes)
+            AssignLayer(node, result, visited);
+        return result;
+    }
+
+    private int AssignLayer(GenericTreeNode node, Dictionary<GenericTreeNode, int> layerMap, HashSet<GenericTreeNode> visited)
+    {
+        if (layerMap.ContainsKey(node)) return layerMap[node];
+        if (visited.Contains(node)) { layerMap[node] = 0; return 0; }
+        visited.Add(node);
+
+        if (node.parents == null || node.parents.Length == 0)
+        {
+            visited.Remove(node);
+            layerMap[node] = 0;
+            return 0;
+        }
+
+        int maxParentLayer = -1;
+        foreach (var parent in node.parents)
+        {
+            if (parent == null) continue;
+            int pl = AssignLayer(parent, layerMap, visited);
+            if (pl > maxParentLayer) maxParentLayer = pl;
+        }
+
+        visited.Remove(node);
+        layerMap[node] = maxParentLayer + 1;
+        return maxParentLayer + 1;
+    }
+
+    private Dictionary<int, List<GenericTreeNode>> GroupByLayer(Dictionary<GenericTreeNode, int> layerMap)
+    {
+        var result = new Dictionary<int, List<GenericTreeNode>>();
+        foreach (var kvp in layerMap)
+        {
+            if (!result.ContainsKey(kvp.Value))
+                result[kvp.Value] = new List<GenericTreeNode>();
+            result[kvp.Value].Add(kvp.Key);
+        }
+        return result;
     }
 
     public void RefreshAll()
@@ -216,7 +369,7 @@ public class GenericTreeUI : MonoBehaviour
         var state = manager.GetState(owner, tree);
         foreach (var (img, fromNode, toNode) in lineImages)
         {
-            if (fromNode == null || toNode == null) continue;
+            if (img == null || fromNode == null || toNode == null) continue;
             bool fromActive = state.IsUnlocked(fromNode);
             bool toActive = state.IsUnlocked(toNode) || state.CanUnlock(toNode, pts);
             Color litColor = tree.treeColor;
