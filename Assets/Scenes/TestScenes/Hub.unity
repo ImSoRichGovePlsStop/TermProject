@@ -3871,6 +3871,10 @@ PrefabInstance:
       propertyPath: m_Color.r
       value: 0.23529412
       objectReference: {fileID: 0}
+    - target: {fileID: 7128868567382027091, guid: 6bbd880d5adf65247adf79a6c489885d, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8214717237201121992, guid: 6bbd880d5adf65247adf79a6c489885d, type: 3}
       propertyPath: upgradeButton
       value: 

@@ -20,7 +20,7 @@ public class PassiveTreeUI : MonoBehaviour
     private WeaponPassiveData passiveData;
     private bool tooltipAnchorLeft;
 
-    private List<PassiveNodeUI> nodeUIs = new List<PassiveNodeUI>();
+    private List<GenericTreeNodeUI> nodeUIs = new List<GenericTreeNodeUI>();
     private Dictionary<GenericTreeNode, RectTransform> nodeRects
         = new Dictionary<GenericTreeNode, RectTransform>();
     private List<(Image line, GenericTreeNode fromNode, GenericTreeNode toNode)> lineImages
@@ -75,8 +75,8 @@ public class PassiveTreeUI : MonoBehaviour
             foreach (var node in layerNodes)
             {
                 GameObject obj = Instantiate(nodeUIPrefab, row.transform);
-                PassiveNodeUI nodeUI = obj.GetComponent<PassiveNodeUI>();
-                nodeUI.Setup(node, tree, manager, screenUI, data, tooltipAnchorLeft);
+                GenericTreeNodeUI nodeUI = obj.GetComponent<GenericTreeNodeUI>();
+                nodeUI.Setup(node, tree, manager, screenUI, passiveData, tooltipAnchorLeft);
 
                 nodeUIs.Add(nodeUI);
                 nodeRects[node] = obj.GetComponent<RectTransform>();

@@ -281,7 +281,9 @@ public class PlayerController : MonoBehaviour
 
     private void CheckInteractable()
     {
-        if (uiManager != null && (uiManager.IsInventoryOpen || uiManager.IsShopOpen))
+        if (uiManager != null && (uiManager.IsInventoryOpen
+        || uiManager.IsShopOpen
+        || (uiManager.GetGamblerScreen()?.IsOpen ?? false)))
         {
             interactPrompt?.Hide();
             return;

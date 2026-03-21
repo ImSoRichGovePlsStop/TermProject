@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 5896833553634685330}
   - component: {fileID: 2953533340549804377}
   - component: {fileID: 4900655042857637304}
-  - component: {fileID: 3750213927099163859}
   - component: {fileID: 9034912349279599557}
   m_Layer: 5
   m_Name: NodeUI
@@ -122,20 +121,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &3750213927099163859
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5589337019686800746}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 887ae9963815f9641bad084eff14d33f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PassiveNodeUI
-  button: {fileID: 4900655042857637304}
-  background: {fileID: 2953533340549804377}
 --- !u!114 &9034912349279599557
 MonoBehaviour:
   m_ObjectHideFlags: 0
