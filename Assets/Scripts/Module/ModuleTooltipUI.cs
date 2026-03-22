@@ -14,6 +14,7 @@ public class ModuleTooltipUI : MonoBehaviour
     private GridUI currentBuffGridUI;
     private GridUI weaponGridUIRef;
     private GridUI bagGridUIRef;
+    private GridUI envGridUIRef;
 
     private static Color RarityColor(Rarity r)
     {
@@ -69,10 +70,11 @@ public class ModuleTooltipUI : MonoBehaviour
         Hide();
     }
 
-    public void Show(ModuleInstance inst, GridUI weaponGridUI, GridUI bagGridUI)
+    public void Show(ModuleInstance inst, GridUI weaponGridUI, GridUI bagGridUI, GridUI envGridUI = null)
     {
         weaponGridUIRef = weaponGridUI;
         bagGridUIRef = bagGridUI;
+        envGridUIRef = envGridUI;
 
         nameText.text = inst.Data.moduleName;
         nameText.color = RarityColor(inst.Rarity);
@@ -86,9 +88,12 @@ public class ModuleTooltipUI : MonoBehaviour
         // Highlight buff cells
         if (inst.Data.isBuffAdjacent && inst.CurrentGrid != null)
         {
-            var grid = inst.CurrentGrid == weaponGridUI.Data ? weaponGridUI : bagGridUI;
+            GridUI grid;
+            if (inst.CurrentGrid == weaponGridUI?.Data)       grid = weaponGridUI;
+            else if (envGridUI != null && inst.CurrentGrid == envGridUI.Data) grid = envGridUI;
+            else                                               grid = bagGridUI;
             currentBuffGridUI = grid;
-            grid.HighlightBuffCells(inst, inst.Data.moduleColor);
+            grid?.HighlightBuffCells(inst, inst.Data.moduleColor);
         }
     }
 

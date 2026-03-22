@@ -1,19 +1,15 @@
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "PassiveNode", menuName = "Passive/PassiveNode")]
-public class PassiveNode : ScriptableObject
+public class PassiveNode : GenericTreeNode
 {
-    [Header("Info")]
-    public string nodeName;
-    [TextArea] public string description;
+    [Header("Legacy Tree Position")]
+    public int layer;
+    public int branch;
 
-    [Header("Tree Position")]
-    public int layer;     // 1-6
-    public int branch;    // 0 = center, 1 = left, 2 = right
-
-    public int Cost
+    private void OnValidate()
     {
-        get { return GetCostByLayer(layer); }
+        cost = GetCostByLayer(layer);
     }
 
     public static int GetCostByLayer(int layer)

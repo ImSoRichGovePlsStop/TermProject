@@ -13,6 +13,10 @@ public class ModuleInstance
     public int Level { get; private set; }
     public ModuleRuntimeState RuntimeState { get; } = new ModuleRuntimeState();
 
+    public int Rotation { get; private set; } = 0;
+    public void Rotate()           => Rotation = (Rotation + 1) % 4;
+    public void SetRotation(int r) => Rotation = ((r % 4) + 4) % 4;
+
     public ModuleInstance(ModuleData data, Rarity rarity = Rarity.Common, int level = 0)
     {
         Data = data;
@@ -37,7 +41,7 @@ public class ModuleInstance
 
     public List<Vector2Int> GetAbsoluteCells()
     {
-        var relative = Data.GetShapeCells();
+        var relative = Data.GetShapeCells(Rotation);
         var absolute = new List<Vector2Int>(relative.Count);
         foreach (var c in relative) absolute.Add(GridPosition + c);
         return absolute;
@@ -46,7 +50,7 @@ public class ModuleInstance
     public List<Vector2Int> GetAbsoluteBuffCells()
     {
         if (!Data.isBuffAdjacent) return new List<Vector2Int>();
-        var relative = Data.GetBuffCells();
+        var relative = Data.GetBuffCells(Rotation);
         var absolute = new List<Vector2Int>(relative.Count);
         foreach (var c in relative) absolute.Add(GridPosition + c);
         return absolute;
