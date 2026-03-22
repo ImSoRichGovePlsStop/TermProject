@@ -9,11 +9,22 @@ public class CardPhaseUI : MonoBehaviour
     [SerializeField] private List<CardUI> cards;
     [SerializeField] private GameObject continuePrompt;
 
+    [Header("Card Distribution")]
+    [SerializeField] private int positiveCount = 3;
+    [SerializeField] private int negativeCount = 3;
+
+    [Header("Permanent Buff")]
+    [SerializeField] private bool givePermanentBuff = true;
+    [SerializeField] private Sprite noBuffCardBackSprite;
+
     [Header("Card Pool")]
     [SerializeField] private List<BuffCardData> cardPool;
 
     [Header("Card Backs")]
     [SerializeField] private List<PermanentBuffSlot> cardBackSlots;
+
+    [Header("Aura")]
+    [SerializeField] private bool showAura = true;
 
     [System.Serializable]
     public class PermanentBuffSlot
@@ -35,7 +46,6 @@ public class CardPhaseUI : MonoBehaviour
         foreach (var card in cards)
             card.OnCardClicked += OnCardSelected;
     }
-
 
     private void Update()
     {
@@ -66,23 +76,49 @@ public class CardPhaseUI : MonoBehaviour
 
     private void DealCards()
     {
-        var pool = new List<BuffCardData>(cardPool);
-        Shuffle(pool);
+        var positivePool = new List<BuffCardData>();
+        var negativePool = new List<BuffCardData>();
+        foreach (var card in cardPool)
+        {
+            if (card.buffType == BuffType.ExtremePositive || card.buffType == BuffType.Positive)
+                positivePool.Add(card);
+            else
+                negativePool.Add(card);
+        }
+        Shuffle(positivePool);
+        Shuffle(negativePool);
+
+        var selected = new List<BuffCardData>();
+        for (int i = 0; i < positiveCount && i < positivePool.Count; i++)
+            selected.Add(positivePool[i]);
+        for (int i = 0; i < negativeCount && i < negativePool.Count; i++)
+            selected.Add(negativePool[i]);
+        Shuffle(selected);
+
+        var slots = new List<PermanentBuffSlot>(cardBackSlots);
 
         for (int i = 0; i < cards.Count; i++)
         {
-            if (i < pool.Count)
+            if (i < selected.Count)
             {
                 cards[i].gameObject.SetActive(true);
                 cards[i].Reset();
 
-                var slot = cardBackSlots.Count > 0
-                    ? cardBackSlots[Random.Range(0, cardBackSlots.Count)]
-                    : null;
+                Sprite backSprite;
+                PermanentBuffType buffType = PermanentBuffType.MaxHp;
 
-                Sprite backSprite = slot?.backSprite;
-                PermanentBuffType buffType = slot != null ? slot.buffType : PermanentBuffType.MaxHp;
-                cards[i].Setup(pool[i], backSprite, buffType);
+                if (givePermanentBuff)
+                {
+                    var slot = slots.Count > 0 ? slots[Random.Range(0, slots.Count)] : null;
+                    backSprite = slot?.backSprite;
+                    buffType = slot != null ? slot.buffType : PermanentBuffType.MaxHp;
+                }
+                else
+                {
+                    backSprite = noBuffCardBackSprite;
+                }
+
+                cards[i].Setup(selected[i], backSprite, buffType, showAura);
             }
             else
             {
@@ -102,7 +138,11 @@ public class CardPhaseUI : MonoBehaviour
             c.SetInteractable(false);
 
         foreach (var c in cards)
-            if (c != card) c.DimUnselected();
+            if (c != card)
+            {
+                c.DimUnselected();
+                c.StopAuraPublic();
+            }
 
         card.SetHoverable(true);
 
@@ -119,7 +159,8 @@ public class CardPhaseUI : MonoBehaviour
         if (!waitingForContinue) return;
         waitingForContinue = false;
         selectedCard?.Apply();
-        ApplyPermanentBuff();
+        if (givePermanentBuff)
+            ApplyPermanentBuff();
         Close();
     }
 
