@@ -49,6 +49,8 @@ public class ShatterFieldPassive : MonoBehaviour
         stats = playerStats;
         context = combatContext;
         context.OnSecondaryAttack += OnSecondaryAttack;
+        context.OnSecondaryAttackForced += OnSecondaryAttackForced;
+        context.OnEnemyKilled += OnEnemyKilled;
 
         if (weaponData != null && weaponData.secondaryAttack != null)
             baseRadius = weaponData.secondaryAttack.range;
@@ -57,7 +59,11 @@ public class ShatterFieldPassive : MonoBehaviour
     private void OnDestroy()
     {
         if (context != null)
+        {
             context.OnSecondaryAttack -= OnSecondaryAttack;
+            context.OnSecondaryAttackForced -= OnSecondaryAttackForced;
+            context.OnEnemyKilled -= OnEnemyKilled;
+        }
     }
 
     private void Update()
@@ -74,6 +80,13 @@ public class ShatterFieldPassive : MonoBehaviour
 
         SpawnField(context.LastSecondaryPosition);
         cooldownTimer = Cooldown;
+    }
+
+    private void OnSecondaryAttackForced()
+    {
+        if (!enabled) return;
+        if (fieldPrefab == null) return;
+        SpawnField(context.LastSecondaryPosition);
     }
 
     private void SpawnField(Vector3 position)
@@ -142,6 +155,11 @@ public class ShatterFieldPassive : MonoBehaviour
         }
         foreach (var e in toRemove)
             trackedForExploit.Remove(e);
+    }
+
+    private void OnEnemyKilled(EnemyHealth enemy)
+    {
+        CheckExploit();
     }
 
     private void ApplyRoot(EnemyHealth enemy, EnemyStatusHandler status, EnemySlowState state)
