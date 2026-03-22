@@ -85,10 +85,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.07
-  m_Height: 0.35605013
+  m_Radius: 0.07366595
+  m_Height: 0.46563113
   m_Direction: 1
-  m_Center: {x: 0, y: 0.042623222, z: -0.0045046806}
+  m_Center: {x: -0.005318612, y: 0.005510509, z: 0}
 --- !u!114 &7960103508822112348
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -106,7 +106,7 @@ MonoBehaviour:
   attackBuffer: 0.2
   movement: {fileID: 5751372851717793496}
   enemyAttack: {fileID: 61150285569358350}
-  enemyHealth: {fileID: 0}
+  enemyHealth: {fileID: 3782429071458927645}
   animator: {fileID: 7551460917292428163}
 --- !u!114 &5751372851717793496
 MonoBehaviour:
@@ -144,7 +144,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1
   animator: {fileID: 7551460917292428163}
-  enemyHealth: {fileID: 0}
+  enemyHealth: {fileID: 3782429071458927645}
 --- !u!114 &3782429071458927645
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -196,7 +196,7 @@ Transform:
   m_GameObject: {fileID: 1591345016874994846}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.2, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -251,12 +251,12 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -1981420872, guid: fe6e4f2bb34086d45a07c1b871deb84b, type: 3}
+  m_Sprite: {fileID: 1881740598, guid: a480993c2d5834141b2bb470c2350550, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.96, y: 0.8}
+  m_Size: {x: 0.5, y: 0.5}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
