@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L3A_TreasureHunt
+  m_Name: L2_KeenEdge
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Treasure Hunt
-  description: Purchased module has 25% chance to spawn a new module in its place.
-  cost: 2
+  nodeName: Keen Edge
+  description: While shielded, gain +25% crit damage
+  cost: 1
   parents:
-  - {fileID: 11400000, guid: 357286022df0cab45a9573d7c954f4fe, type: 2}
+  - {fileID: 11400000, guid: 8d97cca03ad3d7b419fe37ea48a6c377, type: 2}
   requireAllParents: 0
-  layer: 3
-  branch: 1
+  layer: 2
+  branch: 0

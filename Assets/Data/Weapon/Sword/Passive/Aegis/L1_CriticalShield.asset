@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L2_SweetDeal
+  m_Name: L1_CriticalShield
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Sweet Deal
-  description: Refund amount increased from 50% to 75%.
+  nodeName: Critical Shield
+  description: 'Critical hit generates a shield (value: 20, duration: 3s, CD: 3s,
+    cannot stack)'
   cost: 1
-  parents:
-  - {fileID: 11400000, guid: 8d97cca03ad3d7b419fe37ea48a6c377, type: 2}
+  parents: []
   requireAllParents: 0
-  layer: 2
+  layer: 1
   branch: 0

@@ -47,7 +47,7 @@ public class GenericTreeTooltipUI : MonoBehaviour
             out Vector2 localPos
         );
 
-        float offsetX = anchorLeft ? -nodeRect.rect.width * 2.5f : nodeRect.rect.width * 2.5f;
+        float offsetX = anchorLeft ? -nodeRect.rect.width * 3f : nodeRect.rect.width * 3f;
         float offsetY = -nodeRect.rect.height * 0.6f;
         tooltipRect.anchoredPosition = localPos + new Vector2(offsetX, offsetY);
     }

@@ -10,14 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L5B_ShopRefresh
+  m_Name: L3A_Persistence
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Shop Refresh
-  description: "Reroll shop items (max 10 times per run) \u2014 same amount of modules
-    left."
-  cost: 3
+  nodeName: Persistence
+  description: 6 consecutive non-crit hits also proc the shield effect.
+  cost: 2
   parents:
-  - {fileID: 11400000, guid: b2d0339f36cf0d34b87968c52a5a33c4, type: 2}
+  - {fileID: 11400000, guid: 357286022df0cab45a9573d7c954f4fe, type: 2}
   requireAllParents: 0
-  layer: 5
-  branch: 2
+  layer: 3
+  branch: 1
