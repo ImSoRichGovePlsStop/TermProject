@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class CardPhaseUI : MonoBehaviour
 {
@@ -26,6 +28,11 @@ public class CardPhaseUI : MonoBehaviour
     [Header("Aura")]
     [SerializeField] private bool showAura = true;
 
+    [Header("Reroll")]
+    [SerializeField] private int maxReroll = 2;
+    [SerializeField] private Button rerollButton;
+    [SerializeField] private TextMeshProUGUI rerollText;
+
     [System.Serializable]
     public class PermanentBuffSlot
     {
@@ -36,12 +43,16 @@ public class CardPhaseUI : MonoBehaviour
     private BuffCardData selectedCard;
     private CardUI selectedCardUI;
     private bool waitingForContinue = false;
+    private int rerollCount = 0;
 
     private void Awake()
     {
         gameObject.SetActive(false);
         panel.SetActive(false);
         continuePrompt.SetActive(false);
+
+        if (rerollButton != null)
+            rerollButton.onClick.AddListener(OnReroll);
 
         foreach (var card in cards)
             card.OnCardClicked += OnCardSelected;
@@ -50,8 +61,26 @@ public class CardPhaseUI : MonoBehaviour
     private void Update()
     {
         if (!waitingForContinue) return;
-        if (Mouse.current.leftButton.wasPressedThisFrame)
-            OnContinueClick();
+        if (!Mouse.current.leftButton.wasPressedThisFrame) return;
+
+        if (rerollButton != null && rerollButton.interactable)
+        {
+            var pointerData = new UnityEngine.EventSystems.PointerEventData(
+                UnityEngine.EventSystems.EventSystem.current)
+            {
+                position = Mouse.current.position.ReadValue()
+            };
+            var results = new List<UnityEngine.EventSystems.RaycastResult>();
+            UnityEngine.EventSystems.EventSystem.current.RaycastAll(pointerData, results);
+
+            foreach (var result in results)
+            {
+                if (result.gameObject == rerollButton.gameObject)
+                    return;
+            }
+        }
+
+        OnContinueClick();
     }
 
     public void Open()
@@ -60,10 +89,12 @@ public class CardPhaseUI : MonoBehaviour
         selectedCard = null;
         selectedCardUI = null;
         waitingForContinue = false;
+        rerollCount = maxReroll;
 
         panel.SetActive(true);
         continuePrompt.SetActive(false);
 
+        SetRerollButtonState(false);
         DealCards();
     }
 
@@ -71,6 +102,7 @@ public class CardPhaseUI : MonoBehaviour
     {
         panel.SetActive(false);
         continuePrompt.SetActive(false);
+        SetRerollButtonState(false);
         gameObject.SetActive(false);
     }
 
@@ -151,7 +183,32 @@ public class CardPhaseUI : MonoBehaviour
             card.ScaleUp();
             waitingForContinue = true;
             continuePrompt.SetActive(true);
+            SetRerollButtonState(rerollCount > 0);
         });
+    }
+
+    private void OnReroll()
+    {
+        if (rerollCount <= 0) return;
+
+        rerollCount--;
+        waitingForContinue = false;
+        selectedCard = null;
+        selectedCardUI = null;
+
+        continuePrompt.SetActive(false);
+        SetRerollButtonState(false);
+
+        DealCards();
+    }
+
+    private void SetRerollButtonState(bool interactable)
+    {
+        if (rerollButton == null) return;
+        rerollButton.gameObject.SetActive(true);
+        rerollButton.interactable = interactable;
+        if (rerollText != null)
+            rerollText.text = rerollCount > 0 ? $"Reroll ({rerollCount})" : "No Reroll";
     }
 
     private void OnContinueClick()
@@ -167,28 +224,35 @@ public class CardPhaseUI : MonoBehaviour
     private void ApplyPermanentBuff()
     {
         if (selectedCardUI == null) return;
+
+        bool isExtreme = selectedCard != null &&
+            (selectedCard.buffType == BuffType.ExtremePositive ||
+             selectedCard.buffType == BuffType.ExtremeNegative);
+
+        string prefix = isExtreme ? "+Extreme" : "+";
+
         switch (selectedCardUI.GetPermanentBuffType())
         {
             case PermanentBuffType.MaxHp:
-                Debug.Log("[PermanentBuff] +MaxHp");
+                Debug.Log($"[PermanentBuff] {prefix}MaxHp");
                 break;
             case PermanentBuffType.AttackDamage:
-                Debug.Log("[PermanentBuff] +AttackDamage");
+                Debug.Log($"[PermanentBuff] {prefix}AttackDamage");
                 break;
             case PermanentBuffType.AttackSpeed:
-                Debug.Log("[PermanentBuff] +AttackSpeed");
+                Debug.Log($"[PermanentBuff] {prefix}AttackSpeed");
                 break;
             case PermanentBuffType.MoveSpeed:
-                Debug.Log("[PermanentBuff] +MoveSpeed");
+                Debug.Log($"[PermanentBuff] {prefix}MoveSpeed");
                 break;
             case PermanentBuffType.CritChance:
-                Debug.Log("[PermanentBuff] +CritChance");
+                Debug.Log($"[PermanentBuff] {prefix}CritChance");
                 break;
             case PermanentBuffType.CritDamage:
-                Debug.Log("[PermanentBuff] +CritDamage");
+                Debug.Log($"[PermanentBuff] {prefix}CritDamage");
                 break;
             case PermanentBuffType.EvadeChance:
-                Debug.Log("[PermanentBuff] +EvadeChance");
+                Debug.Log($"[PermanentBuff] {prefix}EvadeChance");
                 break;
             default:
                 Debug.Log($"[PermanentBuff] Unknown: {selectedCardUI.GetPermanentBuffType()}");
