@@ -110,6 +110,9 @@ public abstract class EnemyHealth : MonoBehaviour
             hurtCoroutine = null;
         }
 
+        var context = FindFirstObjectByType<PlayerCombatContext>();
+        context?.NotifyEnemyKilled(this);
+
         OnDeathStart();
         DisableMainCollider();
         HandleRigidbodyOnDeath();

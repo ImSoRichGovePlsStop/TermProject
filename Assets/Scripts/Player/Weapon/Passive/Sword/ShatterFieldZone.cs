@@ -55,8 +55,6 @@ public class ShatterFieldZone : MonoBehaviour
             passive?.ApplySlow(enemy);
         }
 
-        passive?.CheckExploit();
-
         if (fieldCountsAsAttack && hitEnemies.Count > 0 && context != null)
             context.NotifyAttack(hitEnemies, -1);
     }

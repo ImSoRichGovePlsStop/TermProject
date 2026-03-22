@@ -21,10 +21,8 @@ public class CardUI : MonoBehaviour,
     [SerializeField] private Button cardButton;
 
     private float flipDuration = 0.3f;
-
     private float hoverScale = 1.08f;
     private float scaleSmoothing = 8f;
-
     private float auraPulseSpeed = 2f;
     private float auraMinAlpha = 0.1f;
     private float auraMaxAlpha = 0.8f;
@@ -34,12 +32,10 @@ public class CardUI : MonoBehaviour,
     private bool isFlipped = false;
     private bool isFlipping = false;
     private bool isHoverable = true;
-    private bool isHovered = false;
     private bool auraEnabled = true;
     private PermanentBuffType permanentBuffType;
 
     private RectTransform rt;
-    private Canvas canvas;
     private Vector3 baseScale = Vector3.one;
     private Vector3 targetScale = Vector3.one;
 
@@ -77,7 +73,6 @@ public class CardUI : MonoBehaviour,
     private void Awake()
     {
         rt = GetComponent<RectTransform>();
-        canvas = GetComponentInParent<Canvas>();
         cardButton.onClick.AddListener(OnClick);
         cardFront.SetActive(false);
         cardBack.SetActive(true);
@@ -225,13 +220,11 @@ public class CardUI : MonoBehaviour,
     public void OnPointerEnter(PointerEventData e)
     {
         if (!isHoverable) return;
-        isHovered = true;
         targetScale = baseScale * hoverScale;
     }
 
     public void OnPointerExit(PointerEventData e)
     {
-        isHovered = false;
         if (!isHoverable) return;
         targetScale = baseScale;
     }
@@ -342,7 +335,6 @@ public class CardUI : MonoBehaviour,
         isFlipped = false;
         isFlipping = false;
         isHoverable = true;
-        isHovered = false;
         auraEnabled = true;
         cardFront.SetActive(false);
         cardBack.SetActive(true);
