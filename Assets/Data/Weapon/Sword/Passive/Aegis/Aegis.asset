@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 795b38daab500fb45a7cc0b63959a39f, type: 3}
-  m_Name: Gamble
+  m_Name: Aegis
   m_EditorClassIdentifier: Assembly-CSharp::PassiveTree
-  treeName: Gamble
-  handlerPrefab: {fileID: 0}
+  treeName: Aegis
+  treeColor: {r: 1, g: 0.84313726, b: 0, a: 1}
   nodes:
   - {fileID: 11400000, guid: 8d97cca03ad3d7b419fe37ea48a6c377, type: 2}
   - {fileID: 11400000, guid: 357286022df0cab45a9573d7c954f4fe, type: 2}
@@ -23,4 +23,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 15964ee03192d8f48892d00395d06080, type: 2}
   - {fileID: 11400000, guid: adcc19deca545b14789b9cb1f1e0c75e, type: 2}
   - {fileID: 11400000, guid: 289854ae857b19642b952868c585fa36, type: 2}
-  treeColor: {r: 1, g: 0.78039217, b: 0, a: 1}
+  handlerPrefab: {fileID: 0}

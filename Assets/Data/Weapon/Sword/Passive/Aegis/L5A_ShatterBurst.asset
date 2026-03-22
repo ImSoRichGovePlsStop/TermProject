@@ -10,11 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L5A_Ascension
+  m_Name: L5A_ShatterBurst
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Ascension
-  description: Hitting the mark upgrades that module to the next rarity for free.
-    Once per shop.
+  nodeName: Shatter Burst
+  description: 'Shield ending triggers AoE and secondary attack.
+
+    Break: 50%
+    max shield.
+
+    Expire: 50% current shield.'
   cost: 3
   parents:
   - {fileID: 11400000, guid: b2d0339f36cf0d34b87968c52a5a33c4, type: 2}

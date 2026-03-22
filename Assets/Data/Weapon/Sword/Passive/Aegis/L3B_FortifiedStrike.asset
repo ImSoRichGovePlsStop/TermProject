@@ -10,10 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L3B_Bargain
+  m_Name: L3B_FortifiedStrike
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Bargain
-  description: All shop modules cost 15% less regardless of mark.
+  nodeName: Fortified Strike
+  description: Crit while shielded extends duration by 1s and increases shield value
+    by 8 (max 3 times per shield)
   cost: 2
   parents:
   - {fileID: 11400000, guid: 357286022df0cab45a9573d7c954f4fe, type: 2}
