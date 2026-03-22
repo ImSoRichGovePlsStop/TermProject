@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HpEffect
   baseStatPerRarity:
   - 10
-  - 15
-  - 25
-  - 35
+  - 20
   - 50
+  - 75
+  - 100
   levelMultiplier: 0.1
-  cost: 0a00000019000000320000004b00000064000000
+  moduleColor: {r: 0, g: 1, b: 0, a: 1}
