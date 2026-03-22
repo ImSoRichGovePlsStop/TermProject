@@ -12,6 +12,8 @@ public class GroundLoot : MonoBehaviour, IInteractable
 
     private static GroundLoot IsActiveBox;
 
+    public string GetPromptText() => "[ E ]  Open Loot";
+
     private void Start()
     {
         InventoryManager.Instance.EnvGrid.OnModulePlaced += OnEnvModulePlaced;
@@ -46,6 +48,8 @@ public class GroundLoot : MonoBehaviour, IInteractable
                 Object.Destroy(inst.UIElement.gameObject);
             mgr.EnvGrid.Remove(inst);
         }
+
+        inventoryUI.SetEnvGridVisible(true);
 
         if (!_hasBeenOpened)
         {

@@ -93,6 +93,7 @@ GameObject:
   - component: {fileID: 2654450303875858809}
   - component: {fileID: 3563984915877921471}
   - component: {fileID: 6499088522283101609}
+  - component: {fileID: 4982785343660528164}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -240,7 +241,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 125be61d71b02194aaf28eb936b9fa6c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  interactRange: 2
+  interactRange: 1
   interactableLayer:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -278,7 +279,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6821820435605495984}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 6527ba2ea418b894b8460f0be6300429, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -346,7 +347,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8f52d163fc1b6342a496e26de805802, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponPassiveManager
-  passiveHandlerContainer: {fileID: 7423755363756834439}
+  handlerContainer: {fileID: 7423755363756834439}
   startingPoints: 0
 --- !u!114 &6499088522283101609
 MonoBehaviour:
@@ -361,6 +362,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCombatContext
   aroundRadius: 5
+--- !u!114 &4982785343660528164
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6821820435605495984}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: da36a54957fd9dd47a2f4c595b0e90d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponLevelManager
 --- !u!1 &7199941304210273291
 GameObject:
   m_ObjectHideFlags: 0

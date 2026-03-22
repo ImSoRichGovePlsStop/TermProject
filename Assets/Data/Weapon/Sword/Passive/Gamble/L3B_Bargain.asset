@@ -14,5 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Bargain
   description: All shop modules cost 15% less regardless of mark.
+  cost: 2
+  parents:
+  - {fileID: 11400000, guid: 357286022df0cab45a9573d7c954f4fe, type: 2}
+  requireAllParents: 0
   layer: 3
   branch: 2

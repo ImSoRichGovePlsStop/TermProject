@@ -6,7 +6,7 @@ public class SpawnRoom : MonoBehaviour
     [Header("Player")]
     public GameObject playerPrefab;
 
-    public float spawnHeightOffset = 0.3f;
+    public float spawnHeightOffset = 0.5f;
 
     void Start()
     {
@@ -17,7 +17,10 @@ public class SpawnRoom : MonoBehaviour
     {
 
         Vector3 spawnPoint = GetSpawnPoint();
-        Instantiate(playerPrefab, spawnPoint, Quaternion.identity);
+
+        var player = GameObject.FindWithTag("Player");
+        if (player == null) { Debug.LogWarning("[PlayerSpawner] Player not found!"); return; }
+        player.transform.position = spawnPoint;
     }
 
 

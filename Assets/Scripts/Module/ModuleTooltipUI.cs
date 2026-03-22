@@ -9,10 +9,12 @@ public class ModuleTooltipUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private TextMeshProUGUI rarityLevelText;
     [SerializeField] private TextMeshProUGUI descriptionText;
+    [SerializeField] private TextMeshProUGUI costText;
 
     private GridUI currentBuffGridUI;
     private GridUI weaponGridUIRef;
     private GridUI bagGridUIRef;
+    private GridUI envGridUIRef;
 
     private static Color RarityColor(Rarity r)
     {
@@ -60,29 +62,38 @@ public class ModuleTooltipUI : MonoBehaviour
         descriptionText.fontSize = 15f;
         descriptionText.color = Color.white;
 
+        // Style CostText
+        costText.fontSize = 15f;
+        costText.fontStyle = FontStyles.Bold;
+        costText.color = Color.yellow;
+
         Hide();
     }
 
-    public void Show(ModuleInstance inst, GridUI weaponGridUI, GridUI bagGridUI)
+    public void Show(ModuleInstance inst, GridUI weaponGridUI, GridUI bagGridUI, GridUI envGridUI = null)
     {
         weaponGridUIRef = weaponGridUI;
         bagGridUIRef = bagGridUI;
+        envGridUIRef = envGridUI;
 
         nameText.text = inst.Data.moduleName;
         nameText.color = RarityColor(inst.Rarity);
-        rarityLevelText.text = $"{inst.Rarity}  Lv.{inst.Level}";
+        rarityLevelText.text = $"{inst.Data.moduleEffect.GetRarityText(inst.Rarity, inst.RuntimeState)} {inst.Data.moduleEffect.GetLevelText(inst.Level, inst.RuntimeState)}" ;
         descriptionText.text = inst.Data.moduleEffect != null
             ? inst.Data.moduleEffect.GetDescription(inst.Rarity, inst.Level, inst.RuntimeState)
             : "";
-
+        costText.text = $"Cost : {(int)inst.GetCostAtLevel()}";
         gameObject.SetActive(true);
 
         // Highlight buff cells
         if (inst.Data.isBuffAdjacent && inst.CurrentGrid != null)
         {
-            var grid = inst.CurrentGrid == weaponGridUI.Data ? weaponGridUI : bagGridUI;
+            GridUI grid;
+            if (inst.CurrentGrid == weaponGridUI?.Data)       grid = weaponGridUI;
+            else if (envGridUI != null && inst.CurrentGrid == envGridUI.Data) grid = envGridUI;
+            else                                               grid = bagGridUI;
             currentBuffGridUI = grid;
-            grid.HighlightBuffCells(inst, inst.Data.moduleColor);
+            grid?.HighlightBuffCells(inst, inst.Data.moduleColor);
         }
     }
 

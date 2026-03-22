@@ -2,18 +2,20 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CanvasGroup))]
 [RequireComponent(typeof(Image))]
 public class MaterialItemUI : MonoBehaviour,
     IBeginDragHandler, IDragHandler, IEndDragHandler,
-    IPointerEnterHandler, IPointerExitHandler
+    IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     public MaterialInstance Instance { get; private set; }
 
     [HideInInspector] public GridUI WeaponGridUI;
     [HideInInspector] public GridUI BagGridUI;
     [HideInInspector] public GridUI EnvGridUI;
+    [HideInInspector] public InventoryUI InventoryUI;
 
     [SerializeField] private float dragAlpha = 0.6f;
     [SerializeField] private float borderSize = 4f;
@@ -24,9 +26,14 @@ public class MaterialItemUI : MonoBehaviour,
     private Canvas _canvas;
     private GridUI _originGrid;
     private Vector2Int _originCell;
+    private int _originRotation;
     private Vector2 _dragOffset;
     private Vector2Int _clickedCell;
     private TextMeshProUGUI _stackText;
+
+    private int  _dragRotation;
+    private bool _isDragging;
+    private Vector2 _lastPointerScreenPos;
 
 
     private static Color RarityColor(Rarity r) => r switch
@@ -54,18 +61,39 @@ public class MaterialItemUI : MonoBehaviour,
 
         _rt.pivot = new Vector2(0f, 1f);
 
-        var bound = instance.Data.GetBoundingSize();
-        float cs = bagGridUI.CellSize;
-        float sp = bagGridUI.CellSpacing;
-        _rt.sizeDelta = new Vector2(bound.x * (cs + sp) - sp,
-                                    bound.y * (cs + sp) - sp);
-
         var img = GetComponent<Image>();
         img.color         = Color.clear;
         img.raycastTarget = false;
 
-        Color borderColor = RarityColor(instance.Rarity);
-        var shapeCells    = instance.Data.GetShapeCells();
+        RebuildVisual(Instance.Rotation);
+
+        RefreshStackText();
+        instance.OnStackChanged += RefreshStackText;
+
+        _cg.alpha = 0f;
+    }
+
+    private void RebuildVisual(int rotation)
+    {
+        _stackText = null;
+        for (int i = _rt.childCount - 1; i >= 0; i--)
+            Destroy(_rt.GetChild(i).gameObject);
+
+        float cs = BagGridUI.CellSize;
+        float sp = BagGridUI.CellSpacing;
+
+        var bound = Instance.Data.GetBoundingSize(rotation);
+        _rt.sizeDelta = new Vector2(bound.x * (cs + sp) - sp,
+                                    bound.y * (cs + sp) - sp);
+
+        BuildVisualCells(Instance.Data.GetShapeCells(rotation));
+    }
+
+    private void BuildVisualCells(System.Collections.Generic.List<Vector2Int> shapeCells)
+    {
+        float cs = BagGridUI.CellSize;
+        float sp = BagGridUI.CellSpacing;
+        Color borderColor = RarityColor(Instance.Rarity);
 
         // Border layer
         foreach (var cell in shapeCells)
@@ -129,11 +157,11 @@ public class MaterialItemUI : MonoBehaviour,
                                                   -cell.y * (cs + sp) - borderSize + extraTop);
 
             var cellImg = go.GetComponent<Image>();
-            if (instance.Data.icon != null) cellImg.sprite = instance.Data.icon;
-            cellImg.color          = instance.MaterialData.moduleColor;
+            if (Instance.Data.icon != null) cellImg.sprite = Instance.Data.icon;
+            cellImg.color          = Instance.MaterialData.moduleColor;
             cellImg.raycastTarget  = true;
 
-            // Stack count text on bottom-right cell
+            // Stack count text on top-right cell
             if (cell == topRightCell)
             {
                 var stackGo = new GameObject("StackText",
@@ -153,11 +181,18 @@ public class MaterialItemUI : MonoBehaviour,
                 _stackText.raycastTarget = false;
             }
         }
+    }
 
-        RefreshStackText();
-        instance.OnStackChanged += RefreshStackText;
-
-        _cg.alpha = 0f;
+    private void Update()
+    {
+        if (_isDragging && Keyboard.current != null && Keyboard.current[Key.R].wasPressedThisFrame)
+        {
+            _dragRotation = (_dragRotation + 1) % 4;
+            _clickedCell = Vector2Int.zero;
+            RebuildVisual(_dragRotation);
+            RefreshStackText();
+            UpdateHighlightAtScreenPos(_lastPointerScreenPos);
+        }
     }
 
     private void RefreshStackText()
@@ -179,6 +214,11 @@ public class MaterialItemUI : MonoBehaviour,
     {
         _originGrid  = Instance.CurrentGrid == InventoryManager.Instance.EnvGrid ? EnvGridUI : BagGridUI;
         _originCell  = Instance.GridPosition;
+        _originRotation = Instance.Rotation;
+        _dragRotation = Instance.Rotation;
+        _isDragging = true;
+        _lastPointerScreenPos = e.position;
+
         _clickedCell = GetClickedLocalCell(e);
 
         _rt.SetParent(_canvas.transform, worldPositionStays: true);
@@ -198,11 +238,13 @@ public class MaterialItemUI : MonoBehaviour,
             _canvasRt, e.position, UICam(), out var local))
             _rt.anchoredPosition = local - _dragOffset;
 
+        _lastPointerScreenPos = e.position;
         UpdateHighlight(e);
     }
 
     public void OnEndDrag(PointerEventData e)
     {
+        _isDragging = false;
         _cg.alpha          = 1f;
         _cg.blocksRaycasts = true;
         ClearHighlights();
@@ -212,23 +254,70 @@ public class MaterialItemUI : MonoBehaviour,
             if (g == null) continue;
             if (!g.ScreenToCell(e.position, UICam(), out var hoveredCell)) continue;
 
-            // Check stacking (only within same grid type)
+            // Check stacking (only within same grid type, rotation doesn't affect stacking)
             var existing = g.Data.GetModuleAt(hoveredCell);
             if (existing is MaterialInstance target && Instance.CanStackOnto(target))
             {
-                _originGrid.Data.Remove(Instance);
-                target.AddStack();
-                Destroy(gameObject);
+                int toAdd = Mathf.Min(Instance.StackCount, target.MaxStack - target.StackCount);
+                for (int i = 0; i < toAdd; i++) target.AddStack();
+
+                if (toAdd >= Instance.StackCount)
+                {
+                    _originGrid.Data.Remove(Instance);
+                    Destroy(gameObject);
+                }
+                else
+                {
+                    for (int i = 0; i < toAdd; i++) Instance.RemoveStack();
+                    _dragRotation = Instance.Rotation;
+                    RebuildVisual(_dragRotation);
+                    RefreshStackText();
+                    SnapToCell(_originGrid, _originCell);
+                }
                 return;
             }
 
             var pivot = hoveredCell - _clickedCell;
-            bool moved = InventoryManager.Instance.TryMoveModule(Instance, g.Data, pivot);
-            SnapToCell(g, moved ? Instance.GridPosition : _originCell);
+            var prevGrid = Instance.CurrentGrid;
+            var prevPos  = Instance.GridPosition;
+
+            prevGrid?.Remove(Instance);
+            Instance.SetRotation(_dragRotation);
+
+            if (g.Data.TryPlace(Instance, pivot))
+            {
+                SnapToCell(g, Instance.GridPosition);
+            }
+            else
+            {
+                Instance.SetRotation(_originRotation);
+                prevGrid?.TryPlace(Instance, prevPos);
+                _dragRotation = Instance.Rotation;
+                RebuildVisual(_dragRotation);
+                RefreshStackText();
+                SnapToCell(_originGrid, _originCell);
+            }
             return;
         }
 
+        _dragRotation = Instance.Rotation;
+        RebuildVisual(_dragRotation);
+        RefreshStackText();
         SnapToCell(_originGrid, _originCell);
+    }
+
+    public void OnPointerClick(PointerEventData e)
+    {
+        if (e.button != PointerEventData.InputButton.Right) return;
+        if (Instance.StackCount <= 1) return;
+        if (InventoryUI == null) return;
+
+        var targetGrid = Instance.CurrentGrid == InventoryManager.Instance.EnvGrid ? EnvGridUI : BagGridUI;
+
+        Instance.RemoveStack();
+        var ui = InventoryUI.SpawnSplitMaterial(Instance.MaterialData, targetGrid);
+        if (ui == null) // grid เต็ม — rollback
+            Instance.AddStack();
     }
 
     public void OnPointerEnter(PointerEventData e) => ModuleTooltipUI.Instance.Show(Instance);
@@ -236,27 +325,33 @@ public class MaterialItemUI : MonoBehaviour,
 
     private void UpdateHighlight(PointerEventData e)
     {
+        _lastPointerScreenPos = e.position;
+        UpdateHighlightAtScreenPos(e.position);
+    }
+
+    private void UpdateHighlightAtScreenPos(Vector2 screenPos)
+    {
         ClearHighlights();
 
         // WeaponGrid → invalid เสมอ (material ลาก weapon grid ไม่ได้)
-        if (WeaponGridUI.ScreenToCell(e.position, UICam(), out var weaponCell))
+        if (WeaponGridUI.ScreenToCell(screenPos, UICam(), out var weaponCell))
         {
-            WeaponGridUI.HighlightCells(Instance.Data, weaponCell - _clickedCell, valid: false);
+            WeaponGridUI.HighlightCells(Instance.Data, weaponCell - _clickedCell, valid: false, _dragRotation);
             return;
         }
 
         foreach (var g in new[] { BagGridUI, EnvGridUI })
         {
             if (g == null) continue;
-            if (!g.ScreenToCell(e.position, UICam(), out var hoveredCell)) continue;
+            if (!g.ScreenToCell(screenPos, UICam(), out var hoveredCell)) continue;
 
             var existing = g.Data.GetModuleAt(hoveredCell);
             if (existing is MaterialInstance target && Instance.CanStackOnto(target))
-                g.HighlightCells(target.Data, target.GridPosition, valid: true);
+                g.HighlightCells(target.Data, target.GridPosition, valid: true, target.Rotation);
             else
             {
                 var pivot = hoveredCell - _clickedCell;
-                g.HighlightCells(Instance.Data, pivot, g.Data.CanPlace(Instance, pivot));
+                g.HighlightCells(Instance.Data, pivot, g.Data.CanPlace(Instance, pivot, _dragRotation), _dragRotation);
             }
             return;
         }

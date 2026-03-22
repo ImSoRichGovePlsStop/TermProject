@@ -7,6 +7,16 @@ public class WeaponStand : MonoBehaviour, IInteractable
     private PassiveScreenUI passiveScreenUI;
     private WeaponEquip weaponEquip;
 
+    public string GetPromptText()
+    {
+        if (weaponEquip == null)
+            weaponEquip = FindFirstObjectByType<WeaponEquip>();
+
+        if (weaponEquip != null && weaponEquip.GetCurrentWeapon() == weaponData)
+            return "[ E ]  Open Skill Tree";
+        return "[ E ]  Pick Up Weapon";
+    }
+
     private void Awake()
     {
         passiveScreenUI = FindFirstObjectByType<PassiveScreenUI>();

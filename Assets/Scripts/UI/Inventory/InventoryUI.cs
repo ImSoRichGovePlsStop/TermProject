@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,6 +15,8 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private ModuleItemUI  moduleItemPrefab;
     [SerializeField] private MaterialItemUI materialItemPrefab;
 
+    public GridUI WeaponGridUI => weaponGridUI;
+
     private void Awake()
     {
         var mgr    = InventoryManager.Instance;
@@ -26,12 +29,56 @@ public class InventoryUI : MonoBehaviour
         weaponGridUI.Init(mgr.WeaponGrid, cellSize, cellSpacing);
         bagGridUI.Init(mgr.BagGrid,       cellSize, cellSpacing);
         envGridUI?.Init(mgr.EnvGrid,      cellSize, cellSpacing);
+        envGridUI?.gameObject.SetActive(false);
 
         Debug.Log("[InventoryUI] Initialized.");
     }
 
+    public void ClearEnvGrid()
+    {
+        var mgr = InventoryManager.Instance;
+        foreach (var inst in new List<ModuleInstance>(mgr.EnvGrid.GetAllModules()))
+        {
+            if (inst.UIElement != null)
+                Destroy(inst.UIElement.gameObject);
+            mgr.EnvGrid.Remove(inst);
+        }
+    }
 
-    
+    public void SetEnvGridVisible(bool visible)
+    {
+        envGridUI.gameObject.SetActive(visible);
+    }
+
+    public void TakeAllFromEnv()
+    {
+        var mgr = InventoryManager.Instance;
+        var toTake = new List<ModuleInstance>(mgr.EnvGrid.GetAllModules());
+        if (toTake.Count == 0) return;
+
+        foreach (var inst in toTake)
+        {
+            var uiElem = inst.UIElement;
+            mgr.EnvGrid.Remove(inst);
+
+            if (!mgr.TryAddToBag(inst))
+            {
+                bool restored = false;
+                for (int row = 0; row < mgr.EnvGrid.Height && !restored; row++)
+                    for (int col = 0; col < mgr.EnvGrid.Width && !restored; col++)
+                        if (mgr.EnvGrid.TryPlace(inst, new Vector2Int(col, row)))
+                            restored = true;
+                continue;
+            }
+
+            if (uiElem == null) continue;
+            uiElem.transform.SetParent(bagGridUI.transform, false);
+            if (uiElem is MaterialItemUI matUI)
+                StartCoroutine(SnapNextFrame(matUI, bagGridUI, inst.GridPosition));
+            else if (uiElem is ModuleItemUI modUI)
+                StartCoroutine(SnapNextFrame(modUI, bagGridUI, inst.GridPosition));
+        }
+    }
 
     private void Update()
     {
@@ -79,8 +126,42 @@ public class InventoryUI : MonoBehaviour
         var ui = Instantiate(materialItemPrefab, bagGridUI.transform);
         ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
         ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
+        ui.InventoryUI = this;
 
         StartCoroutine(SnapNextFrame(ui, bagGridUI, inst.GridPosition));
+        return ui;
+    }
+
+    public MaterialItemUI SpawnSplitMaterial(MaterialData data, GridUI targetGridUI)
+    {
+        var inst = new MaterialInstance(data); // count = 1 เสมอ
+        var mgr  = InventoryManager.Instance;
+
+        bool placed;
+        if (targetGridUI == envGridUI)
+        {
+            placed = false;
+            for (int row = 0; row < mgr.EnvGrid.Height && !placed; row++)
+                for (int col = 0; col < mgr.EnvGrid.Width && !placed; col++)
+                    if (mgr.EnvGrid.TryPlace(inst, new Vector2Int(col, row)))
+                        placed = true;
+        }
+        else
+        {
+            placed = mgr.TryAddToBag(inst);
+        }
+
+        if (!placed)
+        {
+            Debug.LogWarning($"[InventoryUI] Grid full — cannot split {data.moduleName}");
+            return null;
+        }
+
+        var ui = Instantiate(materialItemPrefab, targetGridUI.transform);
+        ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+        ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
+        ui.InventoryUI = this;
+        StartCoroutine(SnapNextFrame(ui, targetGridUI, inst.GridPosition));
         return ui;
     }
 
@@ -98,6 +179,7 @@ public class InventoryUI : MonoBehaviour
         var ui = Instantiate(materialItemPrefab, envGridUI.transform);
         ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
         ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
+        ui.InventoryUI = this;
         StartCoroutine(SnapNextFrame(ui, envGridUI, inst.GridPosition));
         return ui;
     }

@@ -48,6 +48,21 @@ public class ModuleEffectHandler : MonoBehaviour
                     inst.buffTargets.Add(target);
                 }
             }
+
+            var buffLevelModule = inst.Data.moduleEffect as BuffLevelModule;
+            if (buffLevelModule != null)
+            {
+                var buffCells = inst.GetAbsoluteBuffCells();
+                var buffed = GetUniqueModulesAtCells(buffCells, inst);
+                int bonus = (int)buffLevelModule.GetBuffLevel(inst.RuntimeState);
+
+                foreach (var target in buffed)
+                {
+                    if (target.Data.moduleEffect == null) continue;
+                    target.Data.moduleEffect.OnLevelBuffReceived(bonus, target.Rarity, playerStats, target.RuntimeState);
+                    inst.buffTargets.Add(target);
+                }
+            }
         }
 
         foreach (var other in InventoryManager.Instance.WeaponGrid.GetAllModules())
@@ -56,17 +71,25 @@ public class ModuleEffectHandler : MonoBehaviour
             if (!other.Data.isBuffAdjacent) continue;
             if (other.Data.moduleEffect == null) continue;
 
-            var otherBuffModule = other.Data.moduleEffect as BuffPercentModule;
-            if (otherBuffModule == null) continue;
-
             var buffCells = other.GetAbsoluteBuffCells();
-            if (IsCoveredBy(inst, buffCells))
+            if (!IsCoveredBy(inst, buffCells)) continue;
+
+            var otherBuffModule = other.Data.moduleEffect as BuffPercentModule;
+            if (otherBuffModule != null)
             {
                 other.Data.moduleEffect.ApplyBuff(
                     inst.Data.moduleEffect, playerStats,
                     otherBuffModule.GetBuffPercent(other.RuntimeState),
                     inst.RuntimeState
                 );
+                other.buffTargets.Add(inst);
+            }
+
+            var otherBuffLevelModule = other.Data.moduleEffect as BuffLevelModule;
+            if (otherBuffLevelModule != null)
+            {
+                int bonus = (int)otherBuffLevelModule.GetBuffLevel(other.RuntimeState);
+                inst.Data.moduleEffect.OnLevelBuffReceived(bonus, inst.Rarity, playerStats, inst.RuntimeState);
                 other.buffTargets.Add(inst);
             }
         }
@@ -93,6 +116,18 @@ public class ModuleEffectHandler : MonoBehaviour
                 }
                 inst.buffTargets.Clear();
             }
+
+            var buffLevelModule = inst.Data.moduleEffect as BuffLevelModule;
+            if (buffLevelModule != null)
+            {
+                int bonus = (int)buffLevelModule.GetBuffLevel(inst.RuntimeState);
+                foreach (var target in inst.buffTargets)
+                {
+                    if (target.Data.moduleEffect == null) continue;
+                    target.Data.moduleEffect.OnLevelBuffRemoved(bonus, target.Rarity, playerStats, target.RuntimeState);
+                }
+                inst.buffTargets.Clear();
+            }
         }
 
         foreach (var other in InventoryManager.Instance.WeaponGrid.GetAllModules())
@@ -103,14 +138,23 @@ public class ModuleEffectHandler : MonoBehaviour
             if (other.Data.moduleEffect == null) continue;
 
             var otherBuffModule = other.Data.moduleEffect as BuffPercentModule;
-            if (otherBuffModule == null) continue;
+            if (otherBuffModule != null)
+            {
+                other.Data.moduleEffect.RemoveBuff(
+                    inst.Data.moduleEffect, playerStats,
+                    otherBuffModule.GetBuffPercent(other.RuntimeState),
+                    inst.RuntimeState
+                );
+                other.buffTargets.Remove(inst);
+            }
 
-            other.Data.moduleEffect.RemoveBuff(
-                inst.Data.moduleEffect, playerStats,
-                otherBuffModule.GetBuffPercent(other.RuntimeState),
-                inst.RuntimeState
-            );
-            other.buffTargets.Remove(inst);
+            var otherBuffLevelModule = other.Data.moduleEffect as BuffLevelModule;
+            if (otherBuffLevelModule != null)
+            {
+                int bonus = (int)otherBuffLevelModule.GetBuffLevel(other.RuntimeState);
+                inst.Data.moduleEffect.OnLevelBuffRemoved(bonus, inst.Rarity, playerStats, inst.RuntimeState);
+                other.buffTargets.Remove(inst);
+            }
         }
     }
 

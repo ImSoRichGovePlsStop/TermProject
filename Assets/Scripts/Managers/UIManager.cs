@@ -7,7 +7,14 @@ public class UIManager : MonoBehaviour
     private GameObject inventoryPanel;
     private PassiveScreenUI passiveScreenUI;
     private ShopUI _activeShopUI;
+    private GamblerScreenUI gamblerScreenUI;
+    [SerializeField] private GameObject hud;
+
+    public bool isInBattle { get; set; }
     public bool IsInventoryOpen { get; private set; }
+    public bool IsShopOpen => _activeShopUI != null && _activeShopUI.gameObject.activeSelf;
+    public PassiveScreenUI GetPassiveScreen() => passiveScreenUI;
+    public GamblerScreenUI GetGamblerScreen() => gamblerScreenUI;
 
     private float holdTime = 0f;
     private float holdDuration = 1f;
@@ -19,47 +26,74 @@ public class UIManager : MonoBehaviour
             inventoryPanel.SetActive(false);
 
         passiveScreenUI = FindFirstObjectByType<PassiveScreenUI>(FindObjectsInactive.Include);
+        gamblerScreenUI = FindFirstObjectByType<GamblerScreenUI>(FindObjectsInactive.Include);
+
+        if (inventoryPanel != null) inventoryPanel.SetActive(true);
+        if (_activeShopUI != null) _activeShopUI.gameObject.SetActive(true);
+
+        inventoryPanel?.SetActive(false);
+        _activeShopUI?.gameObject.SetActive(false);
+
+        var sellUI = FindObjectsByType<SellConfirmationUI>(FindObjectsSortMode.None);
+        foreach (var ui in sellUI)
+        {
+            ui.gameObject.SetActive(true);
+            ui.gameObject.SetActive(false);
+        }
     }
 
     private void Update()
     {
-        if (Keyboard.current[Key.Tab].wasPressedThisFrame)
-        {
-            if (!passiveScreenUI.IsOpen)
-                ToggleInventory();
-            else
-                passiveScreenUI.Close();
-        }
 
-        if (Keyboard.current[Key.Escape].wasPressedThisFrame)
-        {
-            if (passiveScreenUI.IsOpen)
-                passiveScreenUI.Close();
-            else if (_activeShopUI != null && _activeShopUI.gameObject.activeSelf)
-                CloseShop();
-            else if (IsInventoryOpen)
-                ToggleInventory();
-        }
+        if (!isInBattle) {
 
-        if (passiveScreenUI != null && passiveScreenUI.IsOpen)
-        {
-            if (Keyboard.current[Key.R].isPressed)
+            if (Keyboard.current[Key.Tab].wasPressedThisFrame)
             {
-                holdTime += Time.deltaTime;
-                if (holdTime >= holdDuration)
+                if (gamblerScreenUI != null && gamblerScreenUI.IsOpen)
+                    gamblerScreenUI.Close();
+                else if (!passiveScreenUI.IsOpen)
+                    ToggleInventory();
+                else
+                    passiveScreenUI.Close();
+            }
+
+            if (Keyboard.current[Key.Escape].wasPressedThisFrame)
+            {
+                if (passiveScreenUI.IsOpen)
+                    passiveScreenUI.Close();
+                else if (gamblerScreenUI != null && gamblerScreenUI.IsOpen)
+                    gamblerScreenUI.Close();
+                else if (_activeShopUI != null && _activeShopUI.gameObject.activeSelf)
+                    CloseShop();
+                else if (IsInventoryOpen)
+                    ToggleInventory();
+            }
+
+            if (Keyboard.current[Key.F].wasPressedThisFrame && IsInventoryOpen)
+            { inventoryUI?.TakeAllFromEnv(); }
+
+            if (passiveScreenUI != null && passiveScreenUI.IsOpen)
+            {
+                if (Keyboard.current[Key.R].isPressed)
                 {
-                    passiveScreenUI.OnResetHeld();
+                    holdTime += Time.deltaTime;
+                    if (holdTime >= holdDuration)
+                    {
+                        passiveScreenUI.OnResetHeld();
+                        holdTime = 0f;
+                    }
+                }
+                else
+                {
                     holdTime = 0f;
                 }
             }
-            else
-            {
-                holdTime = 0f;
-            }
         }
+        
     }
 
     [SerializeField] private ShopUI shopUI;
+    [SerializeField] private InventoryUI inventoryUI;
 
     public void ToggleInventory()
     {
@@ -77,8 +111,10 @@ public class UIManager : MonoBehaviour
         if (!IsInventoryOpen)
         {
             ModuleTooltipUI.Instance?.Hide();
-
+            inventoryUI?.ClearEnvGrid();
+            inventoryUI?.SetEnvGridVisible(false);
         }
+        UpdateHUDVisibility();
     }
 
 
@@ -88,6 +124,7 @@ public class UIManager : MonoBehaviour
         _activeShopUI = shopUI;
         shopUI.gameObject.SetActive(true);
         shopUI.ForceMoveToShop();
+        UpdateHUDVisibility();
     }
 
     public void CloseShop()
@@ -95,6 +132,19 @@ public class UIManager : MonoBehaviour
         if (_activeShopUI == null) return;
         _activeShopUI.gameObject.SetActive(false);
         _activeShopUI = null;
+        UpdateHUDVisibility();
+    }
+
+    private void UpdateHUDVisibility()
+    {
+        bool shouldHide =
+            IsInventoryOpen ||
+            (passiveScreenUI != null && passiveScreenUI.IsOpen) ||
+            (gamblerScreenUI != null && gamblerScreenUI.IsOpen) ||
+            (_activeShopUI != null && _activeShopUI.gameObject.activeSelf);
+
+        if (hud != null)
+            hud.SetActive(!shouldHide);
     }
 
     private IEnumerator ForceMoveToBagNextFrame()

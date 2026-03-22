@@ -23,9 +23,19 @@ public class RandomLoot : MonoBehaviour, IInteractable
     private readonly HashSet<ModuleInstance> lootItems = new HashSet<ModuleInstance>();
     private static RandomLoot _activeBox;
 
+    public string GetPromptText() => "[ E ]  Open Loot";
+
     private void Start()
     {
         InventoryManager.Instance.EnvGrid.OnModulePlaced += OnEnvModulePlaced;
+    }
+
+    private void Update()
+    {
+        if (inventoryUI == null)
+            inventoryUI = Object.FindFirstObjectByType<InventoryUI>(FindObjectsInactive.Include);
+        if (uiManager == null)
+            uiManager = Object.FindFirstObjectByType<UIManager>(FindObjectsInactive.Include);
     }
 
     private void OnDestroy()
@@ -57,6 +67,8 @@ public class RandomLoot : MonoBehaviour, IInteractable
                 Object.Destroy(inst.UIElement.gameObject);
             mgr.EnvGrid.Remove(inst);
         }
+
+        inventoryUI.SetEnvGridVisible(true);
 
         if (!_hasBeenOpened)
         {

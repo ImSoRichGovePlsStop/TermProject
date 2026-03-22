@@ -15,5 +15,9 @@ MonoBehaviour:
   nodeName: Shop Refresh
   description: "Reroll shop items (max 10 times per run) \u2014 same amount of modules
     left."
+  cost: 3
+  parents:
+  - {fileID: 11400000, guid: b2d0339f36cf0d34b87968c52a5a33c4, type: 2}
+  requireAllParents: 0
   layer: 5
   branch: 2
