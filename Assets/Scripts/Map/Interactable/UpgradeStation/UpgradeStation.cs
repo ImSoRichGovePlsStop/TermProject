@@ -18,5 +18,7 @@ public class UpgradeStation : MonoBehaviour, IInteractable
         if (_uiManager == null) { Debug.LogError("[UpgradeStation] UIManager not found!"); return; }
         _used = true;
         _uiManager.OpenUpgrade(this);
+
+        Destroy(gameObject);
     }
 }

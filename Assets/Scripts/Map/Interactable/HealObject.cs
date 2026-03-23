@@ -8,9 +8,13 @@ public class HealObject : MonoBehaviour, IInteractable
 
     public void Interact(PlayerController playerController)
     {
-        GameObject player = GameObject.FindWithTag("Player");
-        PlayerStats playerStatus =  player.GetComponent<PlayerStats>();
+        PlayerStats playerStats = playerController.GetComponent<PlayerStats>();
 
-        playerStatus.Heal(50);
+        if (playerStats != null)
+        {
+            playerStats.Heal(50);
+        }
+
+        Destroy(gameObject);
     }
 }
