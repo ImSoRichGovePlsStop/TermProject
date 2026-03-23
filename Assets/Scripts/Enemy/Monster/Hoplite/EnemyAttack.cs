@@ -116,8 +116,6 @@ public class EnemyAttack : MonoBehaviour
         if (animator != null && gameObject.name.Contains("Harpy"))
         {
             animator.ResetTrigger("Attack");
-            // animator.SetBool("IsAttacking", false);
-            // animator.Play("Harpy_Walk");
         }
     }
 

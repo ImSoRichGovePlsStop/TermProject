@@ -29,18 +29,14 @@ public class Harpy : MonoBehaviour
     [SerializeField] float hoverHeight = 1.3f;
     [SerializeField] float hoverSpeed = 1f;
     [SerializeField] float hoverAmplitude = 0.3f;
-    [SerializeField] float wakeDistance = 5f;
     [SerializeField] float groundOffset = 0.2f;
     [SerializeField] Transform player;
     [SerializeField] SpriteRenderer spriteRenderer;
     [SerializeField] float diveTriggerDistance = 2.5f;
     [SerializeField] float diveCooldown = 2f;
-    [SerializeField] float diveDuration = 1f;
     
     float diveStartTime;
     float lastDiveTime = -999f;
-    float targetHoverY;
-    private Vector3 startPosition;
     private float baseY;
 
     void Awake()
@@ -55,7 +51,6 @@ public class Harpy : MonoBehaviour
 
     void Start()
     {
-        startPosition = transform.position;
         baseY = transform.position.y;
         currentState = HarpyState.Ground;
     }
@@ -78,8 +73,6 @@ public class Harpy : MonoBehaviour
             }
         }
 
-        // float distanceToPlayer = Vector3.Distance(transform.position, player.position);
-        
         switch (currentState)
         {
             case HarpyState.Ground:
@@ -92,7 +85,6 @@ public class Harpy : MonoBehaviour
                 //if the player is close enough, dive!
                 Vector3 dir = player.position - transform.position;
                 dir.y = 0f;
-                // if (dir.magnitude < 2f)
                 if (dir.magnitude < diveTriggerDistance && Time.time > lastDiveTime + diveCooldown)
                 {
                     Debug.Log("dir.magnitude < 2f!!!");
@@ -108,7 +100,6 @@ public class Harpy : MonoBehaviour
                 Recover();
                 break;
         }
-        // Debug.Log("State: " + currentState);
     }
 
     void Hover()
@@ -120,7 +111,6 @@ public class Harpy : MonoBehaviour
 
         float hoverOffset = Mathf.Sin(Time.time * 3f) * hoverAmplitude;
 
-        //should i use this offset?
         Vector3 offset = (transform.position - player.position).normalized * 2f; //1.5f
         Vector3 targetPos = player.position + offset;
         targetPos.y = baseY + hoverHeight + hoverOffset;
@@ -132,7 +122,6 @@ public class Harpy : MonoBehaviour
     void StartHover()
     {
         currentState = HarpyState.Hover;
-        targetHoverY = transform.position.y + hoverHeight;
 
         movement.SetCanMove(false); //disable EnemyMovement
         animator.SetBool("IsFlying", true);
@@ -152,30 +141,15 @@ public class Harpy : MonoBehaviour
         Vector3 direction = (diveTarget - transform.position).normalized;
         Vector3 nextPos = rb.position + diveSpeed * Time.deltaTime * direction;
         float minY = baseY + groundOffset;
-        // if (nextPos.y < minY)
-        // {
-        //     nextPos.y = minY;
-        // }
 
         rb.MovePosition(nextPos);
 
         Vector3 dir = (diveTarget - transform.position).normalized;
         FaceDirection(dir);
-        // Debug.Log("Distance: " + dir.magnitude);
-
-        //if reach the ground, revocer
-        // nextPos.y <= minY + 0.01f || 
-        // if (Vector3.Distance(transform.position, diveTarget) < 0.2f)
-        // {
-        //     attack.ForceStopAttack();
-        //     StartRecover();
-        // }
 
         //when crash with player
-        // Debug.Log("Distance =" + Vector3.Distance(transform.position, player.position));
         if (Vector3.Distance(transform.position, player.position) < 1.2f)
         {
-            // Debug.Log("DEAL DAMAGE!");
             attack.DealDamage(player.gameObject);
             StartRecover();
             return;
@@ -193,12 +167,6 @@ public class Harpy : MonoBehaviour
             StartRecover();
         }
     }
-    //What we need?
-    // ให้ตอน dive พุ่งตาม pos ของ player ด้วย
-    // ให้มี delay ระหว่างการ dive หน่อย
-    // แก้ animation ให้ได้
-    // อย่าให้ collider ไปติดกับพื้น
-    // ให้ collider ไม่ทำ entity ตัวอื่นลอยขึ้นฟ้า
 
     void StartRecover()
     {
@@ -222,12 +190,10 @@ public class Harpy : MonoBehaviour
         hasEnteredAirPhase = true;
 
         currentState = HarpyState.Hover;
-        targetHoverY = baseY + hoverHeight;
 
         movement.SetCanMove(false); //disable walking on ground
         controller.enabled = false;
         rb.useGravity = false;
-        // attack.ForceStopAttack();
         StartHover();
     }
 
