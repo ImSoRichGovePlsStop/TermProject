@@ -10,10 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L6_DoubleMark
+  m_Name: L6_TemperedSoul
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Double Mark
-  description: Every shop now has two marked modules.
+  nodeName: Tempered Soul
+  description: 'Kill while shielded: shield value +10% enemy max HP.
+
+    Shield
+    break: +1 Temper stack.
+
+    Every 40 shield value on expiry: +1 Temper stack.
+
+    Per
+    stack: shield +2, max HP scaling +0.25%, crit dmg +1%.
+
+    Per 20 stacks: crit
+    chance +5%, max HP +8%. (max 100)'
   cost: 4
   parents:
   - {fileID: 11400000, guid: 15964ee03192d8f48892d00395d06080, type: 2}

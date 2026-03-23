@@ -73,6 +73,9 @@ public class AttackHitbox : MonoBehaviour
                 context.NotifySecondaryAttack(transform.position);
             else
                 context.NotifyAttack(result, currentComboIndex);
+
+            if (result.Count > 0 && stats.LastHitWasCrit)
+                context.NotifyCritHit();
         }
     }
 

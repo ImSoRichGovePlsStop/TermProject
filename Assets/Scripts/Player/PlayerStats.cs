@@ -1,4 +1,6 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerStats : MonoBehaviour
@@ -21,6 +23,30 @@ public class PlayerStats : MonoBehaviour
 
     private PlayerCombatContext context;
 
+    public class ShieldInstance
+    {
+        public float value;
+        public float duration;
+        public float expiresAt;
+        public Coroutine expireCoroutine;
+    }
+
+    private List<ShieldInstance> shields = new List<ShieldInstance>();
+
+    public float CurrentShield
+    {
+        get
+        {
+            float total = 0f;
+            foreach (var s in shields) total += s.value;
+            return total;
+        }
+    }
+
+    public bool HasShield => shields.Count > 0;
+
+    public event Action<ShieldInstance, float, bool> OnShieldInstanceLost; // <Instance, remainingValue, wasTimedOut>
+
     public bool IsInvincible { get; private set; }
 
     public void SetInvincible(bool value)
@@ -34,15 +60,16 @@ public class PlayerStats : MonoBehaviour
     private void OnGUI()
     {
         if (!showDebugUI) return;
-        GUI.Box(new Rect(10, 10, 300, 250), "Player Stats");
+        GUI.Box(new Rect(10, 10, 300, 280), "Player Stats");
         GUI.skin.label.fontSize = 16;
-        GUI.Label(new Rect(20, 40, 280, 25), $"HP:    {CurrentHealth:F1} / {MaxHealth:F1}");
-        GUI.Label(new Rect(20, 70, 280, 25), $"DMG:   {Damage:F1}");
-        GUI.Label(new Rect(20, 100, 280, 25), $"ASPD:  {AttackSpeed:F2}");
-        GUI.Label(new Rect(20, 130, 280, 25), $"SPD:   {MoveSpeed:F2}");
-        GUI.Label(new Rect(20, 160, 280, 25), $"CRIT:  {CritChance:P0} / {CritDamage:P0}");
-        GUI.Label(new Rect(20, 190, 280, 25), $"EVADE: {EvadeChance:P0}  INV: {IsInvincible}");
-        GUI.Label(new Rect(20, 220, 280, 25), $"DMG TAKEN:  {DamageTaken:F2}");
+        GUI.Label(new Rect(20, 40, 280, 25), $"HP:  {CurrentHealth:F1} / {MaxHealth:F1}");
+        GUI.Label(new Rect(20, 70, 280, 25), $"SHIELD:  {CurrentShield:F1}");
+        GUI.Label(new Rect(20, 100, 280, 25), $"DMG:  {Damage:F1}");
+        GUI.Label(new Rect(20, 130, 280, 25), $"ASPD:  {AttackSpeed:F2}");
+        GUI.Label(new Rect(20, 160, 280, 25), $"SPD:  {MoveSpeed:F2}");
+        GUI.Label(new Rect(20, 190, 280, 25), $"CRIT:  {CritChance:P0} / {CritDamage:P0}");
+        GUI.Label(new Rect(20, 220, 280, 25), $"EVADE:  {EvadeChance:P0}  INV: {IsInvincible}");
+        GUI.Label(new Rect(20, 250, 280, 25), $"DMG TAKEN:  {DamageTaken:F2}");
     }
 
     public void SetDebugUI(bool enabled)
@@ -57,6 +84,10 @@ public class PlayerStats : MonoBehaviour
     [ContextMenu("Test: +50% Attack Speed")]
     private void Debug_AddAttackSpeed()
         => AddMultiplierModifier(new StatModifier { attackSpeed = 0.5f });
+
+    [ContextMenu("Test: +30% Crit Chance")]
+    private void Debug_AddCritChance()
+        => AddFlatModifier(new StatModifier { critChance = 0.3f });
 
     [ContextMenu("Test: -30% Move Speed (Debuff)")]
     private void Debug_SlowDebuff()
@@ -286,32 +317,118 @@ public class PlayerStats : MonoBehaviour
         Debug.Log($"Fully healed, HP: {CurrentHealth}/{MaxHealth}");
     }
 
+    public ShieldInstance GainShield(float value, float duration)
+    {
+        var instance = new ShieldInstance { value = value, duration = duration };
+
+        instance.expiresAt = duration == float.PositiveInfinity
+            ? float.PositiveInfinity
+            : Time.time + duration;
+
+        int insertIndex = shields.Count;
+        for (int i = 0; i < shields.Count; i++)
+        {
+            if (instance.expiresAt < shields[i].expiresAt)
+            {
+                insertIndex = i;
+                break;
+            }
+        }
+        shields.Insert(insertIndex, instance);
+
+        if (duration != float.PositiveInfinity)
+            instance.expireCoroutine = StartCoroutine(ShieldExpireCoroutine(instance));
+
+        return instance;
+    }
+
+    public void ExtendShield(ShieldInstance instance, float extraDuration, float extraValue)
+    {
+        if (!shields.Contains(instance)) return;
+
+        instance.value += extraValue;
+
+        if (extraDuration > 0f)
+        {
+            if (instance.expireCoroutine != null)
+                StopCoroutine(instance.expireCoroutine);
+
+            instance.expiresAt = Mathf.Max(Time.time, instance.expiresAt) + extraDuration;
+            instance.duration = instance.expiresAt - Time.time;
+            instance.expireCoroutine = StartCoroutine(ShieldExpireCoroutine(instance));
+        }
+    }
+
+    private IEnumerator ShieldExpireCoroutine(ShieldInstance instance)
+    {
+        yield return new WaitForSeconds(instance.expiresAt - Time.time);
+
+        if (!shields.Contains(instance)) yield break;
+
+        float remaining = instance.value;
+        shields.Remove(instance);
+        OnShieldInstanceLost?.Invoke(instance, remaining, true);
+    }
+
+    public void ClearAllShields()
+    {
+        foreach (var s in shields)
+            if (s.expireCoroutine != null) StopCoroutine(s.expireCoroutine);
+        shields.Clear();
+    }
+
+
     public void TakeDamage(float amount, EnemyHealth attacker = null)
     {
         if (IsInvincible) return;
 
-        if (Random.value < EvadeChance)
+        if (UnityEngine.Random.value < EvadeChance)
         {
             Debug.Log("Evaded!");
             return;
         }
 
         float finalDamage = amount * DamageTaken;
+
+        if (shields.Count > 0)
+        {
+            var instance = shields[0];
+            instance.value -= finalDamage;
+
+            if (instance.value <= 0)
+            {
+                if (instance.expireCoroutine != null)
+                    StopCoroutine(instance.expireCoroutine);
+                shields.Remove(instance);
+                OnShieldInstanceLost?.Invoke(instance, 0f, false);
+            }
+
+            if (context != null)
+                context.NotifyGetHit(attacker);
+            return;
+        }
+
         CurrentHealth = Mathf.Max(0, CurrentHealth - finalDamage);
         Debug.Log($"Took {finalDamage} damage, HP: {CurrentHealth}/{MaxHealth}");
 
         if (context != null)
+        {
+            context.NotifyGetHit(attacker);
             context.NotifyTakeDamage(attacker);
+        }
 
         if (CurrentHealth <= 0)
             Debug.Log("Player died!");
     }
 
+    public bool LastHitWasCrit { get; private set; }
+
     public float CalculateDamage(float damageScale)
     {
         float dmg = Damage * damageScale;
 
-        if (Random.value < CritChance)
+        LastHitWasCrit = UnityEngine.Random.value < CritChance;
+        if (LastHitWasCrit)
         {
             dmg *= CritDamage;
             Debug.Log("Critical hit!");
