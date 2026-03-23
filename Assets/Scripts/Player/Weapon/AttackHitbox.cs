@@ -62,7 +62,7 @@ public class AttackHitbox : MonoBehaviour
             var enemyHealth = hit.GetComponentInParent<EnemyHealth>();
             if (enemyHealth != null)
             {
-                enemyHealth.TakeDamage(dmg);
+                enemyHealth.TakeDamage(dmg, stats.LastHitWasCrit);
                 result.Add(enemyHealth);
             }
         }

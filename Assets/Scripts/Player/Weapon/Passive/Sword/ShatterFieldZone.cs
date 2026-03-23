@@ -46,19 +46,27 @@ public class ShatterFieldZone : MonoBehaviour
             var enemy = col.GetComponentInParent<EnemyHealth>();
             if (enemy == null || enemy.IsDead) continue;
 
-            float dmg = fieldCountsAsAttack
-                ? stats.CalculateDamage(damagePercent)
-                : stats.Damage * damagePercent;
-            enemy.TakeDamage(dmg);
+            float dmg;
+
+            if (fieldCountsAsAttack)
+            {
+                dmg = stats.CalculateDamage(damagePercent);
+            }
+            else
+            {
+                dmg = stats.Damage * damagePercent;
+            }
+
+            enemy.TakeDamage(dmg, stats.LastHitWasCrit);
             hitEnemies.Add(enemy);
 
             passive?.ApplySlow(enemy);
         }
 
-        passive?.CheckExploit();
-
         if (fieldCountsAsAttack && hitEnemies.Count > 0 && context != null)
+        {
             context.NotifyAttack(hitEnemies, -1);
+        }
     }
 
     void OnDrawGizmosSelected()

@@ -21,7 +21,7 @@ MonoBehaviour:
     Every 40 shield value on expiry: +1 Temper stack.
 
     Per
-    stack: shield +2, max HP scaling +0.1%, crit dmg +1%.
+    stack: shield +2, max HP scaling +0.25%, crit dmg +1%.
 
     Per 20 stacks: crit
     chance +5%, max HP +8%. (max 100)'
