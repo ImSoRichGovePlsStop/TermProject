@@ -185,6 +185,8 @@ MonoBehaviour:
   animator: {fileID: 991223759832276831}
   enemyCollider: {fileID: 1959485915728602061}
   rb: {fileID: 8707815493549904683}
+  healthBarOffset: {x: 0, y: 0.5, z: 0}
+  healthBarScale: {x: 1, y: 1, z: 1}
   arcAttack: {fileID: 158273407855635283}
   backAttack: {fileID: 6941809184712143000}
   scriptsToDisableOnDeath:

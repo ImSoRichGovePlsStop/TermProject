@@ -15,7 +15,7 @@ public abstract class EnemyHealth : MonoBehaviour
     [SerializeField] protected Rigidbody rb;
 
     [Header("Health Bar")]
-    [SerializeField] private Vector3 healthBarOffset = new Vector3(0f, 2.2f, 0f);
+    [SerializeField] private Vector3 healthBarOffset = new Vector3(0f, 0.5f, 0f);
     [SerializeField] private Vector3 healthBarScale = new Vector3(1f, 1f, 1f);
 
     protected float currentHP;
