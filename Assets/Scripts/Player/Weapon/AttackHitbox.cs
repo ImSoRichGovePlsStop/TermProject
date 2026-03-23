@@ -62,7 +62,7 @@ public class AttackHitbox : MonoBehaviour
             var enemyHealth = hit.GetComponentInParent<EnemyHealth>();
             if (enemyHealth != null)
             {
-                enemyHealth.TakeDamage(dmg);
+                enemyHealth.TakeDamage(dmg, stats.LastHitWasCrit);
                 result.Add(enemyHealth);
             }
         }
@@ -73,9 +73,6 @@ public class AttackHitbox : MonoBehaviour
                 context.NotifySecondaryAttack(transform.position);
             else
                 context.NotifyAttack(result, currentComboIndex);
-
-            if (result.Count > 0 && stats.LastHitWasCrit)
-                context.NotifyCritHit();
         }
     }
 

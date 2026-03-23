@@ -89,6 +89,8 @@ GameObject:
   m_Component:
   - component: {fileID: 302380205772479291}
   - component: {fileID: 4096269384138325937}
+  - component: {fileID: 4724750260186876869}
+  - component: {fileID: 8926765313544339382}
   m_Layer: 0
   m_Name: UIManager
   m_TagString: Untagged
@@ -124,3 +126,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9d8a1146ec7bcd4e8b7493e9d91cd34, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UIManager
+  hud: {fileID: 0}
+  shopUI: {fileID: 0}
+  inventoryUI: {fileID: 0}
+--- !u!114 &4724750260186876869
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7351500857789079862}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f19cf69285bf584cb8290ab7e4e1ae5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyHealthBarSpawner
+  barPrefab: {fileID: 4715348641608672420, guid: 8939e20b2dea8fa43b330d65843387c9, type: 3}
+--- !u!114 &8926765313544339382
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7351500857789079862}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5db1bf86ecadd7644a69c1eb7c4ff34f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DamageNumberSpawner
+  prefab: {fileID: 3137011598535732491, guid: 068e38d485a58b246a1015cfd4690387, type: 3}

@@ -27,8 +27,10 @@ public abstract class EnemyHealth : MonoBehaviour
     public float MaxHP => maxHP;
     public bool IsDead => isDead;
     public bool IsHurt => isHurt;
+    public Vector3 HealthBarOffset => healthBarOffset;
+    public Vector3 HealthBarScale => healthBarScale;
 
-    public event Action OnDamageReceived;
+    public event Action<float, bool> OnDamageReceived;
 
     protected virtual void Awake()
     {
@@ -50,11 +52,14 @@ public abstract class EnemyHealth : MonoBehaviour
     {
         var spawner = FindFirstObjectByType<EnemyHealthBarSpawner>();
         spawner?.SpawnBar(this, healthBarOffset, healthBarScale);
+
+        var damageSpawner = FindFirstObjectByType<DamageNumberSpawner>();
+        damageSpawner?.RegisterEnemy(this);
     }
 
     protected virtual void CacheComponents() { }
 
-    public virtual void TakeDamage(float damage)
+    public virtual void TakeDamage(float damage, bool isCrit = false)
     {
         if (isDead) return;
         if (damage <= 0f) return;
@@ -64,7 +69,7 @@ public abstract class EnemyHealth : MonoBehaviour
 
         currentHP -= finalDamage;
         OnDamageTaken(finalDamage);
-        OnDamageReceived?.Invoke();
+        OnDamageReceived?.Invoke(finalDamage, isCrit);
 
         if (currentHP <= 0f)
         {

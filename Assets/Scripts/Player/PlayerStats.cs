@@ -46,6 +46,7 @@ public class PlayerStats : MonoBehaviour
     public bool HasShield => shields.Count > 0;
 
     public event Action<ShieldInstance, float, bool> OnShieldInstanceLost; // <Instance, remainingValue, wasTimedOut>
+    public event Action<float> OnPlayerDamaged;
 
     public bool IsInvincible { get; private set; }
 
@@ -413,7 +414,7 @@ public class PlayerStats : MonoBehaviour
         }
 
         CurrentHealth = Mathf.Max(0, CurrentHealth - finalDamage);
-        Debug.Log($"Took {finalDamage} damage, HP: {CurrentHealth}/{MaxHealth}");
+        OnPlayerDamaged?.Invoke(finalDamage);
 
         if (context != null)
         {
@@ -436,6 +437,7 @@ public class PlayerStats : MonoBehaviour
         {
             dmg *= CritDamage;
             Debug.Log("Critical hit!");
+            context?.NotifyCritHit();
         }
 
         return dmg;

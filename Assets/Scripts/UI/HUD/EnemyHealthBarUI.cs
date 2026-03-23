@@ -45,11 +45,20 @@ public class EnemyHealthBarUI : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (enemy == null) return;
+        if (enemy == null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        if (enemy.IsDead)
+        {
+            Destroy(gameObject);
+            return;
+        }
 
         transform.rotation = cam.transform.rotation;
         transform.position = enemy.transform.position + offset;
-
         UpdateBar();
     }
 
@@ -63,7 +72,7 @@ public class EnemyHealthBarUI : MonoBehaviour
         fill.sizeDelta = size;
     }
 
-    private void OnDamageReceived()
+    private void OnDamageReceived(float damage, bool isCrit)
     {
         if (fadeCoroutine != null) StopCoroutine(fadeCoroutine);
         fadeCoroutine = StartCoroutine(FadeTo(1f));
