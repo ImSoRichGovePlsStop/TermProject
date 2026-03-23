@@ -3,6 +3,11 @@ using UnityEngine;
 
 public class StackFrenzyPassive : MonoBehaviour
 {
+    [Header("UI Icons")]
+    public Sprite iconStack;
+    public Sprite iconApex;
+
+    [Header("Settings")]
     public int maxStacks = 10;
     public float bonusPerStack = 0.02f;
     public bool thirdHitTripleStack = false;
@@ -16,6 +21,7 @@ public class StackFrenzyPassive : MonoBehaviour
 
     private PlayerStats stats;
     private PlayerCombatContext context;
+    private StatusEntry frenzyEntry;
 
     private StatModifier stackModifier = new StatModifier();
     private StatModifier frenzyRushModifier = new StatModifier();
@@ -23,13 +29,19 @@ public class StackFrenzyPassive : MonoBehaviour
     private StatModifier apexCritModifier = new StatModifier();
     private StatModifier apexAttackSpeedModifier = new StatModifier();
 
-    private Coroutine expireCoroutine;
     private Coroutine apexCoroutine;
     private float apexCooldownTimer = 0f;
+    private float currentStackExpireTimer = 0f;
 
     private const float stackExpireTime = 15f;
     private const float apexDuration = 5f;
     private const float apexCooldown = 30f;
+
+    public void RegisterHUD()
+    {
+        frenzyEntry = new StatusEntry("frenzy", iconStack);
+        PlayerStatusHUD.Instance.Register(frenzyEntry);
+    }
 
     public void Init(PlayerStats playerStats, PlayerCombatContext combatContext)
     {
@@ -53,6 +65,17 @@ public class StackFrenzyPassive : MonoBehaviour
     {
         if (apexCooldownTimer > 0f)
             apexCooldownTimer -= Time.deltaTime;
+
+        if (CurrentStacks > 0)
+        {
+            currentStackExpireTimer -= Time.deltaTime;
+            if (currentStackExpireTimer <= 0f)
+            {
+                SetStacks(0);
+            }
+        }
+
+        UpdateHUD();
     }
 
     private void OnAttack()
@@ -77,8 +100,7 @@ public class StackFrenzyPassive : MonoBehaviour
         int newStacks = Mathf.Min(CurrentStacks + amount, maxStacks);
         SetStacks(newStacks);
 
-        if (expireCoroutine != null) StopCoroutine(expireCoroutine);
-        expireCoroutine = StartCoroutine(ExpireStacks());
+        currentStackExpireTimer = stackExpireTime;
 
         if (CurrentStacks >= maxStacks && prevStacks < maxStacks)
             OnMaxStacksReached();
@@ -86,14 +108,21 @@ public class StackFrenzyPassive : MonoBehaviour
 
     public void SetStacks(int value)
     {
+        if (stats == null) return;
+
         stats.RemoveMultiplierModifier(stackModifier);
-
         CurrentStacks = value;
-
         stackModifier.damage = CurrentStacks * bonusPerStack;
 
         if (CurrentStacks > 0)
+        {
             stats.AddMultiplierModifier(stackModifier);
+            if (currentStackExpireTimer <= 0) currentStackExpireTimer = stackExpireTime;
+        }
+        else
+        {
+            currentStackExpireTimer = 0f;
+        }
 
         if (CurrentStacks < maxStacks)
         {
@@ -102,10 +131,40 @@ public class StackFrenzyPassive : MonoBehaviour
         }
     }
 
+    private void UpdateHUD()
+    {
+        if (frenzyEntry == null) return;
+
+        frenzyEntry.outerBorderType = (CurrentStacks >= maxStacks) ? StatusBorderType.Gold : StatusBorderType.Default;
+
+        frenzyEntry.isInnerBorderVisible = apexPredator;
+
+        if (IsApexActive)
+        {
+            frenzyEntry.innerBorderFill = 1f;
+            frenzyEntry.icon = iconApex;
+        }
+        else if (apexCooldownTimer > 0)
+        {
+            frenzyEntry.innerBorderFill = 1f - (apexCooldownTimer / apexCooldown);
+            frenzyEntry.icon = iconStack;
+        }
+        else
+        {
+            frenzyEntry.innerBorderFill = apexPredator ? 1f : 0f;
+            frenzyEntry.icon = iconStack;
+        }
+
+        frenzyEntry.stackCount = CurrentStacks;
+
+        frenzyEntry.stackExpireFill = (CurrentStacks > 0) ? (currentStackExpireTimer / stackExpireTime) : 0;
+
+        PlayerStatusHUD.Instance.Refresh("frenzy");
+    }
+
     public void ClampStacks()
     {
-        if (CurrentStacks > maxStacks)
-            SetStacks(maxStacks);
+        if (CurrentStacks > maxStacks) SetStacks(maxStacks);
     }
 
     private void OnMaxStacksReached()
@@ -145,17 +204,12 @@ public class StackFrenzyPassive : MonoBehaviour
         glassCannonModifier.damageTaken = 0f;
     }
 
-    private IEnumerator ExpireStacks()
-    {
-        yield return new WaitForSeconds(stackExpireTime);
-        SetStacks(0);
-    }
-
     private IEnumerator ApexState()
     {
         IsApexActive = true;
         apexCritModifier.critChance = 1f;
         apexAttackSpeedModifier.attackSpeed = 0.35f;
+
         stats.AddFlatModifier(apexCritModifier);
         stats.AddMultiplierModifier(apexAttackSpeedModifier);
 
@@ -163,8 +217,10 @@ public class StackFrenzyPassive : MonoBehaviour
 
         stats.RemoveFlatModifier(apexCritModifier);
         stats.RemoveMultiplierModifier(apexAttackSpeedModifier);
+
         apexCritModifier.critChance = 0f;
         apexAttackSpeedModifier.attackSpeed = 0f;
+
         IsApexActive = false;
         apexCooldownTimer = apexCooldown;
     }
@@ -183,10 +239,10 @@ public class StackFrenzyPassive : MonoBehaviour
 
     public void ForceClean()
     {
-        if (expireCoroutine != null) StopCoroutine(expireCoroutine);
         if (apexCoroutine != null) StopCoroutine(apexCoroutine);
         ClearAllModifiers();
         IsApexActive = false;
         apexCooldownTimer = 0f;
+        currentStackExpireTimer = 0f;
     }
 }

@@ -2,6 +2,10 @@
 
 public class FrenzyPassiveHandler : PassiveHandlerBase
 {
+    [Header("UI Display")]
+    public Sprite iconStack;
+    public Sprite iconApex;
+
     private StackFrenzyPassive stackFrenzy;
 
     public override void Init(GenericTreeData tree, WeaponPassiveData data,
@@ -10,6 +14,11 @@ public class FrenzyPassiveHandler : PassiveHandlerBase
     {
         stackFrenzy = gameObject.AddComponent<StackFrenzyPassive>();
         stackFrenzy.Init(stats, context);
+
+        stackFrenzy.iconStack = iconStack;
+        stackFrenzy.iconApex = iconApex;
+
+        stackFrenzy.RegisterHUD();
         base.Init(tree, data, manager, stats, context);
     }
 
