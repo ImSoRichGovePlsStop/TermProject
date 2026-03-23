@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.ProBuilder.MeshOperations;
 
 public abstract class ModuleEffect : ScriptableObject
 {
@@ -31,6 +32,8 @@ public abstract class ModuleEffect : ScriptableObject
     public virtual void OnBuffRemoved(float percent, PlayerStats stats, ModuleRuntimeState state) { }
     public virtual void OnLevelBuffReceived(int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state) { }
     public virtual void OnLevelBuffRemoved(int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state) { }
+    public virtual void OnRarityBuffReceived(int level, Rarity NewRarity, PlayerStats stats, ModuleRuntimeState state) { }
+    public virtual void OnRarityBuffRemoved(int level, Rarity NewRarity, PlayerStats stats, ModuleRuntimeState state) { }
 
     protected abstract void OnEquip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state);
     protected abstract void OnUnequip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state);
@@ -39,15 +42,21 @@ public abstract class ModuleEffect : ScriptableObject
 
     public virtual string GetLevelText( int level, ModuleRuntimeState state)
     {
-        if (state.buffedLevel != 0)
-            return $"<s>Lv.{level}</s> Lv.{level + state.buffedLevel}";
+        if (state.buffedLevel != 0 && state.buffedLevel != level)
+            return $"<s>Lv.{level}</s> Lv.{state.buffedLevel}";
         return $"Lv.{level}";
     }
     public virtual string GetRarityText(Rarity rarity, ModuleRuntimeState state)
     {
+        if (state.buffRarity != 0 && state.buffRarity != rarity)
+            return $"<s>{rarity}</s> {state.buffRarity}";
         return $"{rarity}";
     }
 
+    public virtual float GetEffectiveStat(ModuleRuntimeState state)
+    {
+        return state.currentStat * (1f + state.totalBuffPercent);
+    }
 
     protected float GetFinalStat(float[] baseStatPerRarity, float levelMultiplier, Rarity rarity, int level)
     {

@@ -6,6 +6,7 @@ public class ModuleRuntimeState
     public float totalBuffPercent = 0f;
     public float currentStat = 0f;
     public int buffedLevel = 0;
+    public Rarity buffRarity = 0;
 
     // LowHpModule
     public float currentThreshold = 0f;
