@@ -113,6 +113,10 @@ public class PlayerStats : MonoBehaviour
     private void Debug_Heal()
         => HealFull();
 
+    [ContextMenu("Test: Gain 20 Shield")]
+    private void Debug_Shield()
+        => GainShield(20, 3);
+
     public float MaxHealth =>
         (weaponHealth + flatModifier.health) * (1 + multiplierModifier.health);
     public float Damage =>

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -13,6 +14,10 @@ public abstract class EnemyHealth : MonoBehaviour
     [SerializeField] protected Collider enemyCollider;
     [SerializeField] protected Rigidbody rb;
 
+    [Header("Health Bar")]
+    [SerializeField] private Vector3 healthBarOffset = new Vector3(0f, 2.2f, 0f);
+    [SerializeField] private Vector3 healthBarScale = new Vector3(1f, 1f, 1f);
+
     protected float currentHP;
     protected bool isDead;
     protected bool isHurt;
@@ -22,6 +27,8 @@ public abstract class EnemyHealth : MonoBehaviour
     public float MaxHP => maxHP;
     public bool IsDead => isDead;
     public bool IsHurt => isHurt;
+
+    public event Action OnDamageReceived;
 
     protected virtual void Awake()
     {
@@ -39,6 +46,12 @@ public abstract class EnemyHealth : MonoBehaviour
         CacheComponents();
     }
 
+    protected virtual void Start()
+    {
+        var spawner = FindFirstObjectByType<EnemyHealthBarSpawner>();
+        spawner?.SpawnBar(this, healthBarOffset, healthBarScale);
+    }
+
     protected virtual void CacheComponents() { }
 
     public virtual void TakeDamage(float damage)
@@ -51,6 +64,7 @@ public abstract class EnemyHealth : MonoBehaviour
 
         currentHP -= finalDamage;
         OnDamageTaken(finalDamage);
+        OnDamageReceived?.Invoke();
 
         if (currentHP <= 0f)
         {
