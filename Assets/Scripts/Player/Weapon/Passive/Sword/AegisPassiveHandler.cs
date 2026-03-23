@@ -1,7 +1,11 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class AegisPassiveHandler : PassiveHandlerBase
 {
+    [Header("UI Display")]
+    public Sprite iconShield;
+
     private CriticalShieldPassive aegis;
 
     public override void Init(GenericTreeData tree, WeaponPassiveData data,
@@ -10,6 +14,10 @@ public class AegisPassiveHandler : PassiveHandlerBase
     {
         aegis = gameObject.AddComponent<CriticalShieldPassive>();
         aegis.Init(stats, context);
+
+        aegis.iconShield = iconShield;
+
+        aegis.RegisterHUD();
         base.Init(tree, data, manager, stats, context);
     }
 
@@ -21,7 +29,13 @@ public class AegisPassiveHandler : PassiveHandlerBase
         bool nowEnabled = IsUnlocked(1, 0);
 
         if (wasEnabled && !nowEnabled)
+        {
             aegis.ForceClean();
+            PlayerStatusHUD.Instance.Unregister("aegis");
+        }
+
+        if (!wasEnabled && nowEnabled)
+            aegis.RegisterHUD();
 
         aegis.enabled = nowEnabled;
 
