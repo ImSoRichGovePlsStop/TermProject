@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UIElements;
 
 public class Harpy : MonoBehaviour
 {
@@ -31,7 +32,10 @@ public class Harpy : MonoBehaviour
     [SerializeField] float groundOffset = 0.2f;
     [SerializeField] Transform player;
     [SerializeField] SpriteRenderer spriteRenderer;
-
+    [SerializeField] float diveTriggerDistance = 2.5f;
+    [SerializeField] float diveCooldown = 2f;
+    
+    float lastDiveTime = -999f;
     float targetHoverY;
     private Vector3 startPosition;
     private float baseY;
@@ -85,8 +89,10 @@ public class Harpy : MonoBehaviour
                 //if the player is close enough, dive!
                 Vector3 dir = player.position - transform.position;
                 dir.y = 0f;
-                if (dir.magnitude < 2f)
+                // if (dir.magnitude < 2f)
+                if (dir.magnitude < diveTriggerDistance && Time.time > lastDiveTime + diveCooldown)
                 {
+                    Debug.Log("dir.magnitude < 2f!!!");
                     StartDive();
                 }
                 break;
@@ -99,7 +105,7 @@ public class Harpy : MonoBehaviour
                 Recover();
                 break;
         }
-        Debug.Log("State: " + currentState);
+        // Debug.Log("State: " + currentState);
     }
 
     void Hover()
@@ -112,21 +118,13 @@ public class Harpy : MonoBehaviour
         float hoverOffset = Mathf.Sin(Time.time * 3f) * hoverAmplitude;
 
         //should i use this offset?
-        Vector3 offset = (transform.position - player.position).normalized * 2f;
+        Vector3 offset = (transform.position - player.position).normalized * 2f; //1.5f
         Vector3 targetPos = player.position + offset;
         targetPos.y = baseY + hoverHeight + hoverOffset;
 
         Vector3 newPos = Vector3.Lerp(rb.position, targetPos, Time.deltaTime * hoverSpeed);
         rb.MovePosition(newPos);
     }
-
-    // void CheckWakeUp(float distance)
-    // {
-    //     if (distance <= wakeDistance)
-    //     {
-    //         StartHover();
-    //     }
-    // }
 
     void StartHover()
     {
@@ -141,6 +139,7 @@ public class Harpy : MonoBehaviour
     {
         currentState = HarpyState.DiveAttack;
         diveTarget = player.position;
+        lastDiveTime = Time.time;
         animator.SetTrigger("Dive");
     }
 
@@ -148,7 +147,7 @@ public class Harpy : MonoBehaviour
     {
         Vector3 direction = (diveTarget - transform.position).normalized;
         Vector3 nextPos = rb.position + diveSpeed * Time.deltaTime * direction;
-        rb.MovePosition(rb.position + diveSpeed * Time.deltaTime * direction);
+        rb.MovePosition(nextPos);
 
         Vector3 dir = (diveTarget - transform.position).normalized;
         FaceDirection(dir);
@@ -163,10 +162,10 @@ public class Harpy : MonoBehaviour
     }
     //What we need?
     // ให้ตอน dive พุ่งตาม pos ของ player ด้วย
-    //ให้มี delay ระหว่างการ dive หน่อย
-    //แก้ animation ให้ได้
-    //อย่าให้ collider ไปติดกับพื้น
-    //ให้ collider ไม่ทำ entity ตัวอื่นลอยขึ้นฟ้า
+    // ให้มี delay ระหว่างการ dive หน่อย
+    // แก้ animation ให้ได้
+    // อย่าให้ collider ไปติดกับพื้น
+    // ให้ collider ไม่ทำ entity ตัวอื่นลอยขึ้นฟ้า
 
     void StartRecover()
     {
