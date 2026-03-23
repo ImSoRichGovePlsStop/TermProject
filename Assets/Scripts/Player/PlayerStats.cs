@@ -47,6 +47,7 @@ public class PlayerStats : MonoBehaviour
 
     public event Action<ShieldInstance, float, bool> OnShieldInstanceLost; // <Instance, remainingValue, wasTimedOut>
     public event Action<float> OnPlayerDamaged;
+    public event Action OnPlayerDeath;
 
     public bool IsInvincible { get; private set; }
 
@@ -423,7 +424,10 @@ public class PlayerStats : MonoBehaviour
         }
 
         if (CurrentHealth <= 0)
+        {
             Debug.Log("Player died!");
+            OnPlayerDeath?.Invoke();
+        }
     }
 
     public bool LastHitWasCrit { get; private set; }

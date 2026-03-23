@@ -8,6 +8,7 @@ public class UIManager : MonoBehaviour
     private PassiveScreenUI passiveScreenUI;
     private ShopUI _activeShopUI;
     private GamblerScreenUI gamblerScreenUI;
+    private GameObject gameOverScreen;
     [SerializeField] private GameObject hud;
 
     public bool isInBattle { get; set; }
@@ -21,6 +22,10 @@ public class UIManager : MonoBehaviour
 
     private void Start()
     {
+        var playerStats = FindFirstObjectByType<PlayerStats>();
+        if (playerStats != null)
+            playerStats.OnPlayerDeath += OnPlayerDeath;
+
         inventoryPanel = GameObject.FindWithTag("InventoryPanel");
         if (inventoryPanel != null)
             inventoryPanel.SetActive(false);
@@ -152,5 +157,11 @@ public class UIManager : MonoBehaviour
         yield return null;
         Canvas.ForceUpdateCanvases();
         shopUI?.ForceMoveToBag();
+    }
+
+    private void OnPlayerDeath()
+    {
+        if (gameOverScreen != null)
+            gameOverScreen.SetActive(true);
     }
 }
