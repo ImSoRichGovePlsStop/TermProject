@@ -24,9 +24,9 @@ public class Harpy : MonoBehaviour
 
     [SerializeField] private Animator animator;
     [SerializeField] float flyPhaseHPPercent = 0.5f;
-    [SerializeField] float diveSpeed = 8f;
-    [SerializeField] float hoverHeight = 2f;
-    [SerializeField] float hoverSpeed = 2f;
+    [SerializeField] float diveSpeed = 7f;
+    [SerializeField] float hoverHeight = 1.3f;
+    [SerializeField] float hoverSpeed = 1f;
     [SerializeField] float hoverAmplitude = 0.3f;
     [SerializeField] float wakeDistance = 5f;
     [SerializeField] float groundOffset = 0.2f;
@@ -147,13 +147,20 @@ public class Harpy : MonoBehaviour
     {
         Vector3 direction = (diveTarget - transform.position).normalized;
         Vector3 nextPos = rb.position + diveSpeed * Time.deltaTime * direction;
+        // float minY = baseY + groundOffset;
+        // if (nextPos.y < minY)
+        // {
+        //     nextPos.y = minY;
+        // }
+
         rb.MovePosition(nextPos);
 
         Vector3 dir = (diveTarget - transform.position).normalized;
         FaceDirection(dir);
-        Debug.Log("Distance: " + dir.magnitude);
+        // Debug.Log("Distance: " + dir.magnitude);
 
         //if reach the ground, revocer
+        // nextPos.y <= minY + 0.01f || 
         if (Vector3.Distance(transform.position, diveTarget) < 0.2f)
         {
             attack.ForceStopAttack();
