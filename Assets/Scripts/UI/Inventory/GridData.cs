@@ -109,4 +109,18 @@ public class GridData
         foreach (var c in rel) abs.Add(pivot + c);
         return abs;
     }
+
+    public ModuleInstance BlockingModuleMai(ModuleInstance inst, Vector2Int pivot, int rotationOverride)
+    {
+        ModuleInstance blocking = null;
+        foreach (var a in GetAbsoluteCells(inst.Data, pivot, rotationOverride))
+        {
+            if (!IsInBounds(a)) return null;
+            var b = _cells[a.x, a.y];
+            if (b == null || b == inst) continue;
+            if (blocking == null) blocking = b;
+            else if (blocking != b) return null;
+        }
+        return blocking;
+    }
 }
