@@ -8,13 +8,14 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Image))]
 public class ModuleItemUI : MonoBehaviour,
     IBeginDragHandler, IDragHandler, IEndDragHandler,
-    IPointerEnterHandler, IPointerExitHandler,IPointerClickHandler
+    IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     public ModuleInstance Instance { get; private set; }
 
     [HideInInspector] public GridUI WeaponGridUI;
     [HideInInspector] public GridUI BagGridUI;
     [HideInInspector] public GridUI EnvGridUI;
+    [HideInInspector] public GridUI InputGridUI;
 
     [SerializeField] private float dragAlpha = 0.6f;
     [SerializeField] private float borderSize = 4f;
@@ -28,14 +29,14 @@ public class ModuleItemUI : MonoBehaviour,
     private int _originRotation;
     private Vector2 _dragOffset;
     private Vector2Int _clickedCell;
-
-    private int  _dragRotation;
+    private int _dragRotation;
     private bool _isDragging;
 
     [SerializeField] private bool allowSell = false;
 
+    [HideInInspector] public ShopTooltipUI ShopTooltipUI;
+    [HideInInspector] public SellConfirmationUI SellConfirmationUI;
 
-    // Rarity Colors
     private static Color RarityColor(Rarity r) => r switch
     {
         Rarity.Common => new Color(0.75f, 0.75f, 0.75f),
@@ -51,8 +52,8 @@ public class ModuleItemUI : MonoBehaviour,
         Instance = instance;
         instance.UIElement = this;
         WeaponGridUI = weaponGridUI;
-        BagGridUI    = bagGridUI;
-        EnvGridUI    = envGridUI;
+        BagGridUI = bagGridUI;
+        EnvGridUI = envGridUI;
 
         _rt = GetComponent<RectTransform>();
         _cg = GetComponent<CanvasGroup>();
@@ -91,7 +92,6 @@ public class ModuleItemUI : MonoBehaviour,
         float sp = WeaponGridUI.CellSpacing;
         Color borderColor = RarityColor(Instance.Rarity);
 
-        // Border layer
         foreach (var cell in shapeCells)
         {
             var borderGo = new GameObject($"border_{cell.x}_{cell.y}",
@@ -101,6 +101,7 @@ public class ModuleItemUI : MonoBehaviour,
             borderRt.pivot = new Vector2(0f, 1f);
             borderRt.anchorMin = new Vector2(0f, 1f);
             borderRt.anchorMax = new Vector2(0f, 1f);
+
             bool bHasRight = shapeCells.Contains(new Vector2Int(cell.x + 1, cell.y));
             bool bHasLeft = shapeCells.Contains(new Vector2Int(cell.x - 1, cell.y));
             bool bHasBottom = shapeCells.Contains(new Vector2Int(cell.x, cell.y + 1));
@@ -126,12 +127,9 @@ public class ModuleItemUI : MonoBehaviour,
 
         Vector2Int topRightCell = shapeCells[0];
         foreach (var c in shapeCells)
-        {
             if (c.y < topRightCell.y || (c.y == topRightCell.y && c.x > topRightCell.x))
                 topRightCell = c;
-        }
 
-        // Cell layer
         foreach (var cell in shapeCells)
         {
             var go = new GameObject($"cell_{cell.x}_{cell.y}",
@@ -141,6 +139,7 @@ public class ModuleItemUI : MonoBehaviour,
             cellRt.pivot = new Vector2(0f, 1f);
             cellRt.anchorMin = new Vector2(0f, 1f);
             cellRt.anchorMax = new Vector2(0f, 1f);
+
             bool hasRight = shapeCells.Contains(new Vector2Int(cell.x + 1, cell.y));
             bool hasLeft = shapeCells.Contains(new Vector2Int(cell.x - 1, cell.y));
             bool hasBottom = shapeCells.Contains(new Vector2Int(cell.x, cell.y + 1));
@@ -156,38 +155,40 @@ public class ModuleItemUI : MonoBehaviour,
                 cs - borderSize * 2f + extraTop + extraBottom);
 
             cellRt.anchoredPosition = new Vector2(
-                cell.x * (cs + sp) + borderSize - extraLeft,
-               -cell.y * (cs + sp) - borderSize + extraTop);
+                 cell.x * (cs + sp) + borderSize - extraLeft,
+                -cell.y * (cs + sp) - borderSize + extraTop);
 
             var cellImg = go.GetComponent<Image>();
             if (Instance.Data.icon != null) cellImg.sprite = Instance.Data.icon;
             cellImg.color = Instance.Data.moduleColor;
             cellImg.raycastTarget = true;
 
-            // Level text on first cell
-            if (cell == topRightCell)
+            if (cell == topRightCell && Instance.Level > 0)
             {
-                if (Instance.Level > 0)
-                {
-                    var textGo = new GameObject("LevelText",
-                                               typeof(RectTransform), typeof(TextMeshProUGUI));
-                    var textRt = textGo.GetComponent<RectTransform>();
-                    textRt.SetParent(cellRt, false);
-                    textRt.anchorMin = new Vector2(0f, 1f);
-                    textRt.anchorMax = new Vector2(1f, 1f);
-                    textRt.pivot = new Vector2(1f, 1f);
-                    textRt.anchoredPosition = new Vector2(-2f, -2f);
-                    textRt.sizeDelta = new Vector2(0f, 20f);
+                var textGo = new GameObject("LevelText",
+                                            typeof(RectTransform), typeof(TextMeshProUGUI));
+                var textRt = textGo.GetComponent<RectTransform>();
+                textRt.SetParent(cellRt, false);
+                textRt.anchorMin = new Vector2(0f, 1f);
+                textRt.anchorMax = new Vector2(1f, 1f);
+                textRt.pivot = new Vector2(1f, 1f);
+                textRt.anchoredPosition = new Vector2(-2f, -2f);
+                textRt.sizeDelta = new Vector2(0f, 20f);
 
-                    var tmp = textGo.GetComponent<TextMeshProUGUI>();
-                    tmp.text = $"+{Instance.Level}";
-                    tmp.fontSize = 24f;
-                    tmp.color = Color.white;
-                    tmp.alignment = TextAlignmentOptions.TopRight;
-                    tmp.raycastTarget = false;
-                }
+                var tmp = textGo.GetComponent<TextMeshProUGUI>();
+                tmp.text = $"+{Instance.Level}";
+                tmp.fontSize = 24f;
+                tmp.color = Color.white;
+                tmp.alignment = TextAlignmentOptions.TopRight;
+                tmp.raycastTarget = false;
             }
         }
+    }
+
+    public void RefreshAfterUpgrade()
+    {
+        RebuildVisual(Instance.Rotation);
+        _cg.alpha = 1f;
     }
 
     private void Update()
@@ -218,13 +219,15 @@ public class ModuleItemUI : MonoBehaviour,
             _originGrid = WeaponGridUI;
         else if (EnvGridUI != null && Instance.CurrentGrid == mgr.EnvGrid)
             _originGrid = EnvGridUI;
+        else if (InputGridUI != null && Instance.CurrentGrid == InputGridUI.Data)
+            _originGrid = InputGridUI;
         else
             _originGrid = BagGridUI;
+
         _originCell = Instance.GridPosition;
         _originRotation = Instance.Rotation;
         _dragRotation = Instance.Rotation;
         _isDragging = true;
-
         _clickedCell = GetClickedLocalCell(e);
 
         _rt.SetParent(_canvas.transform, worldPositionStays: true);
@@ -258,7 +261,7 @@ public class ModuleItemUI : MonoBehaviour,
         Vector2Int pivot = Vector2Int.zero;
         Vector2 sampleScreen = GetClickedCellCenterScreen();
 
-        foreach (var g in new[] { WeaponGridUI, BagGridUI, EnvGridUI })
+        foreach (var g in new[] { WeaponGridUI, BagGridUI, EnvGridUI, InputGridUI })
         {
             if (g == null) continue;
             if (g.ScreenToCell(sampleScreen, UICam(), out var hoveredCell))
@@ -273,7 +276,7 @@ public class ModuleItemUI : MonoBehaviour,
         if (targetGrid != null)
         {
             var prevGrid = Instance.CurrentGrid;
-            var prevPos  = Instance.GridPosition;
+            var prevPos = Instance.GridPosition;
 
             prevGrid?.Remove(Instance);
             Instance.SetRotation(_dragRotation);
@@ -285,17 +288,17 @@ public class ModuleItemUI : MonoBehaviour,
             else
             {
                 var blocker = targetGrid.Data.BlockingModuleMai(Instance, pivot, _dragRotation);
-                bool BlockerIsMaterialMai = prevGrid != null && prevGrid.IsWeaponGrid && blocker is MaterialInstance;
+                bool blockerIsMaterial = prevGrid != null && prevGrid.IsWeaponGrid && blocker is MaterialInstance;
 
-                if (blocker != null && !BlockerIsMaterialMai)
+                if (blocker != null && !blockerIsMaterial)
                 {
-                    var OldPos = blocker.GridPosition;
+                    var oldPos = blocker.GridPosition;
                     targetGrid.Data.Remove(blocker);
 
                     bool placedDrag = targetGrid.Data.TryPlace(Instance, pivot);
-                    bool blockNewPos = placedDrag && prevGrid != null && prevGrid.TryPlace(blocker, prevPos);
+                    bool placedSwap = placedDrag && prevGrid != null && prevGrid.TryPlace(blocker, prevPos);
 
-                    if (placedDrag && blockNewPos)
+                    if (placedDrag && placedSwap)
                     {
                         moved = true;
                         if (blocker.UIElement is ModuleItemUI blockerUI)
@@ -304,9 +307,9 @@ public class ModuleItemUI : MonoBehaviour,
                             blockerMatUI.SnapToCell(_originGrid, prevPos);
                     }
                     else
-                      {
+                    {
                         if (placedDrag) targetGrid.Data.Remove(Instance);
-                        targetGrid.Data.TryPlace(blocker, OldPos);
+                        targetGrid.Data.TryPlace(blocker, oldPos);
                         Instance.SetRotation(_originRotation);
                         prevGrid?.TryPlace(Instance, prevPos);
                     }
@@ -331,9 +334,6 @@ public class ModuleItemUI : MonoBehaviour,
         SnapToCell(snapGrid, snapCell);
     }
 
-
-    //check if it should show the shop version or inventory version
-    [HideInInspector] public ShopTooltipUI ShopTooltipUI;
     public void OnPointerEnter(PointerEventData e)
     {
         if (ShopTooltipUI != null)
@@ -355,11 +355,8 @@ public class ModuleItemUI : MonoBehaviour,
             ModuleTooltipUI.Instance.Hide();
     }
 
-
-    /// needed for selling
-    ///
     public void SetAllowSell(bool allow) => allowSell = allow;
-    [HideInInspector] public SellConfirmationUI SellConfirmationUI;
+
     public void OnPointerClick(PointerEventData e)
     {
         if (e.button != PointerEventData.InputButton.Right) return;
@@ -375,7 +372,7 @@ public class ModuleItemUI : MonoBehaviour,
         ClearHighlights();
         Vector2 sampleScreen = GetClickedCellCenterScreen();
 
-        foreach (var g in new[] { WeaponGridUI, BagGridUI, EnvGridUI })
+        foreach (var g in new[] { WeaponGridUI, BagGridUI, EnvGridUI, InputGridUI })
         {
             if (g == null) continue;
             if (g.ScreenToCell(sampleScreen, UICam(), out var hoveredCell))
@@ -392,6 +389,7 @@ public class ModuleItemUI : MonoBehaviour,
         WeaponGridUI?.ClearHighlights();
         BagGridUI?.ClearHighlights();
         EnvGridUI?.ClearHighlights();
+        InputGridUI?.ClearHighlights();
     }
 
     private Vector2Int GetClickedLocalCell(PointerEventData e)
@@ -404,7 +402,6 @@ public class ModuleItemUI : MonoBehaviour,
 
         int col = Mathf.FloorToInt(localPoint.x / (cs + sp));
         int row = Mathf.FloorToInt(-localPoint.y / (cs + sp));
-
         return new Vector2Int(Mathf.Max(0, col), Mathf.Max(0, row));
     }
 
@@ -414,9 +411,9 @@ public class ModuleItemUI : MonoBehaviour,
         float sp = WeaponGridUI.CellSpacing;
 
         Vector2 cellCenterLocal = new Vector2(
-            (_clickedCell.x + 0.5f) * (cs + sp),
-           -(_clickedCell.y + 0.5f) * (cs + sp)
-        );
+             (_clickedCell.x + 0.5f) * (cs + sp),
+            -(_clickedCell.y + 0.5f) * (cs + sp));
+
         Vector3 worldCenter = _rt.TransformPoint(cellCenterLocal);
         return RectTransformUtility.WorldToScreenPoint(UICam(), worldCenter);
     }

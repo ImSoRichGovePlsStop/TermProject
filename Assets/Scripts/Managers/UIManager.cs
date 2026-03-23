@@ -9,11 +9,16 @@ public class UIManager : MonoBehaviour
     private ShopUI _activeShopUI;
     private GamblerScreenUI gamblerScreenUI;
     private GameObject gameOverScreen;
+    private UpgradeStationUI _upgradeStationUI;
+    private bool _upgradeOpen = false;
+
     [SerializeField] private GameObject hud;
 
     public bool isInBattle { get; set; }
     public bool IsInventoryOpen { get; private set; }
     public bool IsShopOpen => _activeShopUI != null && _activeShopUI.gameObject.activeSelf;
+    public bool IsUpgradeOpen => _upgradeOpen;
+
     public PassiveScreenUI GetPassiveScreen() => passiveScreenUI;
     public GamblerScreenUI GetGamblerScreen() => gamblerScreenUI;
 
@@ -27,17 +32,19 @@ public class UIManager : MonoBehaviour
             playerStats.OnPlayerDeath += OnPlayerDeath;
 
         inventoryPanel = GameObject.FindWithTag("InventoryPanel");
-        if (inventoryPanel != null)
-            inventoryPanel.SetActive(false);
-
         passiveScreenUI = FindFirstObjectByType<PassiveScreenUI>(FindObjectsInactive.Include);
         gamblerScreenUI = FindFirstObjectByType<GamblerScreenUI>(FindObjectsInactive.Include);
+        _upgradeStationUI = FindFirstObjectByType<UpgradeStationUI>(FindObjectsInactive.Include);
 
         if (inventoryPanel != null) inventoryPanel.SetActive(true);
         if (_activeShopUI != null) _activeShopUI.gameObject.SetActive(true);
+        if (_upgradeStationUI != null) _upgradeStationUI.gameObject.SetActive(true);
+
+        Canvas.ForceUpdateCanvases();
 
         inventoryPanel?.SetActive(false);
         _activeShopUI?.gameObject.SetActive(false);
+        if (_upgradeStationUI != null) _upgradeStationUI.gameObject.SetActive(false);
 
         var sellUI = FindObjectsByType<SellConfirmationUI>(FindObjectsSortMode.None);
         foreach (var ui in sellUI)
@@ -49,9 +56,8 @@ public class UIManager : MonoBehaviour
 
     private void Update()
     {
-
-        if (!isInBattle) {
-
+        if (!isInBattle)
+        {
             if (Keyboard.current[Key.Tab].wasPressedThisFrame)
             {
                 if (gamblerScreenUI != null && gamblerScreenUI.IsOpen)
@@ -68,6 +74,8 @@ public class UIManager : MonoBehaviour
                     passiveScreenUI.Close();
                 else if (gamblerScreenUI != null && gamblerScreenUI.IsOpen)
                     gamblerScreenUI.Close();
+                else if (_upgradeOpen)
+                { } // blocked — player must select an upgrade
                 else if (_activeShopUI != null && _activeShopUI.gameObject.activeSelf)
                     CloseShop();
                 else if (IsInventoryOpen)
@@ -75,7 +83,7 @@ public class UIManager : MonoBehaviour
             }
 
             if (Keyboard.current[Key.F].wasPressedThisFrame && IsInventoryOpen)
-            { inventoryUI?.TakeAllFromEnv(); }
+                inventoryUI?.TakeAllFromEnv();
 
             if (passiveScreenUI != null && passiveScreenUI.IsOpen)
             {
@@ -94,7 +102,6 @@ public class UIManager : MonoBehaviour
                 }
             }
         }
-        
     }
 
     [SerializeField] private ShopUI shopUI;
@@ -111,7 +118,7 @@ public class UIManager : MonoBehaviour
         inventoryPanel.SetActive(IsInventoryOpen);
 
         if (IsInventoryOpen)
-            StartCoroutine(ForceMoveToBagNextFrame()); // <-- move items to inventory bag grid on open
+            StartCoroutine(ForceMoveToBagNextFrame());
 
         if (!IsInventoryOpen)
         {
@@ -119,9 +126,9 @@ public class UIManager : MonoBehaviour
             inventoryUI?.ClearEnvGrid();
             inventoryUI?.SetEnvGridVisible(false);
         }
+
         UpdateHUDVisibility();
     }
-
 
     public void OpenShop(ShopUI shopUI)
     {
@@ -140,10 +147,35 @@ public class UIManager : MonoBehaviour
         UpdateHUDVisibility();
     }
 
+    public void OpenUpgrade(UpgradeStation station)
+    {
+        if (IsInventoryOpen) ToggleInventory();
+        if (IsShopOpen) CloseShop();
+
+        if (_upgradeStationUI == null)
+            _upgradeStationUI = FindFirstObjectByType<UpgradeStationUI>(FindObjectsInactive.Include);
+
+        if (_upgradeStationUI == null) { Debug.LogError("[UIManager] UpgradeStationUI not found!"); return; }
+
+        _upgradeOpen = true;
+        _upgradeStationUI.gameObject.SetActive(true);
+        _upgradeStationUI.Open(station);
+        UpdateHUDVisibility();
+    }
+
+    public void CloseUpgrade()
+    {
+        if (_upgradeStationUI != null)
+            _upgradeStationUI.gameObject.SetActive(false);
+        _upgradeOpen = false;
+        UpdateHUDVisibility();
+    }
+
     private void UpdateHUDVisibility()
     {
         bool shouldHide =
             IsInventoryOpen ||
+            _upgradeOpen ||
             (passiveScreenUI != null && passiveScreenUI.IsOpen) ||
             (gamblerScreenUI != null && gamblerScreenUI.IsOpen) ||
             (_activeShopUI != null && _activeShopUI.gameObject.activeSelf);
