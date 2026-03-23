@@ -24,7 +24,9 @@ public class UpgradeStationUI : MonoBehaviour
 
         if (candidates.Count == 0)
         {
-            Debug.LogWarning("[UpgradeStationUI] No modules available to upgrade!");
+
+            var uiManager = FindFirstObjectByType<UIManager>();
+            uiManager?.CloseUpgrade();
             return;
         }
 
@@ -74,7 +76,7 @@ public class UpgradeStationUI : MonoBehaviour
     public void OnOptionSelected(ModuleInstance instance)
     {
         instance.SetLevel(instance.Level + 1);
-        Debug.Log($"[UpgradeStationUI] Upgraded {instance.Data.moduleName} to Lv.{instance.Level}");
+ 
 
         var moduleUI = instance.UIElement as ModuleItemUI;
         if (moduleUI != null)
