@@ -1,4 +1,5 @@
 using System;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UIElements;
@@ -34,7 +35,9 @@ public class Harpy : MonoBehaviour
     [SerializeField] SpriteRenderer spriteRenderer;
     [SerializeField] float diveTriggerDistance = 2.5f;
     [SerializeField] float diveCooldown = 2f;
+    [SerializeField] float diveDuration = 1f;
     
+    float diveStartTime;
     float lastDiveTime = -999f;
     float targetHoverY;
     private Vector3 startPosition;
@@ -139,6 +142,7 @@ public class Harpy : MonoBehaviour
     {
         currentState = HarpyState.DiveAttack;
         diveTarget = player.position;
+        diveStartTime = Time.time;
         lastDiveTime = Time.time;
         animator.SetTrigger("Dive");
     }
@@ -147,7 +151,7 @@ public class Harpy : MonoBehaviour
     {
         Vector3 direction = (diveTarget - transform.position).normalized;
         Vector3 nextPos = rb.position + diveSpeed * Time.deltaTime * direction;
-        // float minY = baseY + groundOffset;
+        float minY = baseY + groundOffset;
         // if (nextPos.y < minY)
         // {
         //     nextPos.y = minY;
@@ -161,9 +165,31 @@ public class Harpy : MonoBehaviour
 
         //if reach the ground, revocer
         // nextPos.y <= minY + 0.01f || 
-        if (Vector3.Distance(transform.position, diveTarget) < 0.2f)
+        // if (Vector3.Distance(transform.position, diveTarget) < 0.2f)
+        // {
+        //     attack.ForceStopAttack();
+        //     StartRecover();
+        // }
+
+        //when crash with player
+        Debug.Log("Distance =" + Vector3.Distance(transform.position, player.position));
+        if (Vector3.Distance(transform.position, player.position) < 1.2f)
         {
-            attack.ForceStopAttack();
+            Debug.Log("DEAL DAMAGE!");
+            attack.DealDamage(player.gameObject);
+            StartRecover();
+            return;
+        }
+
+        //when reach ground
+        if (transform.position.y <= minY + 0.05f)
+        {
+            StartRecover();
+            return;
+        }
+
+        if (Time.time > diveStartTime + 1.1f)
+        {
             StartRecover();
         }
     }

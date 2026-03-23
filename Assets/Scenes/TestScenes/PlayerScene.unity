@@ -648,11 +648,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4673700319721669437, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
       propertyPath: m_Height
-      value: 1.2894335
+      value: 1.175363
       objectReference: {fileID: 0}
     - target: {fileID: 4673700319721669437, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
       propertyPath: m_Center.y
-      value: -0.029240012
+      value: -0.08627528
       objectReference: {fileID: 0}
     - target: {fileID: 5053443925488620176, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
       propertyPath: m_Constraints
@@ -672,7 +672,7 @@ PrefabInstance:
       objectReference: {fileID: 115176295}
     - target: {fileID: 6146847390516208723, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
       propertyPath: diveSpeed
-      value: 7
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 6146847390516208723, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
       propertyPath: hoverSpeed
@@ -864,6 +864,14 @@ PrefabInstance:
     - target: {fileID: 6821820435605495984, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
       propertyPath: m_Name
       value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 8796976880611823720, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
+      propertyPath: m_Height
+      value: 0.33675945
+      objectReference: {fileID: 0}
+    - target: {fileID: 8796976880611823720, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
+      propertyPath: m_Center.y
+      value: -0.014553726
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

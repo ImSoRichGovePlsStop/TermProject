@@ -83,6 +83,22 @@ public class EnemyAttack : MonoBehaviour
         }
     }
 
+    public void DealDamage(GameObject target)
+    {
+        if (enemyHealth != null && enemyHealth.IsDead)
+            return;
+
+        PlayerStats playerStats = target.GetComponent<PlayerStats>();
+
+        if (playerStats == null) 
+            playerStats = target.GetComponentInParent<PlayerStats>();
+
+        if (playerStats != null)
+        {
+            playerStats.TakeDamage(attackDamage, enemyHealth);
+        }
+    }
+
     // Animation Event ท้ายคลิป
     public void FinishAttack()
     {
