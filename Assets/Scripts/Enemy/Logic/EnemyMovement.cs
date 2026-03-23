@@ -47,7 +47,8 @@ public class EnemyMovement : MonoBehaviour
 
         if (!canMove)
         {
-            moveDirection = Vector3.zero;
+            if (!rb.isKinematic)
+                moveDirection = Vector3.zero;
             rb.linearVelocity = Vector3.zero;
         }
     }

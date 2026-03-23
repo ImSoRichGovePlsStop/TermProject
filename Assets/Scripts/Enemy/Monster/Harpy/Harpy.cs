@@ -172,10 +172,10 @@ public class Harpy : MonoBehaviour
         // }
 
         //when crash with player
-        Debug.Log("Distance =" + Vector3.Distance(transform.position, player.position));
+        // Debug.Log("Distance =" + Vector3.Distance(transform.position, player.position));
         if (Vector3.Distance(transform.position, player.position) < 1.2f)
         {
-            Debug.Log("DEAL DAMAGE!");
+            // Debug.Log("DEAL DAMAGE!");
             attack.DealDamage(player.gameObject);
             StartRecover();
             return;
