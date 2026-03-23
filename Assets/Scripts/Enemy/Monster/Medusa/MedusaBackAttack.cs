@@ -22,9 +22,6 @@ public class MedusaBackAttack : MonoBehaviour
     [Header("Target")]
     [SerializeField] private string targetTag = "Player";
 
-    [Header("When To Attack")]
-    [SerializeField] private bool attackWhenFacingUp = false;
-
     [Header("Attack Cycle")]
     [SerializeField] private bool randomizeAttackTypeEachCycle = true;
     [SerializeField] private BackAttackType currentAttackType = BackAttackType.SpawnCircleUnderPlayer;
@@ -67,6 +64,11 @@ public class MedusaBackAttack : MonoBehaviour
     private GameObject currentWarningInstance;
     private GameObject currentHitInstance;
 
+    // ใช้เช็ก "เปลี่ยนทิศหรือยัง"
+    private bool hasConsumedCurrentFacing;
+    private bool lastFacingUp;
+    private bool hasInitializedFacing;
+
     private void Awake()
     {
         if (facing == null)
@@ -87,14 +89,28 @@ public class MedusaBackAttack : MonoBehaviour
         if (playerTarget == null)
             FindPlayerTarget();
 
-        if (!IsAttackFacingActive())
-        {
-            ClearAllIndicators();
-            currentPhase = AttackPhase.Idle;
-            phaseTimer = idleDuration;
-            hasDamagedThisCycle = false;
+        if (facing == null)
             return;
+
+        bool currentFacingUp = facing.IsFacingUp;
+
+        if (!hasInitializedFacing)
+        {
+            hasInitializedFacing = true;
+            lastFacingUp = currentFacingUp;
+            hasConsumedCurrentFacing = false;
+            StartIdlePhase();
         }
+
+        if (currentFacingUp != lastFacingUp)
+        {
+            lastFacingUp = currentFacingUp;
+            hasConsumedCurrentFacing = false;
+            StartIdlePhase();
+        }
+
+        if (hasConsumedCurrentFacing && currentPhase == AttackPhase.Idle)
+            return;
 
         phaseTimer -= Time.deltaTime;
 
@@ -102,7 +118,10 @@ public class MedusaBackAttack : MonoBehaviour
         {
             case AttackPhase.Idle:
                 if (phaseTimer <= 0f)
+                {
                     StartTrackingWarningPhase();
+                    hasConsumedCurrentFacing = true;
+                }
                 break;
 
             case AttackPhase.TrackingWarning:
@@ -139,14 +158,6 @@ public class MedusaBackAttack : MonoBehaviour
                     StartIdlePhase();
                 break;
         }
-    }
-
-    private bool IsAttackFacingActive()
-    {
-        if (facing == null)
-            return false;
-
-        return facing.IsFacingUp == attackWhenFacingUp;
     }
 
     private void StartIdlePhase()
