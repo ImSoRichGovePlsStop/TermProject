@@ -155,6 +155,38 @@ public class ModuleData : ScriptableObject
         return g;
     }
 
+    public static Vector2Int RotateSinglePoint(Vector2Int point, int rotationDelta, List<Vector2Int> currentShape)
+    {
+        Vector2Int rotatedPoint = rotationDelta switch
+        {
+            1 => new Vector2Int(point.y, -point.x),
+            2 => new Vector2Int(-point.x, -point.y),
+            3 => new Vector2Int(-point.y, point.x),
+            _ => point
+        };
+
+        var rotatedShape = new List<Vector2Int>();
+        foreach (var c in currentShape)
+        {
+            rotatedShape.Add(rotationDelta switch
+            {
+                1 => new Vector2Int(c.y, -c.x),
+                2 => new Vector2Int(-c.x, -c.y),
+                3 => new Vector2Int(-c.y, c.x),
+                _ => c
+            });
+        }
+
+        int minX = int.MaxValue, minY = int.MaxValue;
+        foreach (var r in rotatedShape)
+        {
+            if (r.x < minX) minX = r.x;
+            if (r.y < minY) minY = r.y;
+        }
+
+        return new Vector2Int(rotatedPoint.x - minX, rotatedPoint.y - minY);
+    }
+
 #if UNITY_EDITOR
     private void OnValidate()
     {

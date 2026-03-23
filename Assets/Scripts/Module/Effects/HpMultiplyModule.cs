@@ -18,18 +18,100 @@ public class HpMultiplyModule : ModuleEffect
         stats.RemoveMultiplierModifier(new StatModifier { health = GetEffectiveStat(state) });
     }
 
+    public override void OnLevelBuffReceived(int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
+    {
+        stats.RemoveMultiplierModifier(new StatModifier { health = GetEffectiveStat(state) });
+        state.buffedLevel = levelBonus;
+        if (state.buffRarity > rarity)
+        {
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, levelBonus);
+        }
+        else
+        {
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, levelBonus);
+        }
+        stats.AddMultiplierModifier(new StatModifier { health = GetEffectiveStat(state) });
+    }
+
+    public override void OnLevelBuffRemoved(int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
+    {
+        if (!state.isActive)
+        {
+            state.buffedLevel = levelBonus;
+            return;
+        }
+        stats.RemoveMultiplierModifier(new StatModifier { health = GetEffectiveStat(state) });
+        state.buffedLevel = levelBonus;
+        if (state.buffRarity > rarity)
+        {
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, levelBonus);
+        }
+        else
+        {
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, levelBonus);
+        }
+        stats.AddMultiplierModifier(new StatModifier { health = GetEffectiveStat(state) });
+    }
+
+    public override void OnRarityBuffReceived(int level, Rarity NewRarity, PlayerStats stats, ModuleRuntimeState state)
+    {
+        stats.RemoveMultiplierModifier(new StatModifier { health = GetEffectiveStat(state) });
+        state.buffRarity = NewRarity;
+        if (state.buffedLevel > level)
+        {
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
+        }
+        else
+        {
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, level);
+        }
+        stats.AddMultiplierModifier(new StatModifier { health = GetEffectiveStat(state) });
+    }
+    public override void OnRarityBuffRemoved(int level, Rarity NewRarity, PlayerStats stats, ModuleRuntimeState state)
+    {
+        if (!state.isActive)
+        {
+            state.buffRarity = NewRarity;
+            return;
+        }
+        stats.RemoveMultiplierModifier(new StatModifier { health = GetEffectiveStat(state) });
+        state.buffRarity = NewRarity;
+        if (state.buffedLevel > level)
+        {
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
+        }
+        else
+        {
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, level);
+        }
+        stats.AddMultiplierModifier(new StatModifier { health = GetEffectiveStat(state) });
+    }
+
+    public override void OnBuffReceived(float percent, PlayerStats stats, ModuleRuntimeState state)
+    {
+        stats.RemoveMultiplierModifier(new StatModifier { health = GetEffectiveStat(state) });
+        state.totalBuffPercent += percent;
+        stats.AddMultiplierModifier(new StatModifier { health = GetEffectiveStat(state) });
+    }
+
+    public override void OnBuffRemoved(float percent, PlayerStats stats, ModuleRuntimeState state)
+    {
+        if (!state.isActive)
+        {
+            state.totalBuffPercent -= percent;
+            return;
+        }
+        stats.RemoveMultiplierModifier(new StatModifier { health = GetEffectiveStat(state) });
+        state.totalBuffPercent -= percent;
+        stats.AddMultiplierModifier(new StatModifier { health = GetEffectiveStat(state) });
+    }
 
     public override string GetDescription(Rarity rarity, int level, ModuleRuntimeState state)
     {
         float baseStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
         float effective = GetEffectiveStat(state);
-        if (state.totalBuffPercent > 0f)
-            return $"<s>+{baseStat * 100f:F0}%</s> +{effective * 100f:F0}% Hp";
-        return $"+{baseStat * 100f:F0}% Hp";
-    }
-
-    private float GetEffectiveStat(ModuleRuntimeState state)
-    {
-        return state.currentStat * (1f + state.totalBuffPercent);
+        if (effective != baseStat & state.isActive)
+            return $"<s>+{baseStat * 100f:F0}%</s> +{effective* 100f:F0}% HP";
+        return $"+{baseStat * 100f:F0}% HP";
     }
 }

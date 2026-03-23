@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b7eed258015d6e43af3e1877b980b72, type: 3}
   m_Name: LowHpMoreDmg_2x1
   m_EditorClassIdentifier: Assembly-CSharp::ModuleData
-  moduleName: New Module
+  moduleName: Second Form
   icon: {fileID: 0}
   moduleEffect: {fileID: 11400000, guid: 44c2d4a20513fcd46aa8a8575eddf333, type: 2}
-  moduleColor: {r: 0.77915984, g: 0.7830189, b: 0.15881987, a: 1}
+  moduleColor: {r: 0.6415094, g: 0.6415094, b: 0.20879316, a: 1}
   cost: 00000000000000007d000000c8000000fa000000
   isBuffAdjacent: 0
   buffGrid:
@@ -25,8 +25,8 @@ MonoBehaviour:
   - cells: 0000000000
   - cells: 0000000000
   shapeGrid:
-  - cells: 0000000000
   - cells: 0101000000
+  - cells: 0000000000
   - cells: 0000000000
   - cells: 0000000000
   - cells: 0000000000

@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 5751372851717793496}
   - component: {fileID: 61150285569358350}
   - component: {fileID: 3782429071458927645}
+  - component: {fileID: 3948545288884697418}
   m_Layer: 0
   m_Name: Enemy_Hoplite
   m_TagString: Enemy
@@ -163,9 +164,23 @@ MonoBehaviour:
   animator: {fileID: 7551460917292428163}
   enemyCollider: {fileID: 2242107197552931819}
   rb: {fileID: 208256006118903961}
+  healthBarOffset: {x: 0, y: 0.3, z: 0}
+  healthBarScale: {x: 1, y: 1, z: 1}
   enemyController: {fileID: 7960103508822112348}
   enemyMovement: {fileID: 5751372851717793496}
   enemyAttack: {fileID: 61150285569358350}
+--- !u!114 &3948545288884697418
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1157175084331872940}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e903ec0e7e24faa4b9575d53a558ffc3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyStatusHandler
 --- !u!1 &1591345016874994846
 GameObject:
   m_ObjectHideFlags: 0
