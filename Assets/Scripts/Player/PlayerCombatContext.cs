@@ -9,6 +9,7 @@ public class PlayerCombatContext : MonoBehaviour
     public List<EnemyHealth> EnemiesAround { get; private set; } = new List<EnemyHealth>();
     public int LastComboIndex { get; private set; } = 0;
     public Vector3 LastSecondaryPosition { get; private set; }
+    public float LastAttackDamage { get; private set; }
 
     public event Action OnAttack;
     public event Action OnCritHit;

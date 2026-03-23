@@ -3,9 +3,6 @@ using UnityEngine;
 
 public class SpawnRoom : MonoBehaviour
 {
-    [Header("Player")]
-    public GameObject playerPrefab;
-
     public float spawnHeightOffset = 0.5f;
 
     void Start()

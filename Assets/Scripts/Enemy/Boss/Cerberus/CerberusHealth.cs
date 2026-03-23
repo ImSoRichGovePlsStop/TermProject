@@ -29,7 +29,7 @@ public class CerberusHealth : BaseBossHealth
             attack = GetComponent<CerberusAttack>();
     }
 
-    public override void TakeDamage(float damage)
+    public override void TakeDamage(float damage, bool isCrit = false)
     {
         if (isDead) return;
         if (damage <= 0f) return;
