@@ -106,7 +106,10 @@ public class LowHpModule : ModuleEffect
         float baseThreshold = (baseThresholdPerRarity[index] + level * thresholdPerLevel) * 100f;
         float effectiveThreshold = state.currentThreshold * 100f;
 
-        if (effective != baseStat && state.isActive)
+        if (baseThreshold == effectiveThreshold && effective != baseStat && state.isActive)
+            return $"When below {baseThreshold:F0}% HP:\n<s>+{baseStat * 100f:F0}</s> +{effective * 100f:F0}% Damage";
+
+        if (baseThreshold != effectiveThreshold && effective != baseStat && state.isActive)
             return $"When below <s>{baseThreshold:F0}%</s> {effectiveThreshold:F0}% HP:\n<s>+{baseStat * 100f:F0}</s> +{effective * 100f:F0}% Damage";
         return $"When below {baseThreshold:F0}% HP: +{baseStat * 100f:F0}% Damage";
     }
