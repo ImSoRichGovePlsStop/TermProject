@@ -41,6 +41,7 @@ public class EnemyAttack : MonoBehaviour
         if (!CanAttack()) return;
 
         isAttacking = true;
+        animator.SetBool("IsAttacking", true);
         Debug.Log("Attack started");
 
         if (animator != null)
@@ -103,18 +104,20 @@ public class EnemyAttack : MonoBehaviour
     public void FinishAttack()
     {
         isAttacking = false;
+        animator.SetBool("IsAttacking", false);
         Debug.Log("FinishAttack called");
     }
 
     public void ForceStopAttack()
     {
         isAttacking = false;
+        animator.SetBool("IsAttacking", false);
 
         if (animator != null && gameObject.name.Contains("Harpy"))
         {
             animator.ResetTrigger("Attack");
             // animator.SetBool("IsAttacking", false);
-            animator.Play("Harpy_Walk");
+            // animator.Play("Harpy_Walk");
         }
     }
 
