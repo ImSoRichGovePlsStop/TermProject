@@ -290,6 +290,30 @@ public class MaterialItemUI : MonoBehaviour,
             }
             else
             {
+                var blocker = g.Data.BlockingModuleMai(Instance, pivot, _dragRotation);
+                if (blocker != null)
+                {
+                    var OldPos = blocker.GridPosition;
+                    g.Data.Remove(blocker);
+
+                    bool placedDrag = g.Data.TryPlace(Instance, pivot);
+                    bool blockNewPos = placedDrag && prevGrid != null && prevGrid.TryPlace(blocker, prevPos);
+
+                    if (placedDrag && blockNewPos)
+                    {
+                        SnapToCell(g, Instance.GridPosition);
+                        if (blocker.UIElement is ModuleItemUI blockerModUI)
+                            blockerModUI.SnapToCell(_originGrid, prevPos);
+                        else if (blocker.UIElement is MaterialItemUI blockerMatUI)
+                            blockerMatUI.SnapToCell(_originGrid, prevPos);
+                        return;
+                    }
+                    else
+                    {
+                        if (placedDrag) g.Data.Remove(Instance);
+                        g.Data.TryPlace(blocker, OldPos);
+                    }
+                }
                 Instance.SetRotation(_originRotation);
                 prevGrid?.TryPlace(Instance, prevPos);
                 _dragRotation = Instance.Rotation;

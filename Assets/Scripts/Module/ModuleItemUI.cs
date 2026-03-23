@@ -284,8 +284,38 @@ public class ModuleItemUI : MonoBehaviour,
             }
             else
             {
-                Instance.SetRotation(_originRotation);
-                prevGrid?.TryPlace(Instance, prevPos);
+                var blocker = targetGrid.Data.BlockingModuleMai(Instance, pivot, _dragRotation);
+                bool BlockerIsMaterialMai = prevGrid != null && prevGrid.IsWeaponGrid && blocker is MaterialInstance;
+
+                if (blocker != null && !BlockerIsMaterialMai)
+                {
+                    var OldPos = blocker.GridPosition;
+                    targetGrid.Data.Remove(blocker);
+
+                    bool placedDrag = targetGrid.Data.TryPlace(Instance, pivot);
+                    bool blockNewPos = placedDrag && prevGrid != null && prevGrid.TryPlace(blocker, prevPos);
+
+                    if (placedDrag && blockNewPos)
+                    {
+                        moved = true;
+                        if (blocker.UIElement is ModuleItemUI blockerUI)
+                            blockerUI.SnapToCell(_originGrid, prevPos);
+                        else if (blocker.UIElement is MaterialItemUI blockerMatUI)
+                            blockerMatUI.SnapToCell(_originGrid, prevPos);
+                    }
+                    else
+                      {
+                        if (placedDrag) targetGrid.Data.Remove(Instance);
+                        targetGrid.Data.TryPlace(blocker, OldPos);
+                        Instance.SetRotation(_originRotation);
+                        prevGrid?.TryPlace(Instance, prevPos);
+                    }
+                }
+                else
+                {
+                    Instance.SetRotation(_originRotation);
+                    prevGrid?.TryPlace(Instance, prevPos);
+                }
             }
         }
 
