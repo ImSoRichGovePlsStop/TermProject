@@ -36,6 +36,7 @@ public class StackFrenzyPassive : MonoBehaviour
     private const float stackExpireTime = 15f;
     private const float apexDuration = 5f;
     private const float apexCooldown = 30f;
+    private float apexTimer = 0f;
 
     public void RegisterHUD()
     {
@@ -103,7 +104,13 @@ public class StackFrenzyPassive : MonoBehaviour
         currentStackExpireTimer = stackExpireTime;
 
         if (CurrentStacks >= maxStacks && prevStacks < maxStacks)
+        {
             OnMaxStacksReached();
+        }
+        else if (CurrentStacks >= maxStacks && apexCooldownTimer <= 0f && !IsApexActive)
+        {
+            OnMaxStacksReached();
+        }
     }
 
     public void SetStacks(int value)
@@ -137,27 +144,32 @@ public class StackFrenzyPassive : MonoBehaviour
 
         frenzyEntry.outerBorderType = (CurrentStacks >= maxStacks) ? StatusBorderType.Gold : StatusBorderType.Default;
 
-        frenzyEntry.isInnerBorderVisible = apexPredator;
-
         if (IsApexActive)
         {
-            frenzyEntry.innerBorderFill = 1f;
+            frenzyEntry.showInnerBorder = true;
+            frenzyEntry.innerFill = apexTimer / apexDuration;
             frenzyEntry.icon = iconApex;
+            frenzyEntry.innerFillClockwise = false;
         }
         else if (apexCooldownTimer > 0)
         {
-            frenzyEntry.innerBorderFill = 1f - (apexCooldownTimer / apexCooldown);
+            frenzyEntry.showInnerBorder = true;
+            frenzyEntry.innerFill = 1f - (apexCooldownTimer / apexCooldown);
             frenzyEntry.icon = iconStack;
+            frenzyEntry.innerFillClockwise = true;
         }
         else
         {
-            frenzyEntry.innerBorderFill = apexPredator ? 1f : 0f;
+            frenzyEntry.showInnerBorder = apexPredator;
+            frenzyEntry.innerFill = 1f;
             frenzyEntry.icon = iconStack;
         }
 
-        frenzyEntry.stackCount = CurrentStacks;
+        frenzyEntry.count = CurrentStacks;
+        frenzyEntry.isActive = CurrentStacks > 0;
 
-        frenzyEntry.stackExpireFill = (CurrentStacks > 0) ? (currentStackExpireTimer / stackExpireTime) : 0;
+        frenzyEntry.sweepFill = (CurrentStacks > 0) ? 1f - (currentStackExpireTimer / stackExpireTime) : 0;
+        frenzyEntry.sweepClockwise = true;
 
         PlayerStatusHUD.Instance.Refresh("frenzy");
     }
@@ -207,13 +219,18 @@ public class StackFrenzyPassive : MonoBehaviour
     private IEnumerator ApexState()
     {
         IsApexActive = true;
+        apexTimer = apexDuration;
         apexCritModifier.critChance = 1f;
         apexAttackSpeedModifier.attackSpeed = 0.35f;
 
         stats.AddFlatModifier(apexCritModifier);
         stats.AddMultiplierModifier(apexAttackSpeedModifier);
 
-        yield return new WaitForSeconds(apexDuration);
+        while (apexTimer > 0f)
+        {
+            apexTimer -= Time.deltaTime;
+            yield return null;
+        }
 
         stats.RemoveFlatModifier(apexCritModifier);
         stats.RemoveMultiplierModifier(apexAttackSpeedModifier);
@@ -244,5 +261,6 @@ public class StackFrenzyPassive : MonoBehaviour
         IsApexActive = false;
         apexCooldownTimer = 0f;
         currentStackExpireTimer = 0f;
+        apexTimer = 0f;
     }
 }

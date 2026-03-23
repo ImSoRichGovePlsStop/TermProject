@@ -17,17 +17,29 @@ public class StatusIconUI : MonoBehaviour
 
     public void UpdateUI(StatusEntry entry)
     {
-        outerBorder.color = entry.outerBorderType == StatusBorderType.Gold
-            ? new Color(1f, 0.82f, 0.2f) : Color.white;
+        if (entry.outerBorderType == StatusBorderType.Gold)
+        {
+            outerBorder.color = new Color(1f, 0.75f, 0f);
+        }
+        else if (entry.outerBorderType == StatusBorderType.Red)
+        {
+            outerBorder.color = Color.red;
+        }
+        else
+        {
+            outerBorder.color = new Color(0.25f, 0.25f, 0.25f, 1f);
+        }
 
-        innerBorderFill.gameObject.SetActive(entry.isInnerBorderVisible);
-        innerBorderFill.fillAmount = entry.innerBorderFill;
+        innerBorderFill.gameObject.SetActive(entry.showInnerBorder);
+        innerBorderFill.fillAmount = entry.innerFill;
+        innerBorderFill.fillClockwise = entry.innerFillClockwise;
 
         iconImage.sprite = entry.icon;
-        iconImage.canvasRenderer.SetAlpha(entry.stackCount > 0 || entry.innerBorderFill > 0 ? 1f : 0.4f);
+        iconImage.canvasRenderer.SetAlpha(entry.isActive ? 1f : 0.4f);
 
-        stackDarkSweep.fillAmount = entry.stackExpireFill;
+        stackDarkSweep.fillAmount = entry.sweepFill;
+        stackDarkSweep.fillClockwise = entry.sweepClockwise;
 
-        stackText.text = entry.stackCount > 0 ? entry.stackCount.ToString() : "";
+        stackText.text = entry.count > 0 ? entry.count.ToString() : "";
     }
 }

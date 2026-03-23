@@ -7,13 +7,15 @@ public class StatusEntry
     public string id;
     public Sprite icon;
     public bool isActive;
-    public int stackCount;
+    public int count;
 
-    public float innerBorderFill;
-    public bool isInnerBorderVisible;
+    public float innerFill;
+    public bool showInnerBorder;
     public StatusBorderType outerBorderType;
 
-    public float stackExpireFill;
+    public float sweepFill;
+    public bool sweepClockwise;
+    public bool innerFillClockwise;
 
     public StatusEntry(string id, Sprite icon)
     {

@@ -28,8 +28,15 @@ public class FrenzyPassiveHandler : PassiveHandlerBase
 
         bool wasEnabled = stackFrenzy.enabled;
         bool nowEnabled = IsUnlocked(1, 0);
+
         if (wasEnabled && !nowEnabled)
+        {
             stackFrenzy.ForceClean();
+            PlayerStatusHUD.Instance.Unregister("frenzy");
+        }
+
+        if (!wasEnabled && nowEnabled)
+            stackFrenzy.RegisterHUD();
 
         stackFrenzy.enabled = nowEnabled;
         stackFrenzy.maxStacks = IsUnlocked(2, 0) ? 15 : 10;
