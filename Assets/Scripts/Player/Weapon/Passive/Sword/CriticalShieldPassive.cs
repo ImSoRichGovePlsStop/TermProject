@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class CriticalShieldPassive : MonoBehaviour
 {
+    [Header("UI Icons")]
+    public Sprite iconShield;
+    private StatusEntry aegisEntry;
+
     public bool keenEdge = false;
     public bool persistence = false;
     public bool fortifiedStrike = false;
@@ -18,22 +22,14 @@ public class CriticalShieldPassive : MonoBehaviour
     private const float FortifyDuration = 5f;
     private const float ShieldCooldown = 3f;
 
-    // L2
+    // L2 - L6 Constants
     private const float KeenEdgeCritDmgBonus = 0.25f;
-
-    // L3B
     private const float FortifiedExtraDuration = 1f;
     private const float FortifiedExtraValue = 8f;
     private const int FortifiedMaxTimes = 3;
-
-    // L5A
     private const float ShatterBurstRadius = 3f;
     private const float ShatterBurstDamagePercent = 0.5f;
-
-    // L5B
     private const float AbsorbHealPercent = 0.10f;
-
-    // L6 Temper
     private const float TemperedKillShieldPercent = 0.10f;
     private const int MaxMilestones = 5;
     private const int TemperStacksPerBreak = 1;
@@ -51,19 +47,62 @@ public class CriticalShieldPassive : MonoBehaviour
     private bool onCooldown = false;
     private PlayerStats.ShieldInstance aegisShieldInstance = null;
     private int fortifiedTimesThisInstance = 0;
+    private float currentCooldownTimer = 0f;
 
-    // L2
+    // Modifiers
     private StatModifier keenEdgeModifier = new StatModifier();
     private bool keenEdgeActive = false;
-
-    // L3A
     private int consecutiveNonCritSwings = 0;
-
-    // L6
     private int temperStacks = 0;
     private StatModifier temperPerStackModifier = new StatModifier();
     private StatModifier temperMilestoneFlatModifier = new StatModifier();
     private StatModifier temperMilestoneMultModifier = new StatModifier();
+
+    private void Update()
+    {
+        UpdateHUD();
+    }
+
+    public void RegisterHUD()
+    {
+        aegisEntry = new StatusEntry("aegis", iconShield);
+        PlayerStatusHUD.Instance.Register(aegisEntry);
+    }
+
+    private void UpdateHUD()
+    {
+        if (aegisEntry == null) return;
+
+        aegisEntry.outerBorderType = (aegisShieldInstance != null)
+            ? StatusBorderType.Gold : StatusBorderType.Default;
+
+        if (aegisShieldInstance != null)
+        {
+            float totalDuration = GetShieldDuration();
+            float remaining = aegisShieldInstance.expiresAt - Time.time;
+            aegisEntry.sweepFill = Mathf.Clamp01(1f - (remaining / totalDuration));
+
+            aegisEntry.count = Mathf.CeilToInt(aegisShieldInstance.value);
+            aegisEntry.isActive = true;
+        }
+        else if (onCooldown)
+        {
+            aegisEntry.sweepFill = Mathf.Clamp01(currentCooldownTimer / ShieldCooldown);
+
+            aegisEntry.count = 0;
+            aegisEntry.isActive = false;
+            aegisEntry.sweepClockwise = false;
+        }
+        else
+        {
+            aegisEntry.sweepFill = 0f;
+            aegisEntry.count = 0;
+            aegisEntry.isActive = false;
+            aegisEntry.sweepClockwise = true;
+        }
+
+        PlayerStatusHUD.Instance.Refresh("aegis");
+    }
 
     public void Init(PlayerStats playerStats, PlayerCombatContext combatContext)
     {
@@ -114,15 +153,13 @@ public class CriticalShieldPassive : MonoBehaviour
         if (!enabled) return;
         if (onCooldown) return;
 
-        // L3B
         if (fortifiedStrike && aegisShieldInstance != null)
         {
             TryFortifiedStrike();
             return;
         }
 
-        if (aegisShieldInstance != null)
-            return;
+        if (aegisShieldInstance != null) return;
 
         SpawnShield();
     }
@@ -134,24 +171,19 @@ public class CriticalShieldPassive : MonoBehaviour
 
         aegisShieldInstance = stats.GainShield(value, duration);
         fortifiedTimesThisInstance = 0;
-
         RefreshKeenEdge();
     }
 
     private void TryFortifiedStrike()
     {
         if (fortifiedTimesThisInstance >= FortifiedMaxTimes) return;
-
         stats.ExtendShield(aegisShieldInstance, FortifiedExtraDuration, FortifiedExtraValue);
         fortifiedTimesThisInstance++;
     }
 
     private void OnSwing()
     {
-        if (!enabled) return;
-        if (!persistence) return;
-        if (context.LastHitEnemies.Count == 0) return;
-
+        if (!enabled || !persistence || context.LastHitEnemies.Count == 0) return;
         if (stats.LastHitWasCrit || onCooldown || aegisShieldInstance != null)
         {
             consecutiveNonCritSwings = 0;
@@ -159,7 +191,6 @@ public class CriticalShieldPassive : MonoBehaviour
         }
 
         consecutiveNonCritSwings++;
-
         if (consecutiveNonCritSwings >= 6)
         {
             consecutiveNonCritSwings = 0;
@@ -170,35 +201,23 @@ public class CriticalShieldPassive : MonoBehaviour
     private void OnShieldLost(PlayerStats.ShieldInstance instance, float remainingValue, bool wasTimedOut)
     {
         if (instance != aegisShieldInstance) return;
-
         aegisShieldInstance = null;
 
-        // L5A
         if (shatterBurst)
         {
             float maxShieldValue = GetShieldValue() + fortifiedTimesThisInstance * FortifiedExtraValue;
-            float aoeValue = wasTimedOut
-                ? remainingValue * ShatterBurstDamagePercent
-                : maxShieldValue * ShatterBurstDamagePercent;
+            float aoeValue = wasTimedOut ? remainingValue * ShatterBurstDamagePercent : maxShieldValue * ShatterBurstDamagePercent;
             TriggerShatterBurst(aoeValue);
         }
 
         fortifiedTimesThisInstance = 0;
         RefreshKeenEdge();
 
-        // L5B
-        if (absorb && wasTimedOut)
-        {
-            float healAmount = remainingValue * AbsorbHealPercent;
-            stats.Heal(healAmount);
-        }
+        if (absorb && wasTimedOut) stats.Heal(remainingValue * AbsorbHealPercent);
 
-        // L6
         if (temperedSoul)
         {
-            int gained = wasTimedOut
-                ? Mathf.FloorToInt(remainingValue / TemperShieldPerForty)
-                : TemperStacksPerBreak;
+            int gained = wasTimedOut ? Mathf.FloorToInt(remainingValue / TemperShieldPerForty) : TemperStacksPerBreak;
             AddTemperStacks(gained);
         }
 
@@ -208,7 +227,13 @@ public class CriticalShieldPassive : MonoBehaviour
     private IEnumerator ShieldCooldownCoroutine()
     {
         onCooldown = true;
-        yield return new WaitForSeconds(ShieldCooldown);
+        currentCooldownTimer = ShieldCooldown;
+        while (currentCooldownTimer > 0)
+        {
+            currentCooldownTimer -= Time.deltaTime;
+            yield return null;
+        }
+        currentCooldownTimer = 0f;
         onCooldown = false;
     }
 
@@ -220,14 +245,12 @@ public class CriticalShieldPassive : MonoBehaviour
             if (enemy == null || enemy.IsDead) continue;
             enemy.TakeDamage(aoeValue);
         }
-
         context.NotifySecondaryAttackForced(transform.position);
     }
 
     private void RefreshKeenEdge()
     {
         bool shouldBeActive = keenEdge && aegisShieldInstance != null;
-
         if (shouldBeActive && !keenEdgeActive)
         {
             keenEdgeModifier.critDamage = KeenEdgeCritDmgBonus;
@@ -244,40 +267,27 @@ public class CriticalShieldPassive : MonoBehaviour
 
     private void OnEnemyKilled(EnemyHealth enemy)
     {
-        if (!enabled) return;
-        if (!temperedSoul) return;
-        if (aegisShieldInstance == null) return;
-
-        float bonus = enemy.MaxHP * TemperedKillShieldPercent;
-        stats.ExtendShield(aegisShieldInstance, 0f, bonus);
+        if (!enabled || !temperedSoul || aegisShieldInstance == null) return;
+        stats.ExtendShield(aegisShieldInstance, 0f, enemy.MaxHP * TemperedKillShieldPercent);
     }
 
     private void AddTemperStacks(int amount)
     {
         if (amount <= 0) return;
-
         int prevMilestones = Mathf.Min(temperStacks / TemperMilestonePer, MaxMilestones);
-        int prevStacks = temperStacks;
-
         temperStacks += amount;
-
         int newMilestones = Mathf.Min(temperStacks / TemperMilestonePer, MaxMilestones);
 
         stats.RemoveFlatModifier(temperPerStackModifier);
-
         temperPerStackModifier.critDamage = temperStacks * TemperCritDmgPer;
-
         stats.AddFlatModifier(temperPerStackModifier);
 
-        int milestoneDelta = newMilestones - prevMilestones;
-        if (milestoneDelta > 0)
+        if (newMilestones > prevMilestones)
         {
             stats.RemoveFlatModifier(temperMilestoneFlatModifier);
             stats.RemoveMultiplierModifier(temperMilestoneMultModifier);
-
             temperMilestoneFlatModifier.critChance = newMilestones * TemperCritChanceMilestone;
             temperMilestoneMultModifier.health = newMilestones * TemperMaxHpMilestone;
-
             stats.AddFlatModifier(temperMilestoneFlatModifier);
             stats.AddMultiplierModifier(temperMilestoneMultModifier);
         }
@@ -295,20 +305,13 @@ public class CriticalShieldPassive : MonoBehaviour
     private void ClearAllModifiers()
     {
         if (stats == null) return;
-
         if (keenEdgeActive)
         {
             stats.RemoveFlatModifier(keenEdgeModifier);
-            keenEdgeModifier.critDamage = 0f;
             keenEdgeActive = false;
         }
-
         stats.RemoveFlatModifier(temperPerStackModifier);
         stats.RemoveFlatModifier(temperMilestoneFlatModifier);
         stats.RemoveMultiplierModifier(temperMilestoneMultModifier);
-
-        temperPerStackModifier = new StatModifier();
-        temperMilestoneFlatModifier = new StatModifier();
-        temperMilestoneMultModifier = new StatModifier();
     }
 }

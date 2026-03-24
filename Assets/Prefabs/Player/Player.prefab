@@ -338,7 +338,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5519dbc46ea6ee34294aefc15d05530a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCombatContext
-  aroundRadius: 5
 --- !u!114 &4982785343660528164
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -358,7 +357,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6821820435605495984}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 6527ba2ea418b894b8460f0be6300429, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -370,8 +369,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.15, y: 0.31, z: 0.1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 0.10007988, y: 0.31, z: 0.08132276}
+  m_Center: {x: 0.0008589253, y: 0, z: -0.0023121536}
 --- !u!1 &7199941304210273291
 GameObject:
   m_ObjectHideFlags: 0

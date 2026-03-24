@@ -84,7 +84,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.75, y: 1.4, z: 1}
+  m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &5080540314668863887
 MonoBehaviour:
@@ -123,8 +123,8 @@ MonoBehaviour:
   yellowDuration: 2
   redIndicatorPrefab: {fileID: 6132761721614295693, guid: 41172660592daa84293e80aa8d2207fe, type: 3}
   yellowIndicatorPrefab: {fileID: 6132761721614295693, guid: 6039bbc9af166ae46b9c8e97faf64eb3, type: 3}
-  redOffset: {x: 0, y: -0.3, z: 0}
-  yellowOffset: {x: 0, y: -0.2, z: 0}
+  redOffset: {x: 0, y: 0, z: 0}
+  yellowOffset: {x: 0, y: 0, z: 0}
   upFacingOffset: {x: 0, y: -0.3, z: 0}
   downFacingOffset: {x: 0, y: -0.3, z: 0}
   fixedYawMin: -45
@@ -149,7 +149,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MedusaBackAttack
   facing: {fileID: 5080540314668863887}
   targetTag: Player
-  attackWhenFacingUp: 0
   randomizeAttackTypeEachCycle: 1
   currentAttackType: 0
   idleDuration: 0.25
@@ -157,11 +156,11 @@ MonoBehaviour:
   lockDuration: 0.1
   fireDuration: 0.5
   damage: 12
-  circleRadius: 1.25
+  circleRadius: 1
   circleWarningPrefab: {fileID: 1095891883702697950, guid: e2b0bcbfb6dac2b40a6e6d95d8a1fc2c, type: 3}
   circleHitPrefab: {fileID: 344682467932932298, guid: dcea38ea4bbc8fb4aa9be0efc4b07492, type: 3}
   circleOffset: {x: 0, y: 0.02, z: 0}
-  beamRadius: 0.45
+  beamRadius: 0.5
   beamLength: 8
   beamWarningPrefab: {fileID: 6132761721614295693, guid: 41172660592daa84293e80aa8d2207fe, type: 3}
   beamHitPrefab: {fileID: 6132761721614295693, guid: 6039bbc9af166ae46b9c8e97faf64eb3, type: 3}
@@ -277,7 +276,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -1615531432, guid: ff3ddb30d3ea697438043ca3bb599590, type: 3}
+  m_Sprite: {fileID: -45183633, guid: 800b681577bc9bd4887d9c545de324f1, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
