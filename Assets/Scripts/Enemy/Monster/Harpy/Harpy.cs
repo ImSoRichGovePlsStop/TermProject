@@ -24,20 +24,27 @@ public class Harpy : MonoBehaviour
     Vector3 diveTarget;
 
     [SerializeField] private Animator animator;
-    [SerializeField] float flyPhaseHPPercent = 0.5f;
     [SerializeField] float diveSpeed = 7f;
-    [SerializeField] float hoverHeight = 1.3f;
     [SerializeField] float hoverSpeed = 1f;
     [SerializeField] float hoverAmplitude = 0.3f;
     [SerializeField] float groundOffset = 0.2f;
     [SerializeField] Transform player;
     [SerializeField] SpriteRenderer spriteRenderer;
-    [SerializeField] float diveTriggerDistance = 2.5f;
+    [SerializeField] float diveTriggerDistance = 3.5f;
     [SerializeField] float diveCooldown = 2f;
     
     float diveStartTime;
     float lastDiveTime = -999f;
     private float baseY;
+
+    [Header("Variant Settings")]
+    [SerializeField] float flyPhaseHPPercent = 0.5f;
+    [SerializeField] float sizeMultiplier = 1f;
+    [SerializeField] float damageMultiplier = 1f;
+    [SerializeField] float attackRangeMultiplier = 1f;
+    [SerializeField] float diveSpeedMultiplier = 1f;
+    [SerializeField] float hoverHeight = 1.3f;
+
 
     void Awake()
     {
@@ -53,6 +60,15 @@ public class Harpy : MonoBehaviour
     {
         baseY = transform.position.y;
         currentState = HarpyState.Ground;
+        
+        transform.localScale *= sizeMultiplier;
+        diveSpeed *= diveSpeedMultiplier;
+        attack.SetAttackRangeMultiplier(attackRangeMultiplier);
+
+        if (attack != null)
+        {
+            attack.SetDamageMultiplier(damageMultiplier);
+        }
     }
 
     void Update()
@@ -87,7 +103,6 @@ public class Harpy : MonoBehaviour
                 dir.y = 0f;
                 if (dir.magnitude < diveTriggerDistance && Time.time > lastDiveTime + diveCooldown)
                 {
-                    Debug.Log("dir.magnitude < 2f!!!");
                     StartDive();
                 }
                 break;
@@ -111,7 +126,7 @@ public class Harpy : MonoBehaviour
 
         float hoverOffset = Mathf.Sin(Time.time * 3f) * hoverAmplitude;
 
-        Vector3 offset = (transform.position - player.position).normalized * 2f; //1.5f
+        Vector3 offset = (transform.position - player.position).normalized * 1.2f; //2f
         Vector3 targetPos = player.position + offset;
         targetPos.y = baseY + hoverHeight + hoverOffset;
 

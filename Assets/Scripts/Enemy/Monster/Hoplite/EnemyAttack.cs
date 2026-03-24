@@ -125,4 +125,14 @@ public class EnemyAttack : MonoBehaviour
         Vector3 center = attackPoint != null ? attackPoint.position : transform.position;
         Gizmos.DrawWireSphere(center, attackRange);
     }
+
+    public void SetDamageMultiplier(float multiplier)
+    {
+        attackDamage *= multiplier;
+    }
+
+    public void SetAttackRangeMultiplier(float multiplier)
+    {
+        attackRange *= multiplier;
+    }
 }
