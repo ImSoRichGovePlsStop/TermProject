@@ -95,12 +95,7 @@ public class UIManager : MonoBehaviour
             }
 
             if (Keyboard.current[Key.F].wasPressedThisFrame && IsInventoryOpen)
-            {
-                Debug.Log("F pressed → calling TakeAllFromEnv");
-
-                if (inventoryUI == null)
-                    Debug.LogError("inventoryUI is NULL!");
-                else
+            { 
                     inventoryUI.TakeAllFromEnv();
             }
 

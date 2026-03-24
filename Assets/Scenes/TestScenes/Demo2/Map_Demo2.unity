@@ -294,12 +294,13 @@ MonoBehaviour:
   boundaryMaterial: {fileID: 2100000, guid: 25af8026482404d4eb3862f8451006e4, type: 2}
   gridWidth: 7
   gridHeight: 7
-  roomSpacing: 20
+  roomSpacing: 24
   triggerHeight: 3
-  minBattleRooms: 3
+  minBattleRooms: 5
   maxBattleRooms: 7
-  eventRoomChance: 0.35
+  eventRoomChance: 0.723
   branchChance: 0.4
+  minBossDistance: 3
   corridorWidth: 2
 --- !u!4 &393293302
 Transform:

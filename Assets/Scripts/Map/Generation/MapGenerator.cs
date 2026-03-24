@@ -47,6 +47,7 @@ public class MapGenerator : MonoBehaviour
     [Range(3, 10)] public int maxBattleRooms = 7;
     [Range(0f, 1f)] public float eventRoomChance = 0.35f;
     [Range(0f, 1f)] public float branchChance = 0.4f;
+    [Range(1, 5)] public int minBossDistance = 3;
 
     [Header("Corridors")]
     public float corridorWidth = 2f;
@@ -58,6 +59,8 @@ public class MapGenerator : MonoBehaviour
     };
 
     private RoomNode[,] _grid;
+    private Vector2Int _spawnCoord;
+    private HashSet<(Vector2Int, Vector2Int)> _connections = new();
 
     void Start() => GenerateMap();
 
@@ -65,17 +68,18 @@ public class MapGenerator : MonoBehaviour
 
     void GenerateMap()
     {
+        _connections.Clear();
         InitGrid();
 
-        var spawnCoord = new Vector2Int(gridWidth / 2, gridHeight / 2);
-        SetNode(spawnCoord, RoomType.Spawn);
+        _spawnCoord = new Vector2Int(gridWidth / 2, gridHeight / 2);
+        SetNode(_spawnCoord, RoomType.Spawn);
 
-        var mainPath = BuildMainPath(spawnCoord, Random.Range(minBattleRooms, maxBattleRooms + 1));
-        var bossNode = PlaceBossAdjacent(mainPath[mainPath.Count - 1]);
+        var mainPath = BuildMainPath(_spawnCoord, Random.Range(minBattleRooms, maxBattleRooms + 1));
+        if (mainPath.Count == 0) { Debug.LogWarning("[MapGen] Main path empty!"); return; }
 
+        PlaceBossAdjacent(mainPath[mainPath.Count - 1]);
         AddBranches(mainPath);
         AssignEventRooms(mainPath);
-        BuildNeighborLinks();
 
         SpawnAllRooms();
         SpawnAllCorridors();
@@ -109,21 +113,41 @@ public class MapGenerator : MonoBehaviour
             if (next == current) break;
             SetNode(next, RoomType.Battle);
             path.Add(_grid[next.x, next.y]);
+            AddConnection(current, next);
             current = next;
         }
         return path;
     }
 
-    RoomNode PlaceBossAdjacent(RoomNode last)
+    void PlaceBossAdjacent(RoomNode last)
     {
-        var coord = PickFreeNeighbor(last.GridCoord);
-        if (coord == last.GridCoord)
+        // collect free neighbors that are far enough from spawn
+        var candidates = new List<Vector2Int>();
+        foreach (var d in Dirs)
         {
-            last.Type = RoomType.Boss;
-            return last;
+            int nx = last.GridCoord.x + d.x;
+            int ny = last.GridCoord.y + d.y;
+            if (!InBounds(nx, ny)) continue;
+            if (_grid[nx, ny].Type != RoomType.None) continue;
+            float dist = Vector2Int.Distance(new Vector2Int(nx, ny), _spawnCoord);
+            if (dist < minBossDistance) continue;
+            candidates.Add(new Vector2Int(nx, ny));
         }
+
+        Vector2Int coord;
+        if (candidates.Count > 0)
+        {
+            coord = candidates[Random.Range(0, candidates.Count)];
+        }
+        else
+        {
+            Debug.LogWarning("[MapGen] No valid boss position far enough from spawn — placing on last battle node.");
+            last.Type = RoomType.Boss;
+            return;
+        }
+
         SetNode(coord, RoomType.Boss);
-        return _grid[coord.x, coord.y];
+        AddConnection(last.GridCoord, coord);
     }
 
     void AddBranches(List<RoomNode> mainPath)
@@ -134,6 +158,7 @@ public class MapGenerator : MonoBehaviour
             var coord = PickFreeNeighbor(mainPath[i].GridCoord);
             if (coord == mainPath[i].GridCoord) continue;
             SetNode(coord, RoomType.Battle);
+            AddConnection(mainPath[i].GridCoord, coord);
         }
     }
 
@@ -151,24 +176,17 @@ public class MapGenerator : MonoBehaviour
             }
     }
 
-    // ── neighbor links ───────────────────────────────────────────────────────
+    // ── connections ──────────────────────────────────────────────────────────
 
-    void BuildNeighborLinks()
+    void AddConnection(Vector2Int a, Vector2Int b)
     {
-        for (int x = 0; x < gridWidth; x++)
-            for (int y = 0; y < gridHeight; y++)
-            {
-                if (_grid[x, y].Type == RoomType.None) continue;
-                foreach (var d in Dirs)
-                {
-                    int nx = x + d.x, ny = y + d.y;
-                    if (!InBounds(nx, ny) || _grid[nx, ny].Type == RoomType.None) continue;
-                    var a = _grid[x, y];
-                    var b = _grid[nx, ny];
-                    if (!a.Neighbors.Contains(b)) a.Neighbors.Add(b);
-                    if (!b.Neighbors.Contains(a)) b.Neighbors.Add(a);
-                }
-            }
+        var pair = a.x * 1000 + a.y < b.x * 1000 + b.y ? (a, b) : (b, a);
+        _connections.Add(pair);
+
+        var nodeA = _grid[a.x, a.y];
+        var nodeB = _grid[b.x, b.y];
+        if (!nodeA.Neighbors.Contains(nodeB)) nodeA.Neighbors.Add(nodeB);
+        if (!nodeB.Neighbors.Contains(nodeA)) nodeB.Neighbors.Add(nodeA);
     }
 
     // ── spawn rooms ──────────────────────────────────────────────────────────
@@ -235,8 +253,6 @@ public class MapGenerator : MonoBehaviour
         return obj;
     }
 
-    // Generic event room spawner — instantiates prefab, then calls addComponent
-    // to attach and init the correct room script
     GameObject SpawnEventRoom(RoomNode node, GameObject prefab,
                               System.Action<GameObject, Transform> addComponent)
     {
@@ -249,7 +265,9 @@ public class MapGenerator : MonoBehaviour
         var obj = Instantiate(prefab, node.WorldPosition, Quaternion.identity);
         obj.name = node.Type.ToString() + "Room";
         var preset = obj.GetComponent<RoomPreset>();
-        var spawnPt = preset != null ? preset.interactableSpawnPoint : obj.transform;
+        var spawnPt = preset != null && preset.interactableSpawnPoint != null
+            ? preset.interactableSpawnPoint
+            : obj.transform;
 
         addComponent(obj, spawnPt);
         return obj;
@@ -287,24 +305,8 @@ public class MapGenerator : MonoBehaviour
 
     void SpawnAllCorridors()
     {
-        var spawned = new HashSet<(int, int)>();
-
-        for (int x = 0; x < gridWidth; x++)
-            for (int y = 0; y < gridHeight; y++)
-            {
-                var node = _grid[x, y];
-                if (node.Type == RoomType.None) continue;
-
-                foreach (var neighbor in node.Neighbors)
-                {
-                    int k1 = node.GridCoord.x * 1000 + node.GridCoord.y;
-                    int k2 = neighbor.GridCoord.x * 1000 + neighbor.GridCoord.y;
-                    var pair = k1 < k2 ? (k1, k2) : (k2, k1);
-                    if (spawned.Contains(pair)) continue;
-                    spawned.Add(pair);
-                    SpawnCorridor(node, neighbor);
-                }
-            }
+        foreach (var (a, b) in _connections)
+            SpawnCorridor(_grid[a.x, a.y], _grid[b.x, b.y]);
     }
 
     void SpawnCorridor(RoomNode a, RoomNode b)
@@ -315,30 +317,34 @@ public class MapGenerator : MonoBehaviour
         Vector3 diff = posB - posA;
         bool isNS = Mathf.Abs(diff.z) > Mathf.Abs(diff.x);
 
-        // gap = distance between the two room edges
-        float roomHalfExtent = 5f; // half of default room size — update to match your preset
-        float gap = diff.magnitude - roomHalfExtent * 2f;
+        float halfA = GetRoomHalfExtent(a, isNS);
+        float halfB = GetRoomHalfExtent(b, isNS);
+        float gap = diff.magnitude - halfA - halfB;
         if (gap <= 0f) return;
 
         var corridor = new GameObject($"Corridor_{a.GridCoord}->{b.GridCoord}");
         corridor.transform.position = center;
 
-        // floor
         var floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
         floor.name = "Floor";
         floor.transform.SetParent(corridor.transform);
-        floor.transform.localPosition = new Vector3(0, 0, 0);
+        floor.transform.localPosition = Vector3.zero;
         floor.transform.localScale = isNS
             ? new Vector3(corridorWidth, 0f, gap)
             : new Vector3(gap, 0f, corridorWidth);
 
-        // walls
+        Destroy(floor.GetComponent<Collider>());
 
     }
 
+    float GetRoomHalfExtent(RoomNode node, bool isNS)
+    {
+        if (node.RoomObject == null) return 5f;
+        var preset = node.RoomObject.GetComponent<RoomPreset>();
+        if (preset == null) return 5f;
+        return isNS ? preset.roomSize.y / 2f : preset.roomSize.x / 2f;
+    }
 
-
-    // ── helpers ──────────────────────────────────────────────────────────────
 
     void SetNode(Vector2Int c, RoomType t) => _grid[c.x, c.y].Type = t;
 
