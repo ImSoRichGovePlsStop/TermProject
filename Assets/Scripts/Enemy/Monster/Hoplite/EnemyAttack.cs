@@ -110,6 +110,7 @@ public class EnemyAttack : MonoBehaviour
         isAttacking = false;
         lastAttackTime = Time.time;
         animator.SetBool("IsAttacking", false);
+        animator.ResetTrigger("Attack");
         Debug.Log("FinishAttack called");
         Debug.Log($"FinishAttack called on {gameObject.name} | id={GetInstanceID()}");
     }

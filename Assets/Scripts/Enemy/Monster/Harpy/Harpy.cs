@@ -94,6 +94,10 @@ public class Harpy : MonoBehaviour
         {
             case HarpyState.Ground:
                 // CheckWakeUp(distanceToPlayer);
+                if (hasEnteredAirPhase && CanDive())
+                {
+                    EnterAirPhase();
+                }
                 break;
 
             case HarpyState.Hover:
@@ -122,6 +126,16 @@ public class Harpy : MonoBehaviour
                 Recover();
                 break;
         }
+    }
+
+    void EnterGroundPhase()
+    {
+        currentState = HarpyState.Ground;
+
+        movement.SetCanMove(true);
+        controller.enabled = true;
+        rb.useGravity = true;
+        animator.SetBool("IsFlying", false);
     }
 
     void Hover()
@@ -225,7 +239,8 @@ public class Harpy : MonoBehaviour
         if (Mathf.Abs(transform.position.y - targetPos.y) < 0.1f)
         {
             FinishDive();
-            currentState = HarpyState.Hover;
+            // currentState = HarpyState.Hover;
+            EnterGroundPhase();
         }
     }
 
