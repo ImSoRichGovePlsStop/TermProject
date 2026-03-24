@@ -15,7 +15,7 @@ public class EnemyController : MonoBehaviour
     [Header("Detection")]
     [SerializeField] private float detectRange = 6f;
     [SerializeField] private float loseTargetRange = 8f;
-    [SerializeField] private float attackBuffer = 0.2f;
+    [SerializeField] private float attackBuffer = 0.5f; //0.2f
 
     [Header("References")]
     private Transform player;
@@ -38,7 +38,7 @@ public class EnemyController : MonoBehaviour
             movement = GetComponent<EnemyMovement>();
 
         if (enemyAttack == null)
-            enemyAttack = GetComponent<EnemyAttack>();
+            enemyAttack = GetComponentInChildren<EnemyAttack>();
 
         if (enemyHealth == null)
             enemyHealth = GetComponent<EnemyHealth>();
@@ -66,6 +66,7 @@ public class EnemyController : MonoBehaviour
             return;
         }
 
+        //ระยะจากผู้เล่นถึง Enemy
         float distance = Vector3.Distance(
             GetFlatPosition(transform.position),
             GetFlatPosition(player.position)
@@ -78,12 +79,14 @@ public class EnemyController : MonoBehaviour
         {
             ChangeState(EnemyState.Idle);
         }
-        else if (currentState == EnemyState.Attack)
+        else if (currentState == EnemyState.Attack) //กำลังโจมตีอยู่แล้ว
         {
+            //ถ้ายังไม่ได้ออกจากระยะ ก็ Attack ต่อ ไม่งั้นก็ Chase
             ChangeState(distance <= attackExitRange ? EnemyState.Attack : EnemyState.Chase);
         }
         else
         {
+            //ถ้าอยู่ในระยะตี ตีเลย ไม่งั้นก็ chase
             ChangeState(distance <= attackRange ? EnemyState.Attack : EnemyState.Chase);
         }
 
@@ -100,7 +103,10 @@ public class EnemyController : MonoBehaviour
                 break;
 
             case EnemyState.Attack:
-                movement.StopMoving();
+                if (attackLoopCoroutine == null)
+                {
+                    attackLoopCoroutine = StartCoroutine(AttackLoop());
+                }
                 movement.FaceTarget(player.position);
                 break;
         }
@@ -111,7 +117,13 @@ public class EnemyController : MonoBehaviour
     private void ChangeState(EnemyState newState)
     {
         if (currentState == newState)
+        {
+            if (newState == EnemyState.Attack && attackLoopCoroutine == null)
+            {
+                attackLoopCoroutine = StartCoroutine(AttackLoop());
+            }
             return;
+        }
 
         ExitState(currentState);
         currentState = newState;
@@ -123,13 +135,16 @@ public class EnemyController : MonoBehaviour
         switch (state)
         {
             case EnemyState.Attack:
-                if (attackLoopCoroutine == null)
-                    attackLoopCoroutine = StartCoroutine(AttackLoop());
+                // if (attackLoopCoroutine == null)
+                //     attackLoopCoroutine = StartCoroutine(AttackLoop());
+                // if (attackLoopCoroutine != null)
+                //     StopCoroutine(attackLoopCoroutine);
+                // attackLoopCoroutine = StartCoroutine(AttackLoop());
                 break;
 
             case EnemyState.Hurt:
             case EnemyState.Dead:
-                StopAttackLoop();
+                // StopAttackLoop();
                 break;
         }
     }
@@ -142,21 +157,46 @@ public class EnemyController : MonoBehaviour
 
     private IEnumerator AttackLoop()
     {
+        // Debug.Log("AttackLoop running...");
+        // while (currentState == EnemyState.Attack && !isDead)
+        // {
+        //     if (enemyHealth != null && (enemyHealth.IsDead || enemyHealth.IsHurt))
+        //         yield break;
+
+        //     if (enemyAttack != null && enemyAttack.CanAttack())
+        //     {
+        //         Debug.Log("Controller starts attack loop hit");
+        //         enemyAttack.StartAttack();
+        //     }
+
+        //     // float waitTime = enemyAttack != null ? enemyAttack.AttackCooldown : 1f;
+        //     // yield return new WaitForSeconds(waitTime);
+        //     yield return new WaitForSeconds(0.05f);
+        // }
+
+        // attackLoopCoroutine = null;
+        
         while (currentState == EnemyState.Attack && !isDead)
         {
-            if (enemyHealth != null && (enemyHealth.IsDead || enemyHealth.IsHurt))
-                yield break;
-
             if (enemyAttack != null && enemyAttack.CanAttack())
             {
-                Debug.Log("Controller starts attack loop hit");
                 enemyAttack.StartAttack();
+
+                float timer = 0f;
+                float timeout = 2f;
+
+                while (enemyAttack.IsAttacking && timer < timeout)
+                {
+                    timer += Time.deltaTime;
+                    yield return null;
+                }
+                yield return new WaitForSeconds(enemyAttack.AttackCooldown);
             }
-
-            float waitTime = enemyAttack != null ? enemyAttack.AttackCooldown : 1f;
-            yield return new WaitForSeconds(waitTime);
+            else
+            {
+                yield return null;
+            }
         }
-
         attackLoopCoroutine = null;
     }
 
