@@ -9,12 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 179f47a07e6f20248ab1757f0d8ec260, type: 3}
+  m_Script: {fileID: 11500000, guid: 7719a24e616febf49a174908eb2ea1ba, type: 3}
   m_Name: L1_TheGamblersTable
-  m_EditorClassIdentifier: Assembly-CSharp::GenericTreeNode
+  m_EditorClassIdentifier: Assembly-CSharp::GamblerNode
   nodeName: The Gambler's Table
   description: "Unlock the card phase. Before each shop, draw 3 positive and 3 negative
     cards \u2014 pick one face-down."
   cost: 1
   parents: []
   requireAllParents: 0
+  layer: 1
+  branch: 0

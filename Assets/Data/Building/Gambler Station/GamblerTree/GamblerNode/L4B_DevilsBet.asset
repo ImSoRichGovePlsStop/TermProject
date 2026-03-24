@@ -9,9 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 179f47a07e6f20248ab1757f0d8ec260, type: 3}
+  m_Script: {fileID: 11500000, guid: 7719a24e616febf49a174908eb2ea1ba, type: 3}
   m_Name: L4B_DevilsBet
-  m_EditorClassIdentifier: Assembly-CSharp::GenericTreeNode
+  m_EditorClassIdentifier: Assembly-CSharp::GamblerNode
   nodeName: Devil's Bet
   description: 'Before drawing, you may wager Current HP (equal to 40% or 80% Max
     HP) for 2x or 3x rewards.
@@ -22,5 +22,7 @@ MonoBehaviour:
     Lose HP and card effect.'
   cost: 2
   parents:
-  - {fileID: 11400000, guid: 92d0ae8337494fa489c11cf3998ead60, type: 2}
+  - {fileID: 11400000, guid: ce0b17a874d8e274daab09a9a3bb44ec, type: 2}
   requireAllParents: 0
+  layer: 4
+  branch: 1

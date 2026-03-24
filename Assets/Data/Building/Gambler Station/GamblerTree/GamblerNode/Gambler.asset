@@ -15,13 +15,13 @@ MonoBehaviour:
   treeName: Gambler
   treeColor: {r: 1, g: 0.78039217, b: 0, a: 1}
   nodes:
-  - {fileID: 11400000, guid: f943d7a561849754c912af66d34f7fff, type: 2}
-  - {fileID: 11400000, guid: 8963dfe1b8676c746af26ab775c17824, type: 2}
-  - {fileID: 11400000, guid: 40cad5ef54a87224191827037db9edf0, type: 2}
-  - {fileID: 11400000, guid: 92d0ae8337494fa489c11cf3998ead60, type: 2}
-  - {fileID: 11400000, guid: f6ca5d0fc6ebce843a50f34a82c2685f, type: 2}
-  - {fileID: 11400000, guid: 2dbfad88c5b1ddb4f8f801c94eac3487, type: 2}
-  - {fileID: 11400000, guid: 7046037640c39bc4d8d10ba3b8d84419, type: 2}
-  - {fileID: 11400000, guid: 6aa470e898d9df34095f907bb66e9549, type: 2}
-  - {fileID: 11400000, guid: 91fe68158c11fd341bb1c3cd33726332, type: 2}
-  handlerPrefab: {fileID: 0}
+  - {fileID: 11400000, guid: 4a511026ef41e3c43896eae642880fad, type: 2}
+  - {fileID: 11400000, guid: f731e99a454646d4095feed712c7989d, type: 2}
+  - {fileID: 11400000, guid: ad724c8f9ef244e49a42ac8ed84d57b8, type: 2}
+  - {fileID: 11400000, guid: ce0b17a874d8e274daab09a9a3bb44ec, type: 2}
+  - {fileID: 11400000, guid: 92e26442202c07f438f57624aed5f273, type: 2}
+  - {fileID: 11400000, guid: d367303c92dd87248849ed6aab8eeb18, type: 2}
+  - {fileID: 11400000, guid: 39499f4b88079f1428bf8c123650e884, type: 2}
+  - {fileID: 11400000, guid: e1fb7024597d44342bd3011d58ea482b, type: 2}
+  - {fileID: 11400000, guid: a1caa7a64270a434e87114e0efe311e0, type: 2}
+  handlerPrefab: {fileID: 5068816822497074784, guid: 66daea9a00ff90e48987825a0bcb5b98, type: 3}

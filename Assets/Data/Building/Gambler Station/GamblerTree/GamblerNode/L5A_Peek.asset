@@ -9,13 +9,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 179f47a07e6f20248ab1757f0d8ec260, type: 3}
+  m_Script: {fileID: 11500000, guid: 7719a24e616febf49a174908eb2ea1ba, type: 3}
   m_Name: L5A_Peek
-  m_EditorClassIdentifier: Assembly-CSharp::GenericTreeNode
+  m_EditorClassIdentifier: Assembly-CSharp::GamblerNode
   nodeName: Peek
   description: Once per shop, flip any card to reveal it before you choose. Knowledge
     has its price.
   cost: 3
   parents:
-  - {fileID: 11400000, guid: f6ca5d0fc6ebce843a50f34a82c2685f, type: 2}
+  - {fileID: 11400000, guid: 92e26442202c07f438f57624aed5f273, type: 2}
   requireAllParents: 0
+  layer: 5
+  branch: 0
