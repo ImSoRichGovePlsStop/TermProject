@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 
 public class EnemyController : MonoBehaviour
@@ -26,7 +25,6 @@ public class EnemyController : MonoBehaviour
 
     private EnemyState currentState = EnemyState.Idle;
     private bool isDead = false;
-    private Coroutine attackLoopCoroutine;
 
     private void Awake()
     {
@@ -55,6 +53,9 @@ public class EnemyController : MonoBehaviour
         if (enemyHealth != null && enemyHealth.IsDead)
         {
             ChangeState(EnemyState.Dead);
+            movement.StopMoving();
+            movement.SetCanMove(false);
+            UpdateAnimation();
             return;
         }
 
@@ -84,7 +85,12 @@ public class EnemyController : MonoBehaviour
         }
         else
         {
-            ChangeState(distance <= attackRange ? EnemyState.Attack : EnemyState.Chase);
+            if (distance <= attackRange)
+                ChangeState(EnemyState.Attack);
+            else if (distance <= detectRange)
+                ChangeState(EnemyState.Chase);
+            else
+                ChangeState(EnemyState.Idle);
         }
 
         switch (currentState)
@@ -100,8 +106,24 @@ public class EnemyController : MonoBehaviour
                 break;
 
             case EnemyState.Attack:
+                movement.SetCanMove(true);
                 movement.StopMoving();
                 movement.FaceTarget(player.position);
+
+                if (enemyAttack != null && enemyAttack.CanAttack())
+                {
+                    Debug.Log("[EnemyController] StartAttack");
+                    enemyAttack.StartAttack();
+                }
+                break;
+
+            case EnemyState.Hurt:
+                movement.StopMoving();
+                break;
+
+            case EnemyState.Dead:
+                movement.StopMoving();
+                movement.SetCanMove(false);
                 break;
         }
 
@@ -113,63 +135,7 @@ public class EnemyController : MonoBehaviour
         if (currentState == newState)
             return;
 
-        ExitState(currentState);
         currentState = newState;
-        EnterState(newState);
-    }
-
-    private void EnterState(EnemyState state)
-    {
-        switch (state)
-        {
-            case EnemyState.Attack:
-                if (attackLoopCoroutine == null)
-                    attackLoopCoroutine = StartCoroutine(AttackLoop());
-                break;
-
-            case EnemyState.Hurt:
-            case EnemyState.Dead:
-                StopAttackLoop();
-                break;
-        }
-    }
-
-    private void ExitState(EnemyState state)
-    {
-        if (state == EnemyState.Attack)
-            StopAttackLoop();
-    }
-
-    private IEnumerator AttackLoop()
-    {
-        while (currentState == EnemyState.Attack && !isDead)
-        {
-            if (enemyHealth != null && (enemyHealth.IsDead || enemyHealth.IsHurt))
-                yield break;
-
-            if (enemyAttack != null && enemyAttack.CanAttack())
-            {
-                Debug.Log("Controller starts attack loop hit");
-                enemyAttack.StartAttack();
-            }
-
-            float waitTime = enemyAttack != null ? enemyAttack.AttackCooldown : 1f;
-            yield return new WaitForSeconds(waitTime);
-        }
-
-        attackLoopCoroutine = null;
-    }
-
-    private void StopAttackLoop()
-    {
-        if (attackLoopCoroutine != null)
-        {
-            StopCoroutine(attackLoopCoroutine);
-            attackLoopCoroutine = null;
-        }
-
-        if (enemyAttack != null)
-            enemyAttack.ForceStopAttack();
     }
 
     private void UpdateAnimation()

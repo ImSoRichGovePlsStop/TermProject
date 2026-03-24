@@ -4,16 +4,18 @@ public class EnemyAttack : MonoBehaviour
 {
     [Header("Attack")]
     [SerializeField] private float attackDamage = 10f;
-    [SerializeField] private float attackRange = 2.4f;
+    [SerializeField] private float attackRange = 1.2f;
     [SerializeField] private float attackCooldown = 1.2f;
+    [SerializeField] private float attackForwardOffset = 0.8f;
 
     [Header("References")]
-    [SerializeField] private Transform attackPoint;
     [SerializeField] private LayerMask playerLayer;
     [SerializeField] private Animator animator;
     [SerializeField] private EnemyHealth enemyHealth;
+    [SerializeField] private SpriteRenderer spriteRenderer;
 
     private bool isAttacking = false;
+    private float nextAttackTime = 0f;
 
     public float AttackRange => attackRange;
     public float AttackCooldown => attackCooldown;
@@ -26,6 +28,9 @@ public class EnemyAttack : MonoBehaviour
 
         if (enemyHealth == null)
             enemyHealth = GetComponent<EnemyHealth>();
+
+        if (spriteRenderer == null)
+            spriteRenderer = GetComponentInChildren<SpriteRenderer>();
     }
 
     public bool CanAttack()
@@ -33,6 +38,8 @@ public class EnemyAttack : MonoBehaviour
         if (enemyHealth != null && enemyHealth.IsDead) return false;
         if (enemyHealth != null && enemyHealth.IsHurt) return false;
         if (isAttacking) return false;
+        if (Time.time < nextAttackTime) return false;
+
         return true;
     }
 
@@ -41,7 +48,9 @@ public class EnemyAttack : MonoBehaviour
         if (!CanAttack()) return;
 
         isAttacking = true;
-        Debug.Log("Attack started");
+        nextAttackTime = Time.time + attackCooldown;
+
+        Debug.Log("[EnemyAttack] StartAttack");
 
         if (animator != null)
         {
@@ -54,21 +63,28 @@ public class EnemyAttack : MonoBehaviour
         }
     }
 
-    // Animation Event กลางคลิป
     public void DealDamage()
     {
-        Debug.Log("DealDamage called");
+        Debug.Log("[EnemyAttack] DealDamage");
 
         if (enemyHealth != null && enemyHealth.IsDead)
             return;
 
-        Vector3 center = attackPoint != null ? attackPoint.position : transform.position;
-        Collider[] hits = Physics.OverlapSphere(center, attackRange, playerLayer);
+        float dirX = 1f;
 
-        Debug.Log("Player hits found = " + hits.Length);
+        if (spriteRenderer != null && spriteRenderer.flipX)
+            dirX = -1f;
+
+        Vector3 center = transform.position + new Vector3(dirX * attackForwardOffset, 0f, 0f);
+
+        Collider[] hits = Physics.OverlapSphere(center, attackRange, playerLayer);
+        Debug.Log("[EnemyAttack] Player hits found = " + hits.Length);
 
         for (int i = 0; i < hits.Length; i++)
         {
+            if (hits[i].gameObject == gameObject || hits[i].transform.IsChildOf(transform))
+                continue;
+
             PlayerStats playerStats = hits[i].GetComponent<PlayerStats>();
 
             if (playerStats == null)
@@ -76,36 +92,52 @@ public class EnemyAttack : MonoBehaviour
 
             if (playerStats != null)
             {
-                Debug.Log("Damage applied to player");
+                Debug.Log("[EnemyAttack] Damage applied to player");
                 playerStats.TakeDamage(attackDamage, enemyHealth);
                 break;
+            }
+            else
+            {
+                Debug.LogWarning("[EnemyAttack] No PlayerStats found on hit object: " + hits[i].name);
             }
         }
     }
 
-    // Animation Event ท้ายคลิป
     public void FinishAttack()
     {
         isAttacking = false;
-        Debug.Log("FinishAttack called");
+        Debug.Log("[EnemyAttack] FinishAttack");
     }
 
     public void ForceStopAttack()
     {
         isAttacking = false;
 
-        if (animator != null && gameObject.name.Contains("Harpy"))
-        {
+        if (animator != null)
             animator.ResetTrigger("Attack");
-            // animator.SetBool("IsAttacking", false);
-            animator.Play("Harpy_Walk");
-        }
     }
 
     private void OnDrawGizmosSelected()
     {
+        float dirX = 1f;
+
+#if UNITY_EDITOR
+        if (!Application.isPlaying)
+        {
+            SpriteRenderer sr = spriteRenderer != null ? spriteRenderer : GetComponentInChildren<SpriteRenderer>();
+            if (sr != null && sr.flipX)
+                dirX = -1f;
+        }
+        else
+#endif
+        {
+            if (spriteRenderer != null && spriteRenderer.flipX)
+                dirX = -1f;
+        }
+
+        Vector3 center = transform.position + new Vector3(dirX * attackForwardOffset, 0f, 0f);
+
         Gizmos.color = Color.magenta;
-        Vector3 center = attackPoint != null ? attackPoint.position : transform.position;
         Gizmos.DrawWireSphere(center, attackRange);
     }
 }

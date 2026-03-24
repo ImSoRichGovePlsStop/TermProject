@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 1066048985140927085}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.3, y: 0, z: 0}
+  m_LocalPosition: {x: 0.231, y: -0.055, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -44,7 +44,7 @@ GameObject:
   - component: {fileID: 4865115804705131911}
   - component: {fileID: 7177441465359627391}
   - component: {fileID: 5433065267475936845}
-  - component: {fileID: 391331138911051206}
+  - component: {fileID: 3358858112530801018}
   m_Layer: 0
   m_Name: Sprite
   m_TagString: Untagged
@@ -172,7 +172,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb2cc833cd16a5341a1387f1568a76e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationEvents
---- !u!114 &391331138911051206
+--- !u!114 &3358858112530801018
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -181,18 +181,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 6900148244825616449}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c65b852d3a2bae428945d227f9476ab, type: 3}
+  m_Script: {fileID: 11500000, guid: 8454392606ca533468fb273f07305232, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyAttack
-  attackDamage: 10
-  attackRange: 0.2
-  attackCooldown: 2
-  attackPoint: {fileID: 5314224852592122784}
-  playerLayer:
-    serializedVersion: 2
-    m_Bits: 1
-  animator: {fileID: 4865115804705131911}
-  enemyHealth: {fileID: 0}
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAnimationRelay
+  enemyAttack: {fileID: 6085364225554173675}
 --- !u!1 &8200165803818572547
 GameObject:
   m_ObjectHideFlags: 0
@@ -206,8 +198,8 @@ GameObject:
   - component: {fileID: 4615238394682592266}
   - component: {fileID: 6652135718163399831}
   - component: {fileID: 5336710572665332778}
-  - component: {fileID: 8492683482450691441}
   - component: {fileID: 2709287363948710573}
+  - component: {fileID: 6085364225554173675}
   m_Layer: 0
   m_Name: Elite_Hoplite
   m_TagString: Enemy
@@ -223,7 +215,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8200165803818572547}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 1.552, y: 1.211, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -298,7 +290,7 @@ MonoBehaviour:
   loseTargetRange: 6
   attackBuffer: 0.2
   movement: {fileID: 5336710572665332778}
-  enemyAttack: {fileID: 8492683482450691441}
+  enemyAttack: {fileID: 6085364225554173675}
   enemyHealth: {fileID: 2709287363948710573}
   animator: {fileID: 4865115804705131911}
 --- !u!114 &5336710572665332778
@@ -314,30 +306,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyMovement
   moveSpeed: 1
-  stopDistance: 0.1
+  stopDistance: 0.2
   visualRoot: {fileID: 5314224852592122784}
   spriteRenderer: {fileID: 4486691221415628245}
---- !u!114 &8492683482450691441
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8200165803818572547}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c65b852d3a2bae428945d227f9476ab, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  attackDamage: 10
-  attackRange: 0.2
-  attackCooldown: 2
-  attackPoint: {fileID: 1704680026837433325}
-  playerLayer:
-    serializedVersion: 2
-    m_Bits: 1
-  animator: {fileID: 4865115804705131911}
-  enemyHealth: {fileID: 2709287363948710573}
 --- !u!114 &2709287363948710573
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -358,4 +329,26 @@ MonoBehaviour:
   rb: {fileID: 4403862933458509794}
   enemyController: {fileID: 6652135718163399831}
   enemyMovement: {fileID: 5336710572665332778}
-  enemyAttack: {fileID: 8492683482450691441}
+  enemyAttack: {fileID: 6085364225554173675}
+--- !u!114 &6085364225554173675
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8200165803818572547}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5199716dae166344a5a5a58731796b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAttack
+  attackDamage: 10
+  attackRange: 0.6
+  attackCooldown: 1.2
+  attackForwardOffset: 0.9
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  animator: {fileID: 4865115804705131911}
+  enemyHealth: {fileID: 2709287363948710573}
+  spriteRenderer: {fileID: 4486691221415628245}

@@ -13,8 +13,8 @@ GameObject:
   - component: {fileID: 2242107197552931819}
   - component: {fileID: 7960103508822112348}
   - component: {fileID: 5751372851717793496}
-  - component: {fileID: 61150285569358350}
   - component: {fileID: 3782429071458927645}
+  - component: {fileID: 6896815270950409670}
   m_Layer: 0
   m_Name: Enemy_Hoplite
   m_TagString: Enemy
@@ -35,8 +35,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1883690806902080727}
-  - {fileID: 4208694052222620245}
+  - {fileID: 94810238587505337}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &208256006118903961
@@ -101,11 +100,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38b5f52348e3d6645bb9f70cb982f9a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  detectRange: 6
-  loseTargetRange: 6
+  detectRange: 5
+  loseTargetRange: 5
   attackBuffer: 0.2
   movement: {fileID: 5751372851717793496}
-  enemyAttack: {fileID: 61150285569358350}
+  enemyAttack: {fileID: 6896815270950409670}
   enemyHealth: {fileID: 3782429071458927645}
   animator: {fileID: 7551460917292428163}
 --- !u!114 &5751372851717793496
@@ -124,27 +123,6 @@ MonoBehaviour:
   stopDistance: 0.1
   visualRoot: {fileID: 1883690806902080727}
   spriteRenderer: {fileID: 4503767847614671692}
---- !u!114 &61150285569358350
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1157175084331872940}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c65b852d3a2bae428945d227f9476ab, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  attackDamage: 10
-  attackRange: 0.2
-  attackCooldown: 2
-  attackPoint: {fileID: 4208694052222620245}
-  playerLayer:
-    serializedVersion: 2
-    m_Bits: 1
-  animator: {fileID: 7551460917292428163}
-  enemyHealth: {fileID: 3782429071458927645}
 --- !u!114 &3782429071458927645
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165,7 +143,29 @@ MonoBehaviour:
   rb: {fileID: 208256006118903961}
   enemyController: {fileID: 7960103508822112348}
   enemyMovement: {fileID: 5751372851717793496}
-  enemyAttack: {fileID: 61150285569358350}
+  enemyAttack: {fileID: 6896815270950409670}
+--- !u!114 &6896815270950409670
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1157175084331872940}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5199716dae166344a5a5a58731796b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyAttack
+  attackDamage: 10
+  attackRange: 0.3
+  attackCooldown: 1.2
+  attackForwardOffset: 0.4
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  animator: {fileID: 7551460917292428163}
+  enemyHealth: {fileID: 3782429071458927645}
+  spriteRenderer: {fileID: 4503767847614671692}
 --- !u!1 &1591345016874994846
 GameObject:
   m_ObjectHideFlags: 0
@@ -179,7 +179,7 @@ GameObject:
   - component: {fileID: 7551460917292428163}
   - component: {fileID: 6631788886954342301}
   - component: {fileID: 3018528306015447244}
-  - component: {fileID: 4592179211534837694}
+  - component: {fileID: 3169090280430592529}
   m_Layer: 0
   m_Name: Sprite
   m_TagString: Untagged
@@ -195,12 +195,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1591345016874994846}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2215287256965508536}
+  m_Father: {fileID: 94810238587505337}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &4503767847614671692
 SpriteRenderer:
@@ -307,7 +307,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb2cc833cd16a5341a1387f1568a76e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationEvents
---- !u!114 &4592179211534837694
+--- !u!114 &3169090280430592529
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -316,18 +316,43 @@ MonoBehaviour:
   m_GameObject: {fileID: 1591345016874994846}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c65b852d3a2bae428945d227f9476ab, type: 3}
+  m_Script: {fileID: 11500000, guid: 8454392606ca533468fb273f07305232, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyAttack
-  attackDamage: 10
-  attackRange: 0.2
-  attackCooldown: 2
-  attackPoint: {fileID: 1883690806902080727}
-  playerLayer:
-    serializedVersion: 2
-    m_Bits: 1
-  animator: {fileID: 7551460917292428163}
-  enemyHealth: {fileID: 0}
+  m_EditorClassIdentifier: '::'
+  enemyAttack: {fileID: 6896815270950409670}
+--- !u!1 &2749573318358171771
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 94810238587505337}
+  m_Layer: 0
+  m_Name: VisualRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &94810238587505337
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2749573318358171771}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1883690806902080727}
+  - {fileID: 4208694052222620245}
+  m_Father: {fileID: 2215287256965508536}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6186694928587659175
 GameObject:
   m_ObjectHideFlags: 0
@@ -352,10 +377,10 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6186694928587659175}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.3, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.15, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2215287256965508536}
+  m_Father: {fileID: 94810238587505337}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
