@@ -28,7 +28,7 @@ public class DamageModule : ModuleEffect
         {
             state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, levelBonus);
         }
-        stats.AddFlatModifier(new StatModifier { damage = GetEffectiveStat(state) });
+        stats.AddMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
     }
 
     public override void OnLevelBuffRemoved(int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
@@ -38,7 +38,7 @@ public class DamageModule : ModuleEffect
             state.buffedLevel = levelBonus;
             return;
         }
-        stats.RemoveFlatModifier(new StatModifier { damage = GetEffectiveStat(state) });
+        stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
         state.buffedLevel = levelBonus;
         if (state.buffRarity > rarity)
         {
@@ -48,12 +48,12 @@ public class DamageModule : ModuleEffect
         {
             state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, levelBonus);
         }
-        stats.AddFlatModifier(new StatModifier { damage = GetEffectiveStat(state) });
+        stats.AddMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
     }
 
     public override void OnRarityBuffReceived(int level, Rarity NewRarity, PlayerStats stats, ModuleRuntimeState state)
     {
-        stats.RemoveFlatModifier(new StatModifier { damage = GetEffectiveStat(state) });
+        stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
         state.buffRarity = NewRarity;
         if (state.buffedLevel > level)
         {
@@ -63,7 +63,7 @@ public class DamageModule : ModuleEffect
         {
             state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, level);
         }
-        stats.AddFlatModifier(new StatModifier { damage = GetEffectiveStat(state) });
+        stats.AddMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
     }
 
     public override void OnRarityBuffRemoved(int level, Rarity NewRarity, PlayerStats stats, ModuleRuntimeState state)
@@ -73,7 +73,7 @@ public class DamageModule : ModuleEffect
             state.buffRarity = NewRarity;
             return;
         }
-        stats.RemoveFlatModifier(new StatModifier { damage = GetEffectiveStat(state) });
+        stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
         state.buffRarity = NewRarity;
         if (state.buffedLevel > level)
         {
@@ -83,7 +83,7 @@ public class DamageModule : ModuleEffect
         {
             state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, level);
         }
-        stats.AddFlatModifier(new StatModifier { damage = GetEffectiveStat(state) });
+        stats.AddMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
     }
 
     public override void OnBuffReceived(float percent, PlayerStats stats, ModuleRuntimeState state)
