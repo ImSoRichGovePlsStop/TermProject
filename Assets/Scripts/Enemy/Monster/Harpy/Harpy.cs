@@ -93,7 +93,6 @@ public class Harpy : MonoBehaviour
         switch (currentState)
         {
             case HarpyState.Ground:
-                // CheckWakeUp(distanceToPlayer);
                 if (hasEnteredAirPhase && CanDive())
                 {
                     EnterAirPhase();
@@ -106,16 +105,10 @@ public class Harpy : MonoBehaviour
                 //if the player is close enough, dive!
                 Vector3 dir = player.position - transform.position;
                 dir.y = 0f;
-                // if (dir.magnitude < diveTriggerDistance && Time.time > lastDiveTime + diveCooldown)
                 if (dir.magnitude < diveTriggerDistance && CanDive())
                 {
                     StartDive();
                 }
-
-                // if (attack != null && attack.CanAttack())
-                // {
-                //     attack.StartAttack();
-                // }
                 break;
 
             case HarpyState.DiveAttack:
@@ -178,7 +171,6 @@ public class Harpy : MonoBehaviour
         currentState = HarpyState.DiveAttack;
         diveTarget = player.position;
         diveStartTime = Time.time;
-        // lastDiveTime = Time.time;
         animator.SetTrigger("Dive");
     }
 
@@ -196,7 +188,7 @@ public class Harpy : MonoBehaviour
         //when crash with player
         if (Vector3.Distance(transform.position, player.position) < 1.0f)
         {
-            Debug.Log("Crash with player");
+            // Debug.Log("Crash with player");
             attack.DealDamage(player.gameObject);
             StartRecover();
             return;
@@ -204,16 +196,15 @@ public class Harpy : MonoBehaviour
 
         //when reach ground
         if (transform.position.y <= minY - 0.2f) //+0.05f
-        // if (Physics.Raycast(transform.position, Vector3.down, 1.0f))
         {
-            Debug.Log("Reach ground " + minY);
+            // Debug.Log("Reach ground " + minY);
             StartRecover();
             return;
         }
 
         if (Time.time > diveStartTime + 1.1f)
         {
-            Debug.Log("Time out");
+            // Debug.Log("Time out");
             StartRecover();
         }
     }
@@ -239,7 +230,6 @@ public class Harpy : MonoBehaviour
         if (Mathf.Abs(transform.position.y - targetPos.y) < 0.1f)
         {
             FinishDive();
-            // currentState = HarpyState.Hover;
             EnterGroundPhase();
         }
     }
