@@ -15,6 +15,7 @@ public class MaterialItemUI : MonoBehaviour,
     [HideInInspector] public GridUI WeaponGridUI;
     [HideInInspector] public GridUI BagGridUI;
     [HideInInspector] public GridUI EnvGridUI;
+    [HideInInspector] public GridUI InputGridUI;
     [HideInInspector] public InventoryUI InventoryUI;
 
     [SerializeField] private float dragAlpha = 0.6f;
@@ -30,39 +31,37 @@ public class MaterialItemUI : MonoBehaviour,
     private Vector2 _dragOffset;
     private Vector2Int _clickedCell;
     private TextMeshProUGUI _stackText;
-
-    private int  _dragRotation;
+    private int _dragRotation;
     private bool _isDragging;
     private Vector2 _lastPointerScreenPos;
 
-
     private static Color RarityColor(Rarity r) => r switch
     {
-        Rarity.Common    => new Color(0.75f, 0.75f, 0.75f),
-        Rarity.Uncommon  => new Color(0.30f, 0.80f, 0.30f),
-        Rarity.Rare      => new Color(0.20f, 0.50f, 1.00f),
-        Rarity.Epic      => new Color(0.65f, 0.25f, 0.90f),
+        Rarity.Common => new Color(0.75f, 0.75f, 0.75f),
+        Rarity.Uncommon => new Color(0.30f, 0.80f, 0.30f),
+        Rarity.Rare => new Color(0.20f, 0.50f, 1.00f),
+        Rarity.Epic => new Color(0.65f, 0.25f, 0.90f),
         Rarity.GOD => new Color(1.00f, 0.75f, 0.10f),
-        _                => Color.white
+        _ => Color.white
     };
 
     public void Init(MaterialInstance instance, GridUI weaponGridUI, GridUI bagGridUI, GridUI envGridUI = null)
     {
-        Instance      = instance;
+        Instance = instance;
         instance.UIElement = this;
-        WeaponGridUI  = weaponGridUI;
-        BagGridUI     = bagGridUI;
-        EnvGridUI     = envGridUI;
+        WeaponGridUI = weaponGridUI;
+        BagGridUI = bagGridUI;
+        EnvGridUI = envGridUI;
 
-        _rt       = GetComponent<RectTransform>();
-        _cg       = GetComponent<CanvasGroup>();
-        _canvas   = GetComponentInParent<Canvas>();
+        _rt = GetComponent<RectTransform>();
+        _cg = GetComponent<CanvasGroup>();
+        _canvas = GetComponentInParent<Canvas>();
         _canvasRt = _canvas.GetComponent<RectTransform>();
 
         _rt.pivot = new Vector2(0f, 1f);
 
         var img = GetComponent<Image>();
-        img.color         = Color.clear;
+        img.color = Color.clear;
         img.raycastTarget = false;
 
         RebuildVisual(Instance.Rotation);
@@ -95,33 +94,32 @@ public class MaterialItemUI : MonoBehaviour,
         float sp = BagGridUI.CellSpacing;
         Color borderColor = RarityColor(Instance.Rarity);
 
-        // Border layer
         foreach (var cell in shapeCells)
         {
             var borderGo = new GameObject($"border_{cell.x}_{cell.y}",
                                           typeof(RectTransform), typeof(Image));
             var borderRt = borderGo.GetComponent<RectTransform>();
             borderRt.SetParent(_rt, false);
-            borderRt.pivot     = new Vector2(0f, 1f);
+            borderRt.pivot = new Vector2(0f, 1f);
             borderRt.anchorMin = new Vector2(0f, 1f);
             borderRt.anchorMax = new Vector2(0f, 1f);
 
-            bool bHasRight  = shapeCells.Contains(new Vector2Int(cell.x + 1, cell.y));
-            bool bHasLeft   = shapeCells.Contains(new Vector2Int(cell.x - 1, cell.y));
+            bool bHasRight = shapeCells.Contains(new Vector2Int(cell.x + 1, cell.y));
+            bool bHasLeft = shapeCells.Contains(new Vector2Int(cell.x - 1, cell.y));
             bool bHasBottom = shapeCells.Contains(new Vector2Int(cell.x, cell.y + 1));
-            bool bHasTop    = shapeCells.Contains(new Vector2Int(cell.x, cell.y - 1));
+            bool bHasTop = shapeCells.Contains(new Vector2Int(cell.x, cell.y - 1));
 
-            float bExtraRight  = bHasRight  ? borderSize + sp : 0f;
-            float bExtraLeft   = bHasLeft   ? borderSize + sp : 0f;
+            float bExtraRight = bHasRight ? borderSize + sp : 0f;
+            float bExtraLeft = bHasLeft ? borderSize + sp : 0f;
             float bExtraBottom = bHasBottom ? borderSize + sp : 0f;
-            float bExtraTop    = bHasTop    ? borderSize + sp : 0f;
+            float bExtraTop = bHasTop ? borderSize + sp : 0f;
 
             borderRt.sizeDelta = new Vector2(cs + bExtraLeft + bExtraRight,
-                                             cs + bExtraTop  + bExtraBottom);
-            borderRt.anchoredPosition = new Vector2( cell.x * (cs + sp) - bExtraLeft,
+                                             cs + bExtraTop + bExtraBottom);
+            borderRt.anchoredPosition = new Vector2(cell.x * (cs + sp) - bExtraLeft,
                                                     -cell.y * (cs + sp) + bExtraTop);
 
-            borderGo.GetComponent<Image>().color         = borderColor;
+            borderGo.GetComponent<Image>().color = borderColor;
             borderGo.GetComponent<Image>().raycastTarget = false;
         }
 
@@ -130,54 +128,52 @@ public class MaterialItemUI : MonoBehaviour,
             if (c.y < topRightCell.y || (c.y == topRightCell.y && c.x > topRightCell.x))
                 topRightCell = c;
 
-        // Cell layer
         foreach (var cell in shapeCells)
         {
-            var go     = new GameObject($"cell_{cell.x}_{cell.y}",
+            var go = new GameObject($"cell_{cell.x}_{cell.y}",
                                         typeof(RectTransform), typeof(Image));
             var cellRt = go.GetComponent<RectTransform>();
             cellRt.SetParent(_rt, false);
-            cellRt.pivot     = new Vector2(0f, 1f);
+            cellRt.pivot = new Vector2(0f, 1f);
             cellRt.anchorMin = new Vector2(0f, 1f);
             cellRt.anchorMax = new Vector2(0f, 1f);
 
-            bool hasRight  = shapeCells.Contains(new Vector2Int(cell.x + 1, cell.y));
-            bool hasLeft   = shapeCells.Contains(new Vector2Int(cell.x - 1, cell.y));
+            bool hasRight = shapeCells.Contains(new Vector2Int(cell.x + 1, cell.y));
+            bool hasLeft = shapeCells.Contains(new Vector2Int(cell.x - 1, cell.y));
             bool hasBottom = shapeCells.Contains(new Vector2Int(cell.x, cell.y + 1));
-            bool hasTop    = shapeCells.Contains(new Vector2Int(cell.x, cell.y - 1));
+            bool hasTop = shapeCells.Contains(new Vector2Int(cell.x, cell.y - 1));
 
-            float extraRight  = hasRight  ? borderSize + sp : 0f;
-            float extraLeft   = hasLeft   ? borderSize + sp : 0f;
+            float extraRight = hasRight ? borderSize + sp : 0f;
+            float extraLeft = hasLeft ? borderSize + sp : 0f;
             float extraBottom = hasBottom ? borderSize + sp : 0f;
-            float extraTop    = hasTop    ? borderSize + sp : 0f;
+            float extraTop = hasTop ? borderSize + sp : 0f;
 
             cellRt.sizeDelta = new Vector2(cs - borderSize * 2f + extraLeft + extraRight,
-                                           cs - borderSize * 2f + extraTop  + extraBottom);
-            cellRt.anchoredPosition = new Vector2( cell.x * (cs + sp) + borderSize - extraLeft,
+                                           cs - borderSize * 2f + extraTop + extraBottom);
+            cellRt.anchoredPosition = new Vector2(cell.x * (cs + sp) + borderSize - extraLeft,
                                                   -cell.y * (cs + sp) - borderSize + extraTop);
 
             var cellImg = go.GetComponent<Image>();
             if (Instance.Data.icon != null) cellImg.sprite = Instance.Data.icon;
-            cellImg.color          = Instance.MaterialData.moduleColor;
-            cellImg.raycastTarget  = true;
+            cellImg.color = Instance.MaterialData.moduleColor;
+            cellImg.raycastTarget = true;
 
-            // Stack count text on top-right cell
             if (cell == topRightCell)
             {
                 var stackGo = new GameObject("StackText",
                                              typeof(RectTransform), typeof(TextMeshProUGUI));
                 var stackRt = stackGo.GetComponent<RectTransform>();
                 stackRt.SetParent(cellRt, false);
-                stackRt.anchorMin        = new Vector2(0f, 1f);
-                stackRt.anchorMax        = new Vector2(1f, 1f);
-                stackRt.pivot            = new Vector2(1f, 1f);
+                stackRt.anchorMin = new Vector2(0f, 1f);
+                stackRt.anchorMax = new Vector2(1f, 1f);
+                stackRt.pivot = new Vector2(1f, 1f);
                 stackRt.anchoredPosition = new Vector2(-2f, -2f);
-                stackRt.sizeDelta        = new Vector2(0f, 20f);
+                stackRt.sizeDelta = new Vector2(0f, 20f);
 
                 _stackText = stackGo.GetComponent<TextMeshProUGUI>();
-                _stackText.fontSize      = 24f;
-                _stackText.color         = Color.white;
-                _stackText.alignment     = TextAlignmentOptions.TopRight;
+                _stackText.fontSize = 24f;
+                _stackText.color = Color.white;
+                _stackText.alignment = TextAlignmentOptions.TopRight;
                 _stackText.raycastTarget = false;
             }
         }
@@ -188,9 +184,7 @@ public class MaterialItemUI : MonoBehaviour,
         if (_isDragging && Keyboard.current != null && Keyboard.current[Key.R].wasPressedThisFrame)
         {
             var currentShape = Instance.Data.GetShapeCells(_dragRotation);
-
             _clickedCell = ModuleData.RotateSinglePoint(_clickedCell, 1, currentShape);
-
             _dragRotation = (_dragRotation + 1) % 4;
             RebuildVisual(_dragRotation);
             RefreshStackText();
@@ -198,17 +192,13 @@ public class MaterialItemUI : MonoBehaviour,
             float cs = BagGridUI.CellSize;
             float sp = BagGridUI.CellSpacing;
 
-            Vector2 newCellCenterOffset = new Vector2(
+            _dragOffset = new Vector2(
                 (_clickedCell.x + 0.5f) * (cs + sp),
-               -(_clickedCell.y + 0.5f) * (cs + sp)
-            );
-            _dragOffset = newCellCenterOffset;
+               -(_clickedCell.y + 0.5f) * (cs + sp));
 
             if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 _canvasRt, Mouse.current.position.ReadValue(), UICam(), out var local))
-            {
                 _rt.anchoredPosition = local - _dragOffset;
-            }
 
             UpdateHighlightAtScreenPos(Mouse.current.position.ReadValue());
         }
@@ -231,13 +221,18 @@ public class MaterialItemUI : MonoBehaviour,
 
     public void OnBeginDrag(PointerEventData e)
     {
-        _originGrid  = Instance.CurrentGrid == InventoryManager.Instance.EnvGrid ? EnvGridUI : BagGridUI;
-        _originCell  = Instance.GridPosition;
+        var mgr = InventoryManager.Instance;
+
+        if (InputGridUI != null && Instance.CurrentGrid == InputGridUI.Data)
+            _originGrid = InputGridUI;
+        else
+            _originGrid = Instance.CurrentGrid == mgr.EnvGrid ? EnvGridUI : BagGridUI;
+
+        _originCell = Instance.GridPosition;
         _originRotation = Instance.Rotation;
         _dragRotation = Instance.Rotation;
         _isDragging = true;
         _lastPointerScreenPos = e.position;
-
         _clickedCell = GetClickedLocalCell(e);
 
         _rt.SetParent(_canvas.transform, worldPositionStays: true);
@@ -248,14 +243,11 @@ public class MaterialItemUI : MonoBehaviour,
 
         _dragOffset = new Vector2(
             (_clickedCell.x + 0.5f) * (cs + sp),
-           -(_clickedCell.y + 0.5f) * (cs + sp)
-        );
+           -(_clickedCell.y + 0.5f) * (cs + sp));
 
         if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
             _canvasRt, e.position, UICam(), out var mouseLocal))
-        {
             _rt.anchoredPosition = mouseLocal - _dragOffset;
-        }
 
         _cg.alpha = dragAlpha;
         _cg.blocksRaycasts = false;
@@ -274,16 +266,15 @@ public class MaterialItemUI : MonoBehaviour,
     public void OnEndDrag(PointerEventData e)
     {
         _isDragging = false;
-        _cg.alpha          = 1f;
+        _cg.alpha = 1f;
         _cg.blocksRaycasts = true;
         ClearHighlights();
 
-        foreach (var g in new[] { BagGridUI, EnvGridUI })
+        foreach (var g in new[] { BagGridUI, EnvGridUI, InputGridUI })
         {
             if (g == null) continue;
             if (!g.ScreenToCell(e.position, UICam(), out var hoveredCell)) continue;
 
-            // Check stacking (only within same grid type, rotation doesn't affect stacking)
             var existing = g.Data.GetModuleAt(hoveredCell);
             if (existing is MaterialInstance target && Instance.CanStackOnto(target))
             {
@@ -308,7 +299,7 @@ public class MaterialItemUI : MonoBehaviour,
 
             var pivot = hoveredCell - _clickedCell;
             var prevGrid = Instance.CurrentGrid;
-            var prevPos  = Instance.GridPosition;
+            var prevPos = Instance.GridPosition;
 
             prevGrid?.Remove(Instance);
             Instance.SetRotation(_dragRotation);
@@ -322,13 +313,13 @@ public class MaterialItemUI : MonoBehaviour,
                 var blocker = g.Data.BlockingModuleMai(Instance, pivot, _dragRotation);
                 if (blocker != null)
                 {
-                    var OldPos = blocker.GridPosition;
+                    var oldPos = blocker.GridPosition;
                     g.Data.Remove(blocker);
 
                     bool placedDrag = g.Data.TryPlace(Instance, pivot);
-                    bool blockNewPos = placedDrag && prevGrid != null && prevGrid.TryPlace(blocker, prevPos);
+                    bool placedSwap = placedDrag && prevGrid != null && prevGrid.TryPlace(blocker, prevPos);
 
-                    if (placedDrag && blockNewPos)
+                    if (placedDrag && placedSwap)
                     {
                         SnapToCell(g, Instance.GridPosition);
                         if (blocker.UIElement is ModuleItemUI blockerModUI)
@@ -340,9 +331,10 @@ public class MaterialItemUI : MonoBehaviour,
                     else
                     {
                         if (placedDrag) g.Data.Remove(Instance);
-                        g.Data.TryPlace(blocker, OldPos);
+                        g.Data.TryPlace(blocker, oldPos);
                     }
                 }
+
                 Instance.SetRotation(_originRotation);
                 prevGrid?.TryPlace(Instance, prevPos);
                 _dragRotation = Instance.Rotation;
@@ -369,12 +361,12 @@ public class MaterialItemUI : MonoBehaviour,
 
         Instance.RemoveStack();
         var ui = InventoryUI.SpawnSplitMaterial(Instance.MaterialData, targetGrid);
-        if (ui == null) // grid เต็ม — rollback
+        if (ui == null)
             Instance.AddStack();
     }
 
     public void OnPointerEnter(PointerEventData e) => ModuleTooltipUI.Instance.Show(Instance);
-    public void OnPointerExit(PointerEventData e)  => ModuleTooltipUI.Instance.Hide();
+    public void OnPointerExit(PointerEventData e) => ModuleTooltipUI.Instance.Hide();
 
     private void UpdateHighlight(PointerEventData e)
     {
@@ -386,14 +378,13 @@ public class MaterialItemUI : MonoBehaviour,
     {
         ClearHighlights();
 
-        // WeaponGrid → invalid เสมอ (material ลาก weapon grid ไม่ได้)
         if (WeaponGridUI.ScreenToCell(screenPos, UICam(), out var weaponCell))
         {
             WeaponGridUI.HighlightCells(Instance.Data, weaponCell - _clickedCell, valid: false, _dragRotation);
             return;
         }
 
-        foreach (var g in new[] { BagGridUI, EnvGridUI })
+        foreach (var g in new[] { BagGridUI, EnvGridUI, InputGridUI })
         {
             if (g == null) continue;
             if (!g.ScreenToCell(screenPos, UICam(), out var hoveredCell)) continue;
@@ -415,6 +406,7 @@ public class MaterialItemUI : MonoBehaviour,
         WeaponGridUI?.ClearHighlights();
         BagGridUI?.ClearHighlights();
         EnvGridUI?.ClearHighlights();
+        InputGridUI?.ClearHighlights();
     }
 
     private Vector2Int GetClickedLocalCell(PointerEventData e)
