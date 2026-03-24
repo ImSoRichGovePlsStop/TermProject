@@ -4,6 +4,13 @@ using UnityEngine;
 
 public abstract class EnemyHealth : MonoBehaviour
 {
+    [SerializeField] private SpriteRenderer spriteRenderer;
+    [SerializeField] private Color flashColor = Color.red;
+    [SerializeField] private float flashDuration = 0.1f;
+
+    private Color originalColor;
+    private Coroutine flashCoroutine;
+
     [Header("Health")]
     [SerializeField] protected float maxHP = 30f;
     [SerializeField] protected float hurtStunDuration = 0.2f;
@@ -44,6 +51,11 @@ public abstract class EnemyHealth : MonoBehaviour
 
         if (rb == null)
             rb = GetComponent<Rigidbody>();
+
+        if (spriteRenderer == null)
+            spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+
+        originalColor = spriteRenderer.color;
 
         CacheComponents();
     }
@@ -112,6 +124,8 @@ public abstract class EnemyHealth : MonoBehaviour
 
     protected virtual void TriggerHurtAnimation()
     {
+        Flash();
+
         if (animator != null)
             animator.SetTrigger("Hurt");
     }
@@ -159,5 +173,20 @@ public abstract class EnemyHealth : MonoBehaviour
     {
         if (animator != null)
             animator.SetTrigger("Die");
+    }
+
+    public void Flash()
+    {
+        if (flashCoroutine != null)
+            StopCoroutine(flashCoroutine);
+
+        flashCoroutine = StartCoroutine(FlashRoutine());
+    }
+
+    IEnumerator FlashRoutine()
+    {
+        spriteRenderer.color = flashColor;
+        yield return new WaitForSeconds(flashDuration);
+        spriteRenderer.color = originalColor;
     }
 }
