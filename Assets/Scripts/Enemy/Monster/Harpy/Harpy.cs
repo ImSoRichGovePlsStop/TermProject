@@ -31,7 +31,8 @@ public class Harpy : MonoBehaviour
     [SerializeField] float diveCooldown = 2f;
     
     float diveStartTime;
-    float lastDiveTime = -999f;
+    float lastDiveTime = -Mathf.Infinity;
+    private bool isDiving = false;
     private float baseY;
 
     [Header("Variant Settings")]
@@ -45,7 +46,6 @@ public class Harpy : MonoBehaviour
     [SerializeField] float hoverAmplitude = 0.3f;
     [SerializeField] float diveTriggerDistance = 3.5f;
     [SerializeField] float groundOffsetMultiplier = 1f;
-
 
     void Awake()
     {
@@ -102,7 +102,8 @@ public class Harpy : MonoBehaviour
                 //if the player is close enough, dive!
                 Vector3 dir = player.position - transform.position;
                 dir.y = 0f;
-                if (dir.magnitude < diveTriggerDistance && Time.time > lastDiveTime + diveCooldown)
+                // if (dir.magnitude < diveTriggerDistance && Time.time > lastDiveTime + diveCooldown)
+                if (dir.magnitude < diveTriggerDistance && CanDive())
                 {
                     StartDive();
                 }
@@ -143,12 +144,22 @@ public class Harpy : MonoBehaviour
         animator.SetBool("IsFlying", true);
     }
 
+    public bool CanDive()
+    {
+        if (isDiving) return false;
+        if (Time.time < lastDiveTime + diveCooldown) return false;
+        return true;
+    }
+
     void StartDive()
     {
+        if (!CanDive()) return;
+
+        isDiving = true;
         currentState = HarpyState.DiveAttack;
         diveTarget = player.position;
         diveStartTime = Time.time;
-        lastDiveTime = Time.time;
+        // lastDiveTime = Time.time;
         animator.SetTrigger("Dive");
     }
 
@@ -188,6 +199,14 @@ public class Harpy : MonoBehaviour
         }
     }
 
+    public void FinishDive()
+    {
+        isDiving = false;
+        lastDiveTime = Time.time;
+
+        Debug.Log("Cooldown after dive");
+    }
+
     void StartRecover()
     {
         currentState = HarpyState.Recover;
@@ -200,6 +219,7 @@ public class Harpy : MonoBehaviour
 
         if (Mathf.Abs(transform.position.y - targetPos.y) < 0.1f)
         {
+            FinishDive();
             currentState = HarpyState.Hover;
         }
     }
