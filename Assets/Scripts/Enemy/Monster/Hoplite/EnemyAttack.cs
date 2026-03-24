@@ -31,7 +31,8 @@ public class EnemyAttack : MonoBehaviour
 
     public bool CanAttack()
     {
-        Debug.Log($"CanAttack? {Time.time} vs {lastAttackTime + attackCooldown}, isAttacking={isAttacking}");        if (enemyHealth != null && enemyHealth.IsDead) return false;
+        // Debug.Log($"CanAttack? {Time.time} vs {lastAttackTime + attackCooldown}, isAttacking={isAttacking}");        if (enemyHealth != null && enemyHealth.IsDead) return false;
+        // Debug.Log($"CanAttack on {gameObject.name} | id={GetInstanceID()} | isAttacking={isAttacking}");
         if (enemyHealth != null && enemyHealth.IsHurt) return false;
         if (isAttacking) return false;
         if (Time.time < lastAttackTime + attackCooldown) return false;
@@ -41,7 +42,7 @@ public class EnemyAttack : MonoBehaviour
     public void StartAttack()
     {
         // if (!CanAttack()) return;
-        Debug.Log(">>> CALL StartAttack");
+        // Debug.Log(">>> CALL StartAttack");
 
         isAttacking = true;
         animator.SetBool("IsAttacking", true);
@@ -110,6 +111,7 @@ public class EnemyAttack : MonoBehaviour
         lastAttackTime = Time.time;
         animator.SetBool("IsAttacking", false);
         Debug.Log("FinishAttack called");
+        Debug.Log($"FinishAttack called on {gameObject.name} | id={GetInstanceID()}");
     }
 
     public void ForceStopAttack()

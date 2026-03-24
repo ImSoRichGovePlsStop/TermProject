@@ -38,7 +38,7 @@ public class EnemyController : MonoBehaviour
             movement = GetComponent<EnemyMovement>();
 
         if (enemyAttack == null)
-            enemyAttack = GetComponent<EnemyAttack>();
+            enemyAttack = GetComponentInChildren<EnemyAttack>();
 
         if (enemyHealth == null)
             enemyHealth = GetComponent<EnemyHealth>();
@@ -82,13 +82,13 @@ public class EnemyController : MonoBehaviour
         else if (currentState == EnemyState.Attack) //กำลังโจมตีอยู่แล้ว
         {
             //ถ้ายังไม่ได้ออกจากระยะ ก็ Attack ต่อ ไม่งั้นก็ Chase
-            Debug.Log("CASE1");
+            // Debug.Log("CASE1");
             ChangeState(distance <= attackExitRange ? EnemyState.Attack : EnemyState.Chase);
         }
         else //ใดๆก็ตาม
         {
             //ถ้าอยู่ในระยะตี ตีเลย ไม่งั้นก็ chase
-            Debug.Log("CASE2");
+            // Debug.Log("CASE2");
             ChangeState(distance <= attackRange ? EnemyState.Attack : EnemyState.Chase);
         }
 
@@ -105,6 +105,7 @@ public class EnemyController : MonoBehaviour
                 break;
 
             case EnemyState.Attack:
+                //ลองแล้ว ไม่เวิร์ก พอตีเสร็จรอบนึงก็ยืนนิ่ง
                 // if (enemyAttack != null && enemyAttack.IsAttacking)
                 // {
                 //     movement.StopMoving();
@@ -114,10 +115,16 @@ public class EnemyController : MonoBehaviour
                 //     movement.SetCanMove(true);
                 //     movement.MoveToTarget(player.position);
                 // }
+
+                //ลองแล้ว เวิร์กสุดแล้ว
                 if (attackLoopCoroutine == null)
                 {
                     attackLoopCoroutine = StartCoroutine(AttackLoop());
                 }
+
+                //ลองแล้ว ไม่เวิร์ก พอตีเสร็จรอบนึงก็ยืนนิ่ง
+                // movement.StopMoving();
+
                 movement.FaceTarget(player.position);
                 break;
         }
@@ -192,9 +199,18 @@ public class EnemyController : MonoBehaviour
             if (enemyAttack != null && enemyAttack.CanAttack())
             {
                 enemyAttack.StartAttack();
+
+                float timer = 0f;
+                float timeout = 2f;
+
+                while (enemyAttack.IsAttacking && timer < timeout)
+                {
+                    timer += Time.deltaTime;
+                    yield return null;
+                }
                 
                 // รอจนกว่าแอนิเมชันจะจบ (FinishAttack ถูกเรียก)
-                yield return new WaitUntil(() => !enemyAttack.IsAttacking);
+                // yield return new WaitUntil(() => !enemyAttack.IsAttacking);
                 
                 // พักตาม Cooldown จริงๆ
                 yield return new WaitForSeconds(enemyAttack.AttackCooldown);
@@ -202,7 +218,8 @@ public class EnemyController : MonoBehaviour
             else
             {
                 // ถ้ายังตีไม่ได้ (ติด Cooldown) ให้รอสั้นๆ แล้วเช็คใหม่
-                yield return new WaitForSeconds(0.5f);
+                // yield return new WaitForSeconds(0.5f);
+                yield return null;
             }
         }
         attackLoopCoroutine = null;

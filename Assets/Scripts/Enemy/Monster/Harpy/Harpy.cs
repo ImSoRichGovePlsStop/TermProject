@@ -28,7 +28,6 @@ public class Harpy : MonoBehaviour
     [SerializeField] float groundOffset = 0.2f;
     [SerializeField] Transform player;
     [SerializeField] SpriteRenderer spriteRenderer;
-    [SerializeField] float diveCooldown = 2f;
     
     float diveStartTime;
     float lastDiveTime = -Mathf.Infinity;
@@ -36,6 +35,7 @@ public class Harpy : MonoBehaviour
     private float baseY;
 
     [Header("Variant Settings")]
+    [SerializeField] float diveCooldown = 2f;
     [SerializeField] float flyPhaseHPPercent = 0.5f;
     [SerializeField] float sizeMultiplier = 1f;
     [SerializeField] float damageMultiplier = 1f;
@@ -51,7 +51,7 @@ public class Harpy : MonoBehaviour
     {
         controller = GetComponent<EnemyController>();
         movement = GetComponent<EnemyMovement>();
-        attack = GetComponent<EnemyAttack>();
+        attack = GetComponentInChildren<EnemyAttack>();
         health = GetComponent<EnemyHealth>();
         animator = GetComponentInChildren<Animator>();
         rb = GetComponent<Rigidbody>();
@@ -108,10 +108,10 @@ public class Harpy : MonoBehaviour
                     StartDive();
                 }
 
-                if (attack != null && attack.CanAttack())
-                {
-                    attack.StartAttack();
-                }
+                // if (attack != null && attack.CanAttack())
+                // {
+                //     attack.StartAttack();
+                // }
                 break;
 
             case HarpyState.DiveAttack:
