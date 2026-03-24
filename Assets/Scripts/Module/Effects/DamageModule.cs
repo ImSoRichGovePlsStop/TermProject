@@ -19,6 +19,7 @@ public class DamageModule : ModuleEffect
     }
     public override void OnLevelBuffReceived(int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
     {
+        stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
         state.buffedLevel = levelBonus;
         if (state.buffRarity > rarity)
         {
