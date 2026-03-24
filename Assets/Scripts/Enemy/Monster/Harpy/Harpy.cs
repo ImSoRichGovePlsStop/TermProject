@@ -25,12 +25,9 @@ public class Harpy : MonoBehaviour
 
     [SerializeField] private Animator animator;
     [SerializeField] float diveSpeed = 7f;
-    [SerializeField] float hoverSpeed = 1f;
-    [SerializeField] float hoverAmplitude = 0.3f;
     [SerializeField] float groundOffset = 0.2f;
     [SerializeField] Transform player;
     [SerializeField] SpriteRenderer spriteRenderer;
-    [SerializeField] float diveTriggerDistance = 3.5f;
     [SerializeField] float diveCooldown = 2f;
     
     float diveStartTime;
@@ -44,6 +41,10 @@ public class Harpy : MonoBehaviour
     [SerializeField] float attackRangeMultiplier = 1f;
     [SerializeField] float diveSpeedMultiplier = 1f;
     [SerializeField] float hoverHeight = 1.3f;
+    [SerializeField] float hoverSpeed = 1f;
+    [SerializeField] float hoverAmplitude = 0.3f;
+    [SerializeField] float diveTriggerDistance = 3.5f;
+    [SerializeField] float groundOffsetMultiplier = 1f;
 
 
     void Awake()
@@ -155,7 +156,7 @@ public class Harpy : MonoBehaviour
     {
         Vector3 direction = (diveTarget - transform.position).normalized;
         Vector3 nextPos = rb.position + diveSpeed * Time.deltaTime * direction;
-        float minY = baseY + groundOffset;
+        float minY = baseY / groundOffsetMultiplier + groundOffset / groundOffsetMultiplier;
 
         rb.MovePosition(nextPos);
 
@@ -165,20 +166,24 @@ public class Harpy : MonoBehaviour
         //when crash with player
         if (Vector3.Distance(transform.position, player.position) < 1.2f)
         {
+            Debug.Log("Crash with player");
             attack.DealDamage(player.gameObject);
             StartRecover();
             return;
         }
 
         //when reach ground
-        if (transform.position.y <= minY + 0.05f)
+        if (transform.position.y <= minY - 0.2f) //+0.05f
+        // if (Physics.Raycast(transform.position, Vector3.down, 1.0f))
         {
+            Debug.Log("Reach ground " + minY);
             StartRecover();
             return;
         }
 
         if (Time.time > diveStartTime + 1.1f)
         {
+            Debug.Log("Time out");
             StartRecover();
         }
     }
