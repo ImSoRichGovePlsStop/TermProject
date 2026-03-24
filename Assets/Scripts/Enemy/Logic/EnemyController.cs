@@ -15,7 +15,7 @@ public class EnemyController : MonoBehaviour
     [Header("Detection")]
     [SerializeField] private float detectRange = 6f;
     [SerializeField] private float loseTargetRange = 8f;
-    [SerializeField] private float attackBuffer = 0.2f;
+    [SerializeField] private float attackBuffer = 0.5f; //0.2f
 
     [Header("References")]
     private Transform player;
@@ -100,7 +100,17 @@ public class EnemyController : MonoBehaviour
                 break;
 
             case EnemyState.Attack:
-                movement.StopMoving();
+                // movement.StopMoving();
+                if (enemyAttack != null && enemyAttack.IsAttacking)
+                {
+                    movement.StopMoving();
+                }
+                else 
+                {
+                    // ถ้าอยู่ในระยะโจมตี แต่รอ Cooldown อยู่ ให้เดินตามไปเรื่อยๆ!
+                    movement.SetCanMove(true);
+                    movement.MoveToTarget(player.position);
+                }
                 movement.FaceTarget(player.position);
                 break;
         }
@@ -123,8 +133,11 @@ public class EnemyController : MonoBehaviour
         switch (state)
         {
             case EnemyState.Attack:
-                if (attackLoopCoroutine == null)
-                    attackLoopCoroutine = StartCoroutine(AttackLoop());
+                // if (attackLoopCoroutine == null)
+                //     attackLoopCoroutine = StartCoroutine(AttackLoop());
+                if (attackLoopCoroutine != null)
+                    StopCoroutine(attackLoopCoroutine);
+                attackLoopCoroutine = StartCoroutine(AttackLoop());
                 break;
 
             case EnemyState.Hurt:
@@ -142,21 +155,42 @@ public class EnemyController : MonoBehaviour
 
     private IEnumerator AttackLoop()
     {
+        // while (currentState == EnemyState.Attack && !isDead)
+        // {
+        //     if (enemyHealth != null && (enemyHealth.IsDead || enemyHealth.IsHurt))
+        //         yield break;
+
+        //     if (enemyAttack != null && enemyAttack.CanAttack())
+        //     {
+        //         Debug.Log("Controller starts attack loop hit");
+        //         enemyAttack.StartAttack();
+        //     }
+
+        //     // float waitTime = enemyAttack != null ? enemyAttack.AttackCooldown : 1f;
+        //     // yield return new WaitForSeconds(waitTime);
+        //     yield return new WaitForSeconds(0.05f);
+        // }
+
+        // attackLoopCoroutine = null;
+        
         while (currentState == EnemyState.Attack && !isDead)
         {
-            if (enemyHealth != null && (enemyHealth.IsDead || enemyHealth.IsHurt))
-                yield break;
-
             if (enemyAttack != null && enemyAttack.CanAttack())
             {
-                Debug.Log("Controller starts attack loop hit");
                 enemyAttack.StartAttack();
+                
+                // รอจนกว่าแอนิเมชันจะจบ (FinishAttack ถูกเรียก)
+                yield return new WaitUntil(() => !enemyAttack.IsAttacking);
+                
+                // พักตาม Cooldown จริงๆ
+                yield return new WaitForSeconds(enemyAttack.AttackCooldown);
             }
-
-            float waitTime = enemyAttack != null ? enemyAttack.AttackCooldown : 1f;
-            yield return new WaitForSeconds(waitTime);
+            else
+            {
+                // ถ้ายังตีไม่ได้ (ติด Cooldown) ให้รอสั้นๆ แล้วเช็คใหม่
+                yield return new WaitForSeconds(0.1f);
+            }
         }
-
         attackLoopCoroutine = null;
     }
 

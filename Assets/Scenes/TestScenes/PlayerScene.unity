@@ -670,6 +670,10 @@ PrefabInstance:
       propertyPath: m_CollisionDetection
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5619929725966229942, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
+      propertyPath: attackCooldown
+      value: 1.2
+      objectReference: {fileID: 0}
     - target: {fileID: 6146847390516208723, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
       propertyPath: player
       value: 
