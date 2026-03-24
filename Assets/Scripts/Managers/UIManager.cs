@@ -56,6 +56,8 @@ public class UIManager : MonoBehaviour
 
     private void Update()
     {
+        UpdateHUDVisibility();
+
         if (!isInBattle)
         {
             if (Keyboard.current[Key.Tab].wasPressedThisFrame)
@@ -175,13 +177,13 @@ public class UIManager : MonoBehaviour
     {
         bool shouldHide =
             IsInventoryOpen ||
-            _upgradeOpen ||
             (passiveScreenUI != null && passiveScreenUI.IsOpen) ||
             (gamblerScreenUI != null && gamblerScreenUI.IsOpen) ||
             (_activeShopUI != null && _activeShopUI.gameObject.activeSelf);
 
-        if (hud != null)
-            hud.SetActive(!shouldHide);
+        bool shouldShow = !shouldHide;
+        if (hud != null && hud.activeSelf != shouldShow)
+            hud.SetActive(shouldShow);
     }
 
     private IEnumerator ForceMoveToBagNextFrame()
