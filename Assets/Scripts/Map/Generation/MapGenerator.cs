@@ -30,6 +30,10 @@ public class MapGenerator : MonoBehaviour
     public GameObject upgradeStationPrefab;
     public GameObject mergeStationPrefab;
 
+    [Header("Portals")]
+    public GameObject portalPrefab;
+    public GameObject portalFinalPrefab;
+
     [Header("Enemy / Loot")]
     public GameObject[] enemiesPrefab;
     public GameObject bossPrefab;
@@ -121,7 +125,6 @@ public class MapGenerator : MonoBehaviour
 
     void PlaceBossAdjacent(RoomNode last)
     {
-        // collect free neighbors that are far enough from spawn
         var candidates = new List<Vector2Int>();
         foreach (var d in Dirs)
         {
@@ -134,18 +137,14 @@ public class MapGenerator : MonoBehaviour
             candidates.Add(new Vector2Int(nx, ny));
         }
 
-        Vector2Int coord;
-        if (candidates.Count > 0)
-        {
-            coord = candidates[Random.Range(0, candidates.Count)];
-        }
-        else
+        if (candidates.Count == 0)
         {
             Debug.LogWarning("[MapGen] No valid boss position far enough from spawn — placing on last battle node.");
             last.Type = RoomType.Boss;
             return;
         }
 
+        var coord = candidates[Random.Range(0, candidates.Count)];
         SetNode(coord, RoomType.Boss);
         AddConnection(last.GridCoord, coord);
     }
@@ -172,7 +171,10 @@ public class MapGenerator : MonoBehaviour
                 if (node.Type != RoomType.Battle) continue;
                 if (mainPath.Contains(node)) continue;
                 if (Random.value < eventRoomChance)
+                {
                     node.Type = eventTypes[Random.Range(0, eventTypes.Length)];
+                    RunManager.Instance?.OnEventRoomEntered();
+                }
             }
     }
 
@@ -207,8 +209,8 @@ public class MapGenerator : MonoBehaviour
         switch (node.Type)
         {
             case RoomType.Spawn: return SpawnSpawnRoom(node);
-            case RoomType.Battle: return SpawnBattleRoom(node, bossRoom: false);
-            case RoomType.Boss: return SpawnBattleRoom(node, bossRoom: true);
+            case RoomType.Battle: return SpawnBattleRoom(node);
+            case RoomType.Boss: return SpawnBossRoom(node);
             case RoomType.Heal: return SpawnEventRoom(node, healRoomPrefab, AddHealRoom);
             case RoomType.Shop: return SpawnEventRoom(node, shopRoomPrefab, AddShopRoom);
             case RoomType.Upgrade: return SpawnEventRoom(node, upgradeRoomPrefab, AddUpgradeRoom);
@@ -225,11 +227,10 @@ public class MapGenerator : MonoBehaviour
         return obj;
     }
 
-    GameObject SpawnBattleRoom(RoomNode node, bool bossRoom)
+    GameObject SpawnBattleRoom(RoomNode node)
     {
-        var prefab = bossRoom ? bossRoomPrefab : battleRoomPrefab;
-        var obj = Instantiate(prefab, node.WorldPosition, Quaternion.identity);
-        obj.name = bossRoom ? "BossRoom" : "BattleRoom";
+        var obj = Instantiate(battleRoomPrefab, node.WorldPosition, Quaternion.identity);
+        obj.name = "BattleRoom";
 
         var preset = obj.GetComponent<RoomPreset>();
         Vector2 size = preset != null ? preset.roomSize : new Vector2(10f, 10f);
@@ -237,10 +238,34 @@ public class MapGenerator : MonoBehaviour
         var room = obj.AddComponent<BattleRoom>();
         room.lootPrefab = lootPrefab;
         room.boundaryMaterial = boundaryMaterial;
-        room.enemyCount = bossRoom ? 1 : Random.Range(1, 4);
-        room.enemyPrefabs = bossRoom
-            ? new[] { bossPrefab }
-            : new[] { enemiesPrefab[Random.Range(0, enemiesPrefab.Length)] };
+        room.enemyCount = Random.Range(1, 4);
+        room.enemyPrefabs = new[] { enemiesPrefab[Random.Range(0, enemiesPrefab.Length)] };
+
+        Vector3 roomVol = new Vector3(size.x, triggerHeight, size.y);
+        room.SetRoomSize(roomVol);
+
+        var trigger = obj.AddComponent<BoxCollider>();
+        trigger.isTrigger = true;
+        trigger.size = roomVol;
+        trigger.center = new Vector3(0, triggerHeight / 2f, 0);
+
+        return obj;
+    }
+
+    GameObject SpawnBossRoom(RoomNode node)
+    {
+        var obj = Instantiate(bossRoomPrefab, node.WorldPosition, Quaternion.identity);
+        obj.name = "BossRoom";
+
+        var preset = obj.GetComponent<RoomPreset>();
+        Vector2 size = preset != null ? preset.roomSize : new Vector2(14f, 14f);
+
+        var room = obj.AddComponent<BossRoom>();
+        room.bossPrefab = bossPrefab;
+        room.lootPrefab = lootPrefab;
+        room.portalPrefab = portalPrefab;
+        room.portalFinalPrefab = portalFinalPrefab;
+        room.boundaryMaterial = boundaryMaterial;
 
         Vector3 roomVol = new Vector3(size.x, triggerHeight, size.y);
         room.SetRoomSize(roomVol);
@@ -325,17 +350,42 @@ public class MapGenerator : MonoBehaviour
         var corridor = new GameObject($"Corridor_{a.GridCoord}->{b.GridCoord}");
         corridor.transform.position = center;
 
+        // floor
         var floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
         floor.name = "Floor";
         floor.transform.SetParent(corridor.transform);
         floor.transform.localPosition = Vector3.zero;
         floor.transform.localScale = isNS
-            ? new Vector3(corridorWidth, 0f, gap)
-            : new Vector3(gap, 0f, corridorWidth);
-
+            ? new Vector3(corridorWidth, 0.1f, gap)
+            : new Vector3(gap, 0.1f, corridorWidth);
         Destroy(floor.GetComponent<Collider>());
+        if (boundaryMaterial != null)
+            floor.GetComponent<Renderer>().material = boundaryMaterial;
 
+        // walls
+        SpawnCorridorWall(corridor.transform, isNS, gap, -1);
+        SpawnCorridorWall(corridor.transform, isNS, gap, 1);
     }
+
+    void SpawnCorridorWall(Transform parent, bool isNS, float length, int side)
+    {
+        float halfCW = corridorWidth / 2f;
+
+        var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        wall.name = "Wall";
+        wall.transform.SetParent(parent);
+        wall.transform.localPosition = isNS
+            ? new Vector3(side * halfCW, triggerHeight / 2f, 0f)
+            : new Vector3(0f, triggerHeight / 2f, side * halfCW);
+        wall.transform.localScale = isNS
+            ? new Vector3(0.1f, triggerHeight, length)
+            : new Vector3(length, triggerHeight, 0.1f);
+
+        if (boundaryMaterial != null)
+            wall.GetComponent<Renderer>().material = boundaryMaterial;
+    }
+
+    // ── helpers ──────────────────────────────────────────────────────────────
 
     float GetRoomHalfExtent(RoomNode node, bool isNS)
     {
@@ -344,7 +394,6 @@ public class MapGenerator : MonoBehaviour
         if (preset == null) return 5f;
         return isNS ? preset.roomSize.y / 2f : preset.roomSize.x / 2f;
     }
-
 
     void SetNode(Vector2Int c, RoomType t) => _grid[c.x, c.y].Type = t;
 
