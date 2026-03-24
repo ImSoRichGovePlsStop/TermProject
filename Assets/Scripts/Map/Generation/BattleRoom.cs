@@ -77,13 +77,13 @@ public class BattleRoom : MonoBehaviour
         (Vector3 pos, Vector3 size)[] wallConfigs = new[]
         {
         // Left
-        (new Vector3(-roomSize.x / 2f, roomSize.y / 2f, 0f), new Vector3(0.01f, roomSize.y, 2)),
+        (new Vector3(-roomSize.x / 2f, roomSize.y / 2f, 0f), new Vector3(0.01f, roomSize.y, roomSize.z)),
         // Right
-        (new Vector3(roomSize.x / 2f, roomSize.y / 2f, 0f),  new Vector3(0.01f, roomSize.y, 2)),
+        (new Vector3(roomSize.x / 2f, roomSize.y / 2f, 0f),  new Vector3(0.01f, roomSize.y, roomSize.z)),
         // Front
-        (new Vector3(0f, roomSize.y / 2f, roomSize.z / 2f),  new Vector3(2, roomSize.y, 0.01f)),
+        (new Vector3(0f, roomSize.y / 2f, roomSize.z / 2f),  new Vector3(roomSize.x, roomSize.y, 0.01f)),
         // Back
-        (new Vector3(0f, roomSize.y / 2f, -roomSize.z / 2f), new Vector3(2, roomSize.y, 0.01f)),
+        (new Vector3(0f, roomSize.y / 2f, -roomSize.z / 2f), new Vector3(roomSize.x, roomSize.y, 0.01f)),
     };
 
         foreach (var (localPos, size) in wallConfigs)
