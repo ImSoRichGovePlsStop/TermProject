@@ -26,7 +26,7 @@ Transform:
   m_GameObject: {fileID: 4509659011603524488}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3, y: -0, z: 0.38307}
+  m_LocalPosition: {x: 0, y: -0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -44,3 +44,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84aa86da603c756429b1ab163cdbe967, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OffensivePassiveHandler
+  iconStack: {fileID: 1431387446, guid: bf7467890c0f1c24aaa891357251c638, type: 3}
+  iconApex: {fileID: -1522225115, guid: 4e1ee619b7a47084ca4e745989a39833, type: 3}

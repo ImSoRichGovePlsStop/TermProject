@@ -187,11 +187,30 @@ public class MaterialItemUI : MonoBehaviour,
     {
         if (_isDragging && Keyboard.current != null && Keyboard.current[Key.R].wasPressedThisFrame)
         {
+            var currentShape = Instance.Data.GetShapeCells(_dragRotation);
+
+            _clickedCell = ModuleData.RotateSinglePoint(_clickedCell, 1, currentShape);
+
             _dragRotation = (_dragRotation + 1) % 4;
-            _clickedCell = Vector2Int.zero;
             RebuildVisual(_dragRotation);
             RefreshStackText();
-            UpdateHighlightAtScreenPos(_lastPointerScreenPos);
+
+            float cs = BagGridUI.CellSize;
+            float sp = BagGridUI.CellSpacing;
+
+            Vector2 newCellCenterOffset = new Vector2(
+                (_clickedCell.x + 0.5f) * (cs + sp),
+               -(_clickedCell.y + 0.5f) * (cs + sp)
+            );
+            _dragOffset = newCellCenterOffset;
+
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                _canvasRt, Mouse.current.position.ReadValue(), UICam(), out var local))
+            {
+                _rt.anchoredPosition = local - _dragOffset;
+            }
+
+            UpdateHighlightAtScreenPos(Mouse.current.position.ReadValue());
         }
     }
 
@@ -224,11 +243,21 @@ public class MaterialItemUI : MonoBehaviour,
         _rt.SetParent(_canvas.transform, worldPositionStays: true);
         _rt.SetAsLastSibling();
 
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            _canvasRt, e.position, UICam(), out var mouseLocal);
-        _dragOffset = mouseLocal - _rt.anchoredPosition;
+        float cs = BagGridUI.CellSize;
+        float sp = BagGridUI.CellSpacing;
 
-        _cg.alpha          = dragAlpha;
+        _dragOffset = new Vector2(
+            (_clickedCell.x + 0.5f) * (cs + sp),
+           -(_clickedCell.y + 0.5f) * (cs + sp)
+        );
+
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            _canvasRt, e.position, UICam(), out var mouseLocal))
+        {
+            _rt.anchoredPosition = mouseLocal - _dragOffset;
+        }
+
+        _cg.alpha = dragAlpha;
         _cg.blocksRaycasts = false;
     }
 
@@ -290,6 +319,30 @@ public class MaterialItemUI : MonoBehaviour,
             }
             else
             {
+                var blocker = g.Data.BlockingModuleMai(Instance, pivot, _dragRotation);
+                if (blocker != null)
+                {
+                    var OldPos = blocker.GridPosition;
+                    g.Data.Remove(blocker);
+
+                    bool placedDrag = g.Data.TryPlace(Instance, pivot);
+                    bool blockNewPos = placedDrag && prevGrid != null && prevGrid.TryPlace(blocker, prevPos);
+
+                    if (placedDrag && blockNewPos)
+                    {
+                        SnapToCell(g, Instance.GridPosition);
+                        if (blocker.UIElement is ModuleItemUI blockerModUI)
+                            blockerModUI.SnapToCell(_originGrid, prevPos);
+                        else if (blocker.UIElement is MaterialItemUI blockerMatUI)
+                            blockerMatUI.SnapToCell(_originGrid, prevPos);
+                        return;
+                    }
+                    else
+                    {
+                        if (placedDrag) g.Data.Remove(Instance);
+                        g.Data.TryPlace(blocker, OldPos);
+                    }
+                }
                 Instance.SetRotation(_originRotation);
                 prevGrid?.TryPlace(Instance, prevPos);
                 _dragRotation = Instance.Rotation;

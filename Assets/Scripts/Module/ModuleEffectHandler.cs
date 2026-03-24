@@ -48,7 +48,6 @@ public class ModuleEffectHandler : MonoBehaviour
                     inst.buffTargets.Add(target);
                 }
             }
-
             var buffLevelModule = inst.Data.moduleEffect as BuffLevelModule;
             if (buffLevelModule != null)
             {
@@ -59,7 +58,22 @@ public class ModuleEffectHandler : MonoBehaviour
                 foreach (var target in buffed)
                 {
                     if (target.Data.moduleEffect == null) continue;
-                    target.Data.moduleEffect.OnLevelBuffReceived(bonus, target.Rarity, playerStats, target.RuntimeState);
+                    target.Data.moduleEffect.OnLevelBuffReceived(bonus+target.Level, target.Rarity, playerStats, target.RuntimeState);
+                    inst.buffTargets.Add(target);
+                }
+            }
+
+            var buffRarityModule = inst.Data.moduleEffect as BuffRarityModule;
+            if (buffRarityModule != null)
+            {
+                var buffCells = inst.GetAbsoluteBuffCells();
+                var buffed = GetUniqueModulesAtCells(buffCells, inst);
+                Rarity newRarity = (Rarity)buffRarityModule.GetBuffRarity(inst.RuntimeState);
+
+                foreach (var target in buffed)
+                {
+                    if (target.Data.moduleEffect == null) continue;
+                    target.Data.moduleEffect.OnRarityBuffReceived(target.Level, newRarity, playerStats, target.RuntimeState);
                     inst.buffTargets.Add(target);
                 }
             }
@@ -84,12 +98,19 @@ public class ModuleEffectHandler : MonoBehaviour
                 );
                 other.buffTargets.Add(inst);
             }
-
             var otherBuffLevelModule = other.Data.moduleEffect as BuffLevelModule;
             if (otherBuffLevelModule != null)
             {
                 int bonus = (int)otherBuffLevelModule.GetBuffLevel(other.RuntimeState);
-                inst.Data.moduleEffect.OnLevelBuffReceived(bonus, inst.Rarity, playerStats, inst.RuntimeState);
+                inst.Data.moduleEffect.OnLevelBuffReceived(bonus+inst.Level, inst.Rarity, playerStats, inst.RuntimeState);
+                other.buffTargets.Add(inst);
+            }
+
+            var otherBuffRarityModule = other.Data.moduleEffect as BuffRarityModule;
+            if (otherBuffRarityModule != null)
+            {
+                Rarity newRarity = (Rarity)otherBuffRarityModule.GetBuffRarity(other.RuntimeState);
+                inst.Data.moduleEffect.OnRarityBuffReceived(inst.Level, newRarity, playerStats, inst.RuntimeState);
                 other.buffTargets.Add(inst);
             }
         }
@@ -120,11 +141,21 @@ public class ModuleEffectHandler : MonoBehaviour
             var buffLevelModule = inst.Data.moduleEffect as BuffLevelModule;
             if (buffLevelModule != null)
             {
-                int bonus = (int)buffLevelModule.GetBuffLevel(inst.RuntimeState);
                 foreach (var target in inst.buffTargets)
                 {
                     if (target.Data.moduleEffect == null) continue;
-                    target.Data.moduleEffect.OnLevelBuffRemoved(bonus, target.Rarity, playerStats, target.RuntimeState);
+                    target.Data.moduleEffect.OnLevelBuffRemoved(target.Level, target.Rarity, playerStats, target.RuntimeState);
+                }
+                inst.buffTargets.Clear();
+            }
+
+            var buffRarityModule = inst.Data.moduleEffect as BuffRarityModule;
+            if (buffRarityModule != null)
+            {
+                foreach (var target in inst.buffTargets)
+                {
+                    if (target.Data.moduleEffect == null) continue;
+                    target.Data.moduleEffect.OnRarityBuffRemoved(target.Level, target.Rarity, playerStats, target.RuntimeState);
                 }
                 inst.buffTargets.Clear();
             }
@@ -151,8 +182,14 @@ public class ModuleEffectHandler : MonoBehaviour
             var otherBuffLevelModule = other.Data.moduleEffect as BuffLevelModule;
             if (otherBuffLevelModule != null)
             {
-                int bonus = (int)otherBuffLevelModule.GetBuffLevel(other.RuntimeState);
-                inst.Data.moduleEffect.OnLevelBuffRemoved(bonus, inst.Rarity, playerStats, inst.RuntimeState);
+                inst.Data.moduleEffect.OnLevelBuffRemoved(inst.Level, inst.Rarity, playerStats, inst.RuntimeState);
+                other.buffTargets.Remove(inst);
+            }
+
+            var otherBuffRarityModule = other.Data.moduleEffect as BuffRarityModule;
+            if (otherBuffRarityModule != null)
+            {
+                inst.Data.moduleEffect.OnRarityBuffRemoved(inst.Level, inst.Rarity, playerStats, inst.RuntimeState);
                 other.buffTargets.Remove(inst);
             }
         }

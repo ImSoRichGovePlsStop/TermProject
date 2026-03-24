@@ -28,6 +28,14 @@ public class ShatterFieldPassive : MonoBehaviour
     private const float slowDuration = 1.5f;
     private const float rootDuration = 3f;
 
+    private const float BaseDamagePercent = 0.15f;
+    private const float IntensifiedDamagePercent = 0.25f;
+    private const float BaseTickInterval = 0.5f;
+    private const float WideFieldRadiusMultiplier = 1.5f;
+    private const float ExploitHealPercent = 0.02f;
+    private const float RootMoveSpeedModifier = -1f;
+    private const float BrittleDamageTakenBonus = 0.3f;
+
     public class EnemySlowState
     {
         public int stacks = 0;
@@ -44,20 +52,26 @@ public class ShatterFieldPassive : MonoBehaviour
 
     private HashSet<EnemyHealth> trackedForExploit = new HashSet<EnemyHealth>();
 
-    public void Init(PlayerStats playerStats, PlayerCombatContext combatContext, WeaponData weaponData)
+    public void Init(PlayerStats playerStats, PlayerCombatContext combatContext, WeaponData weaponData, float radiusMultiplier = 1f)
     {
         stats = playerStats;
         context = combatContext;
         context.OnSecondaryAttack += OnSecondaryAttack;
+        context.OnSecondaryAttackForced += OnSecondaryAttackForced;
+        context.OnEnemyKilled += OnEnemyKilled;
 
         if (weaponData != null && weaponData.secondaryAttack != null)
-            baseRadius = weaponData.secondaryAttack.range;
+            baseRadius = weaponData.secondaryAttack.range * radiusMultiplier;
     }
 
     private void OnDestroy()
     {
         if (context != null)
+        {
             context.OnSecondaryAttack -= OnSecondaryAttack;
+            context.OnSecondaryAttackForced -= OnSecondaryAttackForced;
+            context.OnEnemyKilled -= OnEnemyKilled;
+        }
     }
 
     private void Update()
@@ -76,14 +90,21 @@ public class ShatterFieldPassive : MonoBehaviour
         cooldownTimer = Cooldown;
     }
 
+    private void OnSecondaryAttackForced()
+    {
+        if (!enabled) return;
+        if (fieldPrefab == null) return;
+        SpawnField(context.LastSecondaryPosition);
+    }
+
     private void SpawnField(Vector3 position)
     {
         Vector3 spawnPos = new Vector3(position.x, 0.01f, position.z);
         var zone = Instantiate(fieldPrefab, spawnPos, Quaternion.identity);
-        zone.damagePercent = intensifiedField ? 0.25f : 0.15f;
-        zone.tickInterval = 0.5f;
+        zone.damagePercent = intensifiedField ? IntensifiedDamagePercent : BaseDamagePercent;
+        zone.tickInterval = BaseTickInterval;
         zone.duration = FieldDuration;
-        zone.radius = wideField ? baseRadius * 1.5f : baseRadius;
+        zone.radius = wideField ? baseRadius * WideFieldRadiusMultiplier : baseRadius;
         zone.fieldCountsAsAttack = shatterStrike;
         zone.passive = this;
         zone.Init(stats, context);
@@ -135,13 +156,18 @@ public class ShatterFieldPassive : MonoBehaviour
         {
             if (enemy == null || enemy.IsDead)
             {
-                stats.HealPercent(0.02f);
+                stats.HealPercent(ExploitHealPercent);
                 Debug.Log("[ShatterField] Exploit: heal 2% max HP");
                 toRemove.Add(enemy);
             }
         }
         foreach (var e in toRemove)
             trackedForExploit.Remove(e);
+    }
+
+    private void OnEnemyKilled(EnemyHealth enemy)
+    {
+        CheckExploit();
     }
 
     private void ApplyRoot(EnemyHealth enemy, EnemyStatusHandler status, EnemySlowState state)
@@ -154,12 +180,12 @@ public class ShatterFieldPassive : MonoBehaviour
         state.currentModifier.moveSpeed = 0f;
         state.expireCoroutine = null;
 
-        state.rootModifier.moveSpeed = -1f;
+        state.rootModifier.moveSpeed = RootMoveSpeedModifier;
         status.AddMultiplierModifier(state.rootModifier);
 
         if (brittle)
         {
-            state.brittleModifier.damageTaken = 0.3f;
+            state.brittleModifier.damageTaken = BrittleDamageTakenBonus;
             status.AddMultiplierModifier(state.brittleModifier);
         }
 

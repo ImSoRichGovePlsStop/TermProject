@@ -141,6 +141,8 @@ MonoBehaviour:
   animator: {fileID: 7551460917292428163}
   enemyCollider: {fileID: 2242107197552931819}
   rb: {fileID: 208256006118903961}
+  healthBarOffset: {x: 0, y: 0.3, z: 0}
+  healthBarScale: {x: 1, y: 1, z: 1}
   enemyController: {fileID: 7960103508822112348}
   enemyMovement: {fileID: 5751372851717793496}
   enemyAttack: {fileID: 6896815270950409670}
