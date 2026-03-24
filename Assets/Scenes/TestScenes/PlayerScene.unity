@@ -607,6 +607,10 @@ PrefabInstance:
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 1989088080729489867, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
+      propertyPath: maxHP
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 1989088080729489867, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
       propertyPath: enemyAttack
       value: 
       objectReference: {fileID: 0}
@@ -983,6 +987,10 @@ PrefabInstance:
     - target: {fileID: 2371149561134109772, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
       propertyPath: m_Layer
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4661786164692222674, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
+      propertyPath: maxHP
+      value: 200
       objectReference: {fileID: 0}
     - target: {fileID: 4661786164692222674, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
       propertyPath: enemyAttack

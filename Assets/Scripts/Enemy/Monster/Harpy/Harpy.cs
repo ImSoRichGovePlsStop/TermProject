@@ -194,7 +194,7 @@ public class Harpy : MonoBehaviour
         FaceDirection(dir);
 
         //when crash with player
-        if (Vector3.Distance(transform.position, player.position) < 1.2f)
+        if (Vector3.Distance(transform.position, player.position) < 1.0f)
         {
             Debug.Log("Crash with player");
             attack.DealDamage(player.gameObject);

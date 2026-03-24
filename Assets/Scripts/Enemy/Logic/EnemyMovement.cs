@@ -49,7 +49,7 @@ public class EnemyMovement : MonoBehaviour
         {
             if (!rb.isKinematic)
                 moveDirection = Vector3.zero;
-            rb.linearVelocity = Vector3.zero;
+                rb.linearVelocity = Vector3.zero;
         }
     }
 
