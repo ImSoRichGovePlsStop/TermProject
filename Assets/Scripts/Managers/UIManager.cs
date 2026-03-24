@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -38,6 +38,7 @@ public class UIManager : MonoBehaviour
 
         inventoryPanel = GameObject.FindWithTag("InventoryPanel");
         bagGrid = GameObject.FindWithTag("BagGrid");
+        inventoryUI = FindFirstObjectByType<InventoryUI>(FindObjectsInactive.Include);
         passiveScreenUI = FindFirstObjectByType<PassiveScreenUI>(FindObjectsInactive.Include);
         gamblerScreenUI = FindFirstObjectByType<GamblerScreenUI>(FindObjectsInactive.Include);
         _upgradeStationUI = FindFirstObjectByType<UpgradeStationUI>(FindObjectsInactive.Include);
@@ -94,7 +95,14 @@ public class UIManager : MonoBehaviour
             }
 
             if (Keyboard.current[Key.F].wasPressedThisFrame && IsInventoryOpen)
-                inventoryUI?.TakeAllFromEnv();
+            {
+                Debug.Log("F pressed → calling TakeAllFromEnv");
+
+                if (inventoryUI == null)
+                    Debug.LogError("inventoryUI is NULL!");
+                else
+                    inventoryUI.TakeAllFromEnv();
+            }
 
             if (passiveScreenUI != null && passiveScreenUI.IsOpen)
             {

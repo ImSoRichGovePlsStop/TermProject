@@ -1558,15 +1558,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2634401423236395427, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -961.18
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2634401423236395427, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -268.56
+      value: 0.508
       objectReference: {fileID: 0}
     - target: {fileID: 2634401423236395427, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 0.34
       objectReference: {fileID: 0}
     - target: {fileID: 2634401423236395427, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2240,6 +2240,10 @@ PrefabInstance:
       propertyPath: shopUI
       value: 
       objectReference: {fileID: 4599325126733531757}
+    - target: {fileID: 4096269384138325937, guid: 7abef4d6113da8241b49d0cfcf6a50c8, type: 3}
+      propertyPath: inventoryUI
+      value: 
+      objectReference: {fileID: 7151258701695423803}
     - target: {fileID: 7351500857789079862, guid: 7abef4d6113da8241b49d0cfcf6a50c8, type: 3}
       propertyPath: m_Name
       value: UIManager

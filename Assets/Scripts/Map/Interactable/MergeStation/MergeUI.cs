@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -53,6 +54,7 @@ public class MergeUI : MonoBehaviour
         if (!_initialized) return;
 
         ReturnInputToBag();
+        ReturnOutputToBag();
 
         if (_currentStation != null && _currentStation.CachedOutput != null)
         {
@@ -240,32 +242,70 @@ public class MergeUI : MonoBehaviour
         mergeButton.interactable = !hasOutput;
     }
 
-    private void ReturnInputToBag()
+    private void ReturnGridToBag(GridData grid, bool restoreOnFull)
     {
-        var inputModules = new List<ModuleInstance>(_inputGrid.GetAllModules());
-        foreach (var inst in inputModules)
-        {
-            var moduleUI = inst.UIElement as ModuleItemUI;
-            if (moduleUI != null) Destroy(moduleUI.gameObject);
-            var matUI = inst.UIElement as MaterialItemUI;
-            if (matUI != null) Destroy(matUI.gameObject);
+        var modules = new List<ModuleInstance>(grid.GetAllModules());
+        if (modules.Count == 0) return;
 
-            _inputGrid.Remove(inst);
+        foreach (var inst in modules)
+        {
+            var uiElem = inst.UIElement;
+            grid.Remove(inst);
 
             if (!InventoryManager.Instance.TryAddToBag(inst))
             {
-                Debug.LogWarning($"[MergeUI] Bag full — could not return {inst.Data.moduleName}");
+                if (restoreOnFull)
+                {
+                    bool restored = false;
+                    for (int row = 0; row < grid.Height && !restored; row++)
+                        for (int col = 0; col < grid.Width && !restored; col++)
+                            if (grid.TryPlace(inst, new Vector2Int(col, row)))
+                                restored = true;
+
+                    if (!restored)
+                        Debug.LogWarning($"[MergeUI] Bag full and couldn't restore {inst.Data.moduleName} — item lost!");
+                }
+                else
+                {
+                    if (uiElem != null) Destroy(uiElem.gameObject);
+                    Debug.LogWarning($"[MergeUI] Bag full — output item {inst.Data.moduleName} discarded.");
+                }
                 continue;
             }
 
-            var go = Instantiate(moduleItemPrefab, _canvas.transform);
-            go.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
-            go.Init(inst, bagGridUI, bagGridUI);
-            StartCoroutine(SnapNextFrame(go, bagGridUI, inst.GridPosition));
+            if (uiElem == null) continue;
+
+            if (uiElem is MaterialItemUI matUI)
+            {
+                matUI.WeaponGridUI = _inventoryUI.WeaponGridUI;
+                matUI.BagGridUI = bagGridUI;
+                matUI.EnvGridUI = _inventoryUI.EnvGridUI;
+                matUI.InputGridUI = null;
+                matUI.SnapToCell(bagGridUI, inst.GridPosition);
+            }
+            else if (uiElem is ModuleItemUI modUI)
+            {
+                modUI.WeaponGridUI = _inventoryUI.WeaponGridUI;
+                modUI.BagGridUI = bagGridUI;
+                modUI.EnvGridUI = _inventoryUI.EnvGridUI;
+                modUI.InputGridUI = null;
+                modUI.SnapToCell(bagGridUI, inst.GridPosition);
+            }
         }
     }
 
+    private void ReturnInputToBag() => ReturnGridToBag(_inputGrid, restoreOnFull: true);
+    private void ReturnOutputToBag() => ReturnGridToBag(_outputGrid, restoreOnFull: false);
+
     private IEnumerator SnapNextFrame(ModuleItemUI ui, GridUI gridUI, Vector2Int cell)
+    {
+        ui.GetComponent<CanvasGroup>().alpha = 0f;
+        yield return null;
+        Canvas.ForceUpdateCanvases();
+        ui.SnapToCell(gridUI, cell);
+        ui.GetComponent<CanvasGroup>().alpha = 1f;
+    }
+    private IEnumerator SnapNextFrame(MaterialItemUI ui, GridUI gridUI, Vector2Int cell)
     {
         ui.GetComponent<CanvasGroup>().alpha = 0f;
         yield return null;
