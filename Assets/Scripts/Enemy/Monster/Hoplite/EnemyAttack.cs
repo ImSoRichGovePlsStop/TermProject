@@ -44,7 +44,6 @@ public class EnemyAttack : MonoBehaviour
         Debug.Log(">>> CALL StartAttack");
 
         isAttacking = true;
-        // lastAttackTime = Time.time;
         animator.SetBool("IsAttacking", true);
         Debug.Log("Attack started");
 

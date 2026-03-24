@@ -107,6 +107,11 @@ public class Harpy : MonoBehaviour
                 {
                     StartDive();
                 }
+
+                if (attack != null && attack.CanAttack())
+                {
+                    attack.StartAttack();
+                }
                 break;
 
             case HarpyState.DiveAttack:
