@@ -19,8 +19,7 @@ public class CardPhaseUI : MonoBehaviour
     [SerializeField] private bool givePermanentBuff = true;
     [SerializeField] private Sprite noBuffCardBackSprite;
 
-    [Header("Card Pool")]
-    [SerializeField] private List<BuffCardData> cardPool;
+    private List<BuffCardData> cardPool = new();
 
     [Header("Card Backs")]
     [SerializeField] private List<PermanentBuffSlot> cardBackSlots;
@@ -44,6 +43,12 @@ public class CardPhaseUI : MonoBehaviour
     private CardUI selectedCardUI;
     private bool waitingForContinue = false;
     private int rerollCount = 0;
+
+    public void AddCardsFromFolder(string folderPath)
+    {
+        var cards = Resources.LoadAll<BuffCardData>(folderPath);
+        cardPool.AddRange(cards);
+    }
 
     private void Awake()
     {
