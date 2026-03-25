@@ -144,7 +144,7 @@ public class PlayerStats : MonoBehaviour
         ApplyDefault();
     }
 
-    void ApplyDefault()
+    public void ApplyDefault()
     {
         weaponHealth = defaultHealth;
         weaponMoveSpeed = defaultMoveSpeed;

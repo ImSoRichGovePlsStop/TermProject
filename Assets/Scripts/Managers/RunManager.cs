@@ -9,6 +9,7 @@ public class RunManager : MonoBehaviour
     public int TotalEnemyKilled = 0;
     public int TotalEventsFound = 0;
     public int TotalBossKilled = 0;
+    public bool IsWin = false;
 
     void Awake()
     {
@@ -17,15 +18,8 @@ public class RunManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public void OnEnemyKilled()
-    {
-        TotalEnemyKilled++;
-    }
-
-    public void OnEventRoomEntered()
-    {
-        TotalEventsFound++;
-    }
+    public void OnEnemyKilled() => TotalEnemyKilled++;
+    public void OnEventRoomEntered() => TotalEventsFound++;
 
     public void OnBossKilled()
     {
@@ -40,5 +34,6 @@ public class RunManager : MonoBehaviour
         TotalEnemyKilled = 0;
         TotalEventsFound = 0;
         TotalBossKilled = 0;
+        IsWin = false;
     }
 }

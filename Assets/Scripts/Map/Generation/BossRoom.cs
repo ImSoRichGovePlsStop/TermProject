@@ -74,7 +74,7 @@ public class BossRoom : MonoBehaviour
 
         // pick portal based on next floor
         int nextFloor = (RunManager.Instance?.CurrentFloor ?? 1) + 1;
-        GameObject selectedPortal = nextFloor > 3 && portalFinalPrefab != null
+        GameObject selectedPortal = nextFloor > 2 && portalFinalPrefab != null
             ? portalFinalPrefab
             : portalPrefab;
 
@@ -82,7 +82,7 @@ public class BossRoom : MonoBehaviour
         Instantiate(selectedPortal, portalPos, Quaternion.identity);
 
         CurrencyManager wallet = Object.FindFirstObjectByType<CurrencyManager>();
-        wallet.AddCoins(Random.Range(100, 501));
+        wallet.AddCoins(300);
 
         RunManager.Instance?.OnBossKilled();
     }
@@ -132,7 +132,7 @@ public class BossRoom : MonoBehaviour
             new Vector3( halfX, 0, -halfZ),
         });
 
-        polyShape.extrude     = 10;
+        polyShape.extrude     = 2;
         polyShape.flipNormals = true;
 
         pbMesh.CreateShapeFromPolygon(polyShape.controlPoints, polyShape.extrude, polyShape.flipNormals);

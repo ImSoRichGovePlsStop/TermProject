@@ -307,6 +307,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8623869315100769633}
   - component: {fileID: 8587344465084356682}
+  - component: {fileID: 2802053714319734125}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -348,6 +349,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e06989e710b1ae448769e10f37d8d55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+--- !u!114 &2802053714319734125
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1941185337081448578}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3cdf09f2bfd9854eaa782cc52498348, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RunManager
+  CurrentFloor: 1
+  TotalEnemyKilled: 0
+  TotalEventsFound: 0
+  TotalBossKilled: 0
 --- !u!1 &2276643045636912442
 GameObject:
   m_ObjectHideFlags: 0
@@ -1556,6 +1573,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 8623869315100769633}
     m_Modifications:
+    - target: {fileID: 2550625429019843902, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
+      propertyPath: m_Constraints
+      value: 116
+      objectReference: {fileID: 0}
     - target: {fileID: 2634401423236395427, guid: 91b7b94f8a2453a49bb6443c1443d5df, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

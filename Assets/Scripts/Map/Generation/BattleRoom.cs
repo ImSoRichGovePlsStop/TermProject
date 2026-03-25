@@ -115,7 +115,7 @@ public class BattleRoom : MonoBehaviour
         new Vector3( halfX, 0, -halfZ),
         });
 
-        polyShape.extrude = 10;
+        polyShape.extrude = 2;
         polyShape.flipNormals = true;
 
         pbMesh.CreateShapeFromPolygon(polyShape.controlPoints, polyShape.extrude, polyShape.flipNormals);
@@ -148,11 +148,14 @@ public class BattleRoom : MonoBehaviour
         isCleared = true;
         isLocked = false;
         RemoveInvisibleWalls();
-        GameObject lootbox = Instantiate(lootPrefab, transform.position, Quaternion.identity);
+        Instantiate(lootPrefab, transform.position, Quaternion.identity);
+
+        int floor = RunManager.Instance?.CurrentFloor ?? 1;
+        int baseCoins = Random.Range(25, 75);
+        int bonusCoins = (floor - 1) * 25;
 
         CurrencyManager wallet = Object.FindFirstObjectByType<CurrencyManager>();
-        wallet.AddCoins(Random.Range(50, 251));
-
+        wallet.AddCoins(baseCoins + bonusCoins);
     }
 
     private void SpawnEnemies()

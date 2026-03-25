@@ -223,7 +223,7 @@ public class UIManager : MonoBehaviour
 
     private void OnPlayerDeath()
     {
-        if (gameOverScreen != null)
-            gameOverScreen.SetActive(true);
+        var panel = FindFirstObjectByType<EndGameUI>(FindObjectsInactive.Include);
+        panel?.Show(isWin: false);
     }
 }

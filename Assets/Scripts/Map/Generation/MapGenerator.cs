@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.ProBuilder;
+using UnityEngine.ProBuilder.MeshOperations;
 
 public enum RoomType { None, Spawn, Battle, Boss, Shop, Merge, Heal, Upgrade }
 
@@ -39,6 +41,7 @@ public class MapGenerator : MonoBehaviour
     public GameObject bossPrefab;
     public GameObject lootPrefab;
     public Material boundaryMaterial;
+    public Material wallMat;
 
     [Header("Layout")]
     public int gridWidth = 7;
@@ -87,6 +90,7 @@ public class MapGenerator : MonoBehaviour
 
         SpawnAllRooms();
         SpawnAllCorridors();
+        SpawnAllRoomWalls();
     }
 
     // ── grid init ────────────────────────────────────────────────────────────
@@ -238,7 +242,7 @@ public class MapGenerator : MonoBehaviour
         var room = obj.AddComponent<BattleRoom>();
         room.lootPrefab = lootPrefab;
         room.boundaryMaterial = boundaryMaterial;
-        room.enemyCount = Random.Range(1, 4);
+        room.enemyCount = (Random.Range(1, 4)) + (RunManager.Instance?.CurrentFloor ?? 1);
         room.enemyPrefabs = new[] { enemiesPrefab[Random.Range(0, enemiesPrefab.Length)] };
 
         Vector3 roomVol = new Vector3(size.x, triggerHeight, size.y);
@@ -350,17 +354,39 @@ public class MapGenerator : MonoBehaviour
         var corridor = new GameObject($"Corridor_{a.GridCoord}->{b.GridCoord}");
         corridor.transform.position = center;
 
-        // floor
-        var floor = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        floor.name = "Floor";
-        floor.transform.SetParent(corridor.transform);
-        floor.transform.localPosition = Vector3.zero;
-        floor.transform.localScale = isNS
-            ? new Vector3(corridorWidth, 0.1f, gap)
-            : new Vector3(gap, 0.1f, corridorWidth);
-        Destroy(floor.GetComponent<Collider>());
+        float hw = corridorWidth / 2f;
+        float halfGap = gap / 2f;
+
+        // floor — ProBuilder quad
+        Vector3 fc0, fc1, fc2, fc3;
+        if (isNS)
+        {
+            fc0 = new Vector3(-hw, 0, halfGap);
+            fc1 = new Vector3(hw, 0, halfGap);
+            fc2 = new Vector3(hw, 0, -halfGap);
+            fc3 = new Vector3(-hw, 0, -halfGap);
+        }
+        else
+        {
+            fc0 = new Vector3(-halfGap, 0, -hw);
+            fc1 = new Vector3(-halfGap, 0, hw);
+            fc2 = new Vector3(halfGap, 0, hw);
+            fc3 = new Vector3(halfGap, 0, -hw);
+        }
+
+        var floorObj = new GameObject("Floor");
+        floorObj.transform.SetParent(corridor.transform);
+        floorObj.transform.localPosition = Vector3.zero;
+        var floorPb = floorObj.AddComponent<ProBuilderMesh>();
+        var floorPoly = floorObj.AddComponent<PolyShape>();
+        floorPoly.SetControlPoints(new Vector3[] { fc0, fc1, fc2, fc3 });
+        floorPoly.extrude = 0.1f;
+        floorPoly.flipNormals = false;
+        floorPb.CreateShapeFromPolygon(floorPoly.controlPoints, floorPoly.extrude, floorPoly.flipNormals);
+        floorPb.ToMesh();
+        floorPb.Refresh();
         if (boundaryMaterial != null)
-            floor.GetComponent<Renderer>().material = boundaryMaterial;
+            floorPb.GetComponent<Renderer>().material = boundaryMaterial;
 
         // walls
         SpawnCorridorWall(corridor.transform, isNS, gap, -1);
@@ -370,19 +396,110 @@ public class MapGenerator : MonoBehaviour
     void SpawnCorridorWall(Transform parent, bool isNS, float length, int side)
     {
         float halfCW = corridorWidth / 2f;
+        float halfLen = length / 2f;
 
-        var wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        wall.name = "Wall";
-        wall.transform.SetParent(parent);
-        wall.transform.localPosition = isNS
-            ? new Vector3(side * halfCW, triggerHeight / 2f, 0f)
-            : new Vector3(0f, triggerHeight / 2f, side * halfCW);
-        wall.transform.localScale = isNS
-            ? new Vector3(0.1f, triggerHeight, length)
-            : new Vector3(length, triggerHeight, 0.1f);
+        Vector3 c0, c1, c2, c3;
+        if (isNS)
+        {
+            float x = side * halfCW;
+            c0 = new Vector3(x, 0, -halfLen);
+            c1 = new Vector3(x, 0, halfLen);
+            c2 = new Vector3(x, 2f, halfLen);
+            c3 = new Vector3(x, 2f, -halfLen);
+        }
+        else
+        {
+            float z = side * halfCW;
+            c0 = new Vector3(-halfLen, 0, z);
+            c1 = new Vector3(halfLen, 0, z);
+            c2 = new Vector3(halfLen, 2f, z);
+            c3 = new Vector3(-halfLen, 2f, z);
+        }
+
+        var wallObj = new GameObject("Wall");
+        wallObj.transform.SetParent(parent);
+        wallObj.transform.localPosition = Vector3.zero;
+
+        var pb = wallObj.AddComponent<ProBuilderMesh>();
+        var poly = wallObj.AddComponent<PolyShape>();
+        poly.SetControlPoints(new Vector3[] { c0, c1, c2, c3 });
+        poly.extrude = 0.01f;
+        poly.flipNormals = false;
+        pb.CreateShapeFromPolygon(poly.controlPoints, poly.extrude, poly.flipNormals);
+        pb.ToMesh();
+        pb.Refresh();
+
+        var mc = wallObj.AddComponent<MeshCollider>();
+        mc.sharedMesh = pb.GetComponent<MeshFilter>().sharedMesh;
 
         if (boundaryMaterial != null)
-            wall.GetComponent<Renderer>().material = boundaryMaterial;
+            pb.GetComponent<Renderer>().material = boundaryMaterial;
+    }
+
+    // ── room walls ───────────────────────────────────────────────────────────
+
+    void SpawnAllRoomWalls()
+    {
+        for (int x = 0; x < gridWidth; x++)
+            for (int y = 0; y < gridHeight; y++)
+            {
+                var node = _grid[x, y];
+                if (node.Type == RoomType.None || node.RoomObject == null) continue;
+
+                var preset = node.RoomObject.GetComponent<RoomPreset>();
+                if (preset == null) continue;
+
+                float hx = preset.roomSize.x / 2f;
+                float hz = preset.roomSize.y / 2f;
+
+                bool hasN = HasConnection(node, Vector2Int.up);
+                bool hasE = HasConnection(node, Vector2Int.right);
+                bool hasS = HasConnection(node, Vector2Int.down);
+                bool hasW = HasConnection(node, Vector2Int.left);
+
+                if (!hasN) SpawnRoomWall(node.RoomObject.transform, new Vector3(-hx, 0, hz), new Vector3(hx, 0, hz));
+                if (!hasS) SpawnRoomWall(node.RoomObject.transform, new Vector3(hx, 0, -hz), new Vector3(-hx, 0, -hz));
+                if (!hasE) SpawnRoomWall(node.RoomObject.transform, new Vector3(hx, 0, hz), new Vector3(hx, 0, -hz));
+                if (!hasW) SpawnRoomWall(node.RoomObject.transform, new Vector3(-hx, 0, -hz), new Vector3(-hx, 0, hz));
+            }
+    }
+
+    void SpawnRoomWall(Transform parent, Vector3 start, Vector3 end)
+    {
+        float wallHeight = 2f;
+        float wallThickness = 0.01f;
+
+        Vector3 dir = (end - start).normalized;
+        Vector3 inward = Vector3.Cross(dir, Vector3.up).normalized;
+
+        Vector3 c0 = start;
+        Vector3 c1 = end;
+        Vector3 c2 = end + inward * wallThickness;
+        Vector3 c3 = start + inward * wallThickness;
+
+        var wallObj = new GameObject("RoomWall");
+        wallObj.transform.SetParent(parent);
+        wallObj.transform.localPosition = Vector3.zero;
+
+        var pb = wallObj.AddComponent<ProBuilderMesh>();
+        var poly = wallObj.AddComponent<PolyShape>();
+        poly.SetControlPoints(new Vector3[] { c0, c1, c2, c3 });
+        poly.extrude = wallHeight;
+        poly.flipNormals = false;
+        pb.CreateShapeFromPolygon(poly.controlPoints, poly.extrude, poly.flipNormals);
+        pb.ToMesh();
+        pb.Refresh();
+
+        var mc = wallObj.AddComponent<MeshCollider>();
+        mc.sharedMesh = pb.GetComponent<MeshFilter>().sharedMesh;
+
+        if (wallMat != null)
+            pb.GetComponent<Renderer>().material = wallMat;
+    }
+
+    bool HasConnection(RoomNode node, Vector2Int dir)
+    {
+        return node.Neighbors.Exists(n => n.GridCoord == node.GridCoord + dir);
     }
 
     // ── helpers ──────────────────────────────────────────────────────────────
