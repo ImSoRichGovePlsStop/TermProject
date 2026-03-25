@@ -106,6 +106,8 @@ public class RandomLoot : MonoBehaviour, IInteractable
                     inventoryUI.SpawnExistingModuleToEnv(inst);
             }
         }
+
+        Destroy(gameObject);
     }
 
     private void SaveRemainingLoot()

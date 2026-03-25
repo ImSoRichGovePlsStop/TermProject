@@ -30,6 +30,11 @@ public class CurrencyManager : MonoBehaviour
         OnCoinsChanged?.Invoke(Coins);
     }
 
+    public void ResetCoins() {
+        Coins = 0;
+        OnCoinsChanged?.Invoke(Coins);
+    }
+
 
     [ContextMenu("Add100coins")]
     private void Add100coins()

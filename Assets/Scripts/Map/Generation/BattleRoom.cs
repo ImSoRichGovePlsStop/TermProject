@@ -72,18 +72,18 @@ public class BattleRoom : MonoBehaviour
     }
     private void CreateInvisibleWalls()
     {
-        CreateRoomBoundary();
+        //CreateRoomBoundary();
 
         (Vector3 pos, Vector3 size)[] wallConfigs = new[]
         {
         // Left
-        (new Vector3(-roomSize.x / 2f, roomSize.y / 2f, 0f), new Vector3(0.01f, roomSize.y, 2)),
+        (new Vector3(-roomSize.x / 2f, roomSize.y / 2f, 0f), new Vector3(0.01f, roomSize.y, roomSize.z)),
         // Right
-        (new Vector3(roomSize.x / 2f, roomSize.y / 2f, 0f),  new Vector3(0.01f, roomSize.y, 2)),
+        (new Vector3(roomSize.x / 2f, roomSize.y / 2f, 0f),  new Vector3(0.01f, roomSize.y, roomSize.z)),
         // Front
-        (new Vector3(0f, roomSize.y / 2f, roomSize.z / 2f),  new Vector3(2, roomSize.y, 0.01f)),
+        (new Vector3(0f, roomSize.y / 2f, roomSize.z / 2f),  new Vector3(roomSize.x, roomSize.y, 0.01f)),
         // Back
-        (new Vector3(0f, roomSize.y / 2f, -roomSize.z / 2f), new Vector3(2, roomSize.y, 0.01f)),
+        (new Vector3(0f, roomSize.y / 2f, -roomSize.z / 2f), new Vector3(roomSize.x, roomSize.y, 0.01f)),
     };
 
         foreach (var (localPos, size) in wallConfigs)
@@ -148,11 +148,14 @@ public class BattleRoom : MonoBehaviour
         isCleared = true;
         isLocked = false;
         RemoveInvisibleWalls();
-        GameObject lootbox = Instantiate(lootPrefab, transform.position, Quaternion.identity);
+        Instantiate(lootPrefab, transform.position, Quaternion.identity);
+
+        int floor = RunManager.Instance?.CurrentFloor ?? 1;
+        int baseCoins = Random.Range(25, 75);
+        int bonusCoins = (floor - 1) * 25;
 
         CurrencyManager wallet = Object.FindFirstObjectByType<CurrencyManager>();
-        wallet.AddCoins(Random.Range(50, 251));
-
+        wallet.AddCoins(baseCoins + bonusCoins);
     }
 
     private void SpawnEnemies()

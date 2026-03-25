@@ -34,9 +34,9 @@ public class InventoryLayout : MonoBehaviour
             posY: topY - weaponSize.y * 0.5f);
 
         SetRect(bagGridRect, bagSize,
-            anchorX: 0.5f, anchorY: 0.5f,
+            anchorX: 0.5f, anchorY: 0f,
             posX: 0f,
-            posY: topY - weaponSize.y - gapBetweenGrids - bagSize.y * 0.5f);
+            posY: 10f + bagSize.y * 0.5f);
 
         // envGrid อยู่ซ้าย ชิดกับ weaponGrid โดยใช้ gap เดิม
         if (envGridRect != null)
