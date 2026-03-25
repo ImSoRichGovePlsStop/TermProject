@@ -96,7 +96,7 @@ public class BossRoom : MonoBehaviour
 
     private void CreateInvisibleWalls()
     {
-        CreateRoomBoundary();
+        //CreateRoomBoundary();
 
         (Vector3 pos, Vector3 size)[] wallConfigs = new[]
         {

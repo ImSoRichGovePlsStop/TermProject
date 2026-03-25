@@ -72,7 +72,7 @@ public class BattleRoom : MonoBehaviour
     }
     private void CreateInvisibleWalls()
     {
-        CreateRoomBoundary();
+        //CreateRoomBoundary();
 
         (Vector3 pos, Vector3 size)[] wallConfigs = new[]
         {
@@ -115,7 +115,7 @@ public class BattleRoom : MonoBehaviour
         new Vector3( halfX, 0, -halfZ),
         });
 
-        polyShape.extrude = 2;
+        polyShape.extrude = 10;
         polyShape.flipNormals = true;
 
         pbMesh.CreateShapeFromPolygon(polyShape.controlPoints, polyShape.extrude, polyShape.flipNormals);

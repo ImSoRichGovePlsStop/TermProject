@@ -289,7 +289,7 @@ MonoBehaviour:
   portalPrefab: {fileID: 8261454306142249107, guid: 323db3c7dad372342aed4732f194c622, type: 3}
   portalFinalPrefab: {fileID: 2217644600164415563, guid: ffaead280080565408dde90a744f411c, type: 3}
   enemiesPrefab:
-  - {fileID: 4095530523079436333, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
+  - {fileID: 2371149561134109772, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
   - {fileID: 1157175084331872940, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
   bossPrefab: {fileID: 764309370615633331, guid: 0a732bcad8eab62418a4d1e10c25585e, type: 3}
   lootPrefab: {fileID: 7487802019810916615, guid: 99d47f9338280df4ca3e55aeb52a23d2, type: 3}
@@ -299,10 +299,10 @@ MonoBehaviour:
   gridHeight: 7
   roomSpacing: 24
   triggerHeight: 3
-  minBattleRooms: 3
-  maxBattleRooms: 3
-  eventRoomChance: 0.723
-  branchChance: 0.4
+  minBattleRooms: 4
+  maxBattleRooms: 5
+  eventRoomChance: 1
+  branchChance: 1
   minBossDistance: 3
   corridorWidth: 2
 --- !u!4 &393293302
