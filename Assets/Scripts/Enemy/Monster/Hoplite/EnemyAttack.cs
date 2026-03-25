@@ -14,6 +14,7 @@ public class EnemyAttack : MonoBehaviour
     [SerializeField] private EnemyHealth enemyHealth;
 
     private bool isAttacking = false;
+    private float lastAttackTime = -Mathf.Infinity;
 
     public float AttackRange => attackRange;
     public float AttackCooldown => attackCooldown;
@@ -30,17 +31,16 @@ public class EnemyAttack : MonoBehaviour
 
     public bool CanAttack()
     {
-        if (enemyHealth != null && enemyHealth.IsDead) return false;
         if (enemyHealth != null && enemyHealth.IsHurt) return false;
         if (isAttacking) return false;
+        if (Time.time < lastAttackTime + attackCooldown) return false;
         return true;
     }
 
     public void StartAttack()
     {
-        if (!CanAttack()) return;
-
         isAttacking = true;
+        animator.SetBool("IsAttacking", true);
         Debug.Log("Attack started");
 
         if (animator != null)
@@ -83,22 +83,43 @@ public class EnemyAttack : MonoBehaviour
         }
     }
 
+    public void DealDamage(GameObject target)
+    {
+        if (enemyHealth != null && enemyHealth.IsDead)
+            return;
+
+        PlayerStats playerStats = target.GetComponent<PlayerStats>();
+
+        if (playerStats == null) 
+            playerStats = target.GetComponentInParent<PlayerStats>();
+
+        if (playerStats != null)
+        {
+            playerStats.TakeDamage(attackDamage, enemyHealth);
+        }
+    }
+
     // Animation Event ท้ายคลิป
     public void FinishAttack()
     {
         isAttacking = false;
+        lastAttackTime = Time.time;
+        animator.SetBool("IsAttacking", false);
+        animator.ResetTrigger("Attack");
         Debug.Log("FinishAttack called");
     }
 
     public void ForceStopAttack()
     {
+        if (!isAttacking) return;
+
         isAttacking = false;
+        lastAttackTime = Time.time;
+        animator.SetBool("IsAttacking", false);
 
         if (animator != null && gameObject.name.Contains("Harpy"))
         {
             animator.ResetTrigger("Attack");
-            // animator.SetBool("IsAttacking", false);
-            animator.Play("Harpy_Walk");
         }
     }
 
@@ -107,5 +128,15 @@ public class EnemyAttack : MonoBehaviour
         Gizmos.color = Color.magenta;
         Vector3 center = attackPoint != null ? attackPoint.position : transform.position;
         Gizmos.DrawWireSphere(center, attackRange);
+    }
+
+    public void SetDamageMultiplier(float multiplier)
+    {
+        attackDamage *= multiplier;
+    }
+
+    public void SetAttackRangeMultiplier(float multiplier)
+    {
+        attackRange *= multiplier;
     }
 }

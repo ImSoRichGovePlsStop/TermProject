@@ -18,7 +18,7 @@ public class DefaultEnemyHealth : EnemyHealth
             enemyMovement = GetComponent<EnemyMovement>();
 
         if (enemyAttack == null)
-            enemyAttack = GetComponent<EnemyAttack>();
+            enemyAttack = GetComponentInChildren<EnemyAttack>();
 
         if (statusHandler == null)
             statusHandler = GetComponent<EnemyStatusHandler>();
