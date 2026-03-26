@@ -6,21 +6,21 @@ public class GamblerStation : MonoBehaviour, IInteractable
     [SerializeField] private BuildingData buildingData;
     [SerializeField] private GenericTreeConfig treeConfig;
 
-    private GamblerScreenUI screenUI;
+    private UIManager uiManager;
     private GamblerManager manager;
     private BuildingLevelManager levelManager;
 
     private void Start()
     {
-        screenUI = FindFirstObjectByType<GamblerScreenUI>(FindObjectsInactive.Include);
+        uiManager = FindFirstObjectByType<UIManager>(FindObjectsInactive.Include);
         manager = FindFirstObjectByType<GamblerManager>(FindObjectsInactive.Include);
         levelManager = FindFirstObjectByType<BuildingLevelManager>(FindObjectsInactive.Include);
     }
 
     public void Interact(PlayerController playerController)
     {
-        if (screenUI == null || treeConfig == null) return;
-        screenUI.Open(treeConfig, buildingData, this);
+        if (uiManager == null || treeConfig == null) return;
+        uiManager.OpenGambler(treeConfig, buildingData, this);
     }
 
     public void TryLevelUp()

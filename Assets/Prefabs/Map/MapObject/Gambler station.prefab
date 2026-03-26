@@ -102,7 +102,6 @@ GameObject:
   - component: {fileID: 4034008255920523995}
   - component: {fileID: 2912383260833776737}
   - component: {fileID: 5022267881311424632}
-  - component: {fileID: 1591648247464909962}
   - component: {fileID: 4401870249818356321}
   m_Layer: 0
   m_Name: Gambler station
@@ -162,20 +161,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GamblerStation
   buildingData: {fileID: 11400000, guid: f881b505cad121943b7ba2f973813560, type: 2}
   treeConfig: {fileID: 11400000, guid: ca4015454cbb79245b8260782caf0015, type: 2}
---- !u!114 &1591648247464909962
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4162825520930519842}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b3220e1b0b415574886c92084668abf7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GamblerManager
-  handlerContainer: {fileID: 0}
-  startingPoints: 0
 --- !u!114 &4401870249818356321
 MonoBehaviour:
   m_ObjectHideFlags: 0

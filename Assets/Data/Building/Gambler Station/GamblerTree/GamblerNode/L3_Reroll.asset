@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2badfc7aa63c124db56ab610cb79ae9, type: 3}
+  m_Name: L3_Reroll
+  m_EditorClassIdentifier: Assembly-CSharp::GamblerNode
+  nodeName: Reroll
+  description: Discard your current hand and redraw. Each reroll shifts the ratio
+    one step toward negative. Lowest is 1 positive, 5 negative.
+  cost: 2
+  parents:
+  - {fileID: 11400000, guid: 7479ce143cd11724b889a336ac10b4ff, type: 2}
+  - {fileID: 11400000, guid: 8f2909ea1254c8b4685094e6fc3842be, type: 2}
+  requireAllParents: 0
+  layer: 3
+  branch: 0
