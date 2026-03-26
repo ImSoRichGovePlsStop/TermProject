@@ -33,7 +33,9 @@ public class CardUI : MonoBehaviour,
     private bool isFlipping = false;
     private bool isHoverable = true;
     private bool auraEnabled = true;
-    private PermanentBuffType permanentBuffType;
+    private bool isPeeking = false;
+    private bool peekMode = false;
+    private CardPhaseUI.PermanentBuffSlot permanentBuffSlot;
 
     private RectTransform rt;
     private Vector3 baseScale = Vector3.one;
@@ -99,14 +101,17 @@ public class CardUI : MonoBehaviour,
         rt.localScale = Vector3.Lerp(rt.localScale, targetScale, Time.deltaTime * scaleSmoothing);
     }
 
-    public void Setup(BuffCardData buffData, Sprite backSprite = null, PermanentBuffType permBuff = PermanentBuffType.MaxHp, bool enableAura = true)
+    public void Setup(BuffCardData buffData, Sprite backSprite = null,
+        CardPhaseUI.PermanentBuffSlot permSlot = null, bool enableAura = true)
     {
         data = buffData;
-        permanentBuffType = permBuff;
+        permanentBuffSlot = permSlot;
         auraEnabled = enableAura;
         isFlipped = false;
         isFlipping = false;
         isHoverable = true;
+        peekMode = false;
+        isPeeking = false;
 
         cardFront.SetActive(false);
         cardBack.SetActive(true);
@@ -242,9 +247,76 @@ public class CardUI : MonoBehaviour,
             targetScale = baseScale;
     }
 
+    // L5A
+    public void SetPeekMode(bool enabled)
+    {
+        peekMode = enabled;
+    }
+
+    public void PeekReveal(Action onComplete = null)
+    {
+        if (isFlipped || isFlipping || isPeeking) return;
+        StartCoroutine(PeekRoutine(onComplete));
+    }
+
+    private IEnumerator PeekRoutine(Action onComplete)
+    {
+        isPeeking = true;
+        cardButton.interactable = false;
+
+        float half = flipDuration / 2f;
+        float t = 0f;
+
+        while (t < half)
+        {
+            t += Time.deltaTime;
+            rt.localScale = new Vector3(Mathf.Lerp(baseScale.x, 0f, t / half), baseScale.y, 1f);
+            yield return null;
+        }
+
+        cardBack.SetActive(false);
+        cardFront.SetActive(true);
+
+        t = 0f;
+        while (t < half)
+        {
+            t += Time.deltaTime;
+            rt.localScale = new Vector3(Mathf.Lerp(0f, baseScale.x, t / half), baseScale.y, 1f);
+            yield return null;
+        }
+        rt.localScale = baseScale;
+
+        yield return new WaitForSeconds(1.5f);
+
+        t = 0f;
+        while (t < half)
+        {
+            t += Time.deltaTime;
+            rt.localScale = new Vector3(Mathf.Lerp(baseScale.x, 0f, t / half), baseScale.y, 1f);
+            yield return null;
+        }
+
+        cardFront.SetActive(false);
+        cardBack.SetActive(true);
+
+        t = 0f;
+        while (t < half)
+        {
+            t += Time.deltaTime;
+            rt.localScale = new Vector3(Mathf.Lerp(0f, baseScale.x, t / half), baseScale.y, 1f);
+            yield return null;
+        }
+        rt.localScale = baseScale;
+
+        isPeeking = false;
+        cardButton.interactable = true;
+
+        onComplete?.Invoke();
+    }
+
     private void OnClick()
     {
-        if (isFlipped || isFlipping) return;
+        if (isFlipped || isFlipping || isPeeking) return;
         OnCardClicked?.Invoke(this);
     }
 
@@ -261,6 +333,7 @@ public class CardUI : MonoBehaviour,
 
         float half = flipDuration / 2f;
         float t = 0f;
+
         while (t < half)
         {
             t += Time.deltaTime;
@@ -317,23 +390,26 @@ public class CardUI : MonoBehaviour,
     private IEnumerator ScaleRoutine(float targetScaleVal, float duration)
     {
         float t = 0f;
-        Vector3 startScale = rt.localScale;
-        Vector3 endScale = new Vector3(targetScaleVal, targetScaleVal, 1f);
+        Vector3 startSc = rt.localScale;
+        Vector3 endSc = new Vector3(targetScaleVal, targetScaleVal, 1f);
         while (t < duration)
         {
             t += Time.deltaTime;
-            rt.localScale = Vector3.Lerp(startScale, endScale, t / duration);
+            rt.localScale = Vector3.Lerp(startSc, endSc, t / duration);
             yield return null;
         }
-        rt.localScale = endScale;
-        targetScale = endScale;
+        rt.localScale = endSc;
+        targetScale = endSc;
     }
 
     public void Reset()
     {
+        if (rt == null) rt = GetComponent<RectTransform>();
         StopAura();
         isFlipped = false;
         isFlipping = false;
+        isPeeking = false;
+        peekMode = false;
         isHoverable = true;
         auraEnabled = true;
         cardFront.SetActive(false);
@@ -348,6 +424,6 @@ public class CardUI : MonoBehaviour,
     }
 
     public BuffCardData GetData() => data;
-    public PermanentBuffType GetPermanentBuffType() => permanentBuffType;
+    public CardPhaseUI.PermanentBuffSlot GetPermanentBuffSlot() => permanentBuffSlot;
     public void StopAuraPublic() => StopAura();
 }

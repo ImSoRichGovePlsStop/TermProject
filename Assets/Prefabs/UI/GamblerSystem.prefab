@@ -1995,6 +1995,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 391941741796486212}
   - {fileID: 3587536963114740191}
   - {fileID: 6624736919752507599}
   - {fileID: 8524864961265610705}
@@ -2066,6 +2067,7 @@ MonoBehaviour:
   upgradeButtonText: {fileID: 5657396573711203362}
   cardPhaseButton: {fileID: 8681794632153193280}
   cardPhaseUI: {fileID: 3106237069923055115}
+  cardPhaseButtonText: {fileID: 0}
 --- !u!1 &3735844752528124193
 GameObject:
   m_ObjectHideFlags: 0
@@ -3555,6 +3557,56 @@ MonoBehaviour:
   nameText: {fileID: 8317656464800939001}
   descriptionText: {fileID: 6321880076253598903}
   cardButton: {fileID: 818202133613438578}
+--- !u!1 &5419662622484665517
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 391941741796486212}
+  - component: {fileID: 8914677255883727900}
+  m_Layer: 5
+  m_Name: GamblerManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &391941741796486212
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5419662622484665517}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 458333666308748865}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &8914677255883727900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5419662622484665517}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3220e1b0b415574886c92084668abf7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GamblerManager
+  handlerContainer: {fileID: 3587536963114740191}
+  startingPoints: 0
 --- !u!1 &5670621401330573971
 GameObject:
   m_ObjectHideFlags: 0
@@ -5225,40 +5277,156 @@ MonoBehaviour:
   negativeCount: 3
   givePermanentBuff: 1
   noBuffCardBackSprite: {fileID: 2012030253, guid: df6cf0870ccd90c468c0558c5c13c1ac, type: 3}
-  cardPool:
-  - {fileID: 11400000, guid: 22253f8077fa89d419b4f1986489bb3e, type: 2}
-  - {fileID: 11400000, guid: 4c9e6efa703b8cb439865436be3f3cc8, type: 2}
-  - {fileID: 11400000, guid: 5c14e61ed359ee7499ad67e73e8f04d1, type: 2}
-  - {fileID: 11400000, guid: 6b2c19320267edc43993e20933970f84, type: 2}
-  - {fileID: 11400000, guid: 0faddb02ae69cf94695a2eb7dda8a5e7, type: 2}
-  - {fileID: 11400000, guid: ebc077bc92a012948a8cda61eec4c3ac, type: 2}
-  - {fileID: 11400000, guid: 66070fe26448a2e43af1934dcab8e68d, type: 2}
-  - {fileID: 11400000, guid: e829573a841ba8448a531e614ace15cb, type: 2}
-  - {fileID: 11400000, guid: 5e7a9588523a2f64b99a1721bc9019d8, type: 2}
-  - {fileID: 11400000, guid: 39ba55767e7ae064388c880d7de9a29b, type: 2}
-  - {fileID: 11400000, guid: 2e3bed38f993f2845bd20130d34f476f, type: 2}
-  - {fileID: 11400000, guid: fd7b728a23d0ccb41929576ca149097f, type: 2}
-  - {fileID: 11400000, guid: fef5efc2767eb414d98d4d3cb3b12e6a, type: 2}
-  - {fileID: 11400000, guid: 222f59273c00cc54ba1e0fdcc7cecffa, type: 2}
   cardBackSlots:
-  - buffType: 0
-    backSprite: {fileID: 948350933, guid: e5228b1a7cd5d3140a0628d7a393c9b6, type: 3}
-  - buffType: 1
-    backSprite: {fileID: -1779959128, guid: f94ca152436beff41a22ae4d068cba44, type: 3}
-  - buffType: 2
-    backSprite: {fileID: -562465224, guid: 15fb1e4b956ad184ba808995d6d830ff, type: 3}
-  - buffType: 3
-    backSprite: {fileID: 1850440308, guid: 69e7479c8434cc04788598269f2ff445, type: 3}
-  - buffType: 4
-    backSprite: {fileID: 11497947, guid: 0aaa669308f7a3944ae58acf8fa91100, type: 3}
-  - buffType: 5
-    backSprite: {fileID: -1230673954, guid: 925f4a33bc4b0914b91fb06fb7e33d8f, type: 3}
-  - buffType: 6
-    backSprite: {fileID: 963261310, guid: 5c3ff43a88462f0498db89c55a50a634, type: 3}
+  - backSprite: {fileID: 948350933, guid: e5228b1a7cd5d3140a0628d7a393c9b6, type: 3}
+    normalBuff:
+      health: 5
+      damage: 0
+      attackSpeed: 0
+      moveSpeed: 0
+      critChance: 0
+      critDamage: 0
+      evadeChance: 0
+      damageTaken: 0
+    extremeBuff:
+      health: 10
+      damage: 0
+      attackSpeed: 0
+      moveSpeed: 0
+      critChance: 0
+      critDamage: 0
+      evadeChance: 0
+      damageTaken: 0
+    variance: 0.2
+  - backSprite: {fileID: -1779959128, guid: f94ca152436beff41a22ae4d068cba44, type: 3}
+    normalBuff:
+      health: 0
+      damage: 2
+      attackSpeed: 0
+      moveSpeed: 0
+      critChance: 0
+      critDamage: 0
+      evadeChance: 0
+      damageTaken: 0
+    extremeBuff:
+      health: 0
+      damage: 4
+      attackSpeed: 0
+      moveSpeed: 0
+      critChance: 0
+      critDamage: 0
+      evadeChance: 0
+      damageTaken: 0
+    variance: 0.2
+  - backSprite: {fileID: -562465224, guid: 15fb1e4b956ad184ba808995d6d830ff, type: 3}
+    normalBuff:
+      health: 0
+      damage: 0
+      attackSpeed: 0.02
+      moveSpeed: 0
+      critChance: 0
+      critDamage: 0
+      evadeChance: 0
+      damageTaken: 0
+    extremeBuff:
+      health: 0
+      damage: 0
+      attackSpeed: 0.04
+      moveSpeed: 0
+      critChance: 0
+      critDamage: 0
+      evadeChance: 0
+      damageTaken: 0
+    variance: 0.2
+  - backSprite: {fileID: 1850440308, guid: 69e7479c8434cc04788598269f2ff445, type: 3}
+    normalBuff:
+      health: 0
+      damage: 0
+      attackSpeed: 0
+      moveSpeed: 0.2
+      critChance: 0
+      critDamage: 0
+      evadeChance: 0
+      damageTaken: 0
+    extremeBuff:
+      health: 0
+      damage: 0
+      attackSpeed: 0
+      moveSpeed: 0.4
+      critChance: 0
+      critDamage: 0
+      evadeChance: 0
+      damageTaken: 0
+    variance: 0.2
+  - backSprite: {fileID: 11497947, guid: 0aaa669308f7a3944ae58acf8fa91100, type: 3}
+    normalBuff:
+      health: 0
+      damage: 0
+      attackSpeed: 0
+      moveSpeed: 0
+      critChance: 0.01
+      critDamage: 0
+      evadeChance: 0
+      damageTaken: 0
+    extremeBuff:
+      health: 0
+      damage: 0
+      attackSpeed: 0
+      moveSpeed: 0
+      critChance: 0.02
+      critDamage: 0
+      evadeChance: 0
+      damageTaken: 0
+    variance: 0.2
+  - backSprite: {fileID: -1230673954, guid: 925f4a33bc4b0914b91fb06fb7e33d8f, type: 3}
+    normalBuff:
+      health: 0
+      damage: 0
+      attackSpeed: 0
+      moveSpeed: 0
+      critChance: 0
+      critDamage: 0.03
+      evadeChance: 0
+      damageTaken: 0
+    extremeBuff:
+      health: 0
+      damage: 0
+      attackSpeed: 0
+      moveSpeed: 0
+      critChance: 0
+      critDamage: 0.06
+      evadeChance: 0
+      damageTaken: 0
+    variance: 0.2
+  - backSprite: {fileID: 963261310, guid: 5c3ff43a88462f0498db89c55a50a634, type: 3}
+    normalBuff:
+      health: 0
+      damage: 0
+      attackSpeed: 0
+      moveSpeed: 0
+      critChance: 0
+      critDamage: 0
+      evadeChance: 0.01
+      damageTaken: 0
+    extremeBuff:
+      health: 0
+      damage: 0
+      attackSpeed: 0
+      moveSpeed: 0
+      critChance: 0
+      critDamage: 0
+      evadeChance: 0.02
+      damageTaken: 0
+    variance: 0.2
   showAura: 1
-  maxReroll: 2
   rerollButton: {fileID: 7141452073177582786}
   rerollText: {fileID: 1038996250841064073}
+  peekButton: {fileID: 0}
+  peekText: {fileID: 0}
+  devilsBetPanel: {fileID: 0}
+  betSafeButton: {fileID: 0}
+  betRiskButton: {fileID: 0}
+  betDespairButton: {fileID: 0}
 --- !u!1 &8337377579889154864
 GameObject:
   m_ObjectHideFlags: 0

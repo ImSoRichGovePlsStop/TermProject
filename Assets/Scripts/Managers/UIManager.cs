@@ -18,6 +18,9 @@ public class UIManager : MonoBehaviour
 
     public bool isInBattle { get; set; }
     public bool IsInventoryOpen { get; private set; }
+    public bool IsPassiveOpen => passiveScreenUI != null && passiveScreenUI.IsOpen;
+    public bool IsGamblerOpen => gamblerScreenUI != null && gamblerScreenUI.IsOpen;
+    public bool IsCardPhaseOpen => gamblerScreenUI != null && gamblerScreenUI.IsCardPhaseOpen;
     public bool IsShopOpen => _activeShopUI != null && _activeShopUI.gameObject.activeSelf;
     public bool IsMergeOpen => _activeMergeUI != null && _activeMergeUI.gameObject.activeSelf;
     public bool IsUpgradeOpen => _upgradeOpen;
@@ -70,9 +73,11 @@ public class UIManager : MonoBehaviour
         {
             if (Keyboard.current[Key.Tab].wasPressedThisFrame)
             {
-                if (gamblerScreenUI != null && gamblerScreenUI.IsOpen)
+                if (IsCardPhaseOpen)
+                    return;
+                else if (IsGamblerOpen)
                     gamblerScreenUI.Close();
-                else if (!passiveScreenUI.IsOpen)
+                else if (!IsPassiveOpen)
                     ToggleInventory();
                 else
                     passiveScreenUI.Close();
@@ -80,9 +85,11 @@ public class UIManager : MonoBehaviour
 
             if (Keyboard.current[Key.Escape].wasPressedThisFrame)
             {
-                if (passiveScreenUI.IsOpen)
+                if (IsCardPhaseOpen)
+                    return;
+                else if (IsPassiveOpen)
                     passiveScreenUI.Close();
-                else if (gamblerScreenUI != null && gamblerScreenUI.IsOpen)
+                else if (IsGamblerOpen)
                     gamblerScreenUI.Close();
                 else if (_upgradeOpen)
                 { }
@@ -95,11 +102,11 @@ public class UIManager : MonoBehaviour
             }
 
             if (Keyboard.current[Key.F].wasPressedThisFrame && IsInventoryOpen)
-            { 
-                    inventoryUI.TakeAllFromEnv();
+            {
+                inventoryUI.TakeAllFromEnv();
             }
 
-            if (passiveScreenUI != null && passiveScreenUI.IsOpen)
+            if (IsPassiveOpen)
             {
                 if (Keyboard.current[Key.R].isPressed)
                 {
@@ -205,6 +212,50 @@ public class UIManager : MonoBehaviour
         UpdatePanelVisibility();
     }
 
+    public void OpenGambler(GenericTreeConfig config, object owner, GamblerStation station)
+    {
+        if (IsInventoryOpen) ToggleInventory();
+        if (IsShopOpen) CloseShop();
+        if (IsMergeOpen) CloseMerge();
+
+        if (gamblerScreenUI == null)
+            gamblerScreenUI = FindFirstObjectByType<GamblerScreenUI>(FindObjectsInactive.Include);
+
+        if (gamblerScreenUI == null) { Debug.LogError("[UIManager] GamblerScreenUI not found!"); return; }
+
+        gamblerScreenUI.Open(config, owner, station);
+        UpdatePanelVisibility();
+    }
+
+    public void CloseGambler()
+    {
+        if (gamblerScreenUI != null && gamblerScreenUI.IsOpen)
+            gamblerScreenUI.Close();
+        UpdatePanelVisibility();
+    }
+
+    public void OpenPassive(WeaponPassiveData data, WeaponData weaponData = null)
+    {
+        if (IsInventoryOpen) ToggleInventory();
+        if (IsShopOpen) CloseShop();
+        if (IsMergeOpen) CloseMerge();
+
+        if (passiveScreenUI == null)
+            passiveScreenUI = FindFirstObjectByType<PassiveScreenUI>(FindObjectsInactive.Include);
+
+        if (passiveScreenUI == null) { Debug.LogWarning("[UIManager] PassiveScreenUI not found!"); return; }
+
+        passiveScreenUI.Open(data, weaponData);
+        UpdatePanelVisibility();
+    }
+
+    public void ClosePassive()
+    {
+        if (passiveScreenUI != null && passiveScreenUI.IsOpen)
+            passiveScreenUI.Close();
+        UpdatePanelVisibility();
+    }
+
     private void UpdatePanelVisibility()
     {
         bool showBagGrid = IsInventoryOpen || IsShopOpen || IsMergeOpen;
@@ -215,8 +266,8 @@ public class UIManager : MonoBehaviour
             IsShopOpen ||
             IsMergeOpen ||
             _upgradeOpen ||
-            (passiveScreenUI != null && passiveScreenUI.IsOpen) ||
-            (gamblerScreenUI != null && gamblerScreenUI.IsOpen);
+            IsPassiveOpen ||
+            IsGamblerOpen;
 
         if (hud != null) hud.SetActive(!shouldHideHUD);
     }
