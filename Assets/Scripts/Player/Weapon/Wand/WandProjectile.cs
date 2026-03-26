@@ -55,7 +55,7 @@ public class WandProjectile : MonoBehaviour
             spriteRenderer.transform.localRotation = Quaternion.Euler(90f, angle + 90f, 0f);
         }
 
-        var col = GetComponent<SphereCollider>();
+        var col = GetComponent<CapsuleCollider>();
         if (col != null && colliderRadius > 0f)
             col.radius = colliderRadius;
 
