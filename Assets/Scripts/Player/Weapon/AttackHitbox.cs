@@ -22,6 +22,9 @@ public class AttackHitbox : MonoBehaviour
         isSecondary = secondary;
     }
 
+    public ComboHit GetCurrentHit() => currentHit;
+    public int GetCurrentComboIndex() => currentComboIndex;
+
     public void Attack()
     {
         if (currentHit == null) return;

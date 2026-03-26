@@ -16,6 +16,7 @@ public class PlayerController : MonoBehaviour
     private PlayerStats stats;
     private WeaponEquip weaponEquip;
     private AttackHitbox attackHitbox;
+    private WandAttack wandAttack;
 
     private bool isPrimaryAttacking = false;
     private bool isSecondaryAttacking = false;
@@ -41,6 +42,7 @@ public class PlayerController : MonoBehaviour
         stats = GetComponent<PlayerStats>();
         weaponEquip = GetComponent<WeaponEquip>();
         attackHitbox = GetComponentInChildren<AttackHitbox>();
+        wandAttack = GetComponent<WandAttack>();
         interactPrompt = FindFirstObjectByType<InteractPromptUI>(FindObjectsInactive.Include);
         uiManager = FindFirstObjectByType<UIManager>();
 
@@ -92,9 +94,6 @@ public class PlayerController : MonoBehaviour
         ComboHit hit = weapon.combo[comboIndex];
 
         Vector3 exactDir = GetExactMouseDirection();
-        attackHitbox.transform.rotation = Quaternion.LookRotation(exactDir);
-        attackHitbox.SetComboHit(hit, comboIndex);
-
         Vector2 mouseDir = GetMouseDirection(exactDir);
         lastDir = mouseDir;
         anim.SetFloat("moveX", mouseDir.x);
@@ -107,6 +106,9 @@ public class PlayerController : MonoBehaviour
         }
 
         anim.SetTrigger(hit.animationTrigger);
+
+        attackHitbox.transform.rotation = Quaternion.LookRotation(exactDir);
+        attackHitbox.SetComboHit(hit, comboIndex);
 
         isPrimaryAttacking = true;
         lastAttackTime = Time.time;
@@ -184,7 +186,18 @@ public class PlayerController : MonoBehaviour
 
     public void OnAttackActive()
     {
-        attackHitbox.Attack();
+        WeaponData weapon = weaponEquip?.GetCurrentWeapon();
+        if (weapon == null) return;
+
+        if (weapon.weaponType == WeaponType.Wand)
+        {
+            Vector3 dir = attackHitbox.transform.forward;
+            wandAttack?.FireProjectile(attackHitbox.GetCurrentHit(), attackHitbox.GetCurrentComboIndex(), dir);
+        }
+        else
+        {
+            attackHitbox.Attack();
+        }
     }
 
     public void OnPrimaryAttackEnd()

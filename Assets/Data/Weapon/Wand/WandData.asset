@@ -1,0 +1,127 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11e89d58adf13f14ab118631722c3706, type: 3}
+  m_Name: WandData
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponData
+  weaponName: Wand
+  icon: {fileID: -312234709, guid: 6132fd4f13c75d644a26fa8aa2d4b0a8, type: 3}
+  weaponType: 1
+  animatorOverrideController: {fileID: 22100000, guid: bd3248728cecfa646aed841f5b690fc1, type: 2}
+  passiveData: {fileID: 0}
+  health: 80
+  damage: 6
+  attackSpeed: 1
+  moveSpeed: 6
+  critChance: 0.05
+  critDamage: 1.3
+  evadeChance: 0.08
+  damageTaken: 1
+  dashSpeed: 15
+  dashDuration: 0.15
+  dashCooldown: 0.7
+  combo:
+  - damageScale: 0.7
+    range: 0
+    angle: 0
+    extraRange: 0
+    animationTrigger: attack1
+    animationDuration: 0.5
+    hitVFXPrefab: {fileID: 0}
+    vfxOffset: 0
+    vfxDurationMultiplier: 0
+    vfxLoops: 0
+  - damageScale: 0.8
+    range: 0
+    angle: 0
+    extraRange: 0
+    animationTrigger: attack2
+    animationDuration: 0.5
+    hitVFXPrefab: {fileID: 0}
+    vfxOffset: 0
+    vfxDurationMultiplier: 0
+    vfxLoops: 0
+  - damageScale: 0.9
+    range: 0
+    angle: 0
+    extraRange: 0
+    animationTrigger: attack3
+    animationDuration: 0.5
+    hitVFXPrefab: {fileID: 0}
+    vfxOffset: 0
+    vfxDurationMultiplier: 0
+    vfxLoops: 0
+  - damageScale: 1
+    range: 0
+    angle: 0
+    extraRange: 0
+    animationTrigger: attack4
+    animationDuration: 0.5
+    hitVFXPrefab: {fileID: 0}
+    vfxOffset: 0
+    vfxDurationMultiplier: 0
+    vfxLoops: 0
+  - damageScale: 1.8
+    range: 0
+    angle: 0
+    extraRange: 0
+    animationTrigger: attack5
+    animationDuration: 0.8
+    hitVFXPrefab: {fileID: 0}
+    vfxOffset: 0
+    vfxDurationMultiplier: 0
+    vfxLoops: 0
+  secondaryAttack:
+    damageScale: 0
+    range: 0
+    angle: 0
+    extraRange: 0
+    animationTrigger: 
+    animationDuration: 0
+    hitVFXPrefab: {fileID: 0}
+    vfxOffset: 0
+    vfxDurationMultiplier: 1
+    vfxLoops: 1
+  comboCooldown: 0.5
+  secondaryCooldown: 0
+  comboResetTime: 0.6
+  wandProjectile:
+    normalMaxSpeed: 8
+    normalRange: 2
+    normalLifetime: 2
+    normalColliderRadius: 1
+    bigMaxSpeed: 4
+    bigRange: 2
+    bigLifetime: 4
+    bigSpriteScale: 1.8
+    easePower: 2
+    slowThreshold: 0.3
+    fastClip: {fileID: 7400000, guid: 0c48fd6bc6d77674989ff8a60f42d559, type: 2}
+    slowClip: {fileID: 7400000, guid: 8597c03edaf71b04daac96a47f6880b6, type: 2}
+    aoePulseDamageScale: 0.3
+    aoePulseRadius: 1.8
+    aoePulseRate: 1
+  gridSizePerLevel:
+  - {x: 5, y: 5}
+  - {x: 5, y: 5}
+  - {x: 5, y: 5}
+  - {x: 5, y: 5}
+  - {x: 5, y: 5}
+  - {x: 5, y: 5}
+  - {x: 5, y: 5}
+  - {x: 5, y: 5}
+  - {x: 5, y: 5}
+  - {x: 5, y: 5}
+  - {x: 5, y: 5}
+  - {x: 5, y: 5}
+  - {x: 5, y: 5}
+  - {x: 5, y: 5}
+  - {x: 5, y: 5}
