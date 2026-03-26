@@ -50,7 +50,7 @@ public class AttackHitbox : MonoBehaviour
             Vector3 center = transform.position + transform.forward * (angleOffset + currentHit.extraRange / 2f);
             Collider[] boxHits = Physics.OverlapBox(
                 center,
-                new Vector3(width / 2f, 0.05f, currentHit.extraRange / 2f),
+                new Vector3(width / 2f, 1f, currentHit.extraRange / 2f),
                 transform.rotation
             );
             foreach (Collider hit in boxHits)
