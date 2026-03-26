@@ -9,6 +9,7 @@ public class WeaponDataEditor : Editor
     private bool comboFoldout = true;
     private bool secondaryFoldout = true;
     private bool cooldownFoldout = true;
+    private bool wandFoldout = true;
     private bool gridFoldout = true;
     private int selectedComboIndex = 0;
 
@@ -19,6 +20,8 @@ public class WeaponDataEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("weaponName"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("icon"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("passiveData"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("weaponType"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("animatorOverrideController"));
         EditorGUILayout.Space();
 
         statsFoldout = EditorGUILayout.Foldout(statsFoldout, "Stats", true, EditorStyles.foldoutHeader);
@@ -56,7 +59,6 @@ public class WeaponDataEditor : Editor
 
             if (comboProp.arraySize > 0)
             {
-                // Tab bar +,- button
                 EditorGUILayout.BeginHorizontal();
                 string[] tabs = new string[comboProp.arraySize];
                 for (int i = 0; i < comboProp.arraySize; i++)
@@ -83,7 +85,6 @@ public class WeaponDataEditor : Editor
                 EditorGUILayout.EndHorizontal();
                 EditorGUILayout.Space(4);
 
-                // show select hit
                 var selectedHit = comboProp.GetArrayElementAtIndex(selectedComboIndex);
                 selectedHit.isExpanded = true;
                 var child = selectedHit.Copy();
@@ -134,8 +135,21 @@ public class WeaponDataEditor : Editor
             EditorGUILayout.PropertyField(serializedObject.FindProperty("comboResetTime"));
             EditorGUI.indentLevel--;
         }
-
         EditorGUILayout.Space();
+
+        var weaponTypeProp = serializedObject.FindProperty("weaponType");
+        if (weaponTypeProp.enumValueIndex == (int)WeaponType.Wand)
+        {
+            wandFoldout = EditorGUILayout.Foldout(wandFoldout, "Wand Projectile", true, EditorStyles.foldoutHeader);
+            if (wandFoldout)
+            {
+                EditorGUI.indentLevel++;
+                var wandProp = serializedObject.FindProperty("wandProjectile");
+                EditorGUILayout.PropertyField(wandProp, true);
+                EditorGUI.indentLevel--;
+            }
+            EditorGUILayout.Space();
+        }
 
         gridFoldout = EditorGUILayout.Foldout(gridFoldout, "Grid", true, EditorStyles.foldoutHeader);
         if (gridFoldout)

@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   weaponName: Sword
   icon: {fileID: 1959525896, guid: b89aa0b26b063984c94fcbb3b42461fa, type: 3}
+  weaponType: 0
+  animatorOverrideController: {fileID: 22100000, guid: f3691932aef87c94885444e01af52f4b, type: 2}
   passiveData: {fileID: 11400000, guid: 0cef06fe8c33ba6429cac8ce03589437, type: 2}
   health: 100
   damage: 10
@@ -71,6 +73,23 @@ MonoBehaviour:
   comboCooldown: 0.2
   secondaryCooldown: 0.5
   comboResetTime: 0.8
+  wandProjectile:
+    normalMaxSpeed: 12
+    normalRange: 6
+    normalLifetime: 3
+    normalColliderRadius: 0.15
+    bigMaxSpeed: 7
+    bigRange: 6
+    bigLifetime: 5
+    bigSpriteScale: 1.8
+    bigColliderRadius: 0.25
+    easePower: 2
+    slowThreshold: 0.4
+    fastClip: {fileID: 0}
+    slowClip: {fileID: 0}
+    aoePulseDamageScale: 0.3
+    aoePulseRadius: 1.8
+    aoePulseRate: 1
   gridSizePerLevel:
   - {x: 4, y: 2}
   - {x: 4, y: 2}

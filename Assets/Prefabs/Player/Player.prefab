@@ -94,6 +94,7 @@ GameObject:
   - component: {fileID: 6499088522283101609}
   - component: {fileID: 4982785343660528164}
   - component: {fileID: 729556872348505225}
+  - component: {fileID: 6724364974160022513}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -371,6 +372,21 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.10007988, y: 0.31, z: 0.08132276}
   m_Center: {x: 0.0008589253, y: 0, z: -0.0023121536}
+--- !u!114 &6724364974160022513
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6821820435605495984}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3b1c4ffc3f128844ba6cca3c8d2ffe6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WandAttack
+  normalProjectilePrefab: {fileID: 6020657565367428352, guid: 5489ff0ad2772eb488ae79ac7c783f0e, type: 3}
+  bigProjectilePrefab: {fileID: 1498933385405443144, guid: 0689d45a3ee982f4a9e69452e08c3f03, type: 3}
+  projectileSpawnPoint: {fileID: 0}
 --- !u!1 &7199941304210273291
 GameObject:
   m_ObjectHideFlags: 0
