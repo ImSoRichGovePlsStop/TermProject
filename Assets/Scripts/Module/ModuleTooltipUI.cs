@@ -64,7 +64,6 @@ public class ModuleTooltipUI : MonoBehaviour
 
         // Style CostText
         costText.fontSize = 15f;
-        costText.fontStyle = FontStyles.Bold;
         costText.color = Color.yellow;
 
         Hide();
