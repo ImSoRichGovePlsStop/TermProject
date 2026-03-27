@@ -6,7 +6,7 @@ public abstract class HealthBase : MonoBehaviour
 {
     [Header("Health")]
     [SerializeField] protected float maxHP = 30f;
-    [SerializeField] private float destroyDelay = 2f;
+    [SerializeField] protected float destroyDelay = 2f;
 
     [Header("Flash")]
     [SerializeField] private SpriteRenderer spriteRenderer;
@@ -80,6 +80,11 @@ public abstract class HealthBase : MonoBehaviour
 
         OnDeathStart();
         OnDeath?.Invoke();
+        OnDie();
+    }
+
+    protected virtual void OnDie()
+    {
         Destroy(gameObject, destroyDelay);
     }
 

@@ -46,11 +46,11 @@ public abstract class SummonerBase : MonoBehaviour
         remainingLifetime -= Time.deltaTime;
 
         if (remainingLifetime <= 0f)
-            Die();
+            health.DieWithAnimation();
     }
 
-    protected virtual void Die()
+    protected void DieWithoutAnimation()
     {
-        health.TakeDamage(health.MaxHP);
+        health.DieWithoutAnimation();
     }
 }
