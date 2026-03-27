@@ -1,16 +1,11 @@
 ﻿using UnityEngine;
 
-// Attached to the Player GameObject alongside PlayerController.
-// Reads all projectile settings from WeaponData.wandProjectile — no magic numbers here.
 [RequireComponent(typeof(PlayerStats))]
 [RequireComponent(typeof(PlayerCombatContext))]
 public class WandAttack : MonoBehaviour
 {
     [Header("Projectile Prefabs")]
-    [Tooltip("Prefab for hits 1-4 (requires: WandProjectile, SphereCollider with Is Trigger, SpriteRenderer)")]
     [SerializeField] private GameObject normalProjectilePrefab;
-
-    [Tooltip("Prefab for hit 5 (requires: WandProjectile, WandAoEPulse, SphereCollider with Is Trigger, SpriteRenderer)")]
     [SerializeField] private GameObject bigProjectilePrefab;
 
     [Header("Spawn")]
@@ -86,7 +81,7 @@ public class WandAttack : MonoBehaviour
             {
                 pulse.pulseDamageScale = data.aoePulseDamageScale;
                 pulse.pulseRadius = data.aoePulseRadius;
-                pulse.pulseRate = data.aoePulseRate;
+                pulse.pulseInterval = data.aoePulseInterval;
                 pulse.shooterStats = stats;
                 pulse.context = context;
             }
