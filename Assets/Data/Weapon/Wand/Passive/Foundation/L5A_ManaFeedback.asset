@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L1_StackFrenzy
+  m_Name: L5A_ManaFeedback
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Stack Frenzy
-  description: Each hit grants 1 stack. Each stack gives +2% bonus damage. Stacks
-    reset on hit or after 15s. Max 10 stacks.
-  cost: 1
-  parents: []
+  nodeName: Mana Feedback
+  description: Every damage instance from Primary Attack that hits an enemy restores
+    Totem +0.5 HP. Includes AoE pulse ticks from Hit 5
+  cost: 3
+  parents:
+  - {fileID: 11400000, guid: 9d535adf646a7fa4487692ba4f3e4404, type: 2}
   requireAllParents: 0
-  layer: 1
-  branch: 0
+  layer: 5
+  branch: 1
   overrideCost: 0

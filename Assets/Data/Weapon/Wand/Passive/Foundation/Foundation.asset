@@ -14,5 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PassiveTree
   treeName: Foundation
   treeColor: {r: 0, g: 0.6981132, b: 0.23119104, a: 1}
-  nodes: []
+  nodes:
+  - {fileID: 11400000, guid: 6471791c593487746b860939f9a7104b, type: 2}
+  - {fileID: 11400000, guid: 6cc3240ab693b5f429fc93ed620a1f69, type: 2}
+  - {fileID: 11400000, guid: f63ef53b58c8b5445a81fd91b5d80f25, type: 2}
+  - {fileID: 11400000, guid: 63447711e67cd9e4bb0c15f3683875b2, type: 2}
+  - {fileID: 11400000, guid: 9d535adf646a7fa4487692ba4f3e4404, type: 2}
+  - {fileID: 11400000, guid: f10068766ef7d064eb3cce5df0bbf7f5, type: 2}
+  - {fileID: 11400000, guid: 188d28d7ad01ba74abafce20f89baa34, type: 2}
+  - {fileID: 11400000, guid: 07df043a93ed30d4bae8d8d9c309382f, type: 2}
   handlerPrefab: {fileID: 0}

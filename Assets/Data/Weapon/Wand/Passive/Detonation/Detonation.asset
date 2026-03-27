@@ -14,5 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PassiveTree
   treeName: Detonation
   treeColor: {r: 0.9245283, g: 0.28010163, b: 0, a: 1}
-  nodes: []
+  nodes:
+  - {fileID: 11400000, guid: dda867fdd9696ce4190e1e94eea62cbc, type: 2}
+  - {fileID: 11400000, guid: e59bb6275e1bd094b9bae215cf0b6bb4, type: 2}
+  - {fileID: 11400000, guid: 34b042c8f3453f74ebf1d31960f37421, type: 2}
+  - {fileID: 11400000, guid: 6449b4129b3d4ef4084624669a10f7a9, type: 2}
+  - {fileID: 11400000, guid: 68015dde086706640bb7e2bc2aa131b8, type: 2}
+  - {fileID: 11400000, guid: 00f32ceb776308e47904f8cb1a497b10, type: 2}
+  - {fileID: 11400000, guid: 229934f1dcad16740bbb573e304878f8, type: 2}
+  - {fileID: 11400000, guid: dd5a3be4ab0057d4fbf958fba237672f, type: 2}
   handlerPrefab: {fileID: 0}

@@ -10,14 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L1_StackFrenzy
+  m_Name: L1_SummonZapper
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Stack Frenzy
-  description: Each hit grants 1 stack. Each stack gives +2% bonus damage. Stacks
-    reset on hit or after 15s. Max 10 stacks.
-  cost: 1
+  nodeName: Summon Zapper
+  description: Totem begins spawning Zapper summoners every 4s
+  cost: 4
   parents: []
   requireAllParents: 0
   layer: 1
   branch: 0
-  overrideCost: 0
+  overrideCost: 1

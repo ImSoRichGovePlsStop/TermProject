@@ -3390,10 +3390,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: PassiveSystem
       objectReference: {fileID: 0}
-    - target: {fileID: 5782212143713118314, guid: 4fa3b75d014f39f4a86924ee396d47ab, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 6544958919815613296, guid: 4fa3b75d014f39f4a86924ee396d47ab, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0

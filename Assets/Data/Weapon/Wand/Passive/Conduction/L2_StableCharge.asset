@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L1_StackFrenzy
+  m_Name: L2_StableCharge
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Stack Frenzy
-  description: Each hit grants 1 stack. Each stack gives +2% bonus damage. Stacks
-    reset on hit or after 15s. Max 10 stacks.
+  nodeName: Stable Charge
+  description: Zapper attach duration increases from 4s to 6s
   cost: 1
-  parents: []
+  parents:
+  - {fileID: 11400000, guid: 66dd8c22cb6daf74f99fe20f494ab621, type: 2}
   requireAllParents: 0
-  layer: 1
+  layer: 2
   branch: 0
   overrideCost: 0
