@@ -62,8 +62,7 @@ public abstract class EnemyHealth : MonoBehaviour
 
     protected virtual void Start()
     {
-        var spawner = FindFirstObjectByType<EnemyHealthBarSpawner>();
-        spawner?.SpawnBar(this, healthBarOffset, healthBarScale);
+        EntityHealthBarSpawner.Instance?.SpawnBar(this, healthBarOffset, healthBarScale);
 
         var damageSpawner = FindFirstObjectByType<DamageNumberSpawner>();
         damageSpawner?.RegisterEnemy(this);

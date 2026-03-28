@@ -37,10 +37,18 @@ public class WandAoEPulse : MonoBehaviour
         foreach (Collider hit in hits)
         {
             if (!hit.CompareTag("Enemy")) continue;
-            var enemyHealth = hit.GetComponentInParent<EnemyHealth>();
-            if (enemyHealth == null) continue;
 
             float dmg = shooterStats.CalculateDamage(pulseDamageScale);
+
+            var healthBase = hit.GetComponentInParent<HealthBase>();
+            if (healthBase != null && !healthBase.IsDead)
+            {
+                healthBase.TakeDamage(dmg, shooterStats.LastHitWasCrit);
+                continue;
+            }
+
+            var enemyHealth = hit.GetComponentInParent<EnemyHealth>();
+            if (enemyHealth == null) continue;
             enemyHealth.TakeDamage(dmg, shooterStats.LastHitWasCrit);
             result.Add(enemyHealth);
         }

@@ -13,11 +13,20 @@ public abstract class HealthBase : MonoBehaviour
     [SerializeField] private Color flashColor = Color.red;
     [SerializeField] private float flashDuration = 0.1f;
 
+    [Header("Health Bar")]
+    [SerializeField] private bool showHealthBar = true;
+    [SerializeField] protected float healthBarHeight = 1f;
+    [SerializeField] protected Vector3 healthBarScale = new Vector3(1f, 1f, 1f);
+
+    public float HealthBarHeight => healthBarHeight;
+    public Vector3 HealthBarScale => healthBarScale;
+
     protected float currentHP;
     protected bool isDead;
     protected bool isHurt;
 
     private Coroutine flashCoroutine;
+    private Color originalColor;
 
     public float CurrentHP => currentHP;
     public float MaxHP => maxHP;
@@ -29,11 +38,26 @@ public abstract class HealthBase : MonoBehaviour
 
     protected virtual void Awake()
     {
+        var entityStats = GetComponent<EntityStats>();
+        if (entityStats != null)
+            maxHP = entityStats.MaxHP;
+
         currentHP = maxHP;
 
         if (spriteRenderer == null)
             spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+
+        if (spriteRenderer != null)
+            originalColor = spriteRenderer.color;
     }
+
+    protected virtual void Start()
+    {
+        if (showHealthBar)
+            EntityHealthBarSpawner.Instance?.SpawnBar(this, healthBarHeight, healthBarScale);
+    }
+
+    protected virtual void Update() { }
 
     public virtual void TakeDamage(float damage, bool isCrit = false)
     {
@@ -100,10 +124,9 @@ public abstract class HealthBase : MonoBehaviour
 
     private IEnumerator FlashRoutine()
     {
-        Color original = spriteRenderer.color;
         spriteRenderer.color = flashColor;
         yield return new WaitForSeconds(flashDuration);
-        spriteRenderer.color = original;
+        spriteRenderer.color = originalColor;
         flashCoroutine = null;
     }
 }

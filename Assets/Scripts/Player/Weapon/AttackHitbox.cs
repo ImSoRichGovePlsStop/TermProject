@@ -61,7 +61,16 @@ public class AttackHitbox : MonoBehaviour
         foreach (Collider hit in hitEnemies)
         {
             float dmg = stats.CalculateDamage(currentHit.damageScale);
-            Debug.Log($"Hit {hit.name} for {dmg}!");
+
+            // try new HealthBase enemies first
+            var healthBase = hit.GetComponentInParent<HealthBase>();
+            if (healthBase != null && !healthBase.IsDead)
+            {
+                healthBase.TakeDamage(dmg, stats.LastHitWasCrit);
+                continue;
+            }
+
+            // try legacy EnemyHealth
             var enemyHealth = hit.GetComponentInParent<EnemyHealth>();
             if (enemyHealth != null)
             {

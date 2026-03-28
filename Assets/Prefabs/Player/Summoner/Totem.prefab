@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 8413546466711054081}
   - component: {fileID: 861575312365302403}
   - component: {fileID: 581368262220186772}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Totem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -71,6 +71,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Totem
   maxHP: 50
+  destroyDelay: 2
+  spriteRenderer: {fileID: 0}
+  flashColor: {r: 1, g: 0, b: 0, a: 1}
+  flashDuration: 0.1
+  showHealthBar: 1
+  healthBarHeight: 0.3
+  healthBarScale: {x: 1, y: 1.2, z: 1}
   hpDecayRate: 4
   brawlerPrefab: {fileID: 2915161808019322072, guid: 0721ab02f90563c42b5f3b9d5c503a89, type: 3}
   zapperPrefab: {fileID: 0}
@@ -78,7 +85,7 @@ MonoBehaviour:
   brawlerInterval: 3
   zapperInterval: 4
   bomberInterval: 5
-  spawnRadius: 1
+  spawnRadius: 0.5
 --- !u!114 &581368262220186772
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -95,7 +102,7 @@ MonoBehaviour:
   heightOffset: 0.2
   groundLayer:
     serializedVersion: 2
-    m_Bits: 512
+    m_Bits: 1024
 --- !u!1 &7762426641929681342
 GameObject:
   m_ObjectHideFlags: 0
@@ -108,7 +115,7 @@ GameObject:
   - component: {fileID: 7241935046931685993}
   - component: {fileID: 57305153472744926}
   - component: {fileID: 2533100084750488011}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -179,15 +186,15 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: -1522856526, guid: 11fa2a9e6abe459459581fb673d91b62, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 0.96, y: 0.96}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
+  m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
 --- !u!95 &57305153472744926
 Animator:

@@ -137,6 +137,7 @@ public class PlayerStats : MonoBehaviour
         (weaponDamageTaken + flatModifier.damageTaken) * (1 + multiplierModifier.damageTaken);
 
     public float CurrentHealth { get; private set; }
+    public bool IsDead => CurrentHealth <= 0f;
 
     void Awake()
     {

@@ -18,6 +18,7 @@ public class PlayerCombatContext : MonoBehaviour
     public event Action OnSecondaryAttack;
     public event Action OnSecondaryAttackForced;
     public event Action<EnemyHealth> OnEnemyKilled;
+    public event Action<HealthBase> OnEntityKilled;
 
     public void NotifyAttack(HashSet<EnemyHealth> hitEnemies, int comboIndex = 0)
     {
@@ -70,5 +71,11 @@ public class PlayerCombatContext : MonoBehaviour
     public void NotifyEnemyKilled(EnemyHealth enemy)
     {
         OnEnemyKilled?.Invoke(enemy);
+        OnEntityKilled?.Invoke(null);
+    }
+
+    public void NotifyEnemyKilled(HealthBase entity)
+    {
+        OnEntityKilled?.Invoke(entity);
     }
 }

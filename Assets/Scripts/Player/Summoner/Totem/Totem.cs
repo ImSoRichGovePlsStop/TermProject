@@ -1,9 +1,8 @@
 using UnityEngine;
 
-public class Totem : MonoBehaviour
+public class Totem : HealthBase
 {
-    [Header("Stats")]
-    [SerializeField] private float maxHP = 50f;
+    [Header("Decay")]
     [SerializeField] private float hpDecayRate = 4f;
 
     [Header("Spawn Prefabs")]
@@ -19,9 +18,6 @@ public class Totem : MonoBehaviour
     [Header("Spawn Settings")]
     [SerializeField] private float spawnRadius = 1f;
 
-    private float currentHP;
-    private bool isDead;
-
     private float brawlerTimer;
     private float zapperTimer;
     private float bomberTimer;
@@ -32,14 +28,11 @@ public class Totem : MonoBehaviour
     private PlayerStats playerStats;
     private PlayerCombatContext context;
 
-    public float CurrentHP => currentHP;
-    public float MaxHP => maxHP;
-    public bool IsDead => isDead;
-
     public void Init(PlayerStats playerStats, PlayerCombatContext context)
     {
         this.playerStats = playerStats;
         this.context = context;
+
         currentHP = maxHP;
 
         brawlerTimer = brawlerInterval;
@@ -59,23 +52,11 @@ public class Totem : MonoBehaviour
         currentHP = Mathf.Min(currentHP + amount, maxHP);
     }
 
-    public void TakeDamage(float damage)
-    {
-        if (isDead) return;
-        if (damage <= 0f) return;
-
-        currentHP -= damage;
-        if (currentHP <= 0f)
-        {
-            currentHP = 0f;
-            Die();
-        }
-    }
-
-    private void Update()
+    protected override void Update()
     {
         if (isDead) return;
 
+        // HP decay
         TakeDamage(hpDecayRate * Time.deltaTime);
 
         if (isDead) return;
@@ -110,11 +91,10 @@ public class Totem : MonoBehaviour
             summoner.Init(playerStats);
     }
 
-    private void Die()
-    {
-        if (isDead) return;
-        isDead = true;
+    protected override void OnDamageTaken(float damage, bool isCrit) { }
 
+    protected override void OnDie()
+    {
         OnTotemDied();
         Destroy(gameObject, 1f);
     }

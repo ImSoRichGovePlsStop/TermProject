@@ -15,6 +15,12 @@ public class SummonerHealth : HealthBase
             animator = GetComponentInChildren<Animator>();
     }
 
+    protected override void Start()
+    {
+        base.Start();
+        DamageNumberSpawner.Instance?.RegisterEntity(this, healthBarHeight);
+    }
+
     public void DieWithAnimation()
     {
         useAnimation = true;

@@ -133,11 +133,18 @@ public class WandProjectile : MonoBehaviour
 
     private void DealDamage(Collider other)
     {
+        var healthBase = other.GetComponentInParent<HealthBase>();
+        if (healthBase != null && !healthBase.IsDead)
+        {
+            healthBase.TakeDamage(damage, isCrit);
+            context?.NotifyAttack(new HashSet<EnemyHealth>(), comboIndex);
+            return;
+        }
+
         var enemyHealth = other.GetComponentInParent<EnemyHealth>();
         if (enemyHealth == null) return;
 
         enemyHealth.TakeDamage(damage, isCrit);
-
         var result = new HashSet<EnemyHealth> { enemyHealth };
         context?.NotifyAttack(result, comboIndex);
     }

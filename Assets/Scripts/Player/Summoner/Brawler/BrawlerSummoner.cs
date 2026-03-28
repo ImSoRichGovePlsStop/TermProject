@@ -23,25 +23,24 @@ public class BrawlerSummoner : SummonerBase
     [SerializeField] private float searchRadius = 10f;
 
     [Header("Wander")]
-    [SerializeField] private float wanderRadius = 3f;
-    [SerializeField] private float wanderSpeedMultiplier = 0.5f;
-    [SerializeField] private float wanderIdleTimeMin = 0.5f;
-    [SerializeField] private float wanderIdleTimeMax = 1.5f;
+    [SerializeField] private WanderBehavior wander;
 
-    private EnemyHealth currentTarget;
+    private HealthBase currentTarget;
     private BrawlerState currentState = BrawlerState.Wander;
 
     private bool isAttacking = false;
     private float lastAttackTime = -Mathf.Infinity;
-    private Vector3 wanderTarget;
-    private float wanderIdleTimer = 0f;
-    private bool isWanderIdling = false;
+
+    private static readonly LayerMask enemyMask = ~0;
+
+    private LayerMask _enemyMask;
 
     protected override void Awake()
     {
         base.Awake();
 
         movement.SetStopDistance(attackRange * 0.8f);
+        _enemyMask = 1 << LayerMask.NameToLayer("Enemy");
 
         if (animator == null)
             animator = GetComponentInChildren<Animator>();
@@ -60,7 +59,7 @@ public class BrawlerSummoner : SummonerBase
 
     private void UpdateTarget()
     {
-        currentTarget = CombatUtility.FindNearest<EnemyHealth>(transform.position, searchRadius);
+        currentTarget = CombatUtility.FindNearest<HealthBase>(transform.position, searchRadius, _enemyMask);
     }
 
     private void UpdateState()
@@ -85,10 +84,7 @@ public class BrawlerSummoner : SummonerBase
         }
 
         if (prevState == BrawlerState.Wander && currentState != BrawlerState.Wander)
-        {
-            movement.ResetSpeedMultiplier();
-            isWanderIdling = false;
-        }
+            wander.Reset(movement);
     }
 
     private void TickState()
@@ -108,7 +104,7 @@ public class BrawlerSummoner : SummonerBase
                 break;
 
             case BrawlerState.Wander:
-                Wander();
+                wander.Tick(transform, playerStats?.transform, movement);
                 break;
         }
     }
@@ -135,11 +131,9 @@ public class BrawlerSummoner : SummonerBase
         if (attackDir.sqrMagnitude > 0.001f)
             attackDir.Normalize();
 
-        Collider[] hits = Physics.OverlapSphere(transform.position, attackRange);
+        Collider[] hits = Physics.OverlapSphere(transform.position, attackRange, _enemyMask);
         foreach (var hit in hits)
         {
-            if (!hit.CompareTag("Enemy")) continue;
-
             Vector3 dir = hit.transform.position - transform.position;
             dir.y = 0f;
 
@@ -149,7 +143,7 @@ public class BrawlerSummoner : SummonerBase
                 if (angle > attackAngle * 0.5f) continue;
             }
 
-            var enemyHealth = hit.GetComponentInParent<EnemyHealth>();
+            var enemyHealth = hit.GetComponentInParent<HealthBase>();
             if (enemyHealth != null && !enemyHealth.IsDead)
                 enemyHealth.TakeDamage(damage);
         }
@@ -162,61 +156,6 @@ public class BrawlerSummoner : SummonerBase
         lastAttackTime = Time.time;
     }
 
-    private void Wander()
-    {
-        if (playerStats == null) return;
-
-        Vector3 playerPos = playerStats.transform.position;
-        float distToPlayer = Vector3.Distance(transform.position, playerPos);
-
-        if (distToPlayer > wanderRadius)
-        {
-            isWanderIdling = false;
-            wanderTarget = Vector3.zero;
-            movement.ResetSpeedMultiplier();
-            movement.MoveToTarget(playerPos);
-            return;
-        }
-
-        if (isWanderIdling)
-        {
-            movement.StopMoving();
-            wanderIdleTimer -= Time.deltaTime;
-            if (wanderIdleTimer <= 0f)
-            {
-                isWanderIdling = false;
-                wanderTarget = GetRandomWanderPoint(playerPos);
-            }
-            return;
-        }
-        if (wanderTarget == Vector3.zero)
-        {
-            wanderTarget = GetRandomWanderPoint(playerPos);
-        }
-
-        var agent = movement.GetAgent();
-        bool reachedTarget = agent != null
-            && agent.hasPath
-            && agent.remainingDistance <= agent.stoppingDistance;
-
-        if (reachedTarget)
-        {
-            isWanderIdling = true;
-            wanderIdleTimer = Random.Range(wanderIdleTimeMin, wanderIdleTimeMax);
-            movement.StopMoving();
-            return;
-        }
-
-        movement.SetSpeedMultiplier(wanderSpeedMultiplier);
-        movement.MoveToTarget(wanderTarget);
-    }
-
-    private Vector3 GetRandomWanderPoint(Vector3 center)
-    {
-        Vector2 random = Random.insideUnitCircle * wanderRadius;
-        return center + new Vector3(random.x, 0f, random.y);
-    }
-
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
@@ -227,11 +166,5 @@ public class BrawlerSummoner : SummonerBase
         Gizmos.color = new Color(1f, 0f, 0f, 0.3f);
         Gizmos.DrawLine(transform.position, transform.position + leftDir * attackRange);
         Gizmos.DrawLine(transform.position, transform.position + rightDir * attackRange);
-
-        if (playerStats != null)
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(playerStats.transform.position, wanderRadius);
-        }
     }
 }
