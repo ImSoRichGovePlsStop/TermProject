@@ -84,7 +84,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 1469128647, guid: 08ed3f08ec92cb748ac4b9f0bda5f2d5, type: 3}
+  m_Sprite: {fileID: -1530530434, guid: 79f83f93eafcdfd4eb9f57c1a535f14a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -253,7 +253,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   moveSpeed: 2.5
-  stopDistance: 2
+  stopDistance: 0.5
   visualRoot: {fileID: 9187155898941612886}
   spriteRenderer: {fileID: 8226527542330403868}
   invertFacing: 1
@@ -269,12 +269,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5d7c5c9177a92a48b7f1ca1fd249297, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CerberusHealth
+  spriteRenderer: {fileID: 0}
+  flashColor: {r: 1, g: 0, b: 0, a: 1}
+  flashDuration: 0.1
   maxHP: 100
   hurtStunDuration: 0.2
   destroyDelay: 3
   animator: {fileID: 3622113246669686723}
   enemyCollider: {fileID: 9148782344846074252}
   rb: {fileID: 559357393364450083}
+  healthBarOffset: {x: 0, y: 0.5, z: 0}
+  healthBarScale: {x: 1, y: 1, z: 1}
   bossMaxHP: 100
   bossHurtDuration: 0.15
   bossDestroyDelay: 3
@@ -300,7 +305,7 @@ MonoBehaviour:
   enableDebugLog: 1
   currentPhase: 0
   detectRange: 12
-  attackMaxRange: 2
+  attackMaxRange: 8
   thinkInterval: 0.15
   movement: {fileID: 85801631492214822}
   attack: {fileID: 5445258974235246989}
@@ -350,23 +355,26 @@ MonoBehaviour:
   flameDamage: 18
   pounceDamage: 20
   swordDamage: 16
-  biteRange: 0.6
-  flameRange: 1.2
-  pounceStartRange: 3.5
+  biteRange: 0.8
+  flameRange: 2
+  pounceStartRange: 4
   swordStartRange: 6
-  pounceImpactRange: 1
+  biteHitRadius: 1
+  flameConeRadius: 4
+  flameConeAngle: 15
+  flameOrigin: {fileID: 764705020065230188}
+  flameConeIndicatorPrefab: {fileID: 6132761721614295693, guid: 41172660592daa84293e80aa8d2207fe, type: 3}
   pounceDashSpeed: 10
+  pounceDashDistance: 4
+  pounceImpactRadius: 1.5
+  pounceHitPoint: {fileID: 764705020065230188}
+  swordSpawnPoint: {fileID: 764705020065230188}
+  swordProjectilePrefab: {fileID: 1095891883702697950, guid: 32f77e5d5f512be4f9dee6bd243e1b20, type: 3}
   health: {fileID: 578609061290140448}
   movement: {fileID: 85801631492214822}
-  bitePointLeft: {fileID: 764705020065230188}
-  bitePointRight: {fileID: 764705020065230188}
-  bitePointCenter: {fileID: 764705020065230188}
-  flamePoint: {fileID: 764705020065230188}
-  swordSpawnPoint: {fileID: 764705020065230188}
   playerLayer:
     serializedVersion: 2
     m_Bits: 1
-  swordProjectilePrefab: {fileID: 0}
 --- !u!114 &5370978875187286121
 MonoBehaviour:
   m_ObjectHideFlags: 0
