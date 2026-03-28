@@ -33,8 +33,10 @@ public class Harpy : MonoBehaviour
     float lastDiveTime = -Mathf.Infinity;
     private bool isDiving = false;
     private float baseY;
+    private float groundEnterTime;
 
     [Header("Variant Settings")]
+    [SerializeField] float groundCooldown = 2.5f;
     [SerializeField] float diveCooldown = 2f;
     [SerializeField] float flyPhaseHPPercent = 0.5f;
     [SerializeField] float sizeMultiplier = 1f;
@@ -93,7 +95,9 @@ public class Harpy : MonoBehaviour
         switch (currentState)
         {
             case HarpyState.Ground:
-                if (hasEnteredAirPhase && CanDive())
+                if (hasEnteredAirPhase 
+                    && Time.time > groundEnterTime + groundCooldown
+                    && CanDive())
                 {
                     EnterAirPhase();
                 }
@@ -123,8 +127,8 @@ public class Harpy : MonoBehaviour
 
     void LateUpdate()
     {
-        float maxY = baseY + 3f;
-        float minY = baseY - 1f;
+        float maxY = baseY + hoverHeight + 3f;
+        float minY = baseY - 3f;
 
         Vector3 pos = transform.position;
 
@@ -141,6 +145,7 @@ public class Harpy : MonoBehaviour
     void EnterGroundPhase()
     {
         currentState = HarpyState.Ground;
+        groundEnterTime = Time.time;
 
         movement.SetCanMove(true);
         controller.enabled = true;
@@ -203,7 +208,7 @@ public class Harpy : MonoBehaviour
         FaceDirection(dir);
 
         //when crash with player
-        if (Vector3.Distance(transform.position, player.position) < 1.0f)
+        if (Vector3.Distance(transform.position, player.position) < 1.2f)
         {
             // Debug.Log("Crash with player");
             attack.DealDamage(player.gameObject);
