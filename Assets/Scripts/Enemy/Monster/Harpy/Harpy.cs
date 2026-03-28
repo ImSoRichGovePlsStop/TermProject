@@ -121,6 +121,23 @@ public class Harpy : MonoBehaviour
         }
     }
 
+    void LateUpdate()
+    {
+        float maxY = baseY + 3f;
+        float minY = baseY - 1f;
+
+        Vector3 pos = transform.position;
+
+        if (pos.y > maxY || pos.y < minY)
+        {
+            pos.y = baseY + hoverHeight;
+            transform.position = pos;
+
+            isDiving = false;
+            EnterGroundPhase();
+        }
+    }
+
     void EnterGroundPhase()
     {
         currentState = HarpyState.Ground;
@@ -169,13 +186,13 @@ public class Harpy : MonoBehaviour
 
         isDiving = true;
         currentState = HarpyState.DiveAttack;
-        diveTarget = player.position;
         diveStartTime = Time.time;
         animator.SetTrigger("Dive");
     }
 
     void Dive()
     {
+        diveTarget = player.position;
         Vector3 direction = (diveTarget - transform.position).normalized;
         Vector3 nextPos = rb.position + diveSpeed * Time.deltaTime * direction;
         float minY = baseY / groundOffsetMultiplier + groundOffset / groundOffsetMultiplier;
