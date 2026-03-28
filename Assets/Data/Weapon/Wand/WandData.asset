@@ -84,14 +84,14 @@ MonoBehaviour:
     range: 0
     angle: 0
     extraRange: 0
-    animationTrigger: 
-    animationDuration: 0
+    animationTrigger: attack_secondary
+    animationDuration: 1.5
     hitVFXPrefab: {fileID: 0}
     vfxOffset: 0
     vfxDurationMultiplier: 1
     vfxLoops: 1
   comboCooldown: 0.5
-  secondaryCooldown: 0
+  secondaryCooldown: 20
   comboResetTime: 0.6
   wandProjectile:
     normalMaxSpeed: 8

@@ -22,12 +22,23 @@ public abstract class MovementBase : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
         agent.stoppingDistance = stopDistance;
+        agent.angularSpeed = 0f;
+        agent.acceleration = 50f;
         agent.updateRotation = false;
         agent.updateUpAxis = false;
         stats = GetComponent<EntityStats>();
 
         if (spriteRenderer == null)
             spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+    }
+
+    public NavMeshAgent GetAgent() => agent;
+
+    public void SetStopDistance(float distance)
+    {
+        stopDistance = distance;
+        if (agent != null)
+            agent.stoppingDistance = distance;
     }
 
     protected virtual void Update()
@@ -73,9 +84,22 @@ public abstract class MovementBase : MonoBehaviour
             StopMoving();
     }
 
+    private float speedMultiplier = 1f;
+
+    public void SetSpeedMultiplier(float multiplier)
+    {
+        speedMultiplier = Mathf.Max(0f, multiplier);
+    }
+
+    public void ResetSpeedMultiplier()
+    {
+        speedMultiplier = 1f;
+    }
+
     protected virtual float GetCurrentMoveSpeed()
     {
-        return stats != null ? stats.MoveSpeed : moveSpeed;
+        float base_speed = stats != null ? stats.MoveSpeed : moveSpeed;
+        return base_speed * speedMultiplier;
     }
 
     protected abstract void FaceDirection(Vector3 direction);

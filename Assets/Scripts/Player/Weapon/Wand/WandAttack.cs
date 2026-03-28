@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 [RequireComponent(typeof(PlayerStats))]
 [RequireComponent(typeof(PlayerCombatContext))]
@@ -8,12 +9,16 @@ public class WandAttack : MonoBehaviour
     [SerializeField] private GameObject normalProjectilePrefab;
     [SerializeField] private GameObject bigProjectilePrefab;
 
+    [Header("Totem")]
+    [SerializeField] private GameObject totemPrefab;
+
     [Header("Spawn")]
     [SerializeField] private Transform projectileSpawnPoint;
 
     private PlayerStats stats;
     private PlayerCombatContext context;
     private WeaponEquip weaponEquip;
+    private List<Totem> activeTotems = new List<Totem>();
 
     private void Awake()
     {
@@ -21,6 +26,23 @@ public class WandAttack : MonoBehaviour
         context = GetComponent<PlayerCombatContext>();
         weaponEquip = GetComponent<WeaponEquip>();
     }
+
+    public void PlaceTotem()
+    {
+        if (totemPrefab == null) return;
+
+        activeTotems.RemoveAll(t => t == null || t.IsDead);
+
+        GameObject obj = Instantiate(totemPrefab, transform.position, Quaternion.identity);
+        var totem = obj.GetComponent<Totem>();
+        if (totem != null)
+        {
+            totem.Init(stats, context);
+            activeTotems.Add(totem);
+        }
+    }
+
+    public List<Totem> GetActiveTotems() => activeTotems;
 
     public void FireProjectile(ComboHit hit, int comboIndex, Vector3 direction)
     {

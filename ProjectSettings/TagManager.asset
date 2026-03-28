@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Enemy
   - InventoryPanel
+  - BagGrid
   layers:
   - Default
   - TransparentFX
@@ -13,10 +14,10 @@ TagManager:
   - FlyingEnemy
   - Water
   - UI
-  - 
-  - 
-  - 
-  - 
+  - Player
+  - Summoner
+  - Enemy
+  - Ground
   - 
   - 
   - 

@@ -44,6 +44,7 @@ public class ZapperSummoner : SummonerBase
 
     private float attachTimer;
     private Vector3 wanderTarget;
+    private bool jumpFinished = false;
 
     public override void Init(PlayerStats playerStats)
     {
@@ -66,8 +67,6 @@ public class ZapperSummoner : SummonerBase
     protected override void Update()
     {
         if (health.IsDead) return;
-
-        base.Update();
 
         switch (currentState)
         {
@@ -146,8 +145,9 @@ public class ZapperSummoner : SummonerBase
         currentState = ZapperState.Attached;
         movement.SetCanMove(false);
 
+        jumpFinished = false;
         animator.SetTrigger("Jump");
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitUntil(() => jumpFinished);
 
         if (currentTarget == null || currentTarget.IsDead)
         {
@@ -168,6 +168,12 @@ public class ZapperSummoner : SummonerBase
         currentTarget.OnDamageReceived += OnHostDamaged;
         attachedEnemies.Add(currentTarget);
         attachTimer = attachDuration;
+    }
+
+    // Animation Event
+    public void FinishJump()
+    {
+        jumpFinished = true;
     }
 
     private void OnEnemyKilled(EnemyHealth enemy)

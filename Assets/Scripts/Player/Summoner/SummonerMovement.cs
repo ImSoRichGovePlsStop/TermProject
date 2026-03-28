@@ -13,6 +13,14 @@ public class SummonerMovement : MovementBase
             animator = GetComponentInChildren<Animator>();
     }
 
+    protected override void Update()
+    {
+        base.Update();
+
+        if (animator != null)
+            animator.SetBool("IsMoving", IsMoving);
+    }
+
     protected override void FaceDirection(Vector3 direction)
     {
         if (animator == null) return;

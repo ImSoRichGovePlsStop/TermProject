@@ -34,6 +34,13 @@ public abstract class SummonerBase : MonoBehaviour
 
         if (stats == null)
             stats = GetComponent<EntityStats>();
+
+        health.OnDeath += OnDeath;
+    }
+
+    protected virtual void OnDeath()
+    {
+        movement.SetCanMove(false);
     }
 
     protected virtual void Update()

@@ -22,7 +22,8 @@ public class PlayerController : MonoBehaviour
     private bool isSecondaryAttacking = false;
     private int comboIndex = 0;
     private float lastAttackTime = 0f;
-    private float attackCooldownTimer = 0f;
+    private float primaryCooldownTimer = 0f;
+    private float secondaryCooldownTimer = 0f;
 
     private bool isDashing = false;
     private float dashTimer = 0f;
@@ -83,7 +84,7 @@ public class PlayerController : MonoBehaviour
         if (!ctx.started) return;
         if (IsAnyUIOpen()) return;
         if (isPrimaryAttacking || isSecondaryAttacking) return;
-        if (attackCooldownTimer > 0) return;
+        if (primaryCooldownTimer > 0) return;
 
         WeaponData weapon = weaponEquip.GetCurrentWeapon();
         if (weapon == null || weapon.combo.Length == 0) return;
@@ -121,7 +122,7 @@ public class PlayerController : MonoBehaviour
         if (!ctx.started) return;
         if (IsAnyUIOpen()) return;
         if (isPrimaryAttacking || isSecondaryAttacking) return;
-        if (attackCooldownTimer > 0) return;
+        if (secondaryCooldownTimer > 0) return;
 
         WeaponData weapon = weaponEquip.GetCurrentWeapon();
         if (weapon == null || weapon.secondaryAttack == null) return;
@@ -209,7 +210,7 @@ public class PlayerController : MonoBehaviour
 
         WeaponData weapon = weaponEquip.GetCurrentWeapon();
         if (weapon != null && comboIndex == 0)
-            attackCooldownTimer = weapon.comboCooldown / stats.AttackSpeed;
+            primaryCooldownTimer = weapon.comboCooldown / stats.AttackSpeed;
     }
 
     public void OnSecondaryAttackEnd()
@@ -221,13 +222,16 @@ public class PlayerController : MonoBehaviour
 
         WeaponData weapon = weaponEquip.GetCurrentWeapon();
         if (weapon != null)
-            attackCooldownTimer = weapon.secondaryCooldown / stats.AttackSpeed;
+            secondaryCooldownTimer = weapon.secondaryCooldown / stats.AttackSpeed;
     }
 
     void FixedUpdate()
     {
-        if (attackCooldownTimer > 0)
-            attackCooldownTimer -= Time.fixedDeltaTime;
+        if (primaryCooldownTimer > 0)
+            primaryCooldownTimer -= Time.fixedDeltaTime;
+
+        if (secondaryCooldownTimer > 0)
+            secondaryCooldownTimer -= Time.fixedDeltaTime;
 
         if (dashCooldownTimer > 0)
             dashCooldownTimer -= Time.fixedDeltaTime;

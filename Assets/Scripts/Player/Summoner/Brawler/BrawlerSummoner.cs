@@ -14,7 +14,8 @@ public class BrawlerSummoner : SummonerBase
 
     [Header("Attack")]
     [SerializeField] private float attackRange = 1f;
-    [SerializeField] private float attackCooldown = 1f;
+    [SerializeField] private float attackAngle = 120f;
+    [SerializeField] private float attackCooldown = 0.5f;
     [SerializeField] private float damageScale = 0.25f;
     [SerializeField] private Animator animator;
 
@@ -23,7 +24,9 @@ public class BrawlerSummoner : SummonerBase
 
     [Header("Wander")]
     [SerializeField] private float wanderRadius = 3f;
-    [SerializeField] private float wanderPointReachedDistance = 0.5f;
+    [SerializeField] private float wanderSpeedMultiplier = 0.5f;
+    [SerializeField] private float wanderIdleTimeMin = 0.5f;
+    [SerializeField] private float wanderIdleTimeMax = 1.5f;
 
     private EnemyHealth currentTarget;
     private BrawlerState currentState = BrawlerState.Wander;
@@ -31,10 +34,14 @@ public class BrawlerSummoner : SummonerBase
     private bool isAttacking = false;
     private float lastAttackTime = -Mathf.Infinity;
     private Vector3 wanderTarget;
+    private float wanderIdleTimer = 0f;
+    private bool isWanderIdling = false;
 
     protected override void Awake()
     {
         base.Awake();
+
+        movement.SetStopDistance(attackRange * 0.8f);
 
         if (animator == null)
             animator = GetComponentInChildren<Animator>();
@@ -58,6 +65,14 @@ public class BrawlerSummoner : SummonerBase
 
     private void UpdateState()
     {
+        if (isAttacking)
+        {
+            currentState = BrawlerState.Attack;
+            return;
+        }
+
+        BrawlerState prevState = currentState;
+
         if (currentTarget != null)
         {
             float dist = Vector3.Distance(transform.position, currentTarget.transform.position);
@@ -67,6 +82,12 @@ public class BrawlerSummoner : SummonerBase
         {
             isAttacking = false;
             currentState = BrawlerState.Wander;
+        }
+
+        if (prevState == BrawlerState.Wander && currentState != BrawlerState.Wander)
+        {
+            movement.ResetSpeedMultiplier();
+            isWanderIdling = false;
         }
     }
 
@@ -79,9 +100,11 @@ public class BrawlerSummoner : SummonerBase
                 break;
 
             case BrawlerState.Attack:
-                movement.StopMoving();
                 movement.FaceTarget(currentTarget.transform.position);
-                TryAttack();
+                if (!TryAttack())
+                    movement.MoveToTarget(currentTarget.transform.position);
+                else
+                    movement.StopMoving();
                 break;
 
             case BrawlerState.Wander:
@@ -90,14 +113,14 @@ public class BrawlerSummoner : SummonerBase
         }
     }
 
-    private void TryAttack()
+    private bool TryAttack()
     {
-        if (isAttacking) return;
-        if (Time.time < lastAttackTime + attackCooldown) return;
+        if (isAttacking) return true;
+        if (Time.time < lastAttackTime + attackCooldown) return false;
 
         isAttacking = true;
-        lastAttackTime = Time.time;
         animator.SetTrigger("Attack");
+        return true;
     }
 
     // Animation Event
@@ -105,18 +128,38 @@ public class BrawlerSummoner : SummonerBase
     {
         if (currentTarget == null || currentTarget.IsDead) return;
 
-        float dist = Vector3.Distance(transform.position, currentTarget.transform.position);
-        if (dist > attackRange) return;
-
         float damage = stats.Damage + (playerStats != null ? playerStats.Damage * damageScale : 0f);
 
-        currentTarget.TakeDamage(damage);
+        Vector3 attackDir = currentTarget.transform.position - transform.position;
+        attackDir.y = 0f;
+        if (attackDir.sqrMagnitude > 0.001f)
+            attackDir.Normalize();
+
+        Collider[] hits = Physics.OverlapSphere(transform.position, attackRange);
+        foreach (var hit in hits)
+        {
+            if (!hit.CompareTag("Enemy")) continue;
+
+            Vector3 dir = hit.transform.position - transform.position;
+            dir.y = 0f;
+
+            if (dir.sqrMagnitude > 0.001f)
+            {
+                float angle = Vector3.Angle(attackDir, dir);
+                if (angle > attackAngle * 0.5f) continue;
+            }
+
+            var enemyHealth = hit.GetComponentInParent<EnemyHealth>();
+            if (enemyHealth != null && !enemyHealth.IsDead)
+                enemyHealth.TakeDamage(damage);
+        }
     }
 
     // Animation Event
     public void FinishAttack()
     {
         isAttacking = false;
+        lastAttackTime = Time.time;
     }
 
     private void Wander()
@@ -124,11 +167,47 @@ public class BrawlerSummoner : SummonerBase
         if (playerStats == null) return;
 
         Vector3 playerPos = playerStats.transform.position;
-        float distToWander = Vector3.Distance(transform.position, wanderTarget);
+        float distToPlayer = Vector3.Distance(transform.position, playerPos);
 
-        if (wanderTarget == Vector3.zero || distToWander <= wanderPointReachedDistance)
+        if (distToPlayer > wanderRadius)
+        {
+            isWanderIdling = false;
+            wanderTarget = Vector3.zero;
+            movement.ResetSpeedMultiplier();
+            movement.MoveToTarget(playerPos);
+            return;
+        }
+
+        if (isWanderIdling)
+        {
+            movement.StopMoving();
+            wanderIdleTimer -= Time.deltaTime;
+            if (wanderIdleTimer <= 0f)
+            {
+                isWanderIdling = false;
+                wanderTarget = GetRandomWanderPoint(playerPos);
+            }
+            return;
+        }
+        if (wanderTarget == Vector3.zero)
+        {
             wanderTarget = GetRandomWanderPoint(playerPos);
+        }
 
+        var agent = movement.GetAgent();
+        bool reachedTarget = agent != null
+            && agent.hasPath
+            && agent.remainingDistance <= agent.stoppingDistance;
+
+        if (reachedTarget)
+        {
+            isWanderIdling = true;
+            wanderIdleTimer = Random.Range(wanderIdleTimeMin, wanderIdleTimeMax);
+            movement.StopMoving();
+            return;
+        }
+
+        movement.SetSpeedMultiplier(wanderSpeedMultiplier);
         movement.MoveToTarget(wanderTarget);
     }
 
@@ -142,6 +221,12 @@ public class BrawlerSummoner : SummonerBase
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
+
+        Vector3 leftDir = Quaternion.Euler(0, -attackAngle * 0.5f, 0) * transform.forward;
+        Vector3 rightDir = Quaternion.Euler(0, attackAngle * 0.5f, 0) * transform.forward;
+        Gizmos.color = new Color(1f, 0f, 0f, 0.3f);
+        Gizmos.DrawLine(transform.position, transform.position + leftDir * attackRange);
+        Gizmos.DrawLine(transform.position, transform.position + rightDir * attackRange);
 
         if (playerStats != null)
         {
