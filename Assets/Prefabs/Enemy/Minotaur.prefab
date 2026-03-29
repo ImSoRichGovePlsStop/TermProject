@@ -128,6 +128,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e6d50285b3671548a01de664f2a07da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BillboardSprite
+  isBillboard: 1
 --- !u!114 &7624309217152778972
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -199,9 +200,9 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.2869866
-  m_Height: 1.1464019
+  m_Height: 0.8370743
   m_Direction: 1
-  m_Center: {x: -0.06726527, y: -0.07320094, z: 0}
+  m_Center: {x: -0.06726527, y: -0.22786474, z: 0}
 --- !u!54 &5064009264113191973
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -241,7 +242,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6966ff3153ba06b4fbede09d2a94133e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealthBase
-  maxHP: 30
   destroyDelay: 2
   spriteRenderer: {fileID: 0}
   flashColor: {r: 1, g: 0, b: 0, a: 1}
@@ -283,7 +283,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9e571eb8f155da40b866c5257e1571b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyMovementBase
-  moveSpeed: 3
   stopDistance: 0.8
   spriteRenderer: {fileID: 7207136353188437833}
   animator: {fileID: 7320266871699247397}
@@ -299,7 +298,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73a687f9a65ebc34ab8d148f3be77e4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EntityStats
-  baseMaxHP: 30
+  baseMaxHP: 50
   baseMoveSpeed: 2
   baseDamage: 6
   baseAttackSpeed: 1
@@ -320,7 +319,7 @@ MonoBehaviour:
   postAttackDelay: 0.5
   targetPriority:
     playerPriority: 1
-    summonerPriority: 0.8
+    summonerPriority: 0.6
     totemPriority: 1.2
   wander:
     mode: 2

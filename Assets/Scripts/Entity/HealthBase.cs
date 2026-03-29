@@ -72,6 +72,10 @@ public abstract class HealthBase : MonoBehaviour
         if (IsInvincible) return;
         if (damage <= 0f) return;
 
+        var entityStats = GetComponent<EntityStats>();
+        if (entityStats != null)
+            damage *= entityStats.DamageTaken;
+
         currentHP -= damage;
         currentHP = Mathf.Max(currentHP, 0f);
 

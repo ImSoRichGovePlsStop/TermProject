@@ -324,7 +324,7 @@ MonoBehaviour:
   attackCooldown: 1
   damageScale: 0.25
   animator: {fileID: 0}
-  searchRadius: 6
+  searchRadius: 12
   wander:
     mode: 0
     wanderRadius: 1.5

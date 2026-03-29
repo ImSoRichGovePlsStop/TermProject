@@ -178,7 +178,7 @@ MonoBehaviour:
   health: {fileID: 0}
   movement: {fileID: 0}
   stats: {fileID: 0}
-  searchRadius: 6
+  searchRadius: 12
   explosionRadius: 1
   baseExplosionRadius: 0.25
   centerRadius: 0.4

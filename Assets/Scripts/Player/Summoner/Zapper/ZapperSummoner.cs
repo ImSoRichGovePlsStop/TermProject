@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -33,20 +32,28 @@ public class ZapperSummoner : SummonerBase
 
     [Header("References")]
     [SerializeField] private Collider zapperCollider;
+    [SerializeField] private GameObject shockedVFXPrefab;
 
     [Header("Player Scaling")]
     [SerializeField] private float hpScale = 0.05f;
     [SerializeField] private float speedScale = 0.1f;
+
+    private Vector3 GetAttachPosition(Vector3 targetPos)
+    {
+        float tiltRad = Camera.main.transform.eulerAngles.x * Mathf.Deg2Rad;
+        float offsetY = -targetPos.y * 0.2f;
+        float zOffset = offsetY * Mathf.Tan(tiltRad);
+        return targetPos + new Vector3(0f, offsetY, zOffset - 0.05f);
+    }
 
     private PlayerCombatContext context;
     private HealthBase currentTarget;
     private ZapperState currentState = ZapperState.Wander;
 
     private static readonly HashSet<HealthBase> attachedEnemies = new HashSet<HealthBase>();
+    private static bool isChaining = false;
 
     private float attachTimer;
-    private bool jumpFinished = false;
-
     private LayerMask enemyMask;
 
     protected override void ApplyPlayerScaling()
@@ -126,7 +133,7 @@ public class ZapperSummoner : SummonerBase
 
     private void TickChase()
     {
-        if (currentTarget == null || currentTarget.IsDead)
+        if (currentTarget == null || currentTarget.IsDead || attachedEnemies.Contains(currentTarget))
         {
             currentTarget = null;
             currentState = ZapperState.Wander;
@@ -136,7 +143,7 @@ public class ZapperSummoner : SummonerBase
         float dist = Vector3.Distance(transform.position, currentTarget.transform.position);
         if (dist <= attachRange)
         {
-            StartCoroutine(JumpAndAttach());
+            Attach();
             return;
         }
 
@@ -151,33 +158,33 @@ public class ZapperSummoner : SummonerBase
             return;
         }
 
-        transform.position = currentTarget.transform.position;
+        transform.position = GetAttachPosition(currentTarget.transform.position);
 
         attachTimer -= Time.deltaTime;
         if (attachTimer <= 0f)
             Detach();
     }
 
-    private IEnumerator JumpAndAttach()
+    private void Attach()
     {
         currentState = ZapperState.Attached;
         movement.SetCanMove(false);
 
-        jumpFinished = false;
-        animator.SetTrigger("Jump");
-        yield return new WaitUntil(() => jumpFinished);
-
-        if (currentTarget == null || currentTarget.IsDead)
-        {
-            movement.SetCanMove(true);
-            currentState = ZapperState.Wander;
-            yield break;
-        }
-
-        transform.position = currentTarget.transform.position;
+        transform.position = GetAttachPosition(currentTarget.transform.position);
 
         if (zapperCollider != null)
             zapperCollider.enabled = false;
+
+        gameObject.layer = LayerMask.NameToLayer("Hidden");
+        health.IsInvincible = true;
+
+        var sr = animator.GetComponent<SpriteRenderer>();
+        if (sr != null)
+        {
+            Color c = sr.color;
+            c.a = 0.6f;
+            sr.color = c;
+        }
 
         var entityStats = currentTarget.GetComponent<EntityStats>();
         if (entityStats != null)
@@ -186,12 +193,7 @@ public class ZapperSummoner : SummonerBase
         currentTarget.OnDamageReceived += OnHostDamaged;
         attachedEnemies.Add(currentTarget);
         attachTimer = attachDuration;
-    }
-
-    // Animation Event
-    public void FinishJump()
-    {
-        jumpFinished = true;
+        animator.SetTrigger("Attach");
     }
 
     private void OnEntityKilled(HealthBase entity)
@@ -204,13 +206,27 @@ public class ZapperSummoner : SummonerBase
     {
         if (currentTarget == null) return;
 
+        if (isChaining)
+        {
+            if (shockedVFXPrefab != null)
+            {
+                Vector3 vfxPos = GetAttachPosition(currentTarget.transform.position);
+                vfxPos.z -= 0.05f;
+                Instantiate(shockedVFXPrefab, vfxPos, Quaternion.identity);
+            }
+            return;
+        }
+
+        isChaining = true;
         float chainDamage = damage * chainPercent;
 
-        foreach (var enemy in attachedEnemies)
+        var targets = new List<HealthBase>(attachedEnemies);
+        foreach (var enemy in targets)
         {
             if (enemy == null || enemy.IsDead || enemy == currentTarget) continue;
             enemy.TakeDamage(chainDamage);
         }
+        isChaining = false;
     }
 
     private void Detach()
@@ -228,6 +244,17 @@ public class ZapperSummoner : SummonerBase
 
         if (zapperCollider != null)
             zapperCollider.enabled = true;
+
+        health.IsInvincible = false;
+        gameObject.layer = LayerMask.NameToLayer("Summoner");
+
+        var sr = animator.GetComponent<SpriteRenderer>();
+        if (sr != null)
+        {
+            Color c = sr.color;
+            c.a = 1f;
+            sr.color = c;
+        }
 
         context.OnEntityKilled -= OnEntityKilled;
         DieWithoutAnimation();
