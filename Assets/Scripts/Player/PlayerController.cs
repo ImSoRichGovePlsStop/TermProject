@@ -25,6 +25,8 @@ public class PlayerController : MonoBehaviour
     private float primaryCooldownTimer = 0f;
     private float secondaryCooldownTimer = 0f;
 
+    public float SecondaryCooldownRemaining => secondaryCooldownTimer;
+
     private bool isDashing = false;
     private float dashTimer = 0f;
     private float dashCooldownTimer = 0f;

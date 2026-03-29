@@ -15,16 +15,56 @@ public class WandAttack : MonoBehaviour
     [Header("Spawn")]
     [SerializeField] private Transform projectileSpawnPoint;
 
+    [Header("Status HUD")]
+    [SerializeField] private Sprite totemCooldownIcon;
+
     private PlayerStats stats;
     private PlayerCombatContext context;
     private WeaponEquip weaponEquip;
+    private PlayerController controller;
     private List<Totem> activeTotems = new List<Totem>();
+
+    private StatusEntry cooldownEntry;
+    private const string COOLDOWN_ID = "wand_totem_cooldown";
 
     private void Awake()
     {
         stats = GetComponent<PlayerStats>();
         context = GetComponent<PlayerCombatContext>();
         weaponEquip = GetComponent<WeaponEquip>();
+        controller = GetComponent<PlayerController>();
+    }
+
+    private void Start()
+    {
+        cooldownEntry = new StatusEntry(COOLDOWN_ID, totemCooldownIcon);
+        cooldownEntry.sweepClockwise = false;
+        cooldownEntry.isActive = true;
+        PlayerStatusHUD.Instance?.Register(cooldownEntry);
+        PlayerStatusHUD.Instance?.Refresh(COOLDOWN_ID);
+    }
+
+    private void OnDestroy()
+    {
+        PlayerStatusHUD.Instance?.Unregister(COOLDOWN_ID);
+    }
+
+    private void Update()
+    {
+        if (cooldownEntry == null || PlayerStatusHUD.Instance == null) return;
+
+        WeaponData weapon = weaponEquip?.GetCurrentWeapon();
+        if (weapon == null) return;
+
+        float cooldown = weapon.secondaryCooldown;
+        float remaining = controller != null ? controller.SecondaryCooldownRemaining : 0f;
+
+        float ratio = cooldown > 0f ? Mathf.Clamp01(remaining / cooldown) : 0f;
+
+        cooldownEntry.sweepFill = ratio;
+        cooldownEntry.isActive = remaining <= 0f;
+
+        PlayerStatusHUD.Instance.Refresh(COOLDOWN_ID);
     }
 
     public void PlaceTotem()
