@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3927009060944682302}
   - component: {fileID: 8413546466711054081}
+  - component: {fileID: -6706141175716962548}
   - component: {fileID: 861575312365302403}
   - component: {fileID: 581368262220186772}
   m_Layer: 9
@@ -58,6 +59,22 @@ CapsuleCollider:
   m_Height: 1
   m_Direction: 1
   m_Center: {x: 0, y: 0.25, z: 0}
+--- !u!114 &-6706141175716962548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4737737749466170205}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73a687f9a65ebc34ab8d148f3be77e4c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EntityStats
+  baseMaxHP: 50
+  baseMoveSpeed: 3
+  baseDamage: 6
+  baseAttackSpeed: 1
 --- !u!114 &861575312365302403
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -70,7 +87,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 588fba4a2410fb34a87d0657a6b5287d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Totem
-  maxHP: 50
   destroyDelay: 2
   spriteRenderer: {fileID: 0}
   flashColor: {r: 1, g: 0, b: 0, a: 1}
@@ -81,9 +97,9 @@ MonoBehaviour:
   hpDecayRate: 4
   brawlerPrefab: {fileID: 2915161808019322072, guid: 0721ab02f90563c42b5f3b9d5c503a89, type: 3}
   zapperPrefab: {fileID: 0}
-  bomberPrefab: {fileID: 0}
+  bomberPrefab: {fileID: 4010689275156611331, guid: f5009bb501dc2624bbcff40b119fe29c, type: 3}
   brawlerInterval: 3
-  zapperInterval: 4
+  zapperInterval: 2
   bomberInterval: 5
   spawnRadius: 0.5
 --- !u!114 &581368262220186772
@@ -230,3 +246,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e6d50285b3671548a01de664f2a07da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BillboardSprite
+  isBillboard: 1

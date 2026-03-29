@@ -36,6 +36,10 @@ public class ZapperSummoner : SummonerBase
     [Header("References")]
     [SerializeField] private Collider zapperCollider;
 
+    [Header("Player Scaling")]
+    [SerializeField] private float hpScale = 0.05f;
+    [SerializeField] private float speedScale = 0.1f;
+
     private PlayerCombatContext context;
     private EnemyHealth currentTarget;
     private ZapperState currentState = ZapperState.Wander;
@@ -45,6 +49,16 @@ public class ZapperSummoner : SummonerBase
     private float attachTimer;
     private Vector3 wanderTarget;
     private bool jumpFinished = false;
+
+    protected override void ApplyPlayerScaling()
+    {
+        if (playerStats == null) return;
+        stats.AddFlatModifier(new EntityStatModifier
+        {
+            maxHP = playerStats.MaxHealth * hpScale,
+            moveSpeed = playerStats.MoveSpeed * speedScale
+        });
+    }
 
     public override void Init(PlayerStats playerStats)
     {

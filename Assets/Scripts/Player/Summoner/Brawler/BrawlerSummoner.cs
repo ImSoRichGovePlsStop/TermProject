@@ -25,15 +25,29 @@ public class BrawlerSummoner : SummonerBase
     [Header("Wander")]
     [SerializeField] private WanderBehavior wander;
 
+    [Header("Player Scaling")]
+    [SerializeField] private float hpScale = 0.1f;
+    [SerializeField] private float speedScale = 0.1f;
+
     private HealthBase currentTarget;
     private BrawlerState currentState = BrawlerState.Wander;
 
     private bool isAttacking = false;
     private float lastAttackTime = -Mathf.Infinity;
 
-    private static readonly LayerMask enemyMask = ~0;
 
     private LayerMask _enemyMask;
+
+    protected override void ApplyPlayerScaling()
+    {
+        if (playerStats == null) return;
+        stats.AddFlatModifier(new EntityStatModifier
+        {
+            maxHP = playerStats.MaxHealth * hpScale,
+            moveSpeed = playerStats.MoveSpeed * speedScale
+        });
+        health.SetMaxHP(stats.MaxHP);
+    }
 
     protected override void Awake()
     {

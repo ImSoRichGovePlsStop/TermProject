@@ -5,7 +5,6 @@ using UnityEngine;
 public abstract class HealthBase : MonoBehaviour
 {
     [Header("Health")]
-    [SerializeField] protected float maxHP = 30f;
     [SerializeField] protected float destroyDelay = 2f;
 
     [Header("Flash")]
@@ -21,6 +20,7 @@ public abstract class HealthBase : MonoBehaviour
     public float HealthBarHeight => healthBarHeight;
     public Vector3 HealthBarScale => healthBarScale;
 
+    protected float maxHP = 30f;
     protected float currentHP;
     protected bool isDead;
     protected bool isHurt;
@@ -32,6 +32,7 @@ public abstract class HealthBase : MonoBehaviour
     public float MaxHP => maxHP;
     public bool IsDead => isDead;
     public bool IsHurt => isHurt;
+    public bool IsInvincible { get; set; }
 
     public event Action<float, bool> OnDamageReceived;
     public event Action OnDeath;
@@ -59,9 +60,16 @@ public abstract class HealthBase : MonoBehaviour
 
     protected virtual void Update() { }
 
+    public void SetMaxHP(float newMaxHP)
+    {
+        maxHP = newMaxHP;
+        currentHP = maxHP;
+    }
+
     public virtual void TakeDamage(float damage, bool isCrit = false)
     {
         if (isDead) return;
+        if (IsInvincible) return;
         if (damage <= 0f) return;
 
         currentHP -= damage;

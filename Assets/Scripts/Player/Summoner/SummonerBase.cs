@@ -22,7 +22,10 @@ public abstract class SummonerBase : MonoBehaviour
     {
         this.playerStats = playerStats;
         remainingLifetime = lifetime;
+        ApplyPlayerScaling();
     }
+
+    protected virtual void ApplyPlayerScaling() { }
 
     protected virtual void Awake()
     {

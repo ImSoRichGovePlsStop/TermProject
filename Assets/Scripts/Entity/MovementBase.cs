@@ -5,7 +5,6 @@ using UnityEngine.AI;
 public abstract class MovementBase : MonoBehaviour
 {
     [Header("Movement")]
-    [SerializeField] protected float moveSpeed = 3f;
     [SerializeField] protected float stopDistance = 0.8f;
 
     [Header("References")]
@@ -98,7 +97,7 @@ public abstract class MovementBase : MonoBehaviour
 
     protected virtual float GetCurrentMoveSpeed()
     {
-        float base_speed = stats != null ? stats.MoveSpeed : moveSpeed;
+        float base_speed = stats != null ? stats.MoveSpeed : 3f;
         return base_speed * speedMultiplier;
     }
 

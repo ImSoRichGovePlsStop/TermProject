@@ -11,4 +11,5 @@ public class BomberAnimationEvents : MonoBehaviour
 
     public void DealExplosionDamage() => bomber?.DealExplosionDamage();
     public void FinishExplosion() => bomber?.FinishExplosion();
+    public void SetExplosionScale() => bomber?.SetExplosionScale();
 }

@@ -18,7 +18,8 @@ public class SummonerHealth : HealthBase
     protected override void Start()
     {
         base.Start();
-        DamageNumberSpawner.Instance?.RegisterEntity(this, healthBarHeight);
+        if (DamageNumberSpawner.Instance != null)
+            DamageNumberSpawner.Instance.RegisterEntity(this, healthBarHeight);
     }
 
     public void DieWithAnimation()
@@ -30,6 +31,7 @@ public class SummonerHealth : HealthBase
     public void DieWithoutAnimation()
     {
         useAnimation = false;
+        destroyDelay = 0f;
         Die();
     }
 

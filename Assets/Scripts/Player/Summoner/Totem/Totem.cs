@@ -22,8 +22,8 @@ public class Totem : HealthBase
     private float zapperTimer;
     private float bomberTimer;
 
-    private bool canSpawnZapper = false;
-    private bool canSpawnBomber = false;
+    private bool canSpawnZapper = true;
+    private bool canSpawnBomber = true;
 
     private PlayerStats playerStats;
     private PlayerCombatContext context;

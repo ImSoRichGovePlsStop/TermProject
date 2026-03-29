@@ -17,27 +17,51 @@ public class BomberSummoner : SummonerBase
 
     [Header("Explosion")]
     [SerializeField] private float explosionRadius = 2f;
+    [SerializeField] private float baseExplosionRadius = 2f;
     [SerializeField] private float centerRadius = 0.8f;
+    [SerializeField] private float centerDamageMultiplier = 1.5f;
     [SerializeField] private float centerDamageScale = 1.5f;
-    [SerializeField] private float centerBaseDamage = 30f;
+    [SerializeField] private float edgeDamageMultiplier = 1f;
     [SerializeField] private float edgeDamageScale = 1f;
-    [SerializeField] private float edgeBaseDamage = 20f;
     [SerializeField] private float triggerRange = 0.8f;
 
     [Header("Wander")]
-    [SerializeField] private float wanderRadius = 3f;
-    [SerializeField] private float wanderPointReachedDistance = 0.5f;
+    [SerializeField] private WanderBehavior wander;
 
     [Header("Animation")]
     [SerializeField] private Animator animator;
 
-    private EnemyHealth currentTarget;
+    [Header("Player Scaling")]
+    [SerializeField] private float hpScale = 0.05f;
+    [SerializeField] private float speedScale = 0.1f;
+
+    private HealthBase currentTarget;
     private BomberState currentState = BomberState.Wander;
-    private Vector3 wanderTarget;
+    private LayerMask enemyMask;
+
+    protected override void ApplyPlayerScaling()
+    {
+        if (playerStats == null) return;
+        stats.AddFlatModifier(new EntityStatModifier
+        {
+            maxHP = playerStats.MaxHealth * hpScale,
+            moveSpeed = playerStats.MoveSpeed * speedScale
+        });
+        health.SetMaxHP(stats.MaxHP);
+    }
+
+    protected override void TickLifetime()
+    {
+        if (currentState == BomberState.Detonating) return;
+        base.TickLifetime();
+    }
 
     protected override void Awake()
     {
         base.Awake();
+
+        movement.SetStopDistance(0f);
+        enemyMask = 1 << LayerMask.NameToLayer("Enemy");
 
         if (animator == null)
             animator = GetComponentInChildren<Animator>();
@@ -63,23 +87,16 @@ public class BomberSummoner : SummonerBase
 
     private void TickWander()
     {
-        currentTarget = CombatUtility.FindNearest<EnemyHealth>(transform.position, searchRadius);
+        currentTarget = CombatUtility.FindNearest<HealthBase>(transform.position, searchRadius, enemyMask);
 
         if (currentTarget != null)
         {
+            wander.Reset(movement);
             currentState = BomberState.Chase;
             return;
         }
 
-        if (playerStats == null) return;
-
-        Vector3 playerPos = playerStats.transform.position;
-        float distToWander = Vector3.Distance(transform.position, wanderTarget);
-
-        if (wanderTarget == Vector3.zero || distToWander <= wanderPointReachedDistance)
-            wanderTarget = GetRandomWanderPoint(playerPos);
-
-        movement.MoveToTarget(wanderTarget);
+        wander.Tick(transform, playerStats?.transform, movement);
     }
 
     private void TickChase()
@@ -105,26 +122,39 @@ public class BomberSummoner : SummonerBase
     {
         currentState = BomberState.Detonating;
         movement.SetCanMove(false);
+        health.IsInvincible = true;
+
+        var billboard = animator.GetComponent<BillboardSprite>();
+        if (billboard != null) billboard.isBillboard = false;
+        animator.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+
         animator.SetTrigger("Explode");
+    }
+
+    // Animation Event
+    public void SetExplosionScale()
+    {
+        float scale = explosionRadius / baseExplosionRadius;
+        animator.transform.localScale = Vector3.one * scale;
     }
 
     // Animation Event
     public void DealExplosionDamage()
     {
-        var enemies = CombatUtility.FindAround<EnemyHealth>(transform.position, explosionRadius);
+        var hits = CombatUtility.FindAround<HealthBase>(transform.position, explosionRadius, enemyMask);
 
-        foreach (var enemy in enemies)
+        foreach (var target in hits)
         {
-            if (enemy == null || enemy.IsDead) continue;
+            if (target == null || target.IsDead) continue;
 
-            float dist = Vector3.Distance(transform.position, enemy.transform.position);
+            float dist = Vector3.Distance(transform.position, target.transform.position);
             bool isCenter = dist <= centerRadius;
 
             float damage = isCenter
-                ? centerBaseDamage + (playerStats != null ? playerStats.Damage * centerDamageScale : 0f)
-                : edgeBaseDamage + (playerStats != null ? playerStats.Damage * edgeDamageScale : 0f);
+                ? stats.Damage * centerDamageMultiplier + (playerStats != null ? playerStats.Damage * centerDamageScale : 0f)
+                : stats.Damage * edgeDamageMultiplier + (playerStats != null ? playerStats.Damage * edgeDamageScale : 0f);
 
-            enemy.TakeDamage(damage);
+            target.TakeDamage(damage);
         }
     }
 
@@ -132,12 +162,6 @@ public class BomberSummoner : SummonerBase
     public void FinishExplosion()
     {
         DieWithoutAnimation();
-    }
-
-    private Vector3 GetRandomWanderPoint(Vector3 center)
-    {
-        Vector2 random = Random.insideUnitCircle * wanderRadius;
-        return center + new Vector3(random.x, 0f, random.y);
     }
 
     private void OnDrawGizmosSelected()
@@ -150,11 +174,5 @@ public class BomberSummoner : SummonerBase
 
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, triggerRange);
-
-        if (playerStats != null)
-        {
-            Gizmos.color = Color.white;
-            Gizmos.DrawWireSphere(playerStats.transform.position, wanderRadius);
-        }
     }
 }
