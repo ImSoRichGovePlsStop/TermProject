@@ -13,6 +13,7 @@ public class UIManager : MonoBehaviour
     private GameObject gameOverScreen;
     private UpgradeStationUI _upgradeStationUI;
     private bool _upgradeOpen = false;
+    private HubStorageUI _storageUI;
 
     [SerializeField] private GameObject hud;
 
@@ -24,6 +25,7 @@ public class UIManager : MonoBehaviour
     public bool IsShopOpen => _activeShopUI != null && _activeShopUI.gameObject.activeSelf;
     public bool IsMergeOpen => _activeMergeUI != null && _activeMergeUI.gameObject.activeSelf;
     public bool IsUpgradeOpen => _upgradeOpen;
+    public bool IsStorageOpen => _storageUI != null && _storageUI.IsOpen;
 
     public PassiveScreenUI GetPassiveScreen() => passiveScreenUI;
     public GamblerScreenUI GetGamblerScreen() => gamblerScreenUI;
@@ -49,6 +51,7 @@ public class UIManager : MonoBehaviour
         var shopUI = FindFirstObjectByType<ShopUI>(FindObjectsInactive.Include);
         var mergeUI = FindFirstObjectByType<MergeUI>(FindObjectsInactive.Include);
         var sellUI = FindFirstObjectByType<SellConfirmationUI>(FindObjectsInactive.Include);
+        _storageUI = FindFirstObjectByType<HubStorageUI>(FindObjectsInactive.Include);
 
         if (inventoryPanel != null) inventoryPanel.SetActive(true);
         if (bagGrid != null) bagGrid.SetActive(true);
@@ -77,6 +80,8 @@ public class UIManager : MonoBehaviour
                     return;
                 else if (IsGamblerOpen)
                     gamblerScreenUI.Close();
+                else if (IsStorageOpen)
+                    CloseStorage();
                 else if (!IsPassiveOpen)
                     ToggleInventory();
                 else
@@ -91,6 +96,8 @@ public class UIManager : MonoBehaviour
                     passiveScreenUI.Close();
                 else if (IsGamblerOpen)
                     gamblerScreenUI.Close();
+                else if (IsStorageOpen)
+                    CloseStorage();
                 else if (_upgradeOpen)
                 { }
                 else if (IsMergeOpen)
@@ -204,6 +211,18 @@ public class UIManager : MonoBehaviour
         UpdatePanelVisibility();
     }
 
+    public void OpenStorage()
+    {
+        _storageUI.Open();
+        UpdatePanelVisibility();
+    }
+
+    public void CloseStorage()
+    {
+        _storageUI.Close();
+        UpdatePanelVisibility();
+    }
+
     public void CloseUpgrade()
     {
         if (_upgradeStationUI != null)
@@ -267,7 +286,8 @@ public class UIManager : MonoBehaviour
             IsMergeOpen ||
             _upgradeOpen ||
             IsPassiveOpen ||
-            IsGamblerOpen;
+            IsGamblerOpen ||
+            IsStorageOpen;
 
         if (hud != null) hud.SetActive(!shouldHideHUD);
     }
