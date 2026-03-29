@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4b7eed258015d6e43af3e1877b980b72, type: 3}
-  m_Name: TakeMoreHealSome_1
+  m_Name: ExpressShot_2
   m_EditorClassIdentifier: Assembly-CSharp::ModuleData
-  moduleName: Take more Return more
+  moduleName: ExpressShot
   icon: {fileID: 0}
-  moduleEffect: {fileID: 11400000, guid: d6761900660c7b14fbeb84a3cda68ddc, type: 2}
-  moduleColor: {r: 1, g: 0.28773582, b: 0.6065856, a: 1}
-  cost: 00000000000000003200000064000000c8000000
+  moduleEffect: {fileID: 11400000, guid: 8ca70e11992c95f419ace1a5f52fe135, type: 2}
+  moduleColor: {r: 0.41509432, g: 0, b: 0, a: 1}
+  cost: 190000004b0000007d000000c8000000fa000000
   isBuffAdjacent: 0
   buffGrid:
   - cells: 0000000000
@@ -25,7 +25,7 @@ MonoBehaviour:
   - cells: 0000000000
   - cells: 0000000000
   shapeGrid:
-  - cells: 0100000000
+  - cells: 0101000000
   - cells: 0000000000
   - cells: 0000000000
   - cells: 0000000000

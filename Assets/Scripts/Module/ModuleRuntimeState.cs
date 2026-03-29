@@ -10,8 +10,6 @@ public class ModuleRuntimeState
 
     //HeavyHit
     public float dmgTaken = 0f;
-    public float healDamage = 0f;
-    public float cooldown = 0f;
 
     // LowHpModule
     public float currentThreshold = 0f;
