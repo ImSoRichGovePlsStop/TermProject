@@ -306,7 +306,7 @@ MonoBehaviour:
   health: {fileID: 0}
   movement: {fileID: 0}
   stats: {fileID: 0}
-  searchRadius: 12
+  searchRadius: 6
   attachDuration: 4
   attachRange: 0.4
   damageAmpPercent: 0.1

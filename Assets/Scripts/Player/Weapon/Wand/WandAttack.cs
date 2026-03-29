@@ -39,9 +39,8 @@ public class WandAttack : MonoBehaviour
     {
         cooldownEntry = new StatusEntry(COOLDOWN_ID, totemCooldownIcon);
         cooldownEntry.sweepClockwise = false;
-        cooldownEntry.isActive = true;
+        cooldownEntry.isActive = false;
         PlayerStatusHUD.Instance?.Register(cooldownEntry);
-        PlayerStatusHUD.Instance?.Refresh(COOLDOWN_ID);
     }
 
     private void OnDestroy()
@@ -54,16 +53,21 @@ public class WandAttack : MonoBehaviour
         if (cooldownEntry == null || PlayerStatusHUD.Instance == null) return;
 
         WeaponData weapon = weaponEquip?.GetCurrentWeapon();
-        if (weapon == null) return;
+
+        if (weapon == null || weapon.weaponType != WeaponType.Wand)
+        {
+            PlayerStatusHUD.Instance.Unregister(COOLDOWN_ID);
+            return;
+        }
+
+        PlayerStatusHUD.Instance.Register(cooldownEntry);
 
         float cooldown = weapon.secondaryCooldown;
         float remaining = controller != null ? controller.SecondaryCooldownRemaining : 0f;
-
         float ratio = cooldown > 0f ? Mathf.Clamp01(remaining / cooldown) : 0f;
 
         cooldownEntry.sweepFill = ratio;
         cooldownEntry.isActive = remaining <= 0f;
-
         PlayerStatusHUD.Instance.Refresh(COOLDOWN_ID);
     }
 
