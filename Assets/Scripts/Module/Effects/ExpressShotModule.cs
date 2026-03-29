@@ -64,19 +64,20 @@ public class ExpressShot : ModuleEffect
         _stateMap.Remove(state);
     }
 
-    public override void OnLevelBuffReceived(int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
+    public override void OnLevelBuffReceived(int baselevel, int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
     {
         if (!_stateMap.TryGetValue(state, out var data)) return;
-        state.buffedLevel = levelBonus;
+        if (state.buffedLevel == 0) state.buffedLevel = baselevel;
+        state.buffedLevel += levelBonus;
         if (data.BuffReady)
             stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
         if (state.buffRarity > rarity)
         {
-            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, levelBonus);
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
         }
         else
         {
-            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, levelBonus);
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, state.buffedLevel);
         }
         if (data.BuffReady)
         {
@@ -84,20 +85,20 @@ public class ExpressShot : ModuleEffect
         }
     }
 
-    public override void OnLevelBuffRemoved(int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
+    public override void OnLevelBuffRemoved(int baselevel, int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
     {
-        state.buffedLevel = levelBonus;
+        state.buffedLevel -= levelBonus;
         if (!_stateMap.TryGetValue(state, out var data)) return;
         if (!state.isActive) return;
         if (data.BuffReady)
             stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
         if (state.buffRarity > rarity)
         {
-            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, levelBonus);
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
         }
         else
         {
-            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, levelBonus);
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, state.buffedLevel);
         }
         if (data.BuffReady)
         {

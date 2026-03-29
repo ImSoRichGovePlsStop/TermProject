@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public class ModuleEffectHandler : MonoBehaviour
 {
@@ -58,7 +59,7 @@ public class ModuleEffectHandler : MonoBehaviour
                 foreach (var target in buffed)
                 {
                     if (target.Data.moduleEffect == null) continue;
-                    target.Data.moduleEffect.OnLevelBuffReceived(bonus+target.Level, target.Rarity, playerStats, target.RuntimeState);
+                    target.Data.moduleEffect.OnLevelBuffReceived(target.Level, bonus, target.Rarity, playerStats, target.RuntimeState);
                     inst.buffTargets.Add(target);
                 }
             }
@@ -102,7 +103,7 @@ public class ModuleEffectHandler : MonoBehaviour
             if (otherBuffLevelModule != null)
             {
                 int bonus = (int)otherBuffLevelModule.GetBuffLevel(other.RuntimeState);
-                inst.Data.moduleEffect.OnLevelBuffReceived(bonus+inst.Level, inst.Rarity, playerStats, inst.RuntimeState);
+                inst.Data.moduleEffect.OnLevelBuffReceived(inst.Level, bonus, inst.Rarity, playerStats, inst.RuntimeState);
                 other.buffTargets.Add(inst);
             }
 
@@ -144,7 +145,8 @@ public class ModuleEffectHandler : MonoBehaviour
                 foreach (var target in inst.buffTargets)
                 {
                     if (target.Data.moduleEffect == null) continue;
-                    target.Data.moduleEffect.OnLevelBuffRemoved(target.Level, target.Rarity, playerStats, target.RuntimeState);
+                    int bonus = (int)buffLevelModule.GetBuffLevel(inst.RuntimeState);
+                    target.Data.moduleEffect.OnLevelBuffRemoved(target.Level, bonus, target.Rarity, playerStats, target.RuntimeState);
                 }
                 inst.buffTargets.Clear();
             }
@@ -182,7 +184,8 @@ public class ModuleEffectHandler : MonoBehaviour
             var otherBuffLevelModule = other.Data.moduleEffect as BuffLevelModule;
             if (otherBuffLevelModule != null)
             {
-                inst.Data.moduleEffect.OnLevelBuffRemoved(inst.Level, inst.Rarity, playerStats, inst.RuntimeState);
+                int bonus = (int)otherBuffLevelModule.GetBuffLevel(other.RuntimeState);
+                inst.Data.moduleEffect.OnLevelBuffRemoved(inst.Level, bonus, inst.Rarity, playerStats, inst.RuntimeState);
                 other.buffTargets.Remove(inst);
             }
 

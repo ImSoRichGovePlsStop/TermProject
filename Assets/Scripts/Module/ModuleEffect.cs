@@ -30,8 +30,8 @@ public abstract class ModuleEffect : ScriptableObject
     public virtual void OnUpdate(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state) { }
     public virtual void OnBuffReceived(float percent, PlayerStats stats, ModuleRuntimeState state) { }
     public virtual void OnBuffRemoved(float percent, PlayerStats stats, ModuleRuntimeState state) { }
-    public virtual void OnLevelBuffReceived(int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state) { }
-    public virtual void OnLevelBuffRemoved(int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state) { }
+    public virtual void OnLevelBuffReceived(int baselevel, int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state) { }
+    public virtual void OnLevelBuffRemoved(int baselevel, int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state) { }
     public virtual void OnRarityBuffReceived(int level, Rarity NewRarity, PlayerStats stats, ModuleRuntimeState state) { }
     public virtual void OnRarityBuffRemoved(int level, Rarity NewRarity, PlayerStats stats, ModuleRuntimeState state) { }
 
