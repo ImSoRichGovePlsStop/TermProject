@@ -14,6 +14,7 @@ public class UIManager : MonoBehaviour
     private UpgradeStationUI _upgradeStationUI;
     private bool _upgradeOpen = false;
     private HubStorageUI _storageUI;
+    private PlayerStats playerStats;
 
     [SerializeField] private GameObject hud;
 
@@ -37,7 +38,7 @@ public class UIManager : MonoBehaviour
 
     private void Start()
     {
-        var playerStats = FindFirstObjectByType<PlayerStats>();
+        playerStats = FindFirstObjectByType<PlayerStats>();
         if (playerStats != null)
             playerStats.OnPlayerDeath += OnPlayerDeath;
 
@@ -214,12 +215,14 @@ public class UIManager : MonoBehaviour
     public void OpenStorage()
     {
         _storageUI.Open();
+        playerStats?.SetDebugUI(false);
         UpdatePanelVisibility();
     }
 
     public void CloseStorage()
     {
         _storageUI.Close();
+        playerStats?.SetDebugUI(true);
         UpdatePanelVisibility();
     }
 
