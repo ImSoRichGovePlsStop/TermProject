@@ -19,16 +19,14 @@ public class ZapperSummoner : SummonerBase
 
     [Header("Attach")]
     [SerializeField] private float attachDuration = 4f;
-    [SerializeField] private float attackRange = 1f;
+    [SerializeField] private float attachRange = 1f;
 
     [Header("Charged Debuff")]
-    [SerializeField] private float damageAmpPercent = 0.2f;
-    [SerializeField] private float chainPercent = 0.35f;
-    [SerializeField] private float chainRange = 2f;
+    [SerializeField] private float damageAmpPercent = 0.1f;
+    [SerializeField] private float chainPercent = 0.3f;
 
     [Header("Wander")]
-    [SerializeField] private float wanderRadius = 3f;
-    [SerializeField] private float wanderPointReachedDistance = 0.5f;
+    [SerializeField] private WanderBehavior wander;
 
     [Header("Animation")]
     [SerializeField] private Animator animator;
@@ -41,14 +39,15 @@ public class ZapperSummoner : SummonerBase
     [SerializeField] private float speedScale = 0.1f;
 
     private PlayerCombatContext context;
-    private EnemyHealth currentTarget;
+    private HealthBase currentTarget;
     private ZapperState currentState = ZapperState.Wander;
 
-    private static readonly HashSet<EnemyHealth> attachedEnemies = new HashSet<EnemyHealth>();
+    private static readonly HashSet<HealthBase> attachedEnemies = new HashSet<HealthBase>();
 
     private float attachTimer;
-    private Vector3 wanderTarget;
     private bool jumpFinished = false;
+
+    private LayerMask enemyMask;
 
     protected override void ApplyPlayerScaling()
     {
@@ -58,18 +57,21 @@ public class ZapperSummoner : SummonerBase
             maxHP = playerStats.MaxHealth * hpScale,
             moveSpeed = playerStats.MoveSpeed * speedScale
         });
+        health.SetMaxHP(stats.MaxHP);
     }
 
     public override void Init(PlayerStats playerStats)
     {
         base.Init(playerStats);
         context = playerStats.GetComponent<PlayerCombatContext>();
-        context.OnEnemyKilled += OnEnemyKilled;
+        context.OnEntityKilled += OnEntityKilled;
     }
 
     protected override void Awake()
     {
         base.Awake();
+
+        enemyMask = 1 << LayerMask.NameToLayer("Enemy");
 
         if (animator == null)
             animator = GetComponentInChildren<Animator>();
@@ -81,6 +83,8 @@ public class ZapperSummoner : SummonerBase
     protected override void Update()
     {
         if (health.IsDead) return;
+
+        base.Update();
 
         switch (currentState)
         {
@@ -106,24 +110,18 @@ public class ZapperSummoner : SummonerBase
 
     private void TickWander()
     {
-        var enemies = CombatUtility.FindAround<EnemyHealth>(transform.position, searchRadius);
-        EnemyHealth target = FindUnattachedEnemy(enemies);
+        var enemies = CombatUtility.FindAround<HealthBase>(transform.position, searchRadius, enemyMask);
+        HealthBase target = FindUnattachedEnemy(enemies);
+
         if (target != null)
         {
+            wander.Reset(movement);
             currentTarget = target;
             currentState = ZapperState.Chase;
             return;
         }
 
-        if (playerStats == null) return;
-
-        Vector3 playerPos = playerStats.transform.position;
-        float distToWander = Vector3.Distance(transform.position, wanderTarget);
-
-        if (wanderTarget == Vector3.zero || distToWander <= wanderPointReachedDistance)
-            wanderTarget = GetRandomWanderPoint(playerPos);
-
-        movement.MoveToTarget(wanderTarget);
+        wander.Tick(transform, playerStats?.transform, movement);
     }
 
     private void TickChase()
@@ -136,7 +134,7 @@ public class ZapperSummoner : SummonerBase
         }
 
         float dist = Vector3.Distance(transform.position, currentTarget.transform.position);
-        if (dist <= attackRange)
+        if (dist <= attachRange)
         {
             StartCoroutine(JumpAndAttach());
             return;
@@ -147,6 +145,12 @@ public class ZapperSummoner : SummonerBase
 
     private void TickAttached()
     {
+        if (currentTarget == null || currentTarget.IsDead)
+        {
+            Detach();
+            return;
+        }
+
         transform.position = currentTarget.transform.position;
 
         attachTimer -= Time.deltaTime;
@@ -175,9 +179,9 @@ public class ZapperSummoner : SummonerBase
         if (zapperCollider != null)
             zapperCollider.enabled = false;
 
-        var statusHandler = currentTarget.GetComponent<EnemyStatusHandler>();
-        if (statusHandler != null)
-            statusHandler.AddMultiplierModifier(new EnemyStatModifier { damageTaken = damageAmpPercent });
+        var entityStats = currentTarget.GetComponent<EntityStats>();
+        if (entityStats != null)
+            entityStats.AddMultiplierModifier(new EntityStatModifier { damageTaken = damageAmpPercent });
 
         currentTarget.OnDamageReceived += OnHostDamaged;
         attachedEnemies.Add(currentTarget);
@@ -190,9 +194,9 @@ public class ZapperSummoner : SummonerBase
         jumpFinished = true;
     }
 
-    private void OnEnemyKilled(EnemyHealth enemy)
+    private void OnEntityKilled(HealthBase entity)
     {
-        if (enemy == currentTarget)
+        if (entity == currentTarget)
             Detach();
     }
 
@@ -202,8 +206,7 @@ public class ZapperSummoner : SummonerBase
 
         float chainDamage = damage * chainPercent;
 
-        var enemies = CombatUtility.FindAround<EnemyHealth>(currentTarget.transform.position, chainRange);
-        foreach (var enemy in enemies)
+        foreach (var enemy in attachedEnemies)
         {
             if (enemy == null || enemy.IsDead || enemy == currentTarget) continue;
             enemy.TakeDamage(chainDamage);
@@ -214,9 +217,9 @@ public class ZapperSummoner : SummonerBase
     {
         if (currentTarget != null)
         {
-            var statusHandler = currentTarget.GetComponent<EnemyStatusHandler>();
-            if (statusHandler != null)
-                statusHandler.RemoveMultiplierModifier(new EnemyStatModifier { damageTaken = damageAmpPercent });
+            var entityStats = currentTarget.GetComponent<EntityStats>();
+            if (entityStats != null)
+                entityStats.RemoveMultiplierModifier(new EntityStatModifier { damageTaken = damageAmpPercent });
 
             currentTarget.OnDamageReceived -= OnHostDamaged;
             attachedEnemies.Remove(currentTarget);
@@ -226,13 +229,13 @@ public class ZapperSummoner : SummonerBase
         if (zapperCollider != null)
             zapperCollider.enabled = true;
 
-        context.OnEnemyKilled -= OnEnemyKilled;
+        context.OnEntityKilled -= OnEntityKilled;
         DieWithoutAnimation();
     }
 
-    private EnemyHealth FindUnattachedEnemy(List<EnemyHealth> enemies)
+    private HealthBase FindUnattachedEnemy(List<HealthBase> enemies)
     {
-        EnemyHealth closest = null;
+        HealthBase closest = null;
         float closestDist = Mathf.Infinity;
 
         foreach (var enemy in enemies)
@@ -251,24 +254,15 @@ public class ZapperSummoner : SummonerBase
         return closest;
     }
 
-    private Vector3 GetRandomWanderPoint(Vector3 center)
-    {
-        Vector2 random = Random.insideUnitCircle * wanderRadius;
-        return center + new Vector3(random.x, 0f, random.y);
-    }
-
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, searchRadius);
 
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, chainRange);
-
         if (playerStats != null)
         {
             Gizmos.color = Color.white;
-            Gizmos.DrawWireSphere(playerStats.transform.position, wanderRadius);
+            Gizmos.DrawWireSphere(playerStats.transform.position, 3f);
         }
     }
 }

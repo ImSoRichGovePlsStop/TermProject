@@ -143,7 +143,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d576204bfa3b0e24d8fb8a215f6c6950, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SummonerMovement
-  stopDistance: 0.8
+  stopDistance: 0
   spriteRenderer: {fileID: 0}
   animator: {fileID: 0}
 --- !u!114 &691952625919407970
@@ -159,9 +159,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EntityStats
   baseMaxHP: 10
-  baseMoveSpeed: 3.5
+  baseMoveSpeed: 3
   baseDamage: 30
-  baseAttackSpeed: 1
+  baseAttackSpeed: 0
 --- !u!114 &1116014863555624658
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -178,7 +178,7 @@ MonoBehaviour:
   health: {fileID: 0}
   movement: {fileID: 0}
   stats: {fileID: 0}
-  searchRadius: 5
+  searchRadius: 6
   explosionRadius: 1
   baseExplosionRadius: 0.25
   centerRadius: 0.4
@@ -194,6 +194,8 @@ MonoBehaviour:
     idleTimeMin: 0.5
     idleTimeMax: 1
   animator: {fileID: 0}
+  hpScale: 0.05
+  speedScale: 0.1
 --- !u!1 &6481148339588263528
 GameObject:
   m_ObjectHideFlags: 0
