@@ -16,6 +16,11 @@ public class GamblerScreenUI : MonoBehaviour, IGenericTreeScreenUI
     [SerializeField] private Button cardPhaseButton;
     [SerializeField] private CardPhaseUI cardPhaseUI;
 
+    [Header("Card Phase Locked State")]
+    [SerializeField] private TextMeshProUGUI cardPhaseButtonText;
+    private const string LockedLabel = "[ Card Phase Locked ]";
+    private const string UnlockedLabel = "[ Draw Cards ]";
+
     private GamblerManager manager;
     private GenericTreeConfig currentConfig;
     private object currentOwner;
@@ -24,6 +29,8 @@ public class GamblerScreenUI : MonoBehaviour, IGenericTreeScreenUI
     private bool isSetup = false;
 
     public bool IsOpen { get; private set; }
+    public bool IsCardPhaseOpen => cardPhaseUI != null && cardPhaseUI.IsOpen;
+    public void CloseCardPhase() { if (cardPhaseUI != null) cardPhaseUI.Close(); }
 
     private void Awake()
     {
@@ -32,6 +39,8 @@ public class GamblerScreenUI : MonoBehaviour, IGenericTreeScreenUI
             upgradeButton.onClick.AddListener(OnUpgradeClick);
         if (cardPhaseButton != null)
             cardPhaseButton.onClick.AddListener(OnCardPhaseClick);
+
+        SetCardPhaseButtonLocked(true);
     }
 
     private void Start()
@@ -70,6 +79,7 @@ public class GamblerScreenUI : MonoBehaviour, IGenericTreeScreenUI
         RefreshAll();
         RefreshPoints();
         RefreshLevel();
+        RefreshCardPhaseButton();
     }
 
     public void Close()
@@ -82,6 +92,7 @@ public class GamblerScreenUI : MonoBehaviour, IGenericTreeScreenUI
 
     private void Setup(GenericTreeConfig config, object owner)
     {
+        manager.OnConfigEquipped(config, owner);
         for (int i = 0; i < treeUIs.Length && i < config.trees.Length; i++)
             treeUIs[i].Setup(config.trees[i], manager, this, owner);
     }
@@ -96,6 +107,8 @@ public class GamblerScreenUI : MonoBehaviour, IGenericTreeScreenUI
     {
         foreach (var treeUI in treeUIs)
             treeUI.RefreshAll();
+
+        RefreshCardPhaseButton();
     }
 
     public void RefreshPoints()
@@ -121,6 +134,20 @@ public class GamblerScreenUI : MonoBehaviour, IGenericTreeScreenUI
 
         if (upgradeButtonText != null)
             upgradeButtonText.text = canLevelUp ? $"Upgrade (Lv.{level + 1})" : "Max Level";
+    }
+
+    private void RefreshCardPhaseButton()
+    {
+        bool unlocked = cardPhaseUI != null && cardPhaseUI.CardPhaseUnlocked;
+        SetCardPhaseButtonLocked(!unlocked);
+    }
+
+    private void SetCardPhaseButtonLocked(bool locked)
+    {
+        if (cardPhaseButton == null) return;
+        cardPhaseButton.interactable = !locked;
+        if (cardPhaseButtonText != null)
+            cardPhaseButtonText.text = locked ? LockedLabel : UnlockedLabel;
     }
 
     private void OnUpgradeClick()

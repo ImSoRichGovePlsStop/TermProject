@@ -6,6 +6,7 @@ public class WeaponStand : MonoBehaviour, IInteractable
 
     private PassiveScreenUI passiveScreenUI;
     private WeaponEquip weaponEquip;
+    private UIManager uiManager;
 
     public string GetPromptText()
     {
@@ -20,6 +21,7 @@ public class WeaponStand : MonoBehaviour, IInteractable
     private void Awake()
     {
         passiveScreenUI = FindFirstObjectByType<PassiveScreenUI>();
+        uiManager = FindFirstObjectByType<UIManager>();
     }
 
     public void Interact(PlayerController playerController)
@@ -27,19 +29,12 @@ public class WeaponStand : MonoBehaviour, IInteractable
         if (weaponEquip == null)
             weaponEquip = playerController.GetComponent<WeaponEquip>();
 
-        if (passiveScreenUI == null)
-            passiveScreenUI = FindFirstObjectByType<PassiveScreenUI>(FindObjectsInactive.Include);
+        if (uiManager == null)
+            uiManager = FindFirstObjectByType<UIManager>(FindObjectsInactive.Include);
 
         if (weaponEquip.GetCurrentWeapon() == weaponData)
         {
-            UIManager uiManager = FindFirstObjectByType<UIManager>();
-            if (uiManager != null && uiManager.IsInventoryOpen)
-                uiManager.ToggleInventory();
-
-            if (passiveScreenUI != null)
-                passiveScreenUI.Open(weaponData.passiveData, weaponData);
-            else
-                Debug.LogWarning("PassiveScreenUI not found in scene!");
+            uiManager.OpenPassive(weaponData.passiveData, weaponData);
         }
         else
         {
