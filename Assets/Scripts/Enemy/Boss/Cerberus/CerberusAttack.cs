@@ -1,6 +1,8 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
+[RequireComponent(typeof(Rigidbody))]
 public class CerberusAttack : BaseBossAttack
 {
     public enum AttackKind
@@ -27,26 +29,37 @@ public class CerberusAttack : BaseBossAttack
     [SerializeField] private float pounceDamage = 20f;
     [SerializeField] private float swordDamage = 16f;
 
-    [Header("Ranges")]
-    [SerializeField] private float biteRange = 0.6f;
-    [SerializeField] private float flameRange = 1.2f;
-    [SerializeField] private float pounceStartRange = 3.5f;
-    [SerializeField] private float swordStartRange = 6f;
-    [SerializeField] private float pounceImpactRange = 1f;
+    [Header("Attack Selection Ranges")]
+    [SerializeField] private float biteRange = 1.5f;
+    [SerializeField] private float flameRange = 3f;
+    [SerializeField] private float pounceStartRange = 5f;
+    [SerializeField] private float swordStartRange = 8f;
+
+    [Header("Bite Combo")]
+    [SerializeField] private float biteHitRadius = 1.8f;
+
+    [Header("Flame Breath Cone")]
+    [SerializeField] private float flameConeRadius = 4f;
+    [SerializeField] private float flameConeAngle = 70f;
+    [SerializeField] private Transform flameOrigin;
+    [SerializeField] private GameObject flameConeIndicatorPrefab;
 
     [Header("Pounce")]
     [SerializeField] private float pounceDashSpeed = 10f;
+    [SerializeField] private float pounceDashDistance = 3f;
+    [SerializeField] private float pounceImpactRadius = 1.6f;
+    [SerializeField] private Transform pounceHitPoint;
+
+    [Header("Sword Throw")]
+    [SerializeField] private Transform swordSpawnPoint;
+    [SerializeField] private GameObject swordProjectilePrefab;
 
     [Header("References")]
     [SerializeField] private CerberusHealth health;
     [SerializeField] private BossMovement movement;
-    [SerializeField] private Transform bitePointLeft;
-    [SerializeField] private Transform bitePointRight;
-    [SerializeField] private Transform bitePointCenter;
-    [SerializeField] private Transform flamePoint;
-    [SerializeField] private Transform swordSpawnPoint;
     [SerializeField] private LayerMask playerLayer;
-    [SerializeField] private GameObject swordProjectilePrefab;
+
+    private Rigidbody rb;
 
     private float biteTimer;
     private float flameTimer;
@@ -54,6 +67,13 @@ public class CerberusAttack : BaseBossAttack
     private float swordTimer;
 
     private Vector3 cachedTargetPosition;
+    private Vector3 cachedPounceDirection;
+    private Vector3 cachedFlameDirection;
+    private Vector3 cachedSwordDirection;
+
+    private bool pounceHasDealtDamage;
+    private Coroutine pounceRoutine;
+    private GameObject activeFlameIndicator;
 
     public float BiteRange => biteRange;
     public float FlameRange => flameRange;
@@ -63,6 +83,8 @@ public class CerberusAttack : BaseBossAttack
     protected override void Awake()
     {
         base.Awake();
+
+        rb = GetComponent<Rigidbody>();
 
         if (health == null)
             health = GetComponent<CerberusHealth>();
@@ -90,78 +112,62 @@ public class CerberusAttack : BaseBossAttack
         bool dead = health != null && health.IsDead;
         bool hurt = health != null && health.IsHurt;
 
-        if (dead)
-        {
-            // Log("CanChooseNewAttack = false (dead)");
-            return false;
-        }
+        if (dead) return false;
+        if (hurt) return false;
+        if (isBusy) return false;
 
-        if (hurt)
-        {
-            // Log("CanChooseNewAttack = false (hurt)");
-            return false;
-        }
-
-        if (isBusy)
-        {
-            // Log("CanChooseNewAttack = false (isBusy = true)");
-            return false;
-        }
-
-        // Log("CanChooseNewAttack = true");
         return true;
     }
 
     public bool TryStartBestAttack(float distance, Vector3 targetPosition, CerberusController.CerberusPhase phase)
-{
-    if (!CanChooseNewAttack())
-        return false;
-
-    List<AttackKind> candidates = new List<AttackKind>();
-
-    float closeRange = Mathf.Max(biteRange, flameRange);
-
-    if (phase == CerberusController.CerberusPhase.Phase1 ||
-        phase == CerberusController.CerberusPhase.Phase3)
     {
-        if (distance <= closeRange)
-        {
-            if (biteTimer <= 0f) candidates.Add(AttackKind.BiteCombo);
-            if (flameTimer <= 0f) candidates.Add(AttackKind.FlameBreath);
-        }
-        else if (distance <= 3.5f)
-        {
-            if (pounceTimer <= 0f) candidates.Add(AttackKind.Pounce);
-        }
-        else if (distance <= 6f)
-        {
-            if (swordTimer <= 0f) candidates.Add(AttackKind.SwordThrow);
-        }
-    }
+        if (!CanChooseNewAttack())
+            return false;
 
-    if (candidates.Count == 0)
+        List<AttackKind> candidates = new List<AttackKind>();
+
+        if (phase == CerberusController.CerberusPhase.Phase1 ||
+            phase == CerberusController.CerberusPhase.Phase3)
+        {
+            if (distance <= biteRange && biteTimer <= 0f)
+                candidates.Add(AttackKind.BiteCombo);
+
+            if (distance > biteRange && distance <= flameRange && flameTimer <= 0f)
+                candidates.Add(AttackKind.FlameBreath);
+
+            if (distance > flameRange && distance <= pounceStartRange && pounceTimer <= 0f)
+                candidates.Add(AttackKind.Pounce);
+
+            if (distance > pounceStartRange && distance <= swordStartRange && swordTimer <= 0f)
+                candidates.Add(AttackKind.SwordThrow);
+        }
+
+        if (candidates.Count == 0)
+            return false;
+
+        AttackKind chosen = candidates[Random.Range(0, candidates.Count)];
+
+        switch (chosen)
+        {
+            case AttackKind.BiteCombo:
+                StartBiteCombo(targetPosition);
+                return true;
+
+            case AttackKind.FlameBreath:
+                StartFlameBreath(targetPosition);
+                return true;
+
+            case AttackKind.Pounce:
+                StartPounce(targetPosition);
+                return true;
+
+            case AttackKind.SwordThrow:
+                StartSwordThrow(targetPosition);
+                return true;
+        }
+
         return false;
-
-    AttackKind chosen = candidates[Random.Range(0, candidates.Count)];
-
-    switch (chosen)
-    {
-        case AttackKind.BiteCombo:
-            StartBiteCombo();
-            return true;
-        case AttackKind.FlameBreath:
-            StartFlameBreath();
-            return true;
-        case AttackKind.Pounce:
-            StartPounce(targetPosition);
-            return true;
-        case AttackKind.SwordThrow:
-            StartSwordThrow(targetPosition);
-            return true;
     }
-
-    return false;
-}
 
     public void ApplyPhase3Buff()
     {
@@ -169,186 +175,347 @@ public class CerberusAttack : BaseBossAttack
         flameCooldown *= 0.85f;
         pounceCooldown *= 0.8f;
         swordCooldown *= 0.85f;
-
-        // Log($"ApplyPhase3Buff | biteCooldown={biteCooldown:F2}, flameCooldown={flameCooldown:F2}, pounceCooldown={pounceCooldown:F2}, swordCooldown={swordCooldown:F2}");
     }
 
-    public void StartBiteCombo()
+    public void StartBiteCombo(Vector3 targetPosition)
     {
         if (!CanChooseNewAttack() || biteTimer > 0f)
-        {
-            // Log($"StartBiteCombo blocked | canChoose={CanChooseNewAttack()} | biteTimer={biteTimer:F2}");
             return;
-        }
 
+        FaceTowardTarget(targetPosition);
         isBusy = true;
         biteTimer = biteCooldown;
-        // Log($"StartBiteCombo SUCCESS | set isBusy=true | biteTimer={biteTimer:F2}");
-
         animator.SetTrigger("BiteCombo");
     }
 
-    public void StartFlameBreath()
+    public void StartFlameBreath(Vector3 targetPosition)
     {
         if (!CanChooseNewAttack() || flameTimer > 0f)
-        {
-            // Log($"StartFlameBreath blocked | canChoose={CanChooseNewAttack()} | flameTimer={flameTimer:F2}");
             return;
-        }
+
+        cachedTargetPosition = targetPosition;
+        cachedFlameDirection = GetFlatDirectionTo(targetPosition);
+        if (cachedFlameDirection.sqrMagnitude <= 0.001f)
+            cachedFlameDirection = transform.forward;
+
+        FaceTowardDirection(cachedFlameDirection);
 
         isBusy = true;
         flameTimer = flameCooldown;
-        // Log($"StartFlameBreath SUCCESS | set isBusy=true | flameTimer={flameTimer:F2}");
-
         animator.SetTrigger("FlameBreath");
     }
 
     public void StartPounce(Vector3 targetPosition)
     {
         if (!CanChooseNewAttack() || pounceTimer > 0f)
-        {
-            // Log($"StartPounce blocked | canChoose={CanChooseNewAttack()} | pounceTimer={pounceTimer:F2}");
             return;
-        }
+
+        cachedTargetPosition = targetPosition;
+
+        Vector3 dir = targetPosition - transform.position;
+        dir.y = 0f;
+
+        if (dir.sqrMagnitude > 0.001f)
+            cachedPounceDirection = dir.normalized;
+        else
+            cachedPounceDirection = transform.forward;
+
+        FaceTowardDirection(cachedPounceDirection);
 
         isBusy = true;
         pounceTimer = pounceCooldown;
-        cachedTargetPosition = targetPosition;
-
-        // Log($"StartPounce SUCCESS | set isBusy=true | pounceTimer={pounceTimer:F2} | target={targetPosition}");
-
+        pounceHasDealtDamage = false;
         animator.SetTrigger("Pounce");
+
+        Log($"StartPounce -> dir={cachedPounceDirection}, target={targetPosition}");
     }
 
     public void StartSwordThrow(Vector3 targetPosition)
     {
         if (!CanChooseNewAttack() || swordTimer > 0f)
-        {
-            Log($"StartSwordThrow blocked | canChoose={CanChooseNewAttack()} | swordTimer={swordTimer:F2}");
             return;
-        }
+
+        cachedTargetPosition = targetPosition;
+        cachedSwordDirection = GetFlatDirectionTo(targetPosition);
+        if (cachedSwordDirection.sqrMagnitude <= 0.001f)
+            cachedSwordDirection = transform.forward;
+
+        FaceTowardDirection(cachedSwordDirection);
 
         isBusy = true;
         swordTimer = swordCooldown;
-        cachedTargetPosition = targetPosition;
-
-        Log($"StartSwordThrow SUCCESS | set isBusy=true | swordTimer={swordTimer:F2} | target={targetPosition}");
-
         animator.SetTrigger("SwordThrow");
     }
 
     public override void ForceStopAllAttacks()
     {
-        Log("ForceStopAllAttacks called -> isBusy=false");
+        StopPounceRoutine();
+        pounceHasDealtDamage = false;
+        DestroyFlameIndicator();
         base.ForceStopAllAttacks();
     }
 
     public override void EndAttack()
     {
-        // Log("EndAttack called -> isBusy=false");
+        StopPounceRoutine();
+        pounceHasDealtDamage = false;
+        DestroyFlameIndicator();
         base.EndAttack();
     }
 
-    public void DealBiteLeft()
+    public void DealBiteHit1()
     {
-        // Log("DealBiteLeft event");
-        DealSphereDamage(bitePointLeft, biteRange, biteDamage, "BiteLeft");
+        DealSphereDamage(transform.position, biteHitRadius, biteDamage, "BiteHit1");
     }
 
-    public void DealBiteRight()
+    public void DealBiteHit2()
     {
-        // Log("DealBiteRight event");
-        DealSphereDamage(bitePointRight, biteRange, biteDamage, "BiteRight");
+        DealSphereDamage(transform.position, biteHitRadius, biteDamage, "BiteHit2");
     }
 
-    public void DealBiteCenter()
+    public void DealBiteHit3()
     {
-        // Log("DealBiteCenter event");
-        DealSphereDamage(bitePointCenter, biteRange, biteDamage, "BiteCenter");
+        DealSphereDamage(transform.position, biteHitRadius, biteDamage, "BiteHit3");
     }
 
-    public void DealFlame()
+    public void ShowFlameCone()
     {
-        // Log("DealFlame event");
-        DealSphereDamage(flamePoint, flameRange, flameDamage, "Flame");
+        DestroyFlameIndicator();
+
+        if (flameConeIndicatorPrefab == null)
+            return;
+
+        Transform origin = flameOrigin != null ? flameOrigin : transform;
+        Quaternion rot = Quaternion.LookRotation(
+            cachedFlameDirection.sqrMagnitude > 0.001f ? cachedFlameDirection : transform.forward,
+            Vector3.up
+        );
+
+        activeFlameIndicator = Instantiate(flameConeIndicatorPrefab, origin.position, rot);
+
+        Vector3 baseScale = activeFlameIndicator.transform.localScale;
+
+        // สมมติ prefab cone เดิมกว้าง 90 องศา
+        // ใช้ tan(halfAngle) บีบ/ขยายความกว้างตามมุมที่ต้องการ
+        float widthFactor = Mathf.Tan(Mathf.Deg2Rad * (flameConeAngle * 0.5f));
+        widthFactor = Mathf.Max(0.05f, widthFactor);
+
+        // สมมติแกน Z คือความยาว, แกน X คือความกว้าง
+        activeFlameIndicator.transform.localScale = new Vector3(
+            flameConeRadius * 2f * widthFactor,
+            baseScale.y,
+            flameConeRadius * 2f
+        );
+    }
+
+    public void HideFlameCone()
+    {
+        DestroyFlameIndicator();
+    }
+
+    public void DealFlameCone()
+    {
+        DestroyFlameIndicator();
+
+        Transform origin = flameOrigin != null ? flameOrigin : transform;
+        Vector3 attackOrigin = origin.position;
+        Vector3 forward = cachedFlameDirection.sqrMagnitude > 0.001f
+            ? cachedFlameDirection.normalized
+            : transform.forward;
+
+        Collider[] hits = Physics.OverlapSphere(attackOrigin, flameConeRadius, playerLayer);
+
+        for (int i = 0; i < hits.Length; i++)
+        {
+            Transform target = hits[i].transform;
+            Vector3 toTarget = target.position - attackOrigin;
+            toTarget.y = 0f;
+
+            if (toTarget.sqrMagnitude <= 0.001f)
+                continue;
+
+            float angle = Vector3.Angle(forward, toTarget.normalized);
+            if (angle <= flameConeAngle * 0.5f)
+            {
+                PlayerStats playerStats = hits[i].GetComponent<PlayerStats>();
+                if (playerStats == null)
+                    playerStats = hits[i].GetComponentInParent<PlayerStats>();
+
+                if (playerStats != null)
+                {
+                    playerStats.TakeDamage(flameDamage);
+                    Log($"FlameCone hit player for {flameDamage}");
+                }
+            }
+        }
     }
 
     public void BeginPounceDash()
     {
-        // Log("BeginPounceDash event");
+        StopPounceRoutine();
 
-        if (movement == null)
+        if (cachedPounceDirection.sqrMagnitude <= 0.001f && cachedTargetPosition != Vector3.zero)
         {
-            // Log("BeginPounceDash aborted: movement is null");
-            return;
+            Vector3 dir = cachedTargetPosition - transform.position;
+            dir.y = 0f;
+            if (dir.sqrMagnitude > 0.001f)
+                cachedPounceDirection = dir.normalized;
         }
 
-        Vector3 direction = cachedTargetPosition - transform.position;
+        pounceRoutine = StartCoroutine(PounceDashRoutine());
+    }
+
+    private IEnumerator PounceDashRoutine()
+    {
+        Vector3 direction = cachedPounceDirection;
         direction.y = 0f;
 
-        if (direction.sqrMagnitude > 0.001f)
+        if (direction.sqrMagnitude <= 0.001f)
         {
-            // Log($"Dash direction = {direction.normalized}");
-            movement.DashTo(direction.normalized, pounceDashSpeed);
+            Log("Pounce cancelled: direction is zero");
+            yield break;
         }
-        else
+
+        direction.Normalize();
+
+        if (movement != null)
         {
-            // Log("Dash direction too small");
+            movement.SetCanMove(false);
+            movement.StopMoving();
+            movement.FaceTarget(transform.position + direction);
+        }
+
+        float moved = 0f;
+
+        Log($"BeginPounceDash -> dir={direction}, distance={pounceDashDistance}, speed={pounceDashSpeed}");
+
+        while (moved < pounceDashDistance)
+        {
+            float step = pounceDashSpeed * Time.fixedDeltaTime;
+            if (moved + step > pounceDashDistance)
+                step = pounceDashDistance - moved;
+
+            transform.position += direction * step;
+            moved += step;
+
+            yield return new WaitForFixedUpdate();
+        }
+
+        if (movement != null)
+            movement.SetCanMove(true);
+
+        pounceRoutine = null;
+        Log("Pounce finished");
+    }
+
+    private void StopPounceRoutine()
+    {
+        if (pounceRoutine != null)
+        {
+            StopCoroutine(pounceRoutine);
+            pounceRoutine = null;
+        }
+
+        if (movement != null)
+        {
+            movement.StopMoving();
+            movement.SetCanMove(true);
         }
     }
 
     public void DealPounceImpact()
     {
-        // Log("DealPounceImpact event");
-        DealSphereDamage(transform, pounceImpactRange, pounceDamage, "PounceImpact");
+        if (pounceHasDealtDamage)
+            return;
+
+        Transform hitPoint = pounceHitPoint != null ? pounceHitPoint : transform;
+        DealSphereDamage(hitPoint.position, pounceImpactRadius, pounceDamage, "PounceImpact");
+        pounceHasDealtDamage = true;
     }
 
     public void SpawnSwordProjectile()
     {
-        Log("SpawnSwordProjectile event");
-
-        if (swordProjectilePrefab == null || swordSpawnPoint == null)
-        {
-            Log("SpawnSwordProjectile aborted: prefab or spawn point is null");
+        if (swordProjectilePrefab == null)
             return;
-        }
 
-        GameObject go = Instantiate(swordProjectilePrefab, swordSpawnPoint.position, Quaternion.identity);
+        Transform spawn = swordSpawnPoint != null ? swordSpawnPoint : transform;
+
+        GameObject go = Instantiate(swordProjectilePrefab, spawn.position, Quaternion.identity);
         BossSwordProjectile projectile = go.GetComponent<BossSwordProjectile>();
+
         if (projectile != null)
         {
-            projectile.Initialize(cachedTargetPosition, swordDamage, playerLayer);
-            Log($"Sword projectile initialized toward {cachedTargetPosition}");
-        }
-        else
-        {
-            Log("Spawned projectile has no BossSwordProjectile component");
+            projectile.Initialize(
+                transform,
+                cachedTargetPosition,
+                swordDamage,
+                playerLayer
+            );
         }
     }
 
-    private void DealSphereDamage(Transform point, float range, float damage, string source)
+    private Vector3 GetFlatDirectionTo(Vector3 targetPosition)
     {
-        if (point == null)
-        {
-            // Log($"{source} DealSphereDamage aborted: point is null");
-            return;
-        }
+        Vector3 dir = targetPosition - transform.position;
+        dir.y = 0f;
+        return dir.sqrMagnitude > 0.001f ? dir.normalized : Vector3.zero;
+    }
 
-        Collider[] hits = Physics.OverlapSphere(point.position, range, playerLayer);
-        // Log($"{source} damage check | point={point.position} | range={range:F2} | hits={hits.Length}");
+    private void FaceTowardTarget(Vector3 targetPosition)
+    {
+        Vector3 dir = GetFlatDirectionTo(targetPosition);
+        if (dir.sqrMagnitude > 0.001f)
+            FaceTowardDirection(dir);
+    }
+
+    private void FaceTowardDirection(Vector3 direction)
+    {
+        if (movement != null)
+            movement.FaceTarget(transform.position + direction);
+    }
+
+    private void DealSphereDamage(Vector3 center, float radius, float damage, string source)
+    {
+        Collider[] hits = Physics.OverlapSphere(center, radius, playerLayer);
 
         for (int i = 0; i < hits.Length; i++)
         {
-            PlayerStats stats = hits[i].GetComponent<PlayerStats>();
-            if (stats == null)
-                stats = hits[i].GetComponentInParent<PlayerStats>();
+            PlayerStats playerStats = hits[i].GetComponent<PlayerStats>();
+            if (playerStats == null)
+                playerStats = hits[i].GetComponentInParent<PlayerStats>();
 
-            if (stats != null)
+            if (playerStats != null)
             {
-                Log($"{source} hit player -> TakeDamage({damage})");
-                stats.TakeDamage(damage);
-                break;
+                playerStats.TakeDamage(damage);
+                Log($"{source} hit player for {damage}");
             }
         }
+    }
+
+    private void DestroyFlameIndicator()
+    {
+        if (activeFlameIndicator != null)
+        {
+            Destroy(activeFlameIndicator);
+            activeFlameIndicator = null;
+        }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, biteHitRadius);
+
+        Gizmos.color = Color.blue;
+        Transform pounceCenter = pounceHitPoint != null ? pounceHitPoint : transform;
+        Gizmos.DrawWireSphere(pounceCenter.position, pounceImpactRadius);
+
+        Gizmos.color = Color.green;
+        Transform swordCenter = swordSpawnPoint != null ? swordSpawnPoint : transform;
+        Gizmos.DrawWireSphere(swordCenter.position, 1.0f);
+
+        Gizmos.color = Color.yellow;
+        Transform flameCenter = flameOrigin != null ? flameOrigin : transform;
+        Gizmos.DrawWireSphere(flameCenter.position, flameConeRadius);
     }
 }
