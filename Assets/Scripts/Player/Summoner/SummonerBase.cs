@@ -8,6 +8,9 @@ public abstract class SummonerBase : MonoBehaviour
     [Header("Lifetime")]
     [SerializeField] protected float lifetime = 8f;
 
+    [Header("Target Height")]
+    [SerializeField] protected float maxHeightDiff = 1f;
+
     [Header("References")]
     [SerializeField] protected SummonerHealth health;
     [SerializeField] protected SummonerMovement movement;

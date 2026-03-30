@@ -1,7 +1,13 @@
 using UnityEngine;
 
+public enum EnemyTier { Normal, Elite, Miniboss, Boss }
+
 public class EnemyHealthBase : HealthBase
 {
+    [Header("Tier")]
+    [SerializeField] private EnemyTier tier = EnemyTier.Normal;
+    public EnemyTier Tier => tier;
+
     private EnemyBase controller;
     private PlayerCombatContext context;
 
