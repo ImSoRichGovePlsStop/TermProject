@@ -48,6 +48,7 @@ public class ExpressShot : ModuleEffect
         data.SecondaryHitHandler = () =>
         {
             if (!data.BuffReady) return;
+            if (ctx.LastHitEnemies == null || ctx.LastHitEnemies.Count == 0) return;
 
             stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
             data.BuffReady = false;
