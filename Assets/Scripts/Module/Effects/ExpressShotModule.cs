@@ -19,6 +19,7 @@ public class ExpressShot : ModuleEffect
     private class StateData
     {
         public Action HitHandler;
+        public Action SecondaryHitHandler;
         public bool BuffReady;
         public Coroutine CooldownCoroutine;
     }
@@ -44,8 +45,17 @@ public class ExpressShot : ModuleEffect
             data.CooldownCoroutine = stats.StartCoroutine(CooldownCoroutine(stats, state, data));
         };
 
+        data.SecondaryHitHandler = () =>
+        {
+            if (!data.BuffReady) return;
+
+            stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
+            data.BuffReady = false;
+            data.CooldownCoroutine = stats.StartCoroutine(CooldownCoroutine(stats, state, data));
+        };
+
         ctx.OnAttack += data.HitHandler;
-        ctx.OnSecondaryAttack += data.HitHandler;
+        ctx.OnSecondaryAttack += data.SecondaryHitHandler;
         _stateMap[state] = data;
     }
 
@@ -60,7 +70,7 @@ public class ExpressShot : ModuleEffect
 
         var ctx = stats.GetComponent<PlayerCombatContext>();
         ctx.OnAttack -= data.HitHandler;
-        ctx.OnSecondaryAttack -= data.HitHandler;
+        ctx.OnSecondaryAttack -= data.SecondaryHitHandler;
         _stateMap.Remove(state);
     }
 
@@ -106,19 +116,22 @@ public class ExpressShot : ModuleEffect
         }
     }
 
-    public override void OnRarityBuffReceived(int level, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
+    public override void OnRarityBuffReceived(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
     {
+        state.baseRarity[(int)newRarity]++;
+
         if (!_stateMap.TryGetValue(state, out var data)) return;
+        if (state.buffRarity > newRarity) return;
         state.buffRarity = newRarity;
         if (data.BuffReady)
             stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
         if (state.buffedLevel > level)
         {
-            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, newRarity, state.buffedLevel);
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
         }
         else
         {
-            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, newRarity, level);
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, level);
         }
         if (data.BuffReady)
         {
@@ -126,20 +139,22 @@ public class ExpressShot : ModuleEffect
         }
     }
 
-    public override void OnRarityBuffRemoved(int level, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
+    public override void OnRarityBuffRemoved(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
     {
-        state.buffRarity = newRarity;
+        state.baseRarity[(int)newRarity]--;
+        FindNextRarity(oldRarity, state);
+
         if (!_stateMap.TryGetValue(state, out var data)) return;
         if (!state.isActive) return;
         if (data.BuffReady)
             stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
         if (state.buffedLevel > level)
         {
-            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, newRarity, state.buffedLevel);
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
         }
         else
         {
-            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, newRarity, level);
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, level);
         }
         if (data.BuffReady)
         {

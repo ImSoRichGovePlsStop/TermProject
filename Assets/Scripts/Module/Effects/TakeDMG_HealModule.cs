@@ -106,40 +106,45 @@ public class TakeDMG_HealModule : ModuleEffect
         data.AppliedDamageTaken = state.dmgTaken;
     }
 
-    public override void OnRarityBuffReceived(int level, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
+    public override void OnRarityBuffReceived(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
     {
+        state.baseRarity[(int)newRarity]++;
+
         if (!_stateMap.TryGetValue(state, out var data)) return;
+        if (state.buffRarity > newRarity) return;
         state.buffRarity = newRarity;
         if (state.buffedLevel > level)
         {
-            state.dmgTaken = GetFinalStat(baseStatPerRarity, levelMultiplier, newRarity, state.buffedLevel);
-            state.currentStat = GetFinalStat(healStatPerRarity, levelMultiplier, newRarity, state.buffedLevel);
+            state.dmgTaken = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
+            state.currentStat = GetFinalStat(healStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
         }
         else
         {
-            state.dmgTaken = GetFinalStat(baseStatPerRarity, levelMultiplier, newRarity, level);
-            state.currentStat = GetFinalStat(healStatPerRarity, levelMultiplier, newRarity, level);
+            state.dmgTaken = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, level);
+            state.currentStat = GetFinalStat(healStatPerRarity, levelMultiplier, state.buffRarity, level);
         }
 
         stats.AddMultiplierModifier(new StatModifier { damageTaken = state.dmgTaken - 1 });
         data.AppliedDamageTaken = state.dmgTaken;
     }
 
-    public override void OnRarityBuffRemoved(int level, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
+    public override void OnRarityBuffRemoved(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
     {
-        state.buffRarity = newRarity;
+        state.baseRarity[(int)newRarity]--;
+        FindNextRarity(oldRarity, state);
+
         if (!_stateMap.TryGetValue(state, out var data)) return;
         if (!state.isActive) return;
         stats.RemoveMultiplierModifier(new StatModifier { damageTaken = state.dmgTaken - 1 });
         if (state.buffedLevel > level)
         {
-            state.dmgTaken = GetFinalStat(baseStatPerRarity, levelMultiplier, newRarity, state.buffedLevel);
-            state.currentStat = GetFinalStat(healStatPerRarity, levelMultiplier, newRarity, state.buffedLevel);
+            state.dmgTaken = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
+            state.currentStat = GetFinalStat(healStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
         }
         else
         {
-            state.dmgTaken = GetFinalStat(baseStatPerRarity, levelMultiplier, newRarity, level);
-            state.currentStat = GetFinalStat(healStatPerRarity, levelMultiplier, newRarity, level);
+            state.dmgTaken = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, level);
+            state.currentStat = GetFinalStat(healStatPerRarity, levelMultiplier, state.buffRarity, level);
         }
         stats.AddMultiplierModifier(new StatModifier { damageTaken = state.dmgTaken - 1 });
         data.AppliedDamageTaken = state.dmgTaken;

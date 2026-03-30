@@ -75,11 +75,14 @@ public class LowHpModule : ModuleEffect
             stats.AddMultiplierModifier(new StatModifier { damage = GetEffectiveDamage(state) });
     }
 
-    public override void OnRarityBuffReceived(int level, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
+    public override void OnRarityBuffReceived(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
     {
+        state.baseRarity[(int)newRarity]++;
+        if (state.buffRarity > newRarity) return;
+        state.buffRarity = newRarity;
+
         if (state.buffActive)
             stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveDamage(state) });
-        state.buffRarity = newRarity;
         if (state.buffedLevel > level)
         {
             state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
@@ -96,8 +99,11 @@ public class LowHpModule : ModuleEffect
             stats.AddMultiplierModifier(new StatModifier { damage = GetEffectiveDamage(state) });
     }
 
-    public override void OnRarityBuffRemoved(int level, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
+    public override void OnRarityBuffRemoved(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
     {
+        state.baseRarity[(int)newRarity]--;
+        FindNextRarity(oldRarity, state);
+
         if (!state.isActive)
         {
             state.buffRarity = newRarity;
@@ -105,7 +111,6 @@ public class LowHpModule : ModuleEffect
         }
         if (state.buffActive)
             stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveDamage(state) });
-        state.buffRarity = newRarity;
         if (state.buffedLevel > level)
         {
             state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);

@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.ProBuilder.MeshOperations;
+using System;
 
 public abstract class ModuleEffect : ScriptableObject
 {
@@ -32,8 +32,21 @@ public abstract class ModuleEffect : ScriptableObject
     public virtual void OnBuffRemoved(float percent, PlayerStats stats, ModuleRuntimeState state) { }
     public virtual void OnLevelBuffReceived(int baselevel, int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state) { }
     public virtual void OnLevelBuffRemoved(int baselevel, int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state) { }
-    public virtual void OnRarityBuffReceived(int level, Rarity NewRarity, PlayerStats stats, ModuleRuntimeState state) { }
-    public virtual void OnRarityBuffRemoved(int level, Rarity NewRarity, PlayerStats stats, ModuleRuntimeState state) { }
+    public virtual void OnRarityBuffReceived(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state) { }
+    public virtual void OnRarityBuffRemoved(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state) { }
+
+    public virtual void FindNextRarity(Rarity oldRarity, ModuleRuntimeState state)
+    {
+        state.buffRarity = oldRarity;
+        for (int i = state.baseRarity.Length - 1; i >= 0; i--)
+        {
+            if (state.baseRarity[i] > 0)
+            {
+                state.buffRarity = (Rarity)Math.Max(i, (int)oldRarity);
+                break;
+            }
+        }
+    }
 
     protected abstract void OnEquip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state);
     protected abstract void OnUnequip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state);

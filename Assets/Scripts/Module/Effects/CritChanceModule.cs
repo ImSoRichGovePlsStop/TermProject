@@ -53,10 +53,13 @@ public class CritChanceModule : ModuleEffect
         stats.AddFlatModifier(new StatModifier { critChance = GetEffectiveStat(state) });
     }
 
-    public override void OnRarityBuffReceived(int level, Rarity NewRarity, PlayerStats stats, ModuleRuntimeState state)
+    public override void OnRarityBuffReceived(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
     {
+        state.baseRarity[(int)newRarity]++;
+        if (state.buffRarity > newRarity) return;
+        state.buffRarity = newRarity;
+
         stats.RemoveFlatModifier(new StatModifier { critChance = GetEffectiveStat(state) });
-        state.buffRarity = NewRarity;
         if (state.buffedLevel > level)
         {
             state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
@@ -67,15 +70,17 @@ public class CritChanceModule : ModuleEffect
         }
         stats.AddFlatModifier(new StatModifier { critChance = GetEffectiveStat(state) });
     }
-    public override void OnRarityBuffRemoved(int level, Rarity NewRarity, PlayerStats stats, ModuleRuntimeState state)
+    public override void OnRarityBuffRemoved(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
     {
+        state.baseRarity[(int)newRarity]--;
+        FindNextRarity(oldRarity, state);
+
         if (!state.isActive)
         {
-            state.buffRarity = NewRarity;
+            state.buffRarity = newRarity;
             return;
         }
         stats.RemoveFlatModifier(new StatModifier { critChance = GetEffectiveStat(state) });
-        state.buffRarity = NewRarity;
         if (state.buffedLevel > level)
         {
             state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
