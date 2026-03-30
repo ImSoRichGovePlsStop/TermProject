@@ -24,10 +24,11 @@ public class CerberusAttack : BaseBossAttack
     [SerializeField] private float swordCooldown = 6f;
 
     [Header("Damage")]
-    [SerializeField] private float biteDamage = 12f;
-    [SerializeField] private float flameDamage = 18f;
-    [SerializeField] private float pounceDamage = 20f;
-    [SerializeField] private float swordDamage = 16f;
+    [SerializeField] private float biteDamageScale = 1f;
+    [SerializeField] private float flameDamageScale = 1.5f;
+    [SerializeField] private float pounceDamageScale = 1.8f;
+    [SerializeField] private float swordDamageScale = 1.3f;
+    private EntityStats entityStats;
 
     [Header("Attack Selection Ranges")]
     [SerializeField] private float biteRange = 1.5f;
@@ -91,6 +92,8 @@ public class CerberusAttack : BaseBossAttack
 
         if (movement == null)
             movement = GetComponent<BossMovement>();
+
+        entityStats = GetComponent<EntityStats>();
     }
 
     private void Update()
@@ -265,17 +268,17 @@ public class CerberusAttack : BaseBossAttack
 
     public void DealBiteHit1()
     {
-        DealSphereDamage(transform.position, biteHitRadius, biteDamage, "BiteHit1");
+        DealSphereDamage(transform.position, biteHitRadius, GetDamage(biteDamageScale), "BiteHit1");
     }
 
     public void DealBiteHit2()
     {
-        DealSphereDamage(transform.position, biteHitRadius, biteDamage, "BiteHit2");
+        DealSphereDamage(transform.position, biteHitRadius, GetDamage(biteDamageScale), "BiteHit2");
     }
 
     public void DealBiteHit3()
     {
-        DealSphereDamage(transform.position, biteHitRadius, biteDamage, "BiteHit3");
+        DealSphereDamage(transform.position, biteHitRadius, GetDamage(biteDamageScale), "BiteHit3");
     }
 
     public void ShowFlameCone()
@@ -343,8 +346,8 @@ public class CerberusAttack : BaseBossAttack
 
                 if (playerStats != null)
                 {
-                    playerStats.TakeDamage(flameDamage);
-                    Log($"FlameCone hit player for {flameDamage}");
+                    playerStats.TakeDamage(GetDamage(flameDamageScale));
+                    Log($"FlameCone hit player for {GetDamage(flameDamageScale)}");
                 }
             }
         }
@@ -429,7 +432,7 @@ public class CerberusAttack : BaseBossAttack
             return;
 
         Transform hitPoint = pounceHitPoint != null ? pounceHitPoint : transform;
-        DealSphereDamage(hitPoint.position, pounceImpactRadius, pounceDamage, "PounceImpact");
+        DealSphereDamage(hitPoint.position, pounceImpactRadius, GetDamage(pounceDamageScale), "PounceImpact");
         pounceHasDealtDamage = true;
     }
 
@@ -448,7 +451,7 @@ public class CerberusAttack : BaseBossAttack
             projectile.Initialize(
                 transform,
                 cachedTargetPosition,
-                swordDamage,
+                GetDamage(swordDamageScale),
                 playerLayer
             );
         }
@@ -518,4 +521,6 @@ public class CerberusAttack : BaseBossAttack
         Transform flameCenter = flameOrigin != null ? flameOrigin : transform;
         Gizmos.DrawWireSphere(flameCenter.position, flameConeRadius);
     }
+
+    private float GetDamage(float scale) => (entityStats != null ? entityStats.Damage : 10f) * scale;
 }

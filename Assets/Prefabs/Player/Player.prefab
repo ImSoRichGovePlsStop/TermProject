@@ -391,6 +391,7 @@ MonoBehaviour:
   bigProjectilePrefab: {fileID: 1498933385405443144, guid: 0689d45a3ee982f4a9e69452e08c3f03, type: 3}
   totemPrefab: {fileID: 4737737749466170205, guid: 2c60181e9c4a990458cc7a8544a71be3, type: 3}
   projectileSpawnPoint: {fileID: 0}
+  totemCooldownIcon: {fileID: 379350332, guid: c7a80c8c83325df41b367ecdc86972d6, type: 3}
 --- !u!114 &2649959589608857903
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -536,6 +537,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e6d50285b3671548a01de664f2a07da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BillboardSprite
+  isBillboard: 1
 --- !u!114 &5544963485620162098
 MonoBehaviour:
   m_ObjectHideFlags: 0

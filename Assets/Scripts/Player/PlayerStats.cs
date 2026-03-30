@@ -385,7 +385,7 @@ public class PlayerStats : MonoBehaviour
     }
 
 
-    public void TakeDamage(float amount, EnemyHealth attacker = null)
+    public void TakeDamage(float amount, HealthBase attacker = null)
     {
         if (IsInvincible) return;
 

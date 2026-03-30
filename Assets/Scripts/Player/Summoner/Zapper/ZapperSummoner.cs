@@ -140,7 +140,12 @@ public class ZapperSummoner : SummonerBase
             return;
         }
 
-        float dist = Vector3.Distance(transform.position, currentTarget.transform.position);
+        Vector3 flatTarget = currentTarget.transform.position;
+        flatTarget.y = transform.position.y;
+        float flatDist = Vector3.Distance(transform.position, flatTarget);
+        float heightDiff = Mathf.Abs(currentTarget.transform.position.y - transform.position.y);
+        if (heightDiff > maxHeightDiff) { currentState = ZapperState.Wander; return; }
+        float dist = flatDist;
         if (dist <= attachRange)
         {
             Attach();
@@ -198,6 +203,7 @@ public class ZapperSummoner : SummonerBase
 
     private void OnEntityKilled(HealthBase entity)
     {
+        if (this == null || gameObject == null) return;
         if (entity == currentTarget)
             Detach();
     }
@@ -231,6 +237,7 @@ public class ZapperSummoner : SummonerBase
 
     private void Detach()
     {
+        if (this == null || gameObject == null) return;
         if (currentTarget != null)
         {
             var entityStats = currentTarget.GetComponent<EntityStats>();

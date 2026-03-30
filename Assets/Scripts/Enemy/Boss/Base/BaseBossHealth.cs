@@ -1,24 +1,32 @@
+using System.Collections;
 using UnityEngine;
 
-public abstract class BaseBossHealth : EnemyHealth
+public abstract class BaseBossHealth : HealthBase
 {
-    [Header("Boss Health Override")]
-    [SerializeField] protected float bossMaxHP = 100f;
-    [SerializeField] protected float bossHurtDuration = 0.15f;
-    [SerializeField] protected float bossDestroyDelay = 3f;
+    [Header("Boss Health")]
+    [SerializeField] protected float hurtStunDuration = 0.15f;
 
-    protected override void Awake()
+    private Coroutine hurtCoroutine;
+
+    public override void TakeDamage(float damage, bool isCrit = false)
     {
-        // map ค่า boss ลง field ของ EnemyHealth ก่อน
-        maxHP = bossMaxHP;
-        hurtStunDuration = bossHurtDuration;
-        destroyDelay = bossDestroyDelay;
+        if (isDead) return;
+        if (damage <= 0f) return;
 
-        base.Awake();
+        base.TakeDamage(damage, isCrit);
+
+        if (!isDead && isHurt)
+        {
+            if (hurtCoroutine != null)
+                StopCoroutine(hurtCoroutine);
+            hurtCoroutine = StartCoroutine(HurtRoutine());
+        }
     }
 
-    protected override void CacheComponents()
+    private IEnumerator HurtRoutine()
     {
-        base.CacheComponents();
+        yield return new WaitForSeconds(hurtStunDuration);
+        EndHurt();
+        hurtCoroutine = null;
     }
 }

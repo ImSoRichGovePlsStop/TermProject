@@ -18,10 +18,4 @@ public class EntityHealthBarSpawner : MonoBehaviour
         bar.Init(entity, height, scale);
     }
 
-    public void SpawnBar(EnemyHealth enemy, Vector3 offset, Vector3 scale)
-    {
-        if (barPrefab == null) return;
-        var bar = Instantiate(barPrefab);
-        bar.InitLegacy(enemy, offset, scale);
-    }
 }

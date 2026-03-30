@@ -32,16 +32,6 @@ public class DamageNumberSpawner : MonoBehaviour
             playerStats.OnPlayerDamaged -= OnPlayerDamaged;
     }
 
-    public void RegisterEnemy(EnemyHealth enemy)
-    {
-        enemy.OnDamageReceived += (damage, isCrit) =>
-        {
-            float rangeX = baseRandomRangeX * enemy.HealthBarScale.x;
-            float rangeY = baseRandomRangeY * enemy.HealthBarScale.y;
-            SpawnNumber(enemy.transform.position + enemy.HealthBarOffset, damage, isCrit, false, rangeX, rangeY);
-        };
-    }
-
     public void RegisterEntity(HealthBase entity, float heightOffset = 0.5f)
     {
         entity.OnDamageReceived += (damage, isCrit) =>

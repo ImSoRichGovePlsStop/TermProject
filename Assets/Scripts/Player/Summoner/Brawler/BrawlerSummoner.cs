@@ -80,6 +80,12 @@ public class BrawlerSummoner : SummonerBase
     {
         if (isAttacking)
         {
+            if (currentTarget == null || currentTarget.IsDead)
+            {
+                isAttacking = false;
+                currentState = BrawlerState.Wander;
+                return;
+            }
             currentState = BrawlerState.Attack;
             return;
         }
@@ -88,8 +94,12 @@ public class BrawlerSummoner : SummonerBase
 
         if (currentTarget != null)
         {
-            float dist = Vector3.Distance(transform.position, currentTarget.transform.position);
-            currentState = dist <= attackRange ? BrawlerState.Attack : BrawlerState.Chase;
+            Vector3 flatTarget = currentTarget.transform.position;
+            flatTarget.y = transform.position.y;
+            float flatDist = Vector3.Distance(transform.position, flatTarget);
+            float heightDiff = Mathf.Abs(currentTarget.transform.position.y - transform.position.y);
+            if (heightDiff > maxHeightDiff) { currentTarget = null; currentState = BrawlerState.Wander; return; }
+            currentState = flatDist <= attackRange ? BrawlerState.Attack : BrawlerState.Chase;
         }
         else
         {

@@ -32,7 +32,7 @@ public class WandAoEPulse : MonoBehaviour
         if (shooterStats == null) return;
 
         Collider[] hits = Physics.OverlapSphere(transform.position, pulseRadius);
-        var result = new HashSet<EnemyHealth>();
+        var result = new HashSet<HealthBase>();
 
         foreach (Collider hit in hits)
         {
@@ -47,7 +47,7 @@ public class WandAoEPulse : MonoBehaviour
                 continue;
             }
 
-            var enemyHealth = hit.GetComponentInParent<EnemyHealth>();
+            var enemyHealth = hit.GetComponentInParent<HealthBase>();
             if (enemyHealth == null) continue;
             enemyHealth.TakeDamage(dmg, shooterStats.LastHitWasCrit);
             result.Add(enemyHealth);

@@ -38,12 +38,12 @@ public class ShatterFieldZone : MonoBehaviour
     private void TickDamage()
     {
         Collider[] hits = Physics.OverlapSphere(transform.position, radius);
-        var hitEnemies = new HashSet<EnemyHealth>();
+        var hitEnemies = new HashSet<HealthBase>();
 
         foreach (var col in hits)
         {
             if (!col.CompareTag("Enemy")) continue;
-            var enemy = col.GetComponentInParent<EnemyHealth>();
+            var enemy = col.GetComponentInParent<HealthBase>();
             if (enemy == null || enemy.IsDead) continue;
 
             float dmg;

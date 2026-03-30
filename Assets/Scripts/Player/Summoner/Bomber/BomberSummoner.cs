@@ -108,7 +108,12 @@ public class BomberSummoner : SummonerBase
             return;
         }
 
-        float dist = Vector3.Distance(transform.position, currentTarget.transform.position);
+        Vector3 flatTarget = currentTarget.transform.position;
+        flatTarget.y = transform.position.y;
+        float flatDist = Vector3.Distance(transform.position, flatTarget);
+        float heightDiff = Mathf.Abs(currentTarget.transform.position.y - transform.position.y);
+        float dist = flatDist;
+        if (heightDiff > maxHeightDiff) { currentTarget = null; currentState = BomberState.Wander; return; }
         if (dist <= triggerRange)
         {
             Detonate();
