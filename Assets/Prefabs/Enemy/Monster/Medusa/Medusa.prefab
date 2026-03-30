@@ -14,8 +14,10 @@ GameObject:
   - component: {fileID: 5080540314668863887}
   - component: {fileID: 158273407855635283}
   - component: {fileID: 6941809184712143000}
-  - component: {fileID: 1048630739644869455}
-  m_Layer: 0
+  - component: {fileID: 2519230653898126145}
+  - component: {fileID: 1226548764577956941}
+  - component: {fileID: -5505387570094398503}
+  m_Layer: 8
   m_Name: Medusa
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -118,7 +120,7 @@ MonoBehaviour:
   radius: 10
   angle: 90
   targetTag: Player
-  damage: 10
+  damageScale: 1
   redDuration: 2
   yellowDuration: 2
   redIndicatorPrefab: {fileID: 6132761721614295693, guid: 41172660592daa84293e80aa8d2207fe, type: 3}
@@ -155,7 +157,7 @@ MonoBehaviour:
   trackDuration: 1.15
   lockDuration: 0.1
   fireDuration: 0.5
-  damage: 12
+  damageScale: 1
   circleRadius: 1
   circleWarningPrefab: {fileID: 1095891883702697950, guid: e2b0bcbfb6dac2b40a6e6d95d8a1fc2c, type: 3}
   circleHitPrefab: {fileID: 344682467932932298, guid: dcea38ea4bbc8fb4aa9be0efc4b07492, type: 3}
@@ -166,7 +168,7 @@ MonoBehaviour:
   beamHitPrefab: {fileID: 6132761721614295693, guid: 6039bbc9af166ae46b9c8e97faf64eb3, type: 3}
   beamOffset: {x: 0, y: 0.02, z: 0}
   showDebug: 1
---- !u!114 &1048630739644869455
+--- !u!114 &2519230653898126145
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -175,24 +177,55 @@ MonoBehaviour:
   m_GameObject: {fileID: 764309370615633331}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2c01319fdb07719448289e36d13c06f8, type: 3}
+  m_Script: {fileID: 11500000, guid: 1a5179fd91b8d4e4a9d8b971f017376a, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MedusaHealth
-  maxHP: 400
-  hurtStunDuration: 0.2
-  destroyDelay: 2
-  animator: {fileID: 991223759832276831}
-  enemyCollider: {fileID: 1959485915728602061}
-  rb: {fileID: 8707815493549904683}
-  healthBarOffset: {x: 0, y: 0.5, z: 0}
-  healthBarScale: {x: 1, y: 1, z: 1}
+  m_EditorClassIdentifier: Assembly-CSharp::MedusaHealthBase
+  destroyDelay: 0
+  spriteRenderer: {fileID: 4150345266728047437}
+  flashColor: {r: 1, g: 0, b: 0, a: 1}
+  flashDuration: 0.1
+  showHealthBar: 1
+  healthBarHeight: 0.4
+  healthBarScale: {x: 2.5, y: 2, z: 1}
+  tier: 2
   arcAttack: {fileID: 158273407855635283}
   backAttack: {fileID: 6941809184712143000}
   scriptsToDisableOnDeath:
-  - {fileID: 5080540314668863887}
   - {fileID: 158273407855635283}
   - {fileID: 6941809184712143000}
-  hurtTriggerName: Hurt
+--- !u!114 &1226548764577956941
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 764309370615633331}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73a687f9a65ebc34ab8d148f3be77e4c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EntityStats
+  baseMaxHP: 400
+  baseMoveSpeed: 0
+  baseDamage: 15
+  baseAttackSpeed: 1
+--- !u!114 &-5505387570094398503
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 764309370615633331}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1921dd3b6514994ea506d08a7dec137, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GroundSnap
+  groundOffset: 0.01
+  heightOffset: 0.33
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 1024
 --- !u!1 &2830874054287219323
 GameObject:
   m_ObjectHideFlags: 0
@@ -205,8 +238,8 @@ GameObject:
   - component: {fileID: 4150345266728047437}
   - component: {fileID: 991223759832276831}
   - component: {fileID: 9202097220442163434}
-  m_Layer: 0
-  m_Name: Sprite
+  m_Layer: 8
+  m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -320,3 +353,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e6d50285b3671548a01de664f2a07da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BillboardSprite
+  isBillboard: 1
