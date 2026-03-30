@@ -19,45 +19,49 @@ public class HpModule : ModuleEffect
         stats.RemoveFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
     }
 
-    public override void OnLevelBuffReceived(int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
+    public override void OnLevelBuffReceived(int baselevel, int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
     {
         stats.RemoveFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
-        state.buffedLevel = levelBonus;
+        if (state.buffedLevel == 0) state.buffedLevel = baselevel;
+        state.buffedLevel += levelBonus;
         if (state.buffRarity > rarity)
         {
-            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, levelBonus);
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
         }
         else
         {
-            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, levelBonus);
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, state.buffedLevel);
         }
         stats.AddFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
     }
 
-    public override void OnLevelBuffRemoved(int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
+    public override void OnLevelBuffRemoved(int baselevel, int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
     {
         if (!state.isActive)
         {
-            state.buffedLevel = levelBonus;
+            state.buffedLevel -= levelBonus;
             return;
         }
         stats.RemoveFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
-        state.buffedLevel = levelBonus;
+        state.buffedLevel -= levelBonus;
         if (state.buffRarity > rarity)
         {
-            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, levelBonus);
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
         }
         else
         {
-            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, levelBonus);
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, state.buffedLevel);
         }
         stats.AddFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
     }
 
-    public override void OnRarityBuffReceived(int level, Rarity NewRarity, PlayerStats stats, ModuleRuntimeState state)
+    public override void OnRarityBuffReceived(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
     {
+        state.baseRarity[(int)newRarity]++;
+        if (state.buffRarity > newRarity) return;
+        state.buffRarity = newRarity;
+
         stats.RemoveFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
-        state.buffRarity = NewRarity;
         if (state.buffedLevel > level)
         {
             state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
@@ -68,15 +72,17 @@ public class HpModule : ModuleEffect
         }
         stats.AddFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
     }
-    public override void OnRarityBuffRemoved(int level, Rarity NewRarity, PlayerStats stats, ModuleRuntimeState state)
+    public override void OnRarityBuffRemoved(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
     {
+        state.baseRarity[(int)newRarity]--;
+        FindNextRarity(oldRarity, state);
+
         if (!state.isActive)
         {
-            state.buffRarity = NewRarity;
+            state.buffRarity = newRarity;
             return;
         }
         stats.RemoveFlatModifier(new StatModifier { health = GetEffectiveStat(state) });
-        state.buffRarity = NewRarity;
         if (state.buffedLevel > level)
         {
             state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);

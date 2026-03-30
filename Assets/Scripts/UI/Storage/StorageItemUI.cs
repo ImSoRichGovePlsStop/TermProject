@@ -1,18 +1,52 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
-public class StorageItemUI : MonoBehaviour
+public class StorageItemUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
-    [SerializeField] private TextMeshProUGUI nameText;
-    [SerializeField] private TextMeshProUGUI countText;
     [SerializeField] private RectTransform shapePreviewRoot;
+
+    private MaterialData _data;
+    private int _count;
+
+    private void Awake()
+    {
+        var img = GetComponent<Image>();
+        if (img == null)
+        {
+            img = gameObject.AddComponent<Image>();
+            img.color = Color.clear;
+        }
+        img.raycastTarget = true;
+    }
 
     public void Init(MaterialData data, int count)
     {
-        if (nameText != null) nameText.text = data.moduleName;
-        if (countText != null) countText.text = $"x{count}";
+        _data = data;
+        _count = count;
         BuildShapePreview(data, data.rarity);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (_data == null) return;
+        GetTooltip()?.Show(_data, _count, GetComponent<RectTransform>());
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        GetTooltip()?.Hide();
+    }
+
+    private StorageTooltipUI GetTooltip()
+    {
+        if (StorageTooltipUI.Instance != null) return StorageTooltipUI.Instance;
+        var canvas = GetComponentInParent<Canvas>();
+        if (canvas == null) return null;
+        var root = canvas.rootCanvas;
+        var go = new GameObject("StorageTooltip", typeof(RectTransform));
+        go.transform.SetParent(root.transform, false);
+        return go.AddComponent<StorageTooltipUI>();
     }
 
     private void BuildShapePreview(MaterialData data, Rarity rarity)
@@ -27,6 +61,10 @@ public class StorageItemUI : MonoBehaviour
         var shapeCells = data.GetShapeCells();
         var bound = data.GetBoundingSize();
 
+        shapePreviewRoot.anchorMin = new Vector2(0.5f, 0.5f);
+        shapePreviewRoot.anchorMax = new Vector2(0.5f, 0.5f);
+        shapePreviewRoot.pivot     = new Vector2(0.5f, 0.5f);
+        shapePreviewRoot.anchoredPosition = Vector2.zero;
         shapePreviewRoot.sizeDelta = new Vector2(
             bound.x * (cs + sp) - sp,
             bound.y * (cs + sp) - sp);
@@ -57,8 +95,8 @@ public class StorageItemUI : MonoBehaviour
                 cs + bExtraLeft + bExtraRight,
                 cs + bExtraTop  + bExtraBottom);
             borderRt.anchoredPosition = new Vector2(
-                 cell.x * (cs + sp) - bExtraLeft,
-                -cell.y * (cs + sp) + bExtraTop);
+                cell.x * (cs + sp) - bExtraLeft,
+               -cell.y * (cs + sp) + bExtraTop);
 
             var borderImg = borderGo.GetComponent<Image>();
             borderImg.color = borderColor;
@@ -89,8 +127,8 @@ public class StorageItemUI : MonoBehaviour
                 cs - borderSize * 2f + extraLeft  + extraRight,
                 cs - borderSize * 2f + extraTop   + extraBottom);
             cellRt.anchoredPosition = new Vector2(
-                 cell.x * (cs + sp) + borderSize - extraLeft,
-                -cell.y * (cs + sp) - borderSize + extraTop);
+                cell.x * (cs + sp) + borderSize - extraLeft,
+               -cell.y * (cs + sp) - borderSize + extraTop);
 
             var cellImg = go.GetComponent<Image>();
             if (data.icon != null) cellImg.sprite = data.icon;

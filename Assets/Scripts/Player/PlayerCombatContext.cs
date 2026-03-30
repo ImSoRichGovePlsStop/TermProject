@@ -32,8 +32,9 @@ public class PlayerCombatContext : MonoBehaviour
         OnCritHit?.Invoke();
     }
 
-    public void NotifySecondaryAttack(Vector3 position)
+    public void NotifySecondaryAttack(HashSet<EnemyHealth> hitEnemies, Vector3 position)
     {
+        LastHitEnemies = hitEnemies;
         LastSecondaryPosition = position;
         OnSecondaryAttack?.Invoke();
     }
