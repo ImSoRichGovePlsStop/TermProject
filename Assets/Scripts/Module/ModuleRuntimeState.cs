@@ -8,10 +8,11 @@ public class ModuleRuntimeState
     public int buffedLevel = 0;
     public Rarity buffRarity = 0;
 
+    //common, uncommon, rare, epic, legendary
+    public int[] baseRarity = {0,0,0,0,0};
+
     //HeavyHit
     public float dmgTaken = 0f;
-    public float healDamage = 0f;
-    public float cooldown = 0f;
 
     // LowHpModule
     public float currentThreshold = 0f;
