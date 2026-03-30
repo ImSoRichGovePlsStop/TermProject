@@ -3,45 +3,52 @@ using UnityEngine;
 public class EnemyAttack : MonoBehaviour
 {
     [Header("Attack")]
-    [SerializeField] private float attackDamage = 10f;
-    [SerializeField] private float attackRange = 1.2f;
-    [SerializeField] private float attackCooldown = 1.2f;
+    [SerializeField] protected float attackDamage = 10f;
+    [SerializeField] protected float attackRange = 1.2f;
+    [SerializeField] protected float attackCooldown = 1.2f;
 
     [Header("References")]
-    [SerializeField] private Transform attackPoint;
-    [SerializeField] private LayerMask playerLayer;
-    [SerializeField] private Animator animator;
-    [SerializeField] private EnemyHealth enemyHealth;
+    [SerializeField] protected Transform attackPoint;
+    [SerializeField] protected LayerMask playerLayer;
+    [SerializeField] protected Animator animator;
+    [SerializeField] protected EnemyHealth enemyHealth;
 
-    private bool isAttacking = false;
-    private float lastAttackTime = -Mathf.Infinity;
+    protected bool isAttacking = false;
+    protected float lastAttackTime = -Mathf.Infinity;
 
     public float AttackRange => attackRange;
     public float AttackCooldown => attackCooldown;
     public bool IsAttacking => isAttacking;
 
-    private void Awake()
+    protected virtual void Awake()
     {
         if (animator == null)
             animator = GetComponentInChildren<Animator>();
 
         if (enemyHealth == null)
+            enemyHealth = GetComponentInParent<EnemyHealth>();
+
+        if (enemyHealth == null)
             enemyHealth = GetComponent<EnemyHealth>();
     }
 
-    public bool CanAttack()
+    public virtual bool CanAttack()
     {
+        if (enemyHealth != null && enemyHealth.IsDead) return false;
         if (enemyHealth != null && enemyHealth.IsHurt) return false;
         if (isAttacking) return false;
         if (Time.time < lastAttackTime + attackCooldown) return false;
         return true;
     }
 
-    public void StartAttack()
+    public virtual void StartAttack()
     {
+        if (!CanAttack()) return;
+
         isAttacking = true;
-        animator.SetBool("IsAttacking", true);
-        Debug.Log("Attack started");
+
+        if (animator != null)
+            animator.SetBool("IsAttacking", true);
 
         if (animator != null)
         {
@@ -54,19 +61,41 @@ public class EnemyAttack : MonoBehaviour
         }
     }
 
-    // Animation Event กลางคลิป
-    public void DealDamage()
+    // animation event
+    public virtual void DealDamage()
     {
-        Debug.Log("DealDamage called");
-
         if (enemyHealth != null && enemyHealth.IsDead)
             return;
 
-        Vector3 center = attackPoint != null ? attackPoint.position : transform.position;
+        Vector3 center = GetAttackCenter();
         Collider[] hits = Physics.OverlapSphere(center, attackRange, playerLayer);
 
-        Debug.Log("Player hits found = " + hits.Length);
+        TryDamageFromHits(hits);
+    }
 
+    public virtual void DealDamage(GameObject target)
+    {
+        if (enemyHealth != null && enemyHealth.IsDead)
+            return;
+
+        if (target == null) return;
+
+        PlayerStats playerStats = target.GetComponent<PlayerStats>();
+
+        if (playerStats == null)
+            playerStats = target.GetComponentInParent<PlayerStats>();
+
+        if (playerStats != null)
+            playerStats.TakeDamage(GetFinalDamage(), enemyHealth);
+    }
+
+    protected virtual Vector3 GetAttackCenter()
+    {
+        return attackPoint != null ? attackPoint.position : transform.position;
+    }
+
+    protected virtual void TryDamageFromHits(Collider[] hits)
+    {
         for (int i = 0; i < hits.Length; i++)
         {
             PlayerStats playerStats = hits[i].GetComponent<PlayerStats>();
@@ -76,67 +105,55 @@ public class EnemyAttack : MonoBehaviour
 
             if (playerStats != null)
             {
-                Debug.Log("Damage applied to player");
-                playerStats.TakeDamage(attackDamage, enemyHealth);
+                playerStats.TakeDamage(GetFinalDamage(), enemyHealth);
                 break;
             }
         }
     }
 
-    public void DealDamage(GameObject target)
+    protected virtual float GetFinalDamage()
     {
-        if (enemyHealth != null && enemyHealth.IsDead)
-            return;
-
-        PlayerStats playerStats = target.GetComponent<PlayerStats>();
-
-        if (playerStats == null) 
-            playerStats = target.GetComponentInParent<PlayerStats>();
-
-        if (playerStats != null)
-        {
-            playerStats.TakeDamage(attackDamage, enemyHealth);
-        }
+        return attackDamage;
     }
 
-    // Animation Event ท้ายคลิป
-    public void FinishAttack()
+    // animation event
+    public virtual void FinishAttack()
     {
         isAttacking = false;
         lastAttackTime = Time.time;
-        animator.SetBool("IsAttacking", false);
-        animator.ResetTrigger("Attack");
-        Debug.Log("FinishAttack called");
-    }
 
-    public void ForceStopAttack()
-    {
-        if (!isAttacking) return;
-
-        isAttacking = false;
-        lastAttackTime = Time.time;
-        animator.SetBool("IsAttacking", false);
-
-        if (animator != null && gameObject.name.Contains("Harpy"))
+        if (animator != null)
         {
+            animator.SetBool("IsAttacking", false);
             animator.ResetTrigger("Attack");
         }
     }
 
-    private void OnDrawGizmosSelected()
+    public virtual void ForceStopAttack()
     {
-        Gizmos.color = Color.magenta;
-        Vector3 center = attackPoint != null ? attackPoint.position : transform.position;
-        Gizmos.DrawWireSphere(center, attackRange);
+        isAttacking = false;
+        lastAttackTime = Time.time;
+
+        if (animator != null)
+        {
+            animator.SetBool("IsAttacking", false);
+            animator.ResetTrigger("Attack");
+        }
     }
 
-    public void SetDamageMultiplier(float multiplier)
+    public virtual void SetDamageMultiplier(float multiplier)
     {
         attackDamage *= multiplier;
     }
 
-    public void SetAttackRangeMultiplier(float multiplier)
+    public virtual void SetAttackRangeMultiplier(float multiplier)
     {
         attackRange *= multiplier;
+    }
+
+    protected virtual void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.magenta;
+        Gizmos.DrawWireSphere(GetAttackCenter(), attackRange);
     }
 }

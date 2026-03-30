@@ -17,7 +17,7 @@ public class CerberusController : BaseBossController
 
     [Header("Ranges")]
     [SerializeField] private float detectRange = 10f;
-    [SerializeField] private float attackMaxRange = 6f;
+    [SerializeField] private float attackMaxRange = 8f;
 
     [Header("Timing")]
     [SerializeField] private float thinkInterval = 0.1f;
@@ -55,14 +55,12 @@ public class CerberusController : BaseBossController
     {
         if (health != null && health.IsDead)
         {
-            // Log("Health says dead -> Die()");
             Die();
             return;
         }
 
         if (health != null && health.IsHurt)
         {
-            // Log("Health says hurt -> enter Hurt state");
             ChangeState(BossState.Hurt);
 
             if (movement != null)
@@ -76,7 +74,6 @@ public class CerberusController : BaseBossController
 
         if (currentState == BossState.PhaseTransition)
         {
-            // Log("Currently in PhaseTransition");
             if (movement != null)
                 movement.StopMoving();
             return;
@@ -90,29 +87,40 @@ public class CerberusController : BaseBossController
 
         float distance = GetFlatDistanceToPlayer();
 
-        // Log($"Tick | state={currentState} | phase={currentPhase} | distance={distance:F3} | detectRange={detectRange:F2} | attackMaxRange={attackMaxRange:F2} | attackBusy={(attack != null && attack.IsBusy)}");
+        if (attack != null)
+            attackMaxRange = attack.SwordStartRange;
+
+        Log(
+            $"Tick | state={currentState} | phase={currentPhase} | " +
+            $"distance={distance:F2} | detectRange={detectRange:F2} | attackMaxRange={attackMaxRange:F2}"
+        );
 
         if (attack != null && attack.IsBusy)
         {
-            // Log("Attack is busy -> keep Attack state");
             ChangeState(BossState.Attack);
             return;
         }
 
         if (distance > detectRange)
         {
-            // Log("Distance > detectRange -> Idle");
             ChangeState(BossState.Idle);
-            movement.StopMoving();
+
+            if (movement != null)
+                movement.StopMoving();
+
             return;
         }
 
         if (distance > attackMaxRange)
         {
-            // Log("Distance > attackMaxRange -> Chase");
             ChangeState(BossState.Chase);
-            movement.SetCanMove(true);
-            movement.MoveToTarget(player.position);
+
+            if (movement != null)
+            {
+                movement.SetCanMove(true);
+                movement.MoveToTarget(player.position);
+            }
+
             return;
         }
 
@@ -122,29 +130,23 @@ public class CerberusController : BaseBossController
 
         if (started)
         {
-            // Log("Attack started successfully -> Attack state");
             ChangeState(BossState.Attack);
-            movement.StopMoving();
-            movement.FaceTarget(player.position);
+
+            if (movement != null)
+            {
+                movement.StopMoving();
+                movement.FaceTarget(player.position);
+            }
+
             return;
         }
 
-        float closeRange = attack != null ? Mathf.Max(attack.BiteRange, attack.FlameRange) : 1f;
-        // Log($"No attack started | closeRange={closeRange:F3}");
+        ChangeState(BossState.Chase);
 
-        if (distance > closeRange)
+        if (movement != null)
         {
-            // Log("Distance > closeRange -> Chase closer");
-            ChangeState(BossState.Chase);
             movement.SetCanMove(true);
             movement.MoveToTarget(player.position);
-        }
-        else
-        {
-            // Log("Distance <= closeRange but no attack available -> face target and wait");
-            ChangeState(BossState.Attack);
-            movement.StopMoving();
-            movement.FaceTarget(player.position);
         }
     }
 
@@ -193,6 +195,7 @@ public class CerberusController : BaseBossController
     public void FinishPhaseTransition()
     {
         if (isDead) return;
+
         Log("FinishPhaseTransition() -> Chase");
         ChangeState(BossState.Chase);
     }

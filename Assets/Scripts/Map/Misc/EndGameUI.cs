@@ -10,6 +10,8 @@ public class EndGameUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI floorText;
     [SerializeField] private Button continueButton;
 
+    private bool won;
+
     private void Awake()
     {
         continueButton.onClick.AddListener(OnContinue);
@@ -18,6 +20,7 @@ public class EndGameUI : MonoBehaviour
 
     public void Show(bool isWin)
     {
+        won = isWin;
         gameObject.SetActive(true);
 
         titleText.text = isWin ? "Victory!" : "Defeated";
@@ -31,6 +34,15 @@ public class EndGameUI : MonoBehaviour
 
     private void OnContinue()
     {
+        if (won)
+        {
+            var inv = InventoryManager.Instance;
+            if (inv != null)
+                foreach (var module in inv.BagGrid.GetAllModules())
+                    if (module is MaterialInstance mat)
+                        MaterialStorage.Instance.Add(mat.MaterialData, mat.StackCount);
+        }
+
         var playerStats = FindFirstObjectByType<PlayerStats>();
         if (playerStats != null)
         {
@@ -38,7 +50,6 @@ public class EndGameUI : MonoBehaviour
             playerStats.ApplyDefault();
             playerStats.ClearAllShields();
         }
-
 
         // reset currency
         var wallet = FindFirstObjectByType<CurrencyManager>();

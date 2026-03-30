@@ -81,7 +81,7 @@ public abstract class EnemyHealth : MonoBehaviour
 
         currentHP -= finalDamage;
         OnDamageTaken(finalDamage);
-        OnDamageReceived?.Invoke(finalDamage, isCrit);
+        RaiseDamageReceived(finalDamage, isCrit);
 
         if (currentHP <= 0f)
         {
@@ -189,4 +189,9 @@ public abstract class EnemyHealth : MonoBehaviour
         yield return new WaitForSeconds(flashDuration);
         spriteRenderer.color = originalColor;
     }
+
+    protected void RaiseDamageReceived(float damage, bool isCrit)
+{
+    OnDamageReceived?.Invoke(damage, isCrit);
+}
 }

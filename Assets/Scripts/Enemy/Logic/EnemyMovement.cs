@@ -47,8 +47,9 @@ public class EnemyMovement : MonoBehaviour
 
         if (!canMove)
         {
-            if (!rb.isKinematic)
-                moveDirection = Vector3.zero;
+            moveDirection = Vector3.zero;
+
+            if (rb != null && !rb.isKinematic)
                 rb.linearVelocity = Vector3.zero;
         }
     }
@@ -69,6 +70,10 @@ public class EnemyMovement : MonoBehaviour
         if (distance <= stopDistance)
         {
             moveDirection = Vector3.zero;
+
+            if (rb != null && !rb.isKinematic)
+                rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+
             return;
         }
 
@@ -88,7 +93,9 @@ public class EnemyMovement : MonoBehaviour
     public virtual void StopMoving()
     {
         moveDirection = Vector3.zero;
-        rb.linearVelocity = Vector3.zero;
+
+        if (rb != null && !rb.isKinematic)
+            rb.linearVelocity = Vector3.zero;
     }
 
     protected virtual float GetCurrentMoveSpeed()
@@ -103,7 +110,7 @@ public class EnemyMovement : MonoBehaviour
 
     protected virtual void FixedUpdate()
     {
-        if (rb.isKinematic) return;
+        if (rb == null || rb.isKinematic) return;
 
         if (!canMove || moveDirection.sqrMagnitude < 0.001f)
         {
