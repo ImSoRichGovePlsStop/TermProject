@@ -345,11 +345,12 @@ MonoBehaviour:
   guardDuration: 2
   guardCooldown: 6
   chargeRange: 5
-  chargeDamageScale: 1.5
+  chargeDamageScale: 2
   chargeCooldown: 8
-  chargeWarningDuration: 2
+  chargeWarningDurationMin: 0.8
+  chargeWarningDurationMax: 1.5
   chargeSpeed: 20
   chargeDuration: 0.4
   chargeHitRadius: 0.6
-  chargeRotateSpeed: 90
+  chargeRotateSpeed: 120
   chargeWarningPrefab: {fileID: 885239749217862817, guid: 94eb01aec598ed34798c99dd8106f458, type: 3}

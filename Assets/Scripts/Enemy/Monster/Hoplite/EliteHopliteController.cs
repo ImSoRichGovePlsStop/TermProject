@@ -12,7 +12,8 @@ public class EliteHopliteController : HopliteController
     [SerializeField] private float chargeRange = 4f;
     [SerializeField] private float chargeDamageScale = 1.5f;
     [SerializeField] private float chargeCooldown = 6f;
-    [SerializeField] private float chargeWarningDuration = 1f;
+    [SerializeField] private float chargeWarningDurationMin = 0.8f;
+    [SerializeField] private float chargeWarningDurationMax = 1.5f;
     [SerializeField] private float chargeSpeed = 12f;
     [SerializeField] private float chargeDuration = 0.4f;
     [SerializeField] private float chargeHitRadius = 0.8f;
@@ -101,8 +102,10 @@ public class EliteHopliteController : HopliteController
         activeWarning = SpawnWarning(chargeDir);
         GameObject warning = activeWarning;
 
+        float warningDuration = Random.Range(chargeWarningDurationMin, chargeWarningDurationMax);
         float elapsed = 0f;
-        while (elapsed < chargeWarningDuration)
+
+        while (elapsed < warningDuration)
         {
             Vector3 toTarget = GetFlatDirToTarget();
             float maxDeg = chargeRotateSpeed * Time.deltaTime;
@@ -130,7 +133,6 @@ public class EliteHopliteController : HopliteController
         animator?.SetTrigger("Charge");
 
         LayerMask wallMask = 1 << LayerMask.NameToLayer("Wall");
-
         LayerMask hitMask = (1 << LayerMask.NameToLayer("Player"))
                           | (1 << LayerMask.NameToLayer("Summoner"))
                           | (1 << LayerMask.NameToLayer("Totem"));
@@ -168,7 +170,6 @@ public class EliteHopliteController : HopliteController
         }
 
         movement.SetCanMove(true);
-
         lastChargeTime = Time.time;
         isCharging = false;
         TriggerPostAttackDelay();

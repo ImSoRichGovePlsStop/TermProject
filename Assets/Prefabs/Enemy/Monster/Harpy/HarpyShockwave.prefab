@@ -49,7 +49,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HarpyShockwave
   startRadius: 1
   maxRadius: 5
-  expandSpeed: 3
+  expandSpeed: 5
   ringWidth: 0.4
   hitMask:
     serializedVersion: 2
