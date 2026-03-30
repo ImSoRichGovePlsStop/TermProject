@@ -35,6 +35,7 @@ public abstract class HealthBase : MonoBehaviour
     public bool IsInvincible { get; set; }
 
     public event Action<float, bool> OnDamageReceived;
+    protected void RaiseOnDamageReceived(float damage, bool isCrit) => OnDamageReceived?.Invoke(damage, isCrit);
     public event Action OnDeath;
 
     protected virtual void Awake()
@@ -124,7 +125,7 @@ public abstract class HealthBase : MonoBehaviour
         Destroy(gameObject, destroyDelay);
     }
 
-    protected void TryFlash()
+    public void TryFlash()
     {
         if (spriteRenderer == null) return;
 
