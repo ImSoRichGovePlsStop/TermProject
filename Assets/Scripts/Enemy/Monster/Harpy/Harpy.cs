@@ -18,7 +18,6 @@ public class Harpy : MonoBehaviour
     private Rigidbody rb;
     private EnemyController controller;
     private EnemyMovement movement;
-    private EnemyAttack attack;
     private EnemyHealth health;
     private bool hasEnteredAirPhase = false;
     Vector3 diveTarget;
@@ -53,7 +52,6 @@ public class Harpy : MonoBehaviour
     {
         controller = GetComponent<EnemyController>();
         movement = GetComponent<EnemyMovement>();
-        attack = GetComponentInChildren<EnemyAttack>();
         health = GetComponent<EnemyHealth>();
         animator = GetComponentInChildren<Animator>();
         rb = GetComponent<Rigidbody>();
@@ -66,12 +64,6 @@ public class Harpy : MonoBehaviour
         
         transform.localScale *= sizeMultiplier;
         diveSpeed *= diveSpeedMultiplier;
-        attack.SetAttackRangeMultiplier(attackRangeMultiplier);
-
-        if (attack != null)
-        {
-            attack.SetDamageMultiplier(damageMultiplier);
-        }
     }
 
     void Update()
@@ -211,7 +203,6 @@ public class Harpy : MonoBehaviour
         if (Vector3.Distance(transform.position, player.position) < 1.2f)
         {
             // Debug.Log("Crash with player");
-            attack.DealDamage(player.gameObject);
             StartRecover();
             return;
         }

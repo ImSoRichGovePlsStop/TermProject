@@ -86,13 +86,14 @@ public class BrawlerSummoner : SummonerBase
 
         BrawlerState prevState = currentState;
 
-        if (currentTarget != null)
+        if (currentTarget != null && !currentTarget.IsDead)
         {
             float dist = Vector3.Distance(transform.position, currentTarget.transform.position);
             currentState = dist <= attackRange ? BrawlerState.Attack : BrawlerState.Chase;
         }
         else
         {
+            currentTarget = null;
             isAttacking = false;
             currentState = BrawlerState.Wander;
         }

@@ -5,7 +5,6 @@ public class DefaultEnemyHealth : EnemyHealth
     [Header("Default Enemy References")]
     [SerializeField] private EnemyController enemyController;
     [SerializeField] private EnemyMovement enemyMovement;
-    [SerializeField] private EnemyAttack enemyAttack;
 
     private EnemyStatusHandler statusHandler;
 
@@ -17,8 +16,6 @@ public class DefaultEnemyHealth : EnemyHealth
         if (enemyMovement == null)
             enemyMovement = GetComponent<EnemyMovement>();
 
-        if (enemyAttack == null)
-            enemyAttack = GetComponentInChildren<EnemyAttack>();
 
         if (statusHandler == null)
             statusHandler = GetComponent<EnemyStatusHandler>();
@@ -36,8 +33,6 @@ public class DefaultEnemyHealth : EnemyHealth
 
     protected override void OnHurtStart()
     {
-        if (enemyAttack != null)
-            enemyAttack.ForceStopAttack();
 
         if (enemyMovement != null)
         {
@@ -52,12 +47,4 @@ public class DefaultEnemyHealth : EnemyHealth
             enemyMovement.SetCanMove(true);
     }
 
-    protected override void OnDeathStart()
-    {
-        if (enemyAttack != null)
-            enemyAttack.ForceStopAttack();
-
-        if (enemyController != null)
-            enemyController.Die();
-    }
 }

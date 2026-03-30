@@ -13,10 +13,8 @@ public class MinotaurController : EnemyBase
     [Header("Attack")]
     [SerializeField] private float attackRange = 1.2f;
     [SerializeField] private float attackAngle = 120f;
-    [SerializeField] private float attackDamage = 10f;
+    [SerializeField] private float attackDamageScale = 1f;
     [SerializeField] private float attackCooldown = 1.5f;
-    [SerializeField] private float postAttackDelayMin = 0.4f;
-    [SerializeField] private float postAttackDelayMax = 0.8f;
 
     [Header("Dash")]
     [SerializeField] private float dashSpeed = 12f;
@@ -140,7 +138,7 @@ public class MinotaurController : EnemyBase
     // Animation Event
     public void DealDamage()
     {
-        DealDamageToTarget(attackDamage, attackAngle, attackRange);
+        DealDamageToTarget(stats.Damage * attackDamageScale, attackAngle, attackRange);
     }
 
     // Animation Event
@@ -148,7 +146,6 @@ public class MinotaurController : EnemyBase
     {
         isAttacking = false;
         lastAttackTime = Time.time;
-        postAttackDelay = Random.Range(postAttackDelayMin, postAttackDelayMax);
         TriggerPostAttackDelay();
     }
 

@@ -11,7 +11,8 @@ public abstract class EnemyBase : MonoBehaviour
     [SerializeField] protected float loseTargetRange = 10f;
 
     [Header("Attack")]
-    [SerializeField] protected float postAttackDelay = 0.3f;
+    [SerializeField] protected float postAttackDelayMin = 0.4f;
+    [SerializeField] protected float postAttackDelayMax = 0.8f;
 
     protected bool isPostAttackDelay = false;
     protected float postAttackTimer = 0f;
@@ -75,7 +76,7 @@ public abstract class EnemyBase : MonoBehaviour
     protected void TriggerPostAttackDelay()
     {
         isPostAttackDelay = true;
-        postAttackTimer = postAttackDelay;
+        postAttackTimer = Random.Range(postAttackDelayMin, postAttackDelayMax);
     }
 
     private void UpdateTarget()
