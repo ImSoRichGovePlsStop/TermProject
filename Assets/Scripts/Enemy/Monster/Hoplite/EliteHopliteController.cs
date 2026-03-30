@@ -20,6 +20,7 @@ public class EliteHopliteController : HopliteController
     [SerializeField] private GameObject chargeWarningPrefab;
 
     private float guardTimer = 0f;
+    private GameObject activeWarning;
     private float lastGuardTime = -Mathf.Infinity;
     private float lastChargeTime;
     private bool isCharging = false;
@@ -97,7 +98,8 @@ public class EliteHopliteController : HopliteController
         animator?.SetTrigger("ChargeWarning");
 
         Vector3 chargeDir = GetFlatDirToTarget();
-        GameObject warning = SpawnWarning(chargeDir);
+        activeWarning = SpawnWarning(chargeDir);
+        GameObject warning = activeWarning;
 
         float elapsed = 0f;
         while (elapsed < chargeWarningDuration)
@@ -121,6 +123,7 @@ public class EliteHopliteController : HopliteController
         }
 
         if (warning != null) Destroy(warning);
+        activeWarning = null;
 
         var agent = movement.GetAgent();
 
@@ -196,6 +199,16 @@ public class EliteHopliteController : HopliteController
         IsGuarding = false;
         movement.SetCanMove(true);
         animator?.SetBool("IsGuarding", false);
+    }
+
+    public override void OnDeath()
+    {
+        if (activeWarning != null)
+        {
+            Destroy(activeWarning);
+            activeWarning = null;
+        }
+        base.OnDeath();
     }
 
     protected new void OnDrawGizmosSelected()

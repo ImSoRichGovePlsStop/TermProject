@@ -130,6 +130,7 @@ MonoBehaviour:
   showHealthBar: 1
   healthBarHeight: 0.4
   healthBarScale: {x: 1, y: 1, z: 1}
+  tier: 0
 --- !u!114 &1324384255419440500
 MonoBehaviour:
   m_ObjectHideFlags: 0

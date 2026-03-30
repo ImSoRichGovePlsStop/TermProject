@@ -80,6 +80,12 @@ public class BrawlerSummoner : SummonerBase
     {
         if (isAttacking)
         {
+            if (currentTarget == null || currentTarget.IsDead)
+            {
+                isAttacking = false;
+                currentState = BrawlerState.Wander;
+                return;
+            }
             currentState = BrawlerState.Attack;
             return;
         }

@@ -264,7 +264,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ace5de3a68809b9469740d8d522ded0a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EliteHarpyHealthBase
-  destroyDelay: 2
+  destroyDelay: 0
   spriteRenderer: {fileID: 0}
   flashColor: {r: 1, g: 0, b: 0, a: 1}
   flashDuration: 0.1
@@ -272,7 +272,7 @@ MonoBehaviour:
   healthBarHeight: 0.4
   healthBarScale: {x: 2, y: 1.5, z: 1}
   tier: 1
-  airPhaseHPThreshold: 0.5
+  airPhaseHPThreshold: 0.6
   eliteController: {fileID: 6574624719163675747}
 --- !u!114 &6021029256873973459
 MonoBehaviour:
@@ -301,7 +301,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73a687f9a65ebc34ab8d148f3be77e4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EntityStats
-  baseMaxHP: 100
+  baseMaxHP: 150
   baseMoveSpeed: 3.5
   baseDamage: 15
   baseAttackSpeed: 1
@@ -341,7 +341,7 @@ MonoBehaviour:
   attackDashSpeed: 15
   attackDashDuration: 0.1
   attackDashHitRadius: 0.6
-  airCooldown: 12
+  airCooldown: 8
   flyHeight: 5
   flySpeed: 8
   hoverDuration: 2

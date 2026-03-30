@@ -131,10 +131,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Hoplite_Elite
       objectReference: {fileID: 0}
-    - target: {fileID: 998253066982403686, guid: 2903b8f1bd8b1e64693773095af86e48, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 4956095067510546409, guid: 2903b8f1bd8b1e64693773095af86e48, type: 3}
       propertyPath: m_LocalPosition.x
       value: -4.09
@@ -2384,10 +2380,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Harpy_Normal
       objectReference: {fileID: 0}
-    - target: {fileID: 4095530523079436333, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3275,13 +3267,9 @@ PrefabInstance:
       propertyPath: m_Name
       value: Harpy_Elite
       objectReference: {fileID: 0}
-    - target: {fileID: 2371149561134109772, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 7519988898106117772, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 3.587267
+      value: -5.27
       objectReference: {fileID: 0}
     - target: {fileID: 7519988898106117772, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3811,6 +3799,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Ceberus
       objectReference: {fileID: 0}
+    - target: {fileID: 4735553728804478809, guid: c564f1d5ce2ef454d809768594aa5774, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4006,10 +3998,6 @@ PrefabInstance:
     - target: {fileID: 1157175084331872940, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
       propertyPath: m_Name
       value: Hoplite_Normal
-      objectReference: {fileID: 0}
-    - target: {fileID: 1157175084331872940, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2215287256965508536, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
       propertyPath: m_LocalPosition.x

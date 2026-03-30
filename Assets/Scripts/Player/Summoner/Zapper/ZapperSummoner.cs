@@ -203,6 +203,7 @@ public class ZapperSummoner : SummonerBase
 
     private void OnEntityKilled(HealthBase entity)
     {
+        if (this == null || gameObject == null) return;
         if (entity == currentTarget)
             Detach();
     }
@@ -236,6 +237,7 @@ public class ZapperSummoner : SummonerBase
 
     private void Detach()
     {
+        if (this == null || gameObject == null) return;
         if (currentTarget != null)
         {
             var entityStats = currentTarget.GetComponent<EntityStats>();
