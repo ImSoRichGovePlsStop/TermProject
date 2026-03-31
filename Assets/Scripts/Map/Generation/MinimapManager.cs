@@ -134,6 +134,11 @@ public class MinimapManager : MonoBehaviour
         // Restore previous corridor cell
         RestoreCorridorCell(_lastCorridorCell);
 
+        // Player just stepped into a corridor for the first time —
+        // revert the last room to its visited color immediately
+        if (_lastCorridorCell.x < 0 && _visited.Contains(_currentRoomCell))
+            PaintRoomCells(_currentRoomCell, VisitedColor(_currentRoomCell));
+
         // Highlight new corridor cell
         if (_cellImages.TryGetValue(cell, out var img))
             img.color = playerCorridorColor;

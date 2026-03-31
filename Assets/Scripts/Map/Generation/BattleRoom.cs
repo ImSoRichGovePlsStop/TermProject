@@ -189,18 +189,20 @@ public class BattleRoom : MonoBehaviour
 
     private System.Collections.IEnumerator WaitForPlayerInside(Transform playerTransform)
     {
-        // Poll each frame until the player's center is fully inside the room bounds.
-        // This prevents enemies and walls spawning before the player actually enters.
-        Bounds roomBounds = new Bounds(
-            transform.position + Vector3.up * (roomSize.y / 2f),
-            roomSize);
-
-        while (!roomBounds.Contains(playerTransform.position))
+        // Require player to be 1 unit inside the room boundary before triggering
+        float inset = 1f;
+        while (true)
         {
-            // Abort if the player wandered away before fully entering
-            float distFromCenter = Vector3.Distance(
-                new Vector3(playerTransform.position.x, transform.position.y, playerTransform.position.z),
-                transform.position);
+            Vector3 playerFlat = new Vector3(playerTransform.position.x, transform.position.y, playerTransform.position.z);
+            Vector3 roomMin    = transform.position - new Vector3(roomSize.x / 2f - inset, 0, roomSize.z / 2f - inset);
+            Vector3 roomMax    = transform.position + new Vector3(roomSize.x / 2f - inset, 0, roomSize.z / 2f - inset);
+
+            bool insideX = playerFlat.x >= roomMin.x && playerFlat.x <= roomMax.x;
+            bool insideZ = playerFlat.z >= roomMin.z && playerFlat.z <= roomMax.z;
+
+            if (insideX && insideZ) break;
+
+            float distFromCenter = Vector3.Distance(playerFlat, transform.position);
             float maxDist = Mathf.Max(roomSize.x, roomSize.z);
             if (distFromCenter > maxDist) yield break;
 
