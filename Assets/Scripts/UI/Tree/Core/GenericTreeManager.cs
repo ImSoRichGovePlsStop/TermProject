@@ -113,7 +113,13 @@ public class GenericTreeManager : MonoBehaviour
     private void DestroyCurrentHandlers()
     {
         foreach (var handler in currentHandlers)
-            if (handler != null) Destroy(handler.gameObject);
+        {
+            if (handler != null)
+            {
+                handler.Cleanup();
+                Destroy(handler.gameObject);
+            }
+        }
         currentHandlers.Clear();
     }
 }

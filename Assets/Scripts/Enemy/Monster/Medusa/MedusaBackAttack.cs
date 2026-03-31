@@ -31,7 +31,8 @@ public class MedusaBackAttack : MonoBehaviour
     [SerializeField] private float fireDuration = 0.25f;
 
     [Header("Damage")]
-    [SerializeField] private float damage = 12f;
+    [SerializeField] private float damageScale = 1f;
+    private EntityStats entityStats;
 
     [Header("Circle Attack")]
     [SerializeField] private float circleRadius = 1.25f;
@@ -82,6 +83,7 @@ public class MedusaBackAttack : MonoBehaviour
 
         FindPlayerTarget();
         StartIdlePhase();
+        entityStats = GetComponent<EntityStats>();
     }
 
     private void Update()
@@ -391,17 +393,46 @@ public class MedusaBackAttack : MonoBehaviour
         PlayerStats stats = playerTarget.GetComponent<PlayerStats>();
         if (stats == null) stats = playerTarget.GetComponentInParent<PlayerStats>();
         if (stats == null) stats = playerTarget.GetComponentInChildren<PlayerStats>();
-        if (stats == null) return;
 
-        switch (currentAttackType)
+        if (stats != null)
         {
-            case BackAttackType.SpawnCircleUnderPlayer:
-                ApplyCircleDamage(stats);
-                break;
+            switch (currentAttackType)
+            {
+                case BackAttackType.SpawnCircleUnderPlayer:
+                    ApplyCircleDamage(stats);
+                    break;
+                case BackAttackType.BeamToPlayer:
+                    ApplyBeamDamage(stats);
+                    break;
+            }
+        }
 
-            case BackAttackType.BeamToPlayer:
-                ApplyBeamDamage(stats);
-                break;
+        LayerMask extraMask = (1 << LayerMask.NameToLayer("Summoner"))
+                            | (1 << LayerMask.NameToLayer("Totem"));
+
+        float scanRadius = currentAttackType == BackAttackType.SpawnCircleUnderPlayer
+            ? circleRadius + 1f
+            : beamLength;
+
+        Vector3 scanCenter = currentAttackType == BackAttackType.SpawnCircleUnderPlayer
+            ? lockedTargetPosition
+            : transform.position;
+
+        Collider[] hits = Physics.OverlapSphere(scanCenter, scanRadius, extraMask);
+        foreach (var col in hits)
+        {
+            var hb = col.GetComponent<HealthBase>() ?? col.GetComponentInParent<HealthBase>();
+            if (hb == null || hb.IsDead) continue;
+
+            switch (currentAttackType)
+            {
+                case BackAttackType.SpawnCircleUnderPlayer:
+                    ApplyCircleDamageToHealth(hb);
+                    break;
+                case BackAttackType.BeamToPlayer:
+                    ApplyBeamDamageToHealth(hb);
+                    break;
+            }
         }
     }
 
@@ -412,10 +443,7 @@ public class MedusaBackAttack : MonoBehaviour
 
         float dist = Vector3.Distance(p, lockedTargetPosition);
         if (dist <= circleRadius)
-        {
-            stats.TakeDamage(damage);
-            Debug.Log("Medusa Back Attack: Circle hit " + stats.name);
-        }
+            stats.TakeDamage(GetDamage());
     }
 
     private void ApplyBeamDamage(PlayerStats stats)
@@ -429,10 +457,31 @@ public class MedusaBackAttack : MonoBehaviour
 
         float dist = Vector3.Distance(flatClosest, stats.transform.position);
         if (dist <= beamRadius)
-        {
-            stats.TakeDamage(damage);
-            Debug.Log("Medusa Back Attack: Beam hit " + stats.name);
-        }
+            stats.TakeDamage(GetDamage());
+    }
+
+    private void ApplyCircleDamageToHealth(HealthBase hb)
+    {
+        Vector3 p = hb.transform.position;
+        p.y = lockedTargetPosition.y;
+
+        float dist = Vector3.Distance(p, lockedTargetPosition);
+        if (dist <= circleRadius)
+            hb.TakeDamage(GetDamage());
+    }
+
+    private void ApplyBeamDamageToHealth(HealthBase hb)
+    {
+        Vector3 beamStart = transform.position + beamOffset;
+        Vector3 beamEnd = beamStart + lockedBeamDirection * beamLength;
+
+        Vector3 closest = ClosestPointOnLineSegment(beamStart, beamEnd, hb.transform.position);
+        Vector3 flatClosest = closest;
+        flatClosest.y = hb.transform.position.y;
+
+        float dist = Vector3.Distance(flatClosest, hb.transform.position);
+        if (dist <= beamRadius)
+            hb.TakeDamage(GetDamage());
     }
 
     private Vector3 ClosestPointOnLineSegment(Vector3 a, Vector3 b, Vector3 p)
@@ -508,4 +557,6 @@ public class MedusaBackAttack : MonoBehaviour
             currentHitInstance = null;
         }
     }
+
+    private float GetDamage() => (entityStats != null ? entityStats.Damage : 1f) * damageScale;
 }

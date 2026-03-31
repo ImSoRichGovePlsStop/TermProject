@@ -29,7 +29,7 @@ public class AttackHitbox : MonoBehaviour
     {
         if (currentHit == null) return;
 
-        var result = new HashSet<EnemyHealth>();
+        var result = new HashSet<HealthBase>();
         var hitEnemies = new HashSet<Collider>();
 
         Collider[] sphereHits = Physics.OverlapSphere(transform.position, currentHit.range);
@@ -61,12 +61,12 @@ public class AttackHitbox : MonoBehaviour
         foreach (Collider hit in hitEnemies)
         {
             float dmg = stats.CalculateDamage(currentHit.damageScale);
-            Debug.Log($"Hit {hit.name} for {dmg}!");
-            var enemyHealth = hit.GetComponentInParent<EnemyHealth>();
-            if (enemyHealth != null)
+
+            var healthBase = hit.GetComponentInParent<HealthBase>();
+            if (healthBase != null && !healthBase.IsDead)
             {
-                enemyHealth.TakeDamage(dmg, stats.LastHitWasCrit);
-                result.Add(enemyHealth);
+                healthBase.TakeDamage(dmg, stats.LastHitWasCrit);
+                result.Add(healthBase);
             }
         }
 

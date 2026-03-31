@@ -7,9 +7,13 @@ public class PassiveNode : GenericTreeNode
     public int layer;
     public int branch;
 
+    [Header("Cost Override")]
+    public bool overrideCost = false;
+
     private void OnValidate()
     {
-        cost = GetCostByLayer(layer);
+        if (!overrideCost)
+            cost = GetCostByLayer(layer);
     }
 
     public static int GetCostByLayer(int layer)

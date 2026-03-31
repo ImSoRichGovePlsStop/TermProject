@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 795b38daab500fb45a7cc0b63959a39f, type: 3}
+  m_Name: Conduction
+  m_EditorClassIdentifier: Assembly-CSharp::PassiveTree
+  treeName: Conduction
+  treeColor: {r: 0.8679245, g: 0.7750552, b: 0, a: 1}
+  nodes:
+  - {fileID: 11400000, guid: 66dd8c22cb6daf74f99fe20f494ab621, type: 2}
+  - {fileID: 11400000, guid: 9478b880633334849b1f5dfd15224455, type: 2}
+  - {fileID: 11400000, guid: 995e27dae6510614d8a6290b9c56ea9b, type: 2}
+  - {fileID: 11400000, guid: ac6f3b00e0cfe3348b0d2e9c3464eb98, type: 2}
+  - {fileID: 11400000, guid: fee9688b542fd9a489c4ff48c227a8a1, type: 2}
+  - {fileID: 11400000, guid: b59ce865452aefb4e9aab6c426c8c0ca, type: 2}
+  - {fileID: 11400000, guid: 115b2b0d40f230d4aa97d02de654d189, type: 2}
+  - {fileID: 11400000, guid: 8edf09d0a94ba91429bbcf85a1c6eab3, type: 2}
+  handlerPrefab: {fileID: 0}

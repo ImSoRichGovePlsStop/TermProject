@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
+  m_Name: L4_LightningRod
+  m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
+  nodeName: Lightning Rod
+  description: Enemies with Zapper attached take +30% damage from all summoners.
+    Brawler and Bomber automatically prioritize attacking enemies with Zapper
+  cost: 2
+  parents:
+  - {fileID: 11400000, guid: 995e27dae6510614d8a6290b9c56ea9b, type: 2}
+  - {fileID: 11400000, guid: ac6f3b00e0cfe3348b0d2e9c3464eb98, type: 2}
+  requireAllParents: 0
+  layer: 4
+  branch: 0
+  overrideCost: 1

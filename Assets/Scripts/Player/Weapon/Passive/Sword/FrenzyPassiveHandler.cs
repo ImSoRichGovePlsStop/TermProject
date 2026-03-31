@@ -60,4 +60,10 @@ public class FrenzyPassiveHandler : PassiveHandlerBase
         stackFrenzy.resilientFury = IsUnlocked(5, 2);
         stackFrenzy.apexPredator = IsUnlocked(6, 0);
     }
+
+    public override void Cleanup()
+    {
+        stackFrenzy?.ForceClean();
+        PlayerStatusHUD.Instance?.Unregister("frenzy");
+    }
 }

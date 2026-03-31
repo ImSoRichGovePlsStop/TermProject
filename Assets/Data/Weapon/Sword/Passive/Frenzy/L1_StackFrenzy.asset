@@ -15,5 +15,9 @@ MonoBehaviour:
   nodeName: Stack Frenzy
   description: Each hit grants 1 stack. Each stack gives +2% bonus damage. Stacks
     reset on hit or after 15s. Max 10 stacks.
+  cost: 1
+  parents: []
+  requireAllParents: 0
   layer: 1
   branch: 0
+  overrideCost: 0

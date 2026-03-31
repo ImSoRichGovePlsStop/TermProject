@@ -14,19 +14,23 @@ public class CerberusHealth : BaseBossHealth
 
     private bool phase2Triggered = false;
     private bool phase3Triggered = false;
+    private PlayerCombatContext context;
 
-    protected override void CacheComponents()
+    protected override void Awake()
     {
-        base.CacheComponents();
+        base.Awake();
 
-        if (controller == null)
-            controller = GetComponent<CerberusController>();
+        if (controller == null) controller = GetComponent<CerberusController>();
+        if (movement == null) movement = GetComponent<BossMovement>();
+        if (attack == null) attack = GetComponent<CerberusAttack>();
+    }
 
-        if (movement == null)
-            movement = GetComponent<BossMovement>();
-
-        if (attack == null)
-            attack = GetComponent<CerberusAttack>();
+    protected override void Start()
+    {
+        base.Start();
+        var playerObj = GameObject.FindWithTag("Player");
+        if (playerObj != null)
+            context = playerObj.GetComponent<PlayerCombatContext>();
     }
 
     public override void TakeDamage(float damage, bool isCrit = false)
@@ -34,11 +38,15 @@ public class CerberusHealth : BaseBossHealth
         if (isDead) return;
         if (damage <= 0f) return;
 
-        float finalDamage = ModifyIncomingDamage(damage);
-        if (finalDamage <= 0f) return;
+        // apply DamageTaken multiplier manually before phase check
+        var entityStats = GetComponent<EntityStats>();
+        if (entityStats != null) damage *= entityStats.DamageTaken;
 
-        currentHP -= finalDamage;
-        OnDamageTaken(finalDamage);
+        currentHP -= damage;
+        currentHP = Mathf.Max(currentHP, 0f);
+
+        RaiseOnDamageReceived(damage, isCrit);
+        TryFlash();
 
         float hpPercent = currentHP / maxHP;
 
@@ -46,22 +54,9 @@ public class CerberusHealth : BaseBossHealth
         {
             phase2Triggered = true;
             isHurt = false;
-
-            if (hurtCoroutine != null)
-            {
-                StopCoroutine(hurtCoroutine);
-                hurtCoroutine = null;
-            }
-
-            if (attack != null)
-                attack.ForceStopAllAttacks();
-
-            if (movement != null)
-                movement.StopMoving();
-
-            if (controller != null)
-                controller.EnterPhase2();
-
+            attack?.ForceStopAllAttacks();
+            movement?.StopMoving();
+            controller?.EnterPhase2();
             return;
         }
 
@@ -69,68 +64,38 @@ public class CerberusHealth : BaseBossHealth
         {
             phase3Triggered = true;
             isHurt = false;
-
-            if (hurtCoroutine != null)
-            {
-                StopCoroutine(hurtCoroutine);
-                hurtCoroutine = null;
-            }
-
-            if (attack != null)
-                attack.ForceStopAllAttacks();
-
-            if (movement != null)
-                movement.StopMoving();
-
-            if (controller != null)
-                controller.EnterPhase3();
-
+            attack?.ForceStopAllAttacks();
+            movement?.StopMoving();
+            controller?.EnterPhase3();
             return;
         }
 
         if (currentHP <= 0f)
         {
-            currentHP = 0f;
             Die();
             return;
         }
 
-        if (hurtCoroutine != null)
-            StopCoroutine(hurtCoroutine);
-
-        hurtCoroutine = StartCoroutine(HurtRoutine());
+        isHurt = true;
+        OnHurtStart();
     }
 
     protected override void OnHurtStart()
     {
-        if (attack != null)
-            attack.ForceStopAllAttacks();
-
-        if (movement != null)
-            movement.StopMoving();
-    }
-
-    protected override void OnHurtEnd()
-    {
-        base.OnHurtEnd();
+        attack?.ForceStopAllAttacks();
+        movement?.StopMoving();
     }
 
     protected override void OnDeathStart()
     {
-        if (controller != null)
-            controller.Die();
-
-        if (attack != null)
-            attack.ForceStopAllAttacks();
-
-        base.OnDeathStart();
+        controller?.Die();
+        attack?.ForceStopAllAttacks();
+        context?.NotifyEnemyKilled((HealthBase)this);
     }
 
-    protected override void HandleRigidbodyOnDeath()
+    protected override void OnDie()
     {
-        if (rb == null) return;
-
-        rb.linearVelocity = Vector3.zero;
-        rb.isKinematic = true;
+        Destroy(gameObject, destroyDelay);
     }
+
 }

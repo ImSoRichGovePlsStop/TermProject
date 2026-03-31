@@ -1,15 +1,9 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody))]
-public class BossMovement : EnemyMovement
+public class BossMovement : MovementBase
 {
     [Header("Boss Movement")]
     [SerializeField] private bool invertFacing = true;
-
-    protected override void Awake()
-    {
-        base.Awake();
-    }
 
     public void DashTo(Vector3 worldDirection, float dashSpeed)
     {
@@ -21,7 +15,15 @@ public class BossMovement : EnemyMovement
 
         flatDir.Normalize();
         FaceDirection(flatDir);
-        rb.linearVelocity = flatDir * dashSpeed;
+
+        var rb = GetComponent<Rigidbody>();
+        if (rb != null)
+            rb.linearVelocity = flatDir * dashSpeed;
+    }
+
+    public void MultiplyMoveSpeed(float multiplier)
+    {
+        SetSpeedMultiplier(multiplier);
     }
 
     protected override void FaceDirection(Vector3 dir)
@@ -30,13 +32,12 @@ public class BossMovement : EnemyMovement
 
         if (!invertFacing)
         {
-            base.FaceDirection(dir);
+            if (dir.x > 0.05f) spriteRenderer.flipX = false;
+            else if (dir.x < -0.05f) spriteRenderer.flipX = true;
             return;
         }
 
-        if (dir.x > 0.05f)
-            spriteRenderer.flipX = true;
-        else if (dir.x < -0.05f)
-            spriteRenderer.flipX = false;
+        if (dir.x > 0.05f) spriteRenderer.flipX = true;
+        else if (dir.x < -0.05f) spriteRenderer.flipX = false;
     }
 }

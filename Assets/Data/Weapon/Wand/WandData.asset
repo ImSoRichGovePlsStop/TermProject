@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: WandData
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   weaponName: Wand
-  icon: {fileID: -312234709, guid: 6132fd4f13c75d644a26fa8aa2d4b0a8, type: 3}
+  icon: {fileID: -2090157506, guid: 6132fd4f13c75d644a26fa8aa2d4b0a8, type: 3}
   weaponType: 1
   animatorOverrideController: {fileID: 22100000, guid: bd3248728cecfa646aed841f5b690fc1, type: 2}
-  passiveData: {fileID: 0}
+  passiveData: {fileID: 11400000, guid: b1af5116a57720c48b16d5ccdcdfda74, type: 2}
   health: 80
   damage: 6
   attackSpeed: 1
@@ -84,14 +84,14 @@ MonoBehaviour:
     range: 0
     angle: 0
     extraRange: 0
-    animationTrigger: 
-    animationDuration: 0
+    animationTrigger: attack_secondary
+    animationDuration: 1.5
     hitVFXPrefab: {fileID: 0}
     vfxOffset: 0
     vfxDurationMultiplier: 1
     vfxLoops: 1
   comboCooldown: 0.5
-  secondaryCooldown: 0
+  secondaryCooldown: 20
   comboResetTime: 0.6
   wandProjectile:
     normalMaxSpeed: 8
@@ -99,16 +99,16 @@ MonoBehaviour:
     normalLifetime: 2
     normalColliderRadius: 1
     bigMaxSpeed: 4
-    bigRange: 2
+    bigRange: 2.5
     bigLifetime: 4
     bigSpriteScale: 1.8
     easePower: 2
     slowThreshold: 0.3
     fastClip: {fileID: 7400000, guid: 0c48fd6bc6d77674989ff8a60f42d559, type: 2}
     slowClip: {fileID: 7400000, guid: 8597c03edaf71b04daac96a47f6880b6, type: 2}
-    aoePulseDamageScale: 0.3
-    aoePulseRadius: 1.8
-    aoePulseRate: 1
+    aoePulseDamageScale: 0.4
+    aoePulseRadius: 1.5
+    aoePulseInterval: 0.95
   gridSizePerLevel:
   - {x: 5, y: 5}
   - {x: 5, y: 5}

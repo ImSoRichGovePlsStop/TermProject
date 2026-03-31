@@ -49,4 +49,10 @@ public class AegisPassiveHandler : PassiveHandlerBase
 
         aegis.OnFlagsChanged();
     }
+
+    public override void Cleanup()
+    {
+        aegis?.ForceClean();
+        PlayerStatusHUD.Instance?.Unregister("aegis");
+    }
 }
