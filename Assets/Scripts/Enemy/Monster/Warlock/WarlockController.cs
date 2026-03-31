@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class WarlockController : EnemyBase
@@ -10,8 +11,19 @@ public class WarlockController : EnemyBase
     [SerializeField] protected float shootCooldown = 2.5f;
     [SerializeField] protected float projectileDamageScale = 1f;
     [SerializeField] protected float spreadAngle = 15f;
+    [SerializeField] protected float maxTrackRotateSpeed = 90f;
     [SerializeField] protected GameObject projectilePrefab;
     [SerializeField] protected Transform firePoint;
+
+    [Header("AoE Smash")]
+    [SerializeField] protected float smashRange = 5f;
+    [SerializeField] protected float smashDamageScale = 1.2f;
+    [SerializeField] protected float smashWindUpDuration = 0.8f;
+    [SerializeField] protected float smashWarningDuration = 1f;
+    [SerializeField] protected float smashAoeRadius = 2.5f;
+    [SerializeField] protected float smashCooldown = 5f;
+    [SerializeField] protected GameObject aoeWarningPrefab;
+    [SerializeField] protected LayerMask targetLayers;
 
     [Header("Strafe")]
     [SerializeField] protected float strafeIdleTimeMin = 0.5f;
@@ -22,16 +34,15 @@ public class WarlockController : EnemyBase
 
     protected WarlockState currentState = WarlockState.Wander;
     protected bool isWindingUp = false;
+    protected bool isSmashing = false;
     protected float lastShootTime = -Mathf.Infinity;
+    protected float lastSmashTime = 0f;
+    protected Vector3 lockedTargetPosition;
 
     // Strafe
     private bool strafeIsIdling = false;
     private float strafeIdleTimer = 0f;
     private Vector3 strafeTarget = Vector3.zero;
-
-    // Shoot
-    private Vector3 lockedTargetPosition;
-    protected bool isTargetLocked = false;
 
     // Retreat
     private bool isWaitingToRetreat = false;
@@ -49,11 +60,10 @@ public class WarlockController : EnemyBase
 
     protected override void UpdateState()
     {
-        if (isWindingUp) return;
+        if (isWindingUp || isSmashing) return;
 
         WarlockState prevState = currentState;
 
-        // Clear retreat if far enough from target
         if (!HasTarget || Vector3.Distance(transform.position, TargetPosition) >= minRange + 0.5f)
         {
             isRetreating = false;
@@ -176,12 +186,62 @@ public class WarlockController : EnemyBase
     private void TickWindUp()
     {
         movement.StopMoving();
-        if (HasTarget && !isTargetLocked)
+
+        if (HasTarget)
         {
-            lockedTargetPosition = TargetPosition;
-            movement.FaceTarget(lockedTargetPosition);
+            Vector3 currentDir = (lockedTargetPosition - transform.position);
+            Vector3 targetDir = (TargetPosition - transform.position);
+            currentDir.y = 0f;
+            targetDir.y = 0f;
+
+            if (currentDir.sqrMagnitude > 0.001f && targetDir.sqrMagnitude > 0.001f)
+            {
+                float maxDeg = maxTrackRotateSpeed * Time.deltaTime;
+                Vector3 newDir = Vector3.RotateTowards(currentDir.normalized, targetDir.normalized, maxDeg * Mathf.Deg2Rad, 0f);
+                lockedTargetPosition = transform.position + newDir * targetDir.magnitude;
+            }
         }
-        TryWindUp();
+
+        movement.FaceTarget(lockedTargetPosition);
+        if (!TrySmash()) TryWindUp();
+    }
+
+    // ?? Smash ??????????????????????????????????????????????????
+
+    protected virtual bool TrySmash()
+    {
+        if (isSmashing) return true;
+        if (isWindingUp) return false;
+        if (Time.time < lastSmashTime + smashCooldown) return false;
+        if (!HasTarget || Vector3.Distance(transform.position, TargetPosition) > smashRange) return false;
+
+        StartCoroutine(SmashRoutine());
+        return true;
+    }
+
+    private System.Collections.IEnumerator SmashRoutine()
+    {
+        isSmashing = true;
+        movement.StopMoving();
+
+        animator?.SetTrigger("SmashWindUp");
+        yield return new UnityEngine.WaitForSeconds(smashWindUpDuration);
+
+        SpawnAOEWarning(TargetPosition, smashDamageScale, smashAoeRadius, smashWarningDuration);
+
+        animator?.SetTrigger("Smash");
+        yield return new UnityEngine.WaitForSeconds(smashWarningDuration);
+
+        lastSmashTime = Time.time;
+        isSmashing = false;
+        TriggerPostAttackDelay();
+    }
+
+    protected void SpawnAOEWarning(Vector3 pos, float damageScale, float radius, float duration)
+    {
+        if (aoeWarningPrefab == null) return;
+        var go = Instantiate(aoeWarningPrefab, pos, Quaternion.identity);
+        go.GetComponent<WarlockAOEWarning>()?.Initialize(stats.Damage * damageScale, radius, duration, targetLayers);
     }
 
     // ?? Helpers ????????????????????????????????????????????????
@@ -212,7 +272,6 @@ public class WarlockController : EnemyBase
         if (Time.time < lastShootTime + shootCooldown) return false;
 
         isWindingUp = true;
-        isTargetLocked = false;
         lockedTargetPosition = TargetPosition;
         animator?.SetTrigger("WindUp");
         return true;
@@ -223,7 +282,6 @@ public class WarlockController : EnemyBase
     public virtual void FireProjectile()
     {
         if (projectilePrefab == null || firePoint == null) return;
-        isTargetLocked = true;
         SpawnSingleProjectile();
     }
 
@@ -231,8 +289,6 @@ public class WarlockController : EnemyBase
     {
         if (projectilePrefab == null || firePoint == null) return;
         SpawnSingleProjectile();
-
-        isTargetLocked = false;
         isWindingUp = false;
         lastShootTime = Time.time;
         TriggerPostAttackDelay();
@@ -247,11 +303,10 @@ public class WarlockController : EnemyBase
 
         float angle = Random.Range(-spreadAngle, spreadAngle);
         Vector3 dir = Quaternion.Euler(0f, angle, 0f) * baseDir;
-        Vector3 spawnTarget = firePoint.position + dir * 20f;
 
         var go = Instantiate(projectilePrefab, firePoint.position, projectilePrefab.transform.rotation);
         var proj = go.GetComponent<WarlockProjectile>();
-        proj?.Initialize(spawnTarget, stats.Damage * projectileDamageScale, health);
+        proj?.Initialize(firePoint.position + dir * 20f, stats.Damage * projectileDamageScale, health);
     }
 
     // ?? Overrides ??????????????????????????????????????????????
@@ -260,6 +315,8 @@ public class WarlockController : EnemyBase
     {
         base.OnDeath();
         isWindingUp = false;
+        isSmashing = false;
+        StopAllCoroutines();
     }
 
     protected new void OnDrawGizmosSelected()

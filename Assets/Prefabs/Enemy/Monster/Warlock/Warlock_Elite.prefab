@@ -194,7 +194,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2871061770565427837
 Transform:
   m_ObjectHideFlags: 0
@@ -370,22 +370,23 @@ MonoBehaviour:
   minRange: 4
   shootCooldown: 2
   projectileDamageScale: 1
-  spreadAngle: 10
+  spreadAngle: 15
+  maxTrackRotateSpeed: 90
   projectilePrefab: {fileID: 1673625421123493190, guid: c66892180d264fa429b0f975e9a687d5, type: 3}
   firePoint: {fileID: 7516824194724891628}
-  strafeIdleTimeMin: 0.5
-  strafeIdleTimeMax: 1.5
-  retreatDelay: 0.5
   smashRange: 10
   smashDamageScale: 1.5
   smashWindUpDuration: 0.5
   smashWarningDuration: 1
   smashAoeRadius: 2.5
-  smashCooldown: 5
+  smashCooldown: 6
   aoeWarningPrefab: {fileID: 8242712012749683966, guid: ac7736e1ab4e5df45a1486851ad223ea, type: 3}
   targetLayers:
     serializedVersion: 2
     m_Bits: 704
+  strafeIdleTimeMin: 0.5
+  strafeIdleTimeMax: 1.5
+  retreatDelay: 0.5
   jumpTriggerRange: 2
   jumpEscapeCooldown: 12
   jumpRadius: 6
@@ -396,7 +397,8 @@ MonoBehaviour:
   ultimateWindUpDuration: 1
   ultimateWarningDuration: 2
   ultimateAoeRadius: 2
-  ultimateCooldown: 12
+  ultimateCooldown: 15
+  ultimateCooldownEnraged: 8
   ultimateCircleCountMin: 4
   ultimateCircleCountMax: 7
   ultimateSpawnRadius: 6

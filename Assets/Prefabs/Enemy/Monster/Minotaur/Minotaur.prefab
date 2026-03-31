@@ -271,6 +271,7 @@ MonoBehaviour:
   showHealthBar: 1
   healthBarHeight: 0.25
   healthBarScale: {x: 1, y: 1, z: 1}
+  tier: 0
 --- !u!114 &1851839058764752454
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -316,11 +317,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MinotaurController
   detectRange: 4
   loseTargetRange: 6
-  postAttackDelay: 0.5
+  postAttackDelayMin: 0.4
+  postAttackDelayMax: 0.8
   targetPriority:
     playerPriority: 1
-    summonerPriority: 0.6
-    totemPriority: 1.2
+    summonerPriority: 1
+    totemPriority: 1
   wander:
     mode: 2
     wanderRadius: 4
@@ -333,9 +335,7 @@ MonoBehaviour:
   animator: {fileID: 7320266871699247397}
   attackRange: 0.8
   attackAngle: 120
-  attackDamage: 10
+  attackDamageScale: 1
   attackCooldown: 1.2
-  postAttackDelayMin: 0.4
-  postAttackDelayMax: 0.8
   dashSpeed: 8
   dashDuration: 0.15

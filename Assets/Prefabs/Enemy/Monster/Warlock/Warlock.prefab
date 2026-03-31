@@ -104,7 +104,7 @@ Animator:
   m_GameObject: {fileID: 2644299062299069869}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 608496bd0b8f37f4dbae96c14e1e8ded, type: 2}
+  m_Controller: {fileID: 9100000, guid: e5543c15e6cd55e47913ba221aa986d6, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -163,7 +163,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &7919638240924375049
 Transform:
   m_ObjectHideFlags: 0
@@ -339,8 +339,19 @@ MonoBehaviour:
   shootCooldown: 2.5
   projectileDamageScale: 1
   spreadAngle: 15
+  maxTrackRotateSpeed: 90
   projectilePrefab: {fileID: 6586537130506963891, guid: bbf5489f325b5b24abebdc577027359b, type: 3}
   firePoint: {fileID: 7202550289978122510}
+  smashRange: 4
+  smashDamageScale: 1.2
+  smashWindUpDuration: 1
+  smashWarningDuration: 1.5
+  smashAoeRadius: 1.5
+  smashCooldown: 8
+  aoeWarningPrefab: {fileID: 8242712012749683966, guid: ac7736e1ab4e5df45a1486851ad223ea, type: 3}
+  targetLayers:
+    serializedVersion: 2
+    m_Bits: 704
   strafeIdleTimeMin: 0.5
   strafeIdleTimeMax: 1.5
   retreatDelay: 0.5

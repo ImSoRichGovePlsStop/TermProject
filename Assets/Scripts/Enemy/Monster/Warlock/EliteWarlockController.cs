@@ -5,18 +5,7 @@ using UnityEngine.AI;
 
 public class EliteWarlockController : WarlockController
 {
-    // AoE Smash
-    [Header("AoE Smash")]
-    [SerializeField] private float smashRange = 5f;
-    [SerializeField] private float smashDamageScale = 1.2f;
-    [SerializeField] private float smashWindUpDuration = 0.8f;
-    [SerializeField] private float smashWarningDuration = 1f;
-    [SerializeField] private float smashAoeRadius = 2.5f;
-    [SerializeField] private float smashCooldown = 5f;
-    [SerializeField] private GameObject aoeWarningPrefab;
-    [SerializeField] private LayerMask targetLayers;
-
-    // Jump
+    // ?? Jump ???????????????????????????????????????????????????
     [Header("Jump")]
     [SerializeField] private float jumpTriggerRange = 2f;
     [SerializeField] private float jumpEscapeCooldown = 8f;
@@ -25,31 +14,32 @@ public class EliteWarlockController : WarlockController
     [SerializeField] private float jumpPeakHeight = 2f;
     [SerializeField] private int jumpCandidates = 8;
 
-    // Ultimate
+    // ?? Ultimate ???????????????????????????????????????????????
     [Header("Ultimate")]
     [SerializeField] private float ultimateDamageScale = 1.5f;
     [SerializeField] private float ultimateWindUpDuration = 2f;
     [SerializeField] private float ultimateWarningDuration = 1.5f;
     [SerializeField] private float ultimateAoeRadius = 2f;
     [SerializeField] private float ultimateCooldown = 12f;
+    [SerializeField] private float ultimateCooldownEnraged = 7f;
     [SerializeField] private int ultimateCircleCountMin = 4;
     [SerializeField] private int ultimateCircleCountMax = 7;
     [SerializeField] private float ultimateSpawnRadius = 8f;
     [SerializeField] private float ultimateMinSpawnDistance = 1f;
 
+    // ?? State ??????????????????????????????????????????????????
     private EliteWarlockHealthBase eliteHealth;
     private bool isEnraged;
     private bool isJumping;
-    private bool isSmashing;
     private bool isCastingUltimate;
     private bool isSmashAnimFinished;
 
-    private float lastSmashTime = -Mathf.Infinity;
     private float lastJumpEscapeTime = -Mathf.Infinity;
-    private float lastUltimateTime = -Mathf.Infinity;
+    private float lastUltimateTime = 0f;
 
     private bool IsOccupied => isJumping || isSmashing || isCastingUltimate;
 
+    // ?? Setup ??????????????????????????????????????????????????
 
     protected override void Awake()
     {
@@ -57,9 +47,9 @@ public class EliteWarlockController : WarlockController
         eliteHealth = GetComponent<EliteWarlockHealthBase>();
         if (eliteHealth != null)
             eliteHealth.OnEnrage += () => isEnraged = true;
-        lastSmashTime = Time.time;
     }
 
+    // ?? State Machine ??????????????????????????????????????????
 
     protected override void UpdateState()
     {
@@ -80,45 +70,30 @@ public class EliteWarlockController : WarlockController
 
         if (currentState == WarlockState.WindUp)
         {
-            if (isEnraged && TryUltimate()) return;
+            if (TryUltimate()) return;
             if (TrySmash()) return;
         }
 
         base.TickState();
     }
 
-    // Shoot
+    // ?? Shoot ??????????????????????????????????????????????????
 
-    public override void FireProjectile()
-    {
-        if (projectilePrefab == null || firePoint == null) return;
-        isTargetLocked = true;
-        SpawnSingleProjectile();
-    }
 
-    public override void FireLastProjectile()
-    {
-        if (projectilePrefab == null || firePoint == null) return;
-        SpawnSingleProjectile();
-        isTargetLocked = false;
-        isWindingUp = false;
-        lastShootTime = Time.time;
-        TriggerPostAttackDelay();
-    }
 
-    // Smash
+    // ?? Smash ??????????????????????????????????????????????????
 
-    private bool TrySmash()
+    protected override bool TrySmash()
     {
         if (isSmashing) return true;
         if (Time.time < lastSmashTime + smashCooldown) return false;
-        if (Vector3.Distance(transform.position, TargetPosition) > smashRange) return false;
+        if (!HasTarget || Vector3.Distance(transform.position, TargetPosition) > smashRange) return false;
 
-        StartCoroutine(SmashRoutine());
+        StartCoroutine(EliteSmashRoutine());
         return true;
     }
 
-    private IEnumerator SmashRoutine()
+    private IEnumerator EliteSmashRoutine()
     {
         isSmashing = true;
         movement.StopMoving();
@@ -139,7 +114,7 @@ public class EliteWarlockController : WarlockController
 
     public void FinishSmash() => isSmashAnimFinished = true;
 
-    // Jump
+    // ?? Jump ???????????????????????????????????????????????????
 
     private bool CanEscapeJump() => !isJumping && Time.time >= lastJumpEscapeTime + jumpEscapeCooldown;
 
@@ -201,12 +176,13 @@ public class EliteWarlockController : WarlockController
         isJumping = false;
     }
 
-    // Ultimate
+    // ?? Ultimate ???????????????????????????????????????????????
 
     private bool TryUltimate()
     {
         if (isCastingUltimate) return true;
-        if (Time.time < lastUltimateTime + ultimateCooldown) return false;
+        float currentCooldown = isEnraged ? ultimateCooldownEnraged : ultimateCooldown;
+        if (Time.time < lastUltimateTime + currentCooldown) return false;
 
         StartCoroutine(UltimateRoutine());
         return true;
@@ -254,19 +230,13 @@ public class EliteWarlockController : WarlockController
         }
     }
 
-    private void SpawnAOEWarning(Vector3 pos, float damageScale, float radius, float duration)
-    {
-        if (aoeWarningPrefab == null) return;
-        var go = Instantiate(aoeWarningPrefab, pos, Quaternion.identity);
-        go.GetComponent<WarlockAOEWarning>()?.Initialize(stats.Damage * damageScale, radius, duration, targetLayers);
-    }
+    // ?? Overrides ??????????????????????????????????????????????
 
     public override void OnDeath()
     {
         base.OnDeath();
         StopAllCoroutines();
         isJumping = false;
-        isSmashing = false;
         isCastingUltimate = false;
     }
 

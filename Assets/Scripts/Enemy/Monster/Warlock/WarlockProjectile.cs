@@ -9,6 +9,7 @@ public class WarlockProjectile : MonoBehaviour
     [Header("AoE Explosion")]
     [SerializeField] private float aoeRadius = 1.5f;
     [SerializeField] private LayerMask targetLayers;
+    [SerializeField] private LayerMask obstacleLayers;
 
     private Vector3 moveDirection;
     private float damage;
@@ -48,6 +49,11 @@ public class WarlockProjectile : MonoBehaviour
         if (ignoredColliders != null)
             foreach (var col in ignoredColliders)
                 if (col == other) return;
+
+        int layer = 1 << other.gameObject.layer;
+        bool isTarget = (targetLayers.value & layer) != 0;
+        bool isObstacle = (obstacleLayers.value & layer) != 0;
+        if (!isTarget && !isObstacle) return;
 
         Explode();
     }

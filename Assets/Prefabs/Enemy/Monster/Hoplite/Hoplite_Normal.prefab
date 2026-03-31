@@ -22,7 +22,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2215287256965508536
 Transform:
   m_ObjectHideFlags: 0
@@ -180,8 +180,8 @@ MonoBehaviour:
   postAttackDelayMax: 0
   targetPriority:
     playerPriority: 1
-    summonerPriority: 0.6
-    totemPriority: 1.2
+    summonerPriority: 1
+    totemPriority: 1
   wander:
     mode: 2
     wanderRadius: 4

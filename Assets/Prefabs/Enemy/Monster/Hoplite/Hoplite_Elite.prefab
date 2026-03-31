@@ -163,7 +163,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4956095067510546409
 Transform:
   m_ObjectHideFlags: 0
@@ -324,8 +324,8 @@ MonoBehaviour:
   postAttackDelayMax: 0
   targetPriority:
     playerPriority: 1
-    summonerPriority: 0.6
-    totemPriority: 1.5
+    summonerPriority: 1
+    totemPriority: 1
   wander:
     mode: 2
     wanderRadius: 5
@@ -343,7 +343,7 @@ MonoBehaviour:
   attackDashDuration: 0.15
   attackDashHitRadius: 0.6
   guardDuration: 2
-  guardCooldown: 6
+  guardCooldown: 10
   chargeRange: 5
   chargeDamageScale: 2
   chargeCooldown: 8
