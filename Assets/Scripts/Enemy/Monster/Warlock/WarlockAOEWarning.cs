@@ -3,61 +3,82 @@ using UnityEngine;
 
 public class WarlockAOEWarning : MonoBehaviour
 {
-    [Header("Warning")]
-    [SerializeField] private float warningDuration = 1f;
-    [SerializeField] private float aoeRadius = 2f;
+    [Header("Ground")]
+    [SerializeField] private float groundOffset = 0.05f;
+    [SerializeField] private LayerMask groundLayer;
 
     [Header("Visual")]
     [SerializeField] private Transform visualScale;
     [SerializeField] private float visualRadiusStart = 0.2f;
-    [SerializeField] private float visualRadiusEnd = 1f;
     [SerializeField][Range(0f, 1f)] private float expandRatio = 0.6f;
 
-    private float damage;
-    private LayerMask targetLayers;
-    private bool initialized;
+    [Header("Colors")]
+    [SerializeField] private Color windUpColorStart = new Color(1f, 1f, 0f, 0.3f);
+    [SerializeField] private Color windUpColorEnd = new Color(1f, 0.3f, 0f, 0.6f);
+    [SerializeField] private Color damageColor = new Color(0.5f, 0f, 0f, 1f);
+    [SerializeField] private float damagePhaseDuration = 0.05f;
 
-    // Called by EliteWarlockController for AoE Smash / Ultimate
+    private float damage;
+    private float aoeRadius;
+    private float warningDuration;
+    private LayerMask targetLayers;
+    private Renderer visualRenderer;
+
+    private void LateUpdate()
+    {
+        Vector3 pos = transform.position;
+        if (Physics.Raycast(pos + Vector3.up * 5f, Vector3.down, out RaycastHit groundHit, 20f, groundLayer))
+            pos.y = groundHit.point.y + groundOffset;
+        transform.position = pos;
+    }
+
     public void Initialize(float dmg, float radius, float duration, LayerMask layers)
     {
         damage = dmg;
         aoeRadius = radius;
         warningDuration = duration;
         targetLayers = layers;
-        initialized = true;
-        StartCoroutine(WarningRoutine());
+
+        if (visualScale != null)
+            visualRenderer = visualScale.GetComponent<Renderer>();
+
+        SetColor(windUpColorStart);
+        StartCoroutine(WarningRoutine(aoeRadius * 2f));
     }
 
-    // Called by WarlockProjectile explosion (no layer needed, uses defaults)
-    public void TriggerImmediate(float dmg, float radius)
+    private IEnumerator WarningRoutine(float visualRadiusEnd)
     {
-        damage = dmg;
-        aoeRadius = radius;
-        initialized = true;
-        DealDamage();
-        Destroy(gameObject);
-    }
-
-    private IEnumerator WarningRoutine()
-    {
+        float windUpDuration = warningDuration - damagePhaseDuration;
         float elapsed = 0f;
-        while (elapsed < warningDuration)
+
+        while (elapsed < windUpDuration)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / warningDuration;
+            float t = elapsed / windUpDuration;
 
             if (visualScale != null)
             {
                 float expandT = Mathf.Clamp01(t / expandRatio);
-                float scale = Mathf.Lerp(visualRadiusStart, visualRadiusEnd, expandT);
-                visualScale.localScale = Vector3.one * scale;
+                float s = Mathf.Lerp(visualRadiusStart, visualRadiusEnd, expandT);
+                visualScale.localScale = new Vector3(s, visualScale.localScale.y, s);
             }
 
+            SetColor(Color.Lerp(windUpColorStart, windUpColorEnd, t));
             yield return null;
         }
 
+        // Damage phase
+        SetColor(damageColor);
+        yield return new WaitForSeconds(damagePhaseDuration);
+
         DealDamage();
         Destroy(gameObject);
+    }
+
+    private void SetColor(Color color)
+    {
+        if (visualRenderer != null)
+            visualRenderer.material.color = color;
     }
 
     private void DealDamage()

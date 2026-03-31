@@ -1,122 +1,118 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class EliteWarlockController : WarlockController
 {
-    // ?? AoE Smash ??????????????????????????????????????????????
+    // AoE Smash
     [Header("AoE Smash")]
     [SerializeField] private float smashRange = 5f;
     [SerializeField] private float smashDamageScale = 1.2f;
+    [SerializeField] private float smashWindUpDuration = 0.8f;
     [SerializeField] private float smashWarningDuration = 1f;
     [SerializeField] private float smashAoeRadius = 2.5f;
     [SerializeField] private float smashCooldown = 5f;
-    [SerializeField] private float smashWindUpDuration = 0.8f;
     [SerializeField] private GameObject aoeWarningPrefab;
     [SerializeField] private LayerMask targetLayers;
 
-    // ?? Jump ???????????????????????????????????????????????????
+    // Jump
     [Header("Jump")]
-    [SerializeField] private float jumpRepositionCooldown = 4f;
+    [SerializeField] private float jumpTriggerRange = 2f;
     [SerializeField] private float jumpEscapeCooldown = 8f;
     [SerializeField] private float jumpRadius = 6f;
     [SerializeField] private float jumpDuration = 0.5f;
     [SerializeField] private float jumpPeakHeight = 2f;
-    [SerializeField] private float jumpCandidates = 8;
+    [SerializeField] private int jumpCandidates = 8;
 
-    // ?? Ultimate ???????????????????????????????????????????????
+    // Ultimate
     [Header("Ultimate")]
     [SerializeField] private float ultimateDamageScale = 1.5f;
+    [SerializeField] private float ultimateWindUpDuration = 2f;
     [SerializeField] private float ultimateWarningDuration = 1.5f;
     [SerializeField] private float ultimateAoeRadius = 2f;
     [SerializeField] private float ultimateCooldown = 12f;
     [SerializeField] private int ultimateCircleCountMin = 4;
     [SerializeField] private int ultimateCircleCountMax = 7;
     [SerializeField] private float ultimateSpawnRadius = 8f;
-    [SerializeField] private float ultimateWindUpDuration = 2f;
+    [SerializeField] private float ultimateMinSpawnDistance = 1f;
 
-    // ?? State ??????????????????????????????????????????????????
     private EliteWarlockHealthBase eliteHealth;
     private bool isEnraged;
-
-    private float lastSmashTime = -Mathf.Infinity;
-    private float lastJumpRepositionTime = -Mathf.Infinity;
-    private float lastJumpEscapeTime = -Mathf.Infinity;
-    private float lastUltimateTime = -Mathf.Infinity;
-
     private bool isJumping;
     private bool isSmashing;
     private bool isCastingUltimate;
+    private bool isSmashAnimFinished;
+
+    private float lastSmashTime = -Mathf.Infinity;
+    private float lastJumpEscapeTime = -Mathf.Infinity;
+    private float lastUltimateTime = -Mathf.Infinity;
+
+    private bool IsOccupied => isJumping || isSmashing || isCastingUltimate;
+
 
     protected override void Awake()
     {
         base.Awake();
         eliteHealth = GetComponent<EliteWarlockHealthBase>();
         if (eliteHealth != null)
-            eliteHealth.OnEnrage += OnEnrage;
+            eliteHealth.OnEnrage += () => isEnraged = true;
+        lastSmashTime = Time.time;
     }
 
-    private void OnEnrage()
-    {
-        isEnraged = true;
-    }
 
-    // ?? Override UpdateState ???????????????????????????????????
     protected override void UpdateState()
     {
-        if (isJumping || isSmashing || isCastingUltimate || isWindingUp) return;
+        if (IsOccupied || isWindingUp) return;
 
-        if (!HasTarget)
-        {
-            if (currentState != WarlockState.Wander)
-                wander.Reset(movement);
-            currentState = WarlockState.Wander;
-            return;
-        }
-
-        if (currentState == WarlockState.Wander)
-            wander.Reset(movement);
-
-        // Escape jump — interrupt anything
-        float dist = Vector3.Distance(transform.position, TargetPosition);
-        if (dist < minRange && CanEscapeJump())
+        if (HasTarget && Vector3.Distance(transform.position, TargetPosition) < jumpTriggerRange && CanEscapeJump())
         {
             StartCoroutine(JumpRoutine());
             return;
         }
 
-        float distCheck = Vector3.Distance(transform.position, TargetPosition);
-        currentState = distCheck <= shootRange ? WarlockState.WindUp : WarlockState.Chase;
+        base.UpdateState();
     }
 
-    // ?? Override TickState ?????????????????????????????????????
     protected override void TickState()
     {
-        if (isJumping || isSmashing || isCastingUltimate) return;
+        if (IsOccupied) return;
 
-        // Try special skills before normal shoot
         if (currentState == WarlockState.WindUp)
         {
             if (isEnraged && TryUltimate()) return;
             if (TrySmash()) return;
         }
 
-        // Reposition jump (cooldown-based)
-        if (HasTarget && CanRepositionJump() && !isWindingUp)
-        {
-            StartCoroutine(JumpRoutine());
-            return;
-        }
-
         base.TickState();
     }
 
-    // ?? Smash ??????????????????????????????????????????????????
+    // Shoot
+
+    public override void FireProjectile()
+    {
+        if (projectilePrefab == null || firePoint == null) return;
+        isTargetLocked = true;
+        SpawnSingleProjectile();
+    }
+
+    public override void FireLastProjectile()
+    {
+        if (projectilePrefab == null || firePoint == null) return;
+        SpawnSingleProjectile();
+        isTargetLocked = false;
+        isWindingUp = false;
+        lastShootTime = Time.time;
+        TriggerPostAttackDelay();
+    }
+
+    // Smash
+
     private bool TrySmash()
     {
         if (isSmashing) return true;
         if (Time.time < lastSmashTime + smashCooldown) return false;
-        float dist = Vector3.Distance(transform.position, TargetPosition);
-        if (dist > smashRange) return false;
+        if (Vector3.Distance(transform.position, TargetPosition) > smashRange) return false;
 
         StartCoroutine(SmashRoutine());
         return true;
@@ -127,37 +123,25 @@ public class EliteWarlockController : WarlockController
         isSmashing = true;
         movement.StopMoving();
 
-        // Wind-up animation (no loop)
         animator?.SetTrigger("SmashWindUp");
         yield return new WaitForSeconds(smashWindUpDuration);
 
-        // Spawn warning — counts down visually, deals damage when done
-        if (aoeWarningPrefab != null)
-        {
-            Vector3 pos = new Vector3(TargetPosition.x, transform.position.y, TargetPosition.z);
-            var go = Instantiate(aoeWarningPrefab, pos, Quaternion.identity);
-            var warning = go.GetComponent<WarlockAOEWarning>();
-            warning?.Initialize(stats.Damage * smashDamageScale, smashAoeRadius, smashWarningDuration, targetLayers);
-        }
+        SpawnAOEWarning(TargetPosition, smashDamageScale, smashAoeRadius, smashWarningDuration);
 
-        // Wait for warning countdown, then smash
-        yield return new WaitForSeconds(smashWarningDuration);
+        isSmashAnimFinished = false;
         animator?.SetTrigger("Smash");
+        yield return new WaitUntil(() => isSmashAnimFinished);
+
         lastSmashTime = Time.time;
         isSmashing = false;
         TriggerPostAttackDelay();
     }
 
-    // ?? Jump ???????????????????????????????????????????????????
-    private bool CanEscapeJump()
-    {
-        return !isJumping && Time.time >= lastJumpEscapeTime + jumpEscapeCooldown;
-    }
+    public void FinishSmash() => isSmashAnimFinished = true;
 
-    private bool CanRepositionJump()
-    {
-        return !isJumping && Time.time >= lastJumpRepositionTime + jumpRepositionCooldown;
-    }
+    // Jump
+
+    private bool CanEscapeJump() => !isJumping && Time.time >= lastJumpEscapeTime + jumpEscapeCooldown;
 
     private Vector3 FindJumpDestination()
     {
@@ -169,13 +153,10 @@ public class EliteWarlockController : WarlockController
             float angle = i * (360f / jumpCandidates);
             Vector3 candidate = transform.position + Quaternion.Euler(0f, angle, 0f) * Vector3.forward * jumpRadius;
 
-            // Prefer far from target
-            float d = Vector3.Distance(candidate, TargetPosition);
-            if (d > bestDist)
-            {
-                bestDist = d;
-                best = candidate;
-            }
+            if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, 2f, NavMesh.AllAreas)) continue;
+
+            float d = Vector3.Distance(hit.position, TargetPosition);
+            if (d > bestDist) { bestDist = d; best = hit.position; }
         }
 
         return best;
@@ -184,48 +165,44 @@ public class EliteWarlockController : WarlockController
     private IEnumerator JumpRoutine()
     {
         isJumping = true;
-        bool isEscape = Vector3.Distance(transform.position, TargetPosition) < minRange;
-
         movement.SetCanMove(false);
         animator?.SetTrigger("Jump");
 
-        // Wait 1 frame so animator transitions to Jump state
         yield return null;
 
         if (animator != null)
         {
             AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(0);
-            if (info.length > 0f)
-                animator.speed = info.length / jumpDuration;
+            if (info.length > 0f) animator.speed = info.length / jumpDuration;
         }
 
         Vector3 destination = FindJumpDestination();
         Vector3 startPos = transform.position;
-        float peakHeight = jumpPeakHeight;
-
         float elapsed = 0f;
+
         while (elapsed < jumpDuration)
         {
             elapsed += Time.deltaTime;
             float t = elapsed / jumpDuration;
-            float height = Mathf.Sin(t * Mathf.PI) * peakHeight;
-            transform.position = Vector3.Lerp(startPos, destination, t) + Vector3.up * height;
+            transform.position = Vector3.Lerp(startPos, destination, t) + Vector3.up * Mathf.Sin(t * Mathf.PI) * jumpPeakHeight;
             yield return null;
         }
 
-        transform.position = new Vector3(destination.x, startPos.y, destination.z);
+        var agent = movement.GetAgent();
+        if (NavMesh.SamplePosition(destination, out NavMeshHit landHit, 2f, NavMesh.AllAreas))
+            destination = landHit.position;
+
+        if (agent != null) agent.Warp(destination);
+        else transform.position = destination;
+
         if (animator != null) animator.speed = 1f;
         movement.SetCanMove(true);
-
-        if (isEscape)
-            lastJumpEscapeTime = Time.time;
-        else
-            lastJumpRepositionTime = Time.time;
-
+        lastJumpEscapeTime = Time.time;
         isJumping = false;
     }
 
-    // ?? Ultimate ???????????????????????????????????????????????
+    // Ultimate
+
     private bool TryUltimate()
     {
         if (isCastingUltimate) return true;
@@ -240,35 +217,49 @@ public class EliteWarlockController : WarlockController
         isCastingUltimate = true;
         movement.StopMoving();
 
-        // Wind-up animation (no loop) — longer than smash
         animator?.SetTrigger("SmashWindUp");
         yield return new WaitForSeconds(ultimateWindUpDuration);
 
-        // Spawn all warning circles — each counts down and deals damage independently
-        int circleCount = Random.Range(ultimateCircleCountMin, ultimateCircleCountMax + 1);
-        for (int i = 0; i < circleCount; i++)
-        {
-            Vector2 rand = Random.insideUnitCircle * ultimateSpawnRadius;
-            Vector3 pos = transform.position + new Vector3(rand.x, 0f, rand.y);
+        SpawnUltimateCircles();
 
-            if (aoeWarningPrefab != null)
-            {
-                var go = Instantiate(aoeWarningPrefab, pos, Quaternion.identity);
-                var warning = go.GetComponent<WarlockAOEWarning>();
-                warning?.Initialize(stats.Damage * ultimateDamageScale, ultimateAoeRadius, ultimateWarningDuration, targetLayers);
-            }
-        }
-
-        // Wait for warning countdown, then smash
-        yield return new WaitForSeconds(ultimateWarningDuration);
+        isSmashAnimFinished = false;
         animator?.SetTrigger("Smash");
+        yield return new WaitUntil(() => isSmashAnimFinished);
+
         lastUltimateTime = Time.time;
         isCastingUltimate = false;
         TriggerPostAttackDelay();
     }
 
-    // Elite uses same Animation Event pattern — 3 events in clip
-    // FireProjectile x2, FireLastProjectile x1 (last shot handles cooldown)
+    private void SpawnUltimateCircles()
+    {
+        int circleCount = Random.Range(ultimateCircleCountMin, ultimateCircleCountMax + 1);
+        var spawned = new List<Vector3>();
+        int maxAttempts = circleCount * 5;
+
+        for (int attempt = 0; attempt < maxAttempts && spawned.Count < circleCount; attempt++)
+        {
+            Vector2 rand = Random.insideUnitCircle * ultimateSpawnRadius;
+            Vector3 candidate = TargetPosition + new Vector3(rand.x, 0f, rand.y);
+
+            if (!NavMesh.SamplePosition(candidate, out NavMeshHit navHit, 1f, NavMesh.AllAreas)) continue;
+
+            bool tooClose = false;
+            foreach (var pos in spawned)
+                if (Vector3.Distance(navHit.position, pos) < ultimateMinSpawnDistance) { tooClose = true; break; }
+            if (tooClose) continue;
+
+            SpawnAOEWarning(navHit.position, ultimateDamageScale, ultimateAoeRadius, ultimateWarningDuration);
+            spawned.Add(navHit.position);
+        }
+    }
+
+    private void SpawnAOEWarning(Vector3 pos, float damageScale, float radius, float duration)
+    {
+        if (aoeWarningPrefab == null) return;
+        var go = Instantiate(aoeWarningPrefab, pos, Quaternion.identity);
+        go.GetComponent<WarlockAOEWarning>()?.Initialize(stats.Damage * damageScale, radius, duration, targetLayers);
+    }
 
     public override void OnDeath()
     {
@@ -285,6 +276,6 @@ public class EliteWarlockController : WarlockController
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, smashRange);
         Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, jumpRadius);
+        Gizmos.DrawWireSphere(transform.position, jumpTriggerRange);
     }
 }

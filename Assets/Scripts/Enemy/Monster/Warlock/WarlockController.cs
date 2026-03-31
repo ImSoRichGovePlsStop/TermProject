@@ -31,7 +31,7 @@ public class WarlockController : EnemyBase
 
     // Shoot
     private Vector3 lockedTargetPosition;
-    private bool isTargetLocked = false;
+    protected bool isTargetLocked = false;
 
     // Retreat
     private bool isWaitingToRetreat = false;
