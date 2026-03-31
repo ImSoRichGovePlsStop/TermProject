@@ -177,7 +177,7 @@ public abstract class EnemyBase : MonoBehaviour
             if (ps == null) ps = hit.GetComponentInParent<PlayerStats>();
             if (ps != null && !ps.IsDead)
             {
-                ps.TakeDamage(damage);
+                ps.TakeDamage(damage, health);
                 continue;
             }
 

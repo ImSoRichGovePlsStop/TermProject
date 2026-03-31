@@ -7,6 +7,7 @@ public class EliteHarpyController : HarpyController
 
     [Header("Air Phase")]
     [SerializeField] private float airCooldown = 8f;
+    [SerializeField] private float airCooldownEnraged = 4f;
     [SerializeField] private float flyHeight = 3f;
     [SerializeField] private float flySpeed = 5f;
     [SerializeField] private float hoverDuration = 0.5f;
@@ -35,11 +36,18 @@ public class EliteHarpyController : HarpyController
     [Header("References")]
     [SerializeField] private Rigidbody rb;
 
-    private bool airPhaseUnlocked = false;
-    private float lastAirTime = -Mathf.Infinity;
+    private EliteHarpyHealthBase eliteHealth;
+    private bool isEnraged = false;
+    private float lastAirTime = 0f;
+    private GameObject activeWarning;
     private AirPhaseState airState = AirPhaseState.None;
     private bool diveLandFinished = false;
     private float baseY;
+
+    // Air Phase detection override
+    private float savedDetectRange;
+    private float savedLoseTargetRange;
+    private float savedPlayerPriority;
 
     public bool IsInAirPhase => airState != AirPhaseState.None;
 
@@ -47,17 +55,15 @@ public class EliteHarpyController : HarpyController
     {
         base.Awake();
         if (rb == null) rb = GetComponent<Rigidbody>();
+        eliteHealth = GetComponent<EliteHarpyHealthBase>();
+        if (eliteHealth != null)
+            eliteHealth.OnEnrage += () => isEnraged = true;
     }
 
     private void Start()
     {
         baseY = transform.position.y;
         lastAirTime = Time.time;
-    }
-
-    public void UnlockAirPhase()
-    {
-        airPhaseUnlocked = true;
     }
 
     protected override void UpdateState()
@@ -70,8 +76,8 @@ public class EliteHarpyController : HarpyController
     {
         if (IsInAirPhase) return;
 
-        if (airPhaseUnlocked && HasTarget && !IsAttacking
-            && Time.time >= lastAirTime + airCooldown)
+        if (HasTarget && !IsAttacking
+            && Time.time >= lastAirTime + (isEnraged ? airCooldownEnraged : airCooldown))
         {
             StartCoroutine(AirPhaseRoutine());
             return;
@@ -91,6 +97,8 @@ public class EliteHarpyController : HarpyController
 
         animator?.SetBool("IsFlying", true);
 
+        ApplyAirPhaseDetection();
+
         yield return StartCoroutine(FlyToHeight(baseY + flyHeight));
 
         airState = AirPhaseState.Hovering;
@@ -104,6 +112,8 @@ public class EliteHarpyController : HarpyController
         airState = AirPhaseState.Landing;
         Vector3 landPos = GetRandomLandPosition();
         yield return StartCoroutine(FlyToPosition(landPos));
+
+        RestoreDetection();
 
         rb.useGravity = true;
         if (agent != null) agent.enabled = true;
@@ -125,6 +135,7 @@ public class EliteHarpyController : HarpyController
         if (diveWarningPrefab != null)
         {
             warning = Instantiate(diveWarningPrefab, wanderCenter, Quaternion.identity);
+            activeWarning = warning;
             warningVFX = warning.GetComponent<DiveWarningVFX>();
             warningVFX?.SetRadius(diveWarningRadius);
         }
@@ -168,6 +179,7 @@ public class EliteHarpyController : HarpyController
         yield return new WaitForSeconds(diveLockDuration);
 
         if (warning != null) Destroy(warning);
+        activeWarning = null;
 
         airState = AirPhaseState.Diving;
         animator?.SetTrigger("Dive");
@@ -243,7 +255,7 @@ public class EliteHarpyController : HarpyController
     private Vector3 GetRandomWanderPoint()
     {
         Vector2 rand = Random.insideUnitCircle * diveWanderRadius;
-        Vector3 point = transform.position + new Vector3(rand.x, 0f, rand.y);
+        Vector3 point = TargetPosition + new Vector3(rand.x, 0f, rand.y);
         point.y = baseY + 0.05f;
         return point;
     }
@@ -261,5 +273,33 @@ public class EliteHarpyController : HarpyController
         }
 
         return transform.position;
+    }
+    private void ApplyAirPhaseDetection()
+    {
+        savedDetectRange = detectRange;
+        savedLoseTargetRange = loseTargetRange;
+        savedPlayerPriority = targetPriority.playerPriority;
+
+        detectRange = float.MaxValue;
+        loseTargetRange = float.MaxValue;
+        targetPriority.playerPriority = savedPlayerPriority * 3f;
+    }
+
+    private void RestoreDetection()
+    {
+        detectRange = savedDetectRange;
+        loseTargetRange = savedLoseTargetRange;
+        targetPriority.playerPriority = savedPlayerPriority;
+    }
+
+    public override void OnDeath()
+    {
+        if (IsInAirPhase) RestoreDetection();
+        if (activeWarning != null)
+        {
+            Destroy(activeWarning);
+            activeWarning = null;
+        }
+        base.OnDeath();
     }
 }
