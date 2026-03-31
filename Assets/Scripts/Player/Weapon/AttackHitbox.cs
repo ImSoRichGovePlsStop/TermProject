@@ -73,7 +73,7 @@ public class AttackHitbox : MonoBehaviour
         if (context != null)
         {
             if (isSecondary)
-                context.NotifySecondaryAttack(transform.position);
+                context.NotifySecondaryAttack(result, transform.position);
             else
                 context.NotifyAttack(result, currentComboIndex);
         }
