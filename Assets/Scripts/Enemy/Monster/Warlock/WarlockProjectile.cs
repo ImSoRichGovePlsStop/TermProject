@@ -10,10 +10,7 @@ public class WarlockProjectile : MonoBehaviour
     [SerializeField] private float aoeRadius = 1.5f;
     [SerializeField] private LayerMask targetLayers;
 
-    [Header("VFX")]
-    [SerializeField] private GameObject explosionVFX;
-
-    private Vector3 direction;
+    private Vector3 moveDirection;
     private float damage;
     private float traveled;
     private bool exploded;
@@ -24,12 +21,10 @@ public class WarlockProjectile : MonoBehaviour
     {
         Vector3 dir = targetPosition - transform.position;
         dir.y = 0f;
-        direction = dir.sqrMagnitude > 0.001f ? dir.normalized : transform.forward;
+        moveDirection = dir.sqrMagnitude > 0.001f ? dir.normalized : transform.forward;
         damage = dmg;
         attacker = attackerHealth;
-        transform.rotation = Quaternion.LookRotation(direction, Vector3.up);
 
-        // Ignore colliders on the owner
         if (attackerHealth != null)
             ignoredColliders = attackerHealth.GetComponentsInChildren<Collider>();
     }
@@ -39,7 +34,7 @@ public class WarlockProjectile : MonoBehaviour
         if (exploded) return;
 
         float step = speed * Time.deltaTime;
-        transform.position += direction * step;
+        transform.position += moveDirection * step;
         traveled += step;
 
         if (traveled >= maxTravelDistance)
@@ -51,10 +46,9 @@ public class WarlockProjectile : MonoBehaviour
         if (exploded) return;
         if (other.GetComponent<WarlockProjectile>() != null) return;
         if (ignoredColliders != null)
-        {
             foreach (var col in ignoredColliders)
                 if (col == other) return;
-        }
+
         Explode();
     }
 
@@ -62,11 +56,6 @@ public class WarlockProjectile : MonoBehaviour
     {
         exploded = true;
 
-        // Play VFX
-        if (explosionVFX != null)
-            Instantiate(explosionVFX, transform.position, Quaternion.identity);
-
-        // Deal instant AoE damage
         Collider[] hits = Physics.OverlapSphere(transform.position, aoeRadius, targetLayers);
         foreach (var hit in hits)
         {

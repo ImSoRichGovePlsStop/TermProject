@@ -4064,21 +4064,13 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 902971661006022298, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
-      propertyPath: destroyDelay
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 902971661006022298, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
-      propertyPath: healthBarHeight
-      value: 0.35
-      objectReference: {fileID: 0}
     - target: {fileID: 3306226684668820766, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
       propertyPath: m_Name
       value: Warlock
       objectReference: {fileID: 0}
     - target: {fileID: 7919638240924375049, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5.035013
+      value: -0.194
       objectReference: {fileID: 0}
     - target: {fileID: 7919638240924375049, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
       propertyPath: m_LocalPosition.y
@@ -4086,7 +4078,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7919638240924375049, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2.6662297
+      value: 17.06
       objectReference: {fileID: 0}
     - target: {fileID: 7919638240924375049, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
       propertyPath: m_LocalRotation.w

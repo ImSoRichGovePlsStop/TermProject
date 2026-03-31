@@ -9,7 +9,6 @@ public class WarlockController : EnemyBase
     [SerializeField] protected float minRange = 4f;
     [SerializeField] protected float shootCooldown = 2.5f;
     [SerializeField] protected float projectileDamageScale = 1f;
-    [SerializeField] protected float projectileTargetDistance = 10f;
     [SerializeField] protected float spreadAngle = 15f;
     [SerializeField] protected GameObject projectilePrefab;
     [SerializeField] protected Transform firePoint;
@@ -18,26 +17,35 @@ public class WarlockController : EnemyBase
     [SerializeField] protected float strafeIdleTimeMin = 0.5f;
     [SerializeField] protected float strafeIdleTimeMax = 1.5f;
 
+    [Header("Retreat")]
+    [SerializeField] private float retreatDelay = 0.5f;
+
     protected WarlockState currentState = WarlockState.Wander;
     protected bool isWindingUp = false;
     protected float lastShootTime = -Mathf.Infinity;
 
+    // Strafe
     private bool strafeIsIdling = false;
     private float strafeIdleTimer = 0f;
     private Vector3 strafeTarget = Vector3.zero;
 
-    [Header("Retreat")]
-    [SerializeField] private float retreatDelay = 0.5f;
-    private float retreatDelayTimer = 0f;
+    // Shoot
+    private Vector3 lockedTargetPosition;
+    private bool isTargetLocked = false;
+
+    // Retreat
     private bool isWaitingToRetreat = false;
     private bool isRetreating = false;
+    private float retreatDelayTimer = 0f;
     private Vector3 retreatDestination;
 
     protected override void Awake()
     {
         base.Awake();
-        movement.SetStopDistance(0f);
+        movement.SetStopDistance(0.1f);
     }
+
+    // ?? State Machine ??????????????????????????????????????????
 
     protected override void UpdateState()
     {
@@ -45,9 +53,8 @@ public class WarlockController : EnemyBase
 
         WarlockState prevState = currentState;
 
-        // Clear retreat flags if player moved away
-        float distCheck = HasTarget ? Vector3.Distance(transform.position, TargetPosition) : float.MaxValue;
-        if (distCheck >= minRange + 0.5f)
+        // Clear retreat if far enough from target
+        if (!HasTarget || Vector3.Distance(transform.position, TargetPosition) >= minRange + 0.5f)
         {
             isRetreating = false;
             isWaitingToRetreat = false;
@@ -61,86 +68,77 @@ public class WarlockController : EnemyBase
             return;
         }
 
-        // Just got a target — reset wander
         if (prevState == WarlockState.Wander)
             wander.Reset(movement);
 
         float dist = Vector3.Distance(transform.position, TargetPosition);
         bool canShoot = Time.time >= lastShootTime + shootCooldown;
 
-        if (canShoot && dist <= shootRange)
-            currentState = WarlockState.WindUp;      // shoot — highest priority
-        else if (dist > shootRange)
-            currentState = WarlockState.Chase;       // chase in
-        else if (dist < minRange)
-            currentState = WarlockState.Chase;       // retreat
-        else
-            currentState = WarlockState.Strafe;      // in range but cooldown
+        if (canShoot && dist <= shootRange) currentState = WarlockState.WindUp;
+        else if (dist > shootRange) currentState = WarlockState.Chase;
+        else if (dist < minRange) currentState = WarlockState.Chase;
+        else currentState = WarlockState.Strafe;
     }
 
     protected override void TickState()
     {
         switch (currentState)
         {
-            case WarlockState.Wander:
-                wander.Tick(transform, transform, movement);
-                Debug.Log($"[Warlock] Wander isIdling={wander.IsIdling} hasTarget={HasTarget}");
-                break;
+            case WarlockState.Wander: TickWander(); break;
+            case WarlockState.Chase: TickChase(); break;
+            case WarlockState.Strafe: TickStrafe(); break;
+            case WarlockState.WindUp: TickWindUp(); break;
+        }
+    }
 
-            case WarlockState.Chase:
-                float dist = Vector3.Distance(transform.position, TargetPosition);
-                if (isRetreating)
-                {
-                    // Already retreating — keep going to locked destination
-                    var ag = movement.GetAgent();
-                    bool reached = ag != null && ag.hasPath && ag.remainingDistance <= 0.2f;
-                    if (reached || dist >= minRange + 0.5f)
-                        isRetreating = false;
-                    else
-                        movement.MoveToTarget(retreatDestination);
-                }
-                else if (dist < minRange)
-                {
-                    if (!isWaitingToRetreat)
-                    {
-                        isWaitingToRetreat = true;
-                        retreatDelayTimer = retreatDelay;
-                        movement.StopMoving();
-                    }
-                    else
-                    {
-                        retreatDelayTimer -= Time.deltaTime;
-                        if (retreatDelayTimer <= 0f)
-                        {
-                            isWaitingToRetreat = false;
-                            isRetreating = true;
-                            Vector3 awayDir = (transform.position - TargetPosition);
-                            awayDir.y = 0f;
-                            awayDir = awayDir.sqrMagnitude > 0.001f ? awayDir.normalized : Vector3.forward;
-                            retreatDestination = transform.position + awayDir * (minRange - dist + 1.5f);
-                            movement.MoveToTarget(retreatDestination);
-                        }
-                        else
-                            movement.StopMoving();
-                    }
-                }
-                else
+    // ?? State Ticks ????????????????????????????????????????????
+
+    private void TickWander()
+    {
+        wander.Tick(transform, transform, movement);
+    }
+
+    private void TickChase()
+    {
+        float dist = Vector3.Distance(transform.position, TargetPosition);
+
+        if (isRetreating)
+        {
+            var ag = movement.GetAgent();
+            bool reached = ag != null && ag.hasPath && ag.remainingDistance <= 0.2f;
+            if (reached || dist >= minRange + 0.5f)
+                isRetreating = false;
+            else
+                movement.MoveToTarget(retreatDestination);
+            return;
+        }
+
+        if (dist < minRange)
+        {
+            if (!isWaitingToRetreat)
+            {
+                isWaitingToRetreat = true;
+                retreatDelayTimer = retreatDelay;
+            }
+            else
+            {
+                retreatDelayTimer -= Time.deltaTime;
+                if (retreatDelayTimer <= 0f)
                 {
                     isWaitingToRetreat = false;
-                    movement.MoveToTarget(TargetPosition);
+                    isRetreating = true;
+                    Vector3 awayDir = (transform.position - TargetPosition);
+                    awayDir.y = 0f;
+                    awayDir = awayDir.sqrMagnitude > 0.001f ? awayDir.normalized : Vector3.forward;
+                    retreatDestination = transform.position + awayDir * (minRange - dist + 1.5f);
                 }
-                break;
-
-            case WarlockState.Strafe:
-                TickStrafe();
-                break;
-
-            case WarlockState.WindUp:
-                movement.StopMoving();
-                movement.FaceTarget(TargetPosition);
-                TryWindUp();
-                break;
+            }
+            movement.StopMoving();
+            return;
         }
+
+        isWaitingToRetreat = false;
+        movement.MoveToTarget(TargetPosition);
     }
 
     private void TickStrafe()
@@ -164,7 +162,6 @@ public class WarlockController : EnemyBase
 
         var agent = movement.GetAgent();
         bool reached = agent != null && agent.hasPath && agent.remainingDistance <= agent.stoppingDistance + 0.1f;
-
         if (reached)
         {
             strafeIsIdling = true;
@@ -176,6 +173,19 @@ public class WarlockController : EnemyBase
         movement.MoveToTarget(strafeTarget);
     }
 
+    private void TickWindUp()
+    {
+        movement.StopMoving();
+        if (HasTarget && !isTargetLocked)
+        {
+            lockedTargetPosition = TargetPosition;
+            movement.FaceTarget(lockedTargetPosition);
+        }
+        TryWindUp();
+    }
+
+    // ?? Helpers ????????????????????????????????????????????????
+
     private Vector3 GetStrafePoint()
     {
         Vector3 toTarget = TargetPosition - transform.position;
@@ -185,10 +195,8 @@ public class WarlockController : EnemyBase
         float preferredDist = (minRange + shootRange) * 0.5f;
         int dir = Random.value > 0.5f ? 1 : -1;
         Vector3 strafeVec = Vector3.Cross(Vector3.up, toTarget.normalized) * dir;
-        float strafeAmount = Random.Range(1.5f, 3f);
-        Vector3 candidate = transform.position + strafeVec * strafeAmount;
+        Vector3 candidate = transform.position + strafeVec * Random.Range(1.5f, 3f);
 
-        // Keep candidate at preferred distance from target
         Vector3 toCand = candidate - TargetPosition;
         toCand.y = 0f;
         if (toCand.sqrMagnitude > 0.001f)
@@ -204,23 +212,27 @@ public class WarlockController : EnemyBase
         if (Time.time < lastShootTime + shootCooldown) return false;
 
         isWindingUp = true;
+        isTargetLocked = false;
+        lockedTargetPosition = TargetPosition;
         animator?.SetTrigger("WindUp");
         return true;
     }
 
-    // Called by Animation Event — once per projectile
+    // ?? Animation Events ???????????????????????????????????????
+
     public virtual void FireProjectile()
     {
         if (projectilePrefab == null || firePoint == null) return;
+        isTargetLocked = true;
         SpawnSingleProjectile();
     }
 
-    // Called by Animation Event on last projectile frame
     public virtual void FireLastProjectile()
     {
         if (projectilePrefab == null || firePoint == null) return;
         SpawnSingleProjectile();
 
+        isTargetLocked = false;
         isWindingUp = false;
         lastShootTime = Time.time;
         TriggerPostAttackDelay();
@@ -228,19 +240,21 @@ public class WarlockController : EnemyBase
 
     protected void SpawnSingleProjectile()
     {
-        Vector3 baseDir = TargetPosition - firePoint.position;
+        Vector3 baseDir = lockedTargetPosition - firePoint.position;
         baseDir.y = 0f;
         if (baseDir.sqrMagnitude < 0.001f) baseDir = transform.forward;
         baseDir.Normalize();
 
         float angle = Random.Range(-spreadAngle, spreadAngle);
         Vector3 dir = Quaternion.Euler(0f, angle, 0f) * baseDir;
-        Vector3 spawnTarget = firePoint.position + dir * projectileTargetDistance;
+        Vector3 spawnTarget = firePoint.position + dir * 20f;
 
-        var go = Instantiate(projectilePrefab, firePoint.position, Quaternion.LookRotation(dir, Vector3.up));
+        var go = Instantiate(projectilePrefab, firePoint.position, projectilePrefab.transform.rotation);
         var proj = go.GetComponent<WarlockProjectile>();
         proj?.Initialize(spawnTarget, stats.Damage * projectileDamageScale, health);
     }
+
+    // ?? Overrides ??????????????????????????????????????????????
 
     public override void OnDeath()
     {
