@@ -131,6 +131,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Hoplite_Elite
       objectReference: {fileID: 0}
+    - target: {fileID: 998253066982403686, guid: 2903b8f1bd8b1e64693773095af86e48, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4956095067510546409, guid: 2903b8f1bd8b1e64693773095af86e48, type: 3}
       propertyPath: m_LocalPosition.x
       value: -4.09
@@ -3267,6 +3271,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Harpy_Elite
       objectReference: {fileID: 0}
+    - target: {fileID: 2371149561134109772, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7519988898106117772, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
       propertyPath: m_LocalPosition.x
       value: -5.27
@@ -4048,6 +4056,71 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
+--- !u!1001 &6906156574962185042
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 902971661006022298, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
+      propertyPath: destroyDelay
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 902971661006022298, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
+      propertyPath: healthBarHeight
+      value: 0.35
+      objectReference: {fileID: 0}
+    - target: {fileID: 3306226684668820766, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
+      propertyPath: m_Name
+      value: Warlock
+      objectReference: {fileID: 0}
+    - target: {fileID: 7919638240924375049, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -5.035013
+      objectReference: {fileID: 0}
+    - target: {fileID: 7919638240924375049, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.619
+      objectReference: {fileID: 0}
+    - target: {fileID: 7919638240924375049, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 2.6662297
+      objectReference: {fileID: 0}
+    - target: {fileID: 7919638240924375049, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7919638240924375049, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7919638240924375049, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7919638240924375049, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7919638240924375049, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7919638240924375049, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7919638240924375049, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
 --- !u!1001 &8644261466518889522
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4126,3 +4199,4 @@ SceneRoots:
   - {fileID: 1215726813}
   - {fileID: 892352709}
   - {fileID: 1693626533}
+  - {fileID: 6906156574962185042}
