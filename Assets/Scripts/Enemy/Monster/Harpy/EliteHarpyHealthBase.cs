@@ -2,27 +2,21 @@ using UnityEngine;
 
 public class EliteHarpyHealthBase : EnemyHealthBase
 {
-    [Header("Air Phase")]
-    [SerializeField] private float airPhaseHPThreshold = 0.5f;
-    [SerializeField] private EliteHarpyController eliteController;
+    [Header("Enrage")]
+    [SerializeField] private float enrageThreshold = 0.5f;
 
-    private bool airPhaseTriggered = false;
+    public System.Action OnEnrage;
 
-    protected override void Awake()
-    {
-        base.Awake();
-        if (eliteController == null)
-            eliteController = GetComponent<EliteHarpyController>();
-    }
+    private bool isEnraged = false;
 
     public override void TakeDamage(float damage, bool isCrit = false)
     {
         base.TakeDamage(damage, isCrit);
 
-        if (!airPhaseTriggered && CurrentHP / MaxHP <= airPhaseHPThreshold)
+        if (!isEnraged && CurrentHP / MaxHP <= enrageThreshold)
         {
-            airPhaseTriggered = true;
-            eliteController?.UnlockAirPhase();
+            isEnraged = true;
+            OnEnrage?.Invoke();
         }
     }
 }
