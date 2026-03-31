@@ -9,6 +9,8 @@ public class BattleRoom : MonoBehaviour
     public bool isLocked = false;
     public bool isCleared = false;
 
+    [HideInInspector] public RoomNode node;
+
     [Header("Room")]
     private Vector3 roomSize;
     private List<GameObject> invisibleWalls = new List<GameObject>();
@@ -58,11 +60,10 @@ public class BattleRoom : MonoBehaviour
             _uiManager.CloseShop();
 
             if (_uiManager.IsInventoryOpen)
-            {
                 _uiManager.ToggleInventory();
-            }
-        }
 
+            FindFirstObjectByType<MinimapManager>()?.OnPlayerEnterRoom(node);
+        }
     }
 
 
@@ -182,8 +183,31 @@ public class BattleRoom : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
-            OnPlayerEnter();
+        if (!other.CompareTag("Player")) return;
+        StartCoroutine(WaitForPlayerInside(other.transform));
+    }
+
+    private System.Collections.IEnumerator WaitForPlayerInside(Transform playerTransform)
+    {
+        // Poll each frame until the player's center is fully inside the room bounds.
+        // This prevents enemies and walls spawning before the player actually enters.
+        Bounds roomBounds = new Bounds(
+            transform.position + Vector3.up * (roomSize.y / 2f),
+            roomSize);
+
+        while (!roomBounds.Contains(playerTransform.position))
+        {
+            // Abort if the player wandered away before fully entering
+            float distFromCenter = Vector3.Distance(
+                new Vector3(playerTransform.position.x, transform.position.y, playerTransform.position.z),
+                transform.position);
+            float maxDist = Mathf.Max(roomSize.x, roomSize.z);
+            if (distFromCenter > maxDist) yield break;
+
+            yield return null;
+        }
+
+        OnPlayerEnter();
     }
 
     void OnDrawGizmosSelected()

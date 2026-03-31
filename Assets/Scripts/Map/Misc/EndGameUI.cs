@@ -15,12 +15,13 @@ public class EndGameUI : MonoBehaviour
     private void Awake()
     {
         continueButton.onClick.AddListener(OnContinue);
-        gameObject.SetActive(false);
+   
     }
 
     public void Show(bool isWin)
     {
         won = isWin;
+
         gameObject.SetActive(true);
 
         titleText.text = isWin ? "Victory!" : "Defeated";

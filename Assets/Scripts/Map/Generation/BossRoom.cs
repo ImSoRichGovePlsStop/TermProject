@@ -9,6 +9,8 @@ public class BossRoom : MonoBehaviour
     public bool isLocked  = false;
     public bool isCleared = false;
 
+    [HideInInspector] public RoomNode node;
+
     [Header("Room")]
     private Vector3          roomSize;
     private List<GameObject> invisibleWalls = new List<GameObject>();
@@ -53,6 +55,7 @@ public class BossRoom : MonoBehaviour
             _uiManager.CloseShop();
             if (_uiManager.IsInventoryOpen)
                 _uiManager.ToggleInventory();
+            FindFirstObjectByType<MinimapManager>()?.OnPlayerEnterRoom(node);
         }
     }
 

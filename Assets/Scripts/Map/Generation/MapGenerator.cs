@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.ProBuilder;
 using UnityEngine.ProBuilder.MeshOperations;
+using Unity.AI.Navigation;
 
 public enum RoomType { None, Spawn, Battle, Boss, Shop, Merge, Heal, Upgrade }
 
@@ -16,10 +17,11 @@ public static class Cell
 public class RoomNode
 {
     public RoomType Type;
-    public Vector2Int MatrixOrigin;   // top-left cell in the matrix
-    public Vector2Int MatrixCenter;   // center cell (always exact for odd sizes)
-    public Vector2Int Size;           // stamped size (always odd)
-    public Vector3 WorldPosition;  // world-space center (1 cell = 1 world unit)
+    public Vector2Int MatrixOrigin;
+    public Vector2Int MatrixCenter;
+    public Vector2Int Size;
+    public Vector3 WorldPosition;
+    public GameObject ChosenPrefab;  // prefab whose roomSize was used to stamp the matrix
     public GameObject RoomObject;
     public List<RoomNode> Neighbors = new();
 }
@@ -47,7 +49,8 @@ public class MapGenerator : MonoBehaviour
     public GameObject portalFinalPrefab;
 
     [Header("Enemy / Loot")]
-    public GameObject[] enemiesPrefab;
+    [Tooltip("Normal enemies — floor 1 picks index 0, floor 4 picks last index")]
+    public GameObject[] normalEnemyPrefabs;
     public GameObject bossPrefab;
     public GameObject lootPrefab;
 
@@ -74,9 +77,13 @@ public class MapGenerator : MonoBehaviour
     [Header("Walls")]
     public float wallHeight = 2f;
     public float wallThickness = 0.1f;
+    public float floorThickness = 0.01f;
 
     [Header("Trigger")]
     public float triggerHeight = 3f;
+
+    [Header("Navigation")]
+    public NavMeshSurface navMeshSurface;
 
     // ── Internal state ───────────────────────────────────────────────────────
     private byte[,] _matrix;
@@ -106,9 +113,13 @@ public class MapGenerator : MonoBehaviour
         SpawnCorridorGeometry();
         SpawnAllWalls();
 
-        // ── Minimap (commented out for testing) ──
-        // var minimap = FindFirstObjectByType<MinimapManager>();
-        // minimap?.BuildMinimapFromMatrix(_matrix, matrixSize, _rooms);
+        var minimap = FindFirstObjectByType<MinimapManager>();
+        minimap?.BuildMinimapFromMatrix(_matrix, matrixSize, _rooms);
+
+        if (navMeshSurface != null)
+            navMeshSurface.BuildNavMesh();
+        else
+            Debug.LogWarning("[MapGen] NavMeshSurface not assigned — skipping navmesh bake.");
     }
 
     // ── Room placement ───────────────────────────────────────────────────────
@@ -136,7 +147,7 @@ public class MapGenerator : MonoBehaviour
             if (ox < 1 || oz < 1 || ox + sx >= matrixSize - 1 || oz + sz >= matrixSize - 1)
                 continue;
 
-            if (!forced && !AreaFree(ox - 1, oz - 1, sx + 2, sz + 2))
+            if (!forced && !AreaFree(ox - 3, oz - 3, sx + 6, sz + 6))
                 continue;
 
             StampRoom(ox, oz, sx, sz);
@@ -150,7 +161,8 @@ public class MapGenerator : MonoBehaviour
                 MatrixOrigin = new Vector2Int(ox, oz),
                 MatrixCenter = new Vector2Int(mcx, mcz),
                 Size = new Vector2Int(sx, sz),
-                WorldPosition = new Vector3(mcx + 0.5f, 0f, mcz + 0.5f)
+                WorldPosition = new Vector3(mcx + 0.5f, 0f, mcz + 0.5f),
+                ChosenPrefab = prefab   // lock in the prefab used for size calculation
             };
             _rooms.Add(node);
             return node;
@@ -187,7 +199,13 @@ public class MapGenerator : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            var hint = Clamped(current.MatrixCenter + RandomCardinalOffset(15, 25));
+            // Place the first battle room close to spawn so the player is
+            // guaranteed to enter it before reaching any other room.
+            // Subsequent rooms use the normal wider offset.
+            int minOffset = i == 0 ? 8 : 15;
+            int maxOffset = i == 0 ? 12 : 25;
+
+            var hint = Clamped(current.MatrixCenter + RandomCardinalOffset(minOffset, maxOffset));
             var next = PlaceRoom(RoomType.Battle, hint.x, hint.y);
             if (next == null) break;
             AddConnection(current, next);
@@ -214,18 +232,25 @@ public class MapGenerator : MonoBehaviour
     {
         var eventTypes = new[] { RoomType.Shop, RoomType.Merge, RoomType.Heal, RoomType.Upgrade };
 
+        // Count battle rooms already placed on the main path
+        int battleCount = mainPath.Count;
+
         for (int i = 0; i < mainPath.Count - 1; i++)
         {
             if (Random.value > branchChance) continue;
 
-            RoomType type = Random.value < 0.25f
-                ? eventTypes[Random.Range(0, eventTypes.Length)]
-                : RoomType.Battle;
+            // If we've hit the cap, force event rooms on branches
+            bool canPlaceBattle = battleCount < maxBattleRooms;
+            RoomType type = (canPlaceBattle && Random.value >= 0.25f)
+                ? RoomType.Battle
+                : eventTypes[Random.Range(0, eventTypes.Length)];
 
             var hint = Clamped(mainPath[i].MatrixCenter + RandomCardinalOffset(10, 20));
             var branch = PlaceRoom(type, hint.x, hint.y);
             if (branch == null) continue;
             AddConnection(mainPath[i], branch);
+
+            if (type == RoomType.Battle) battleCount++;
 
             if (Random.value < 0.3f)
             {
@@ -248,27 +273,180 @@ public class MapGenerator : MonoBehaviour
     (Vector2Int, Vector2Int) MakeKey(Vector2Int a, Vector2Int b) =>
         a.x * 10000 + a.y < b.x * 10000 + b.y ? (a, b) : (b, a);
 
-    // ── Corridor carving ─────────────────────────────────────────────────────
+    // ── Corridor carving (A*) ─────────────────────────────────────────────────
 
     void CarveAllCorridors()
     {
-        foreach (var (a, b) in _connections)
+        // Carve the spawn → first battle room corridor first so it always
+        // gets a direct unobstructed path through empty matrix space.
+        // All other corridors are carved afterward through whatever remains.
+        var spawnConnections = new List<(Vector2Int, Vector2Int)>();
+        var otherConnections = new List<(Vector2Int, Vector2Int)>();
+
+        foreach (var conn in _connections)
+        {
+            var nodeA = _rooms.Find(r => r.MatrixCenter == conn.Item1);
+            var nodeB = _rooms.Find(r => r.MatrixCenter == conn.Item2);
+            if (nodeA == null || nodeB == null) continue;
+
+            bool involvesSpawn = nodeA.Type == RoomType.Spawn || nodeB.Type == RoomType.Spawn;
+            if (involvesSpawn)
+                spawnConnections.Add(conn);
+            else
+                otherConnections.Add(conn);
+        }
+
+        foreach (var (a, b) in spawnConnections)
         {
             var nodeA = _rooms.Find(r => r.MatrixCenter == a);
             var nodeB = _rooms.Find(r => r.MatrixCenter == b);
-            if (nodeA == null || nodeB == null) continue;
-            CarveL(nodeA.MatrixCenter, nodeB.MatrixCenter);
+            if (nodeA != null && nodeB != null)
+                CarveAStar(nodeA.MatrixCenter, nodeB.MatrixCenter);
+        }
+
+        foreach (var (a, b) in otherConnections)
+        {
+            var nodeA = _rooms.Find(r => r.MatrixCenter == a);
+            var nodeB = _rooms.Find(r => r.MatrixCenter == b);
+            if (nodeA != null && nodeB != null)
+                CarveAStar(nodeA.MatrixCenter, nodeB.MatrixCenter);
         }
     }
 
-    // L-shaped carve from exitA to exitB, both of which sit on room edges.
-    // The bend happens in open space between the two rooms.
-    void CarveL(Vector2Int a, Vector2Int b)
+    void CarveAStar(Vector2Int start, Vector2Int goal)
     {
-        Vector2Int corner = Random.value > 0.5f
-            ? new Vector2Int(b.x, a.y)
-            : new Vector2Int(a.x, b.y);
+        var openSet = new SortedList<int, Vector2Int>();
+        var cameFrom = new Dictionary<Vector2Int, Vector2Int>();
+        var gScore = new Dictionary<Vector2Int, int>();
+        var inOpen = new HashSet<Vector2Int>();
 
+        gScore[start] = 0;
+        int startF = Heuristic(start, goal);
+        openSet.Add(startF, start);
+        inOpen.Add(start);
+
+        var cardinals = new Vector2Int[]
+        {
+            new Vector2Int( 1, 0),
+            new Vector2Int(-1, 0),
+            new Vector2Int( 0, 1),
+            new Vector2Int( 0,-1),
+        };
+
+        while (openSet.Count > 0)
+        {
+            // Pop lowest f-score node
+            var current = openSet.Values[0];
+            openSet.RemoveAt(0);
+            inOpen.Remove(current);
+
+            if (current == goal)
+            {
+                // Reconstruct path and carve it
+                CarvePath(ReconstructPath(cameFrom, current));
+                return;
+            }
+
+            foreach (var dir in cardinals)
+            {
+                var neighbor = current + dir;
+
+                if (neighbor.x < 0 || neighbor.y < 0 ||
+                    neighbor.x >= matrixSize || neighbor.y >= matrixSize)
+                    continue;
+
+                // Already-carved corridor cells cost 0 — A* will actively
+                // route through existing corridors rather than carving new
+                // parallel ones, reducing redundant intersections.
+                // Empty cells cost 1, room cells cost 50 (last resort).
+                byte cell = _matrix[neighbor.x, neighbor.y];
+                int stepCost = cell switch
+                {
+                    Cell.Corridor => 0,
+                    Cell.Room => 50,
+                    _ => 1
+                };
+                if (cell != Cell.Room && cell != Cell.Corridor && IsAdjacentToRoom(neighbor))
+                    stepCost += 30;
+
+                int tentativeG = gScore[current] + stepCost;
+
+                if (!gScore.ContainsKey(neighbor) || tentativeG < gScore[neighbor])
+                {
+                    cameFrom[neighbor] = current;
+                    gScore[neighbor] = tentativeG;
+                    int f = tentativeG + Heuristic(neighbor, goal);
+
+                    // SortedList requires unique keys — use a tiebreaker
+                    while (inOpen.Contains(neighbor) == false && openSet.ContainsKey(f))
+                        f++;
+
+                    if (!inOpen.Contains(neighbor))
+                    {
+                        openSet.Add(f, neighbor);
+                        inOpen.Add(neighbor);
+                    }
+                }
+            }
+        }
+
+        Debug.LogWarning($"[MapGen] A* could not find path from {start} to {goal}, falling back to L-shape.");
+        CarveFallbackL(start, goal);
+    }
+
+    int Heuristic(Vector2Int a, Vector2Int b) =>
+        Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y);
+
+    List<Vector2Int> ReconstructPath(Dictionary<Vector2Int, Vector2Int> cameFrom, Vector2Int current)
+    {
+        var path = new List<Vector2Int> { current };
+        while (cameFrom.ContainsKey(current))
+        {
+            current = cameFrom[current];
+            path.Add(current);
+        }
+        path.Reverse();
+        return path;
+    }
+
+    // Stamp corridorWidth cells around each step on the path
+    void CarvePath(List<Vector2Int> path)
+    {
+        int half = corridorWidth / 2;
+        foreach (var cell in path)
+        {
+            // Check if this path cell is adjacent to any room cell.
+            // If so, only stamp the single center cell (width = 1) to keep
+            // doorways exactly one cell wide at room edges.
+            bool nearRoom = IsAdjacentToRoom(cell) || _matrix[cell.x, cell.y] == Cell.Room;
+
+            if (nearRoom)
+            {
+                // Single cell doorway — no width expansion
+                if (cell.x < 0 || cell.y < 0 || cell.x >= matrixSize || cell.y >= matrixSize) continue;
+                if (_matrix[cell.x, cell.y] == Cell.Empty)
+                    _matrix[cell.x, cell.y] = Cell.Corridor;
+            }
+            else
+            {
+                // Full width stamp in open space
+                for (int wx = -half; wx < corridorWidth - half; wx++)
+                    for (int wz = -half; wz < corridorWidth - half; wz++)
+                    {
+                        int cx = cell.x + wx;
+                        int cz = cell.y + wz;
+                        if (cx < 0 || cz < 0 || cx >= matrixSize || cz >= matrixSize) continue;
+                        if (_matrix[cx, cz] == Cell.Empty)
+                            _matrix[cx, cz] = Cell.Corridor;
+                    }
+            }
+        }
+    }
+
+    // Fallback simple L-shape used if A* fails
+    void CarveFallbackL(Vector2Int a, Vector2Int b)
+    {
+        Vector2Int corner = new Vector2Int(b.x, a.y);
         CarveSegment(a, corner);
         CarveSegment(corner, b);
     }
@@ -276,41 +454,44 @@ public class MapGenerator : MonoBehaviour
     void CarveSegment(Vector2Int from, Vector2Int to)
     {
         bool horizontal = from.y == to.y;
-
         int x0 = Mathf.Min(from.x, to.x);
         int x1 = Mathf.Max(from.x, to.x);
         int z0 = Mathf.Min(from.y, to.y);
         int z1 = Mathf.Max(from.y, to.y);
-
         int half = corridorWidth / 2;
 
         for (int x = x0; x <= x1; x++)
-        {
             for (int z = z0; z <= z1; z++)
-            {
                 for (int w = 0; w < corridorWidth; w++)
                 {
-                    int cx, cz;
-                    if (horizontal)
-                    {
-                        // Travelling along X → thicken on Z
-                        cx = x;
-                        cz = z - half + w;
-                    }
-                    else
-                    {
-                        // Travelling along Z → thicken on X
-                        cx = x - half + w;
-                        cz = z;
-                    }
-
+                    int cx = horizontal ? x : x - half + w;
+                    int cz = horizontal ? z - half + w : z;
                     if (cx < 0 || cz < 0 || cx >= matrixSize || cz >= matrixSize) continue;
                     if (_matrix[cx, cz] == Cell.Empty)
                         _matrix[cx, cz] = Cell.Corridor;
                 }
-            }
-        }
     }
+
+    int ManhattanDist(Vector2Int a, Vector2Int b) =>
+        Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y);
+
+    // Returns true if any room cell exists within minCorridorRoomSpacing cells
+    // of this cell. Used to penalize corridor cells that run too close to
+    // room walls they are not connected to.
+    bool IsAdjacentToRoom(Vector2Int cell)
+    {
+        int spacing = 3;
+        for (int dx = -spacing; dx <= spacing; dx++)
+            for (int dz = -spacing; dz <= spacing; dz++)
+            {
+                int nx = cell.x + dx;
+                int nz = cell.y + dz;
+                if (nx < 0 || nz < 0 || nx >= matrixSize || nz >= matrixSize) continue;
+                if (_matrix[nx, nz] == Cell.Room) return true;
+            }
+        return false;
+    }
+
 
     // ── Spawn rooms ──────────────────────────────────────────────────────────
 
@@ -331,30 +512,33 @@ public class MapGenerator : MonoBehaviour
         RoomType.Merge => SpawnEventRoom(node, mergeRoomPrefabs, AddMergeRoom),
         _ => null
     };
-
     GameObject SpawnSpawnRoom(RoomNode node)
     {
-        var obj = Instantiate(Pick(spawnRoomPrefabs), node.WorldPosition, Quaternion.identity);
+        var obj = Instantiate(node.ChosenPrefab, node.WorldPosition, Quaternion.identity);
         obj.name = "SpawnRoom";
-        obj.AddComponent<SpawnRoom>();
+        var sr = obj.AddComponent<SpawnRoom>();
+        sr.node = node;
         return obj;
     }
 
     GameObject SpawnBattleRoom(RoomNode node)
     {
-        var obj = Instantiate(Pick(battleRoomPrefabs), node.WorldPosition, Quaternion.identity);
+        var obj = Instantiate(node.ChosenPrefab, node.WorldPosition, Quaternion.identity);
         obj.name = "BattleRoom";
-        var preset = obj.GetComponent<RoomPreset>();
-        Vector2 sz = preset != null ? preset.roomSize : new Vector2(node.Size.x, node.Size.y);
+
+        // Always use node.Size — this is what was stamped into the matrix
+        // and what SpawnAllWalls uses. preset.roomSize is intentionally ignored
+        // here to keep walls, trigger, and prefab footprint all in sync.
+        Vector3 vol = new Vector3(node.Size.x, triggerHeight, node.Size.y);
 
         var room = obj.AddComponent<BattleRoom>();
+        room.node = node;
         room.lootPrefab = lootPrefab;
         room.boundaryMaterial = boundaryMaterial;
         room.enemyCount = Random.Range(1, 4) + (RunManager.Instance?.CurrentFloor ?? 1);
-        room.enemyPrefabs = new[] { enemiesPrefab[Random.Range(0, enemiesPrefab.Length)] };
-
-        Vector3 vol = new Vector3(sz.x, triggerHeight, sz.y);
+        room.enemyPrefabs = PickFloorWeightedEnemyPrefabs(Random.Range(2, 4));
         room.SetRoomSize(vol);
+
         var col = obj.AddComponent<BoxCollider>();
         col.isTrigger = true;
         col.size = vol;
@@ -364,20 +548,20 @@ public class MapGenerator : MonoBehaviour
 
     GameObject SpawnBossRoom(RoomNode node)
     {
-        var obj = Instantiate(Pick(bossRoomPrefabs), node.WorldPosition, Quaternion.identity);
+        var obj = Instantiate(node.ChosenPrefab, node.WorldPosition, Quaternion.identity);
         obj.name = "BossRoom";
-        var preset = obj.GetComponent<RoomPreset>();
-        Vector2 sz = preset != null ? preset.roomSize : new Vector2(node.Size.x, node.Size.y);
+
+        Vector3 vol = new Vector3(node.Size.x, triggerHeight, node.Size.y);
 
         var room = obj.AddComponent<BossRoom>();
+        room.node = node;
         room.bossPrefab = bossPrefab;
         room.lootPrefab = lootPrefab;
         room.portalPrefab = portalPrefab;
         room.portalFinalPrefab = portalFinalPrefab;
         room.boundaryMaterial = boundaryMaterial;
-
-        Vector3 vol = new Vector3(sz.x, triggerHeight, sz.y);
         room.SetRoomSize(vol);
+
         var col = obj.AddComponent<BoxCollider>();
         col.isTrigger = true;
         col.size = vol;
@@ -386,26 +570,32 @@ public class MapGenerator : MonoBehaviour
     }
 
     GameObject SpawnEventRoom(RoomNode node, GameObject[] arr,
-                              System.Action<GameObject, Transform> setup)
+                              System.Action<GameObject, Transform, RoomNode> setup)
     {
         if (arr == null || arr.Length == 0)
         {
             Debug.LogWarning($"[MapGen] Missing prefabs for {node.Type}");
             return null;
         }
-        var obj = Instantiate(Pick(arr), node.WorldPosition, Quaternion.identity);
+        var obj = Instantiate(node.ChosenPrefab, node.WorldPosition, Quaternion.identity);
         obj.name = node.Type + "Room";
         var preset = obj.GetComponent<RoomPreset>();
         var pt = preset?.interactableSpawnPoint != null
             ? preset.interactableSpawnPoint : obj.transform;
-        setup(obj, pt);
+
+        var col = obj.AddComponent<BoxCollider>();
+        col.isTrigger = true;
+        col.size = new Vector3(node.Size.x, triggerHeight, node.Size.y);
+        col.center = new Vector3(0, triggerHeight / 2f, 0);
+
+        setup(obj, pt, node);
         return obj;
     }
 
-    void AddHealRoom(GameObject o, Transform p) { var r = o.AddComponent<HealRoom>(); r.healStationPrefab = healStationPrefab; r.Init(p); }
-    void AddShopRoom(GameObject o, Transform p) { var r = o.AddComponent<ShopRoom>(); r.shopStationPrefab = shopStationPrefab; r.Init(p); }
-    void AddUpgradeRoom(GameObject o, Transform p) { var r = o.AddComponent<UpgradeRoom>(); r.upgradeStationPrefab = upgradeStationPrefab; r.Init(p); }
-    void AddMergeRoom(GameObject o, Transform p) { var r = o.AddComponent<MergeRoom>(); r.mergeStationPrefab = mergeStationPrefab; r.Init(p); }
+    void AddHealRoom(GameObject o, Transform p, RoomNode n) { var r = o.AddComponent<HealRoom>(); r.node = n; r.healStationPrefab = healStationPrefab; r.Init(p); }
+    void AddShopRoom(GameObject o, Transform p, RoomNode n) { var r = o.AddComponent<ShopRoom>(); r.node = n; r.shopStationPrefab = shopStationPrefab; r.Init(p); }
+    void AddUpgradeRoom(GameObject o, Transform p, RoomNode n) { var r = o.AddComponent<UpgradeRoom>(); r.node = n; r.upgradeStationPrefab = upgradeStationPrefab; r.Init(p); }
+    void AddMergeRoom(GameObject o, Transform p, RoomNode n) { var r = o.AddComponent<MergeRoom>(); r.node = n; r.mergeStationPrefab = mergeStationPrefab; r.Init(p); }
 
     // ── Corridor geometry (1 flat quad per corridor cell) ────────────────────
 
@@ -433,7 +623,7 @@ public class MapGenerator : MonoBehaviour
             new Vector3( 0.5f, 0f, -0.5f),
             new Vector3(-0.5f, 0f, -0.5f),
         });
-        poly.extrude = 0.01f;
+        poly.extrude = floorThickness;
         poly.flipNormals = false;
         pb.CreateShapeFromPolygon(poly.controlPoints, poly.extrude, poly.flipNormals);
         pb.ToMesh();
@@ -480,6 +670,7 @@ public class MapGenerator : MonoBehaviour
         go.transform.SetParent(parent);
         go.transform.position = cellCenter + faceOffset;
         go.transform.rotation = rot;
+        go.layer = LayerMask.NameToLayer("Wall");   // must match wallLayerName in WallVisibility
 
         float hh = wallHeight / 2f;
         var pb = go.AddComponent<ProBuilderMesh>();
@@ -518,6 +709,64 @@ public class MapGenerator : MonoBehaviour
     };
 
     GameObject Pick(GameObject[] arr) => arr[Random.Range(0, arr.Length)];
+
+    // Floor 1: picks from index 0-1, likely 0  (weights 3:1)
+    // Floor 2: picks from index 0-1, likely 1  (weights 1:3)
+    // Floor 3: picks from index 0-2, likely 1  (weights 1:3:1)
+    // Floor 4: picks from index 0-3, even chance (weights 1:1:1:1)
+    GameObject[] PickFloorWeightedEnemyPrefabs(int count)
+    {
+        if (normalEnemyPrefabs == null || normalEnemyPrefabs.Length == 0)
+            return new GameObject[0];
+
+        int floor = Mathf.Clamp(RunManager.Instance?.CurrentFloor ?? 1, 1, 4);
+
+        // Define pick pool and weights per floor
+        int[] indices;
+        float[] weights;
+        switch (floor)
+        {
+            case 1:
+                indices = new[] { 0, 1 };
+                weights = new[] { 3f, 1f };
+                break;
+            case 2:
+                indices = new[] { 0, 1 };
+                weights = new[] { 1f, 3f };
+                break;
+            case 3:
+                indices = new[] { 0, 1, 2 };
+                weights = new[] { 1f, 3f, 1f };
+                break;
+            default: // floor 4
+                indices = new[] { 0, 1, 2, 3 };
+                weights = new[] { 1f, 1f, 1f, 1f };
+                break;
+        }
+
+        // Clamp indices to actual array length
+        float total = 0f;
+        for (int i = 0; i < indices.Length; i++)
+        {
+            indices[i] = Mathf.Clamp(indices[i], 0, normalEnemyPrefabs.Length - 1);
+            total += weights[i];
+        }
+
+        var result = new GameObject[count];
+        for (int p = 0; p < count; p++)
+        {
+            float roll = Random.Range(0f, total);
+            float cumulative = 0f;
+            int chosen = indices[indices.Length - 1];
+            for (int i = 0; i < indices.Length; i++)
+            {
+                cumulative += weights[i];
+                if (roll <= cumulative) { chosen = indices[i]; break; }
+            }
+            result[p] = normalEnemyPrefabs[chosen];
+        }
+        return result;
+    }
 
     int OddClamp(int v)
     {
