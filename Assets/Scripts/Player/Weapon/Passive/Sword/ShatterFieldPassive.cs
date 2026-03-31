@@ -39,18 +39,18 @@ public class ShatterFieldPassive : MonoBehaviour
     public class EnemySlowState
     {
         public int stacks = 0;
-        public EnemyStatModifier currentModifier = new EnemyStatModifier();
+        public EntityStatModifier currentModifier = new EntityStatModifier();
         public Coroutine expireCoroutine;
         public bool isRooted = false;
         public Coroutine rootCoroutine;
-        public EnemyStatModifier rootModifier = new EnemyStatModifier();
-        public EnemyStatModifier brittleModifier = new EnemyStatModifier();
+        public EntityStatModifier rootModifier = new EntityStatModifier();
+        public EntityStatModifier brittleModifier = new EntityStatModifier();
     }
 
-    private Dictionary<EnemyHealth, EnemySlowState> slowStates
-        = new Dictionary<EnemyHealth, EnemySlowState>();
+    private Dictionary<HealthBase, EnemySlowState> slowStates
+        = new Dictionary<HealthBase, EnemySlowState>();
 
-    private HashSet<EnemyHealth> trackedForExploit = new HashSet<EnemyHealth>();
+    private HashSet<HealthBase> trackedForExploit = new HashSet<HealthBase>();
 
     public void Init(PlayerStats playerStats, PlayerCombatContext combatContext, WeaponData weaponData, float radiusMultiplier = 1f)
     {
@@ -58,7 +58,7 @@ public class ShatterFieldPassive : MonoBehaviour
         context = combatContext;
         context.OnSecondaryAttack += OnSecondaryAttack;
         context.OnSecondaryAttackForced += OnSecondaryAttackForced;
-        context.OnEnemyKilled += OnEnemyKilled;
+        context.OnEntityKilled += OnEnemyKilled;
 
         if (weaponData != null && weaponData.secondaryAttack != null)
             baseRadius = weaponData.secondaryAttack.range * radiusMultiplier;
@@ -70,7 +70,7 @@ public class ShatterFieldPassive : MonoBehaviour
         {
             context.OnSecondaryAttack -= OnSecondaryAttack;
             context.OnSecondaryAttackForced -= OnSecondaryAttackForced;
-            context.OnEnemyKilled -= OnEnemyKilled;
+            context.OnEntityKilled -= OnEnemyKilled;
         }
     }
 
@@ -110,12 +110,11 @@ public class ShatterFieldPassive : MonoBehaviour
         zone.Init(stats, context);
     }
 
-    public void ApplySlow(EnemyHealth enemy)
+    public void ApplySlow(HealthBase enemy)
     {
         if (!deepChill) return;
 
-        var status = enemy.GetComponent<EnemyStatusHandler>();
-        if (status == null) return;
+        var entityStats = enemy.GetComponent<EntityStats>();
 
         if (!slowStates.ContainsKey(enemy))
             slowStates[enemy] = new EnemySlowState();
@@ -125,22 +124,22 @@ public class ShatterFieldPassive : MonoBehaviour
         if (state.isRooted)
         {
             if (state.rootCoroutine != null) StopCoroutine(state.rootCoroutine);
-            state.rootCoroutine = StartCoroutine(RootExpire(enemy, status, state));
+            state.rootCoroutine = StartCoroutine(RootExpire(enemy, state));
             return;
         }
 
-        status.RemoveMultiplierModifier(state.currentModifier);
+        entityStats?.RemoveMultiplierModifier(state.currentModifier);
 
         state.stacks = Mathf.Min(state.stacks + 1, maxSlowStacks);
         state.currentModifier.moveSpeed = slowAmount * state.stacks;
-        status.AddMultiplierModifier(state.currentModifier);
+        entityStats?.AddMultiplierModifier(state.currentModifier);
 
         if (state.expireCoroutine != null) StopCoroutine(state.expireCoroutine);
-        state.expireCoroutine = StartCoroutine(SlowExpire(enemy, status, state));
+        state.expireCoroutine = StartCoroutine(SlowExpire(enemy, state));
 
         // L4 Shatter Point
         if (shatterPoint && state.stacks >= maxSlowStacks && !state.isRooted)
-            ApplyRoot(enemy, status, state);
+            ApplyRoot(enemy, state);
 
         // L5B Exploit
         if (exploit && state.isRooted && !trackedForExploit.Contains(enemy))
@@ -151,7 +150,7 @@ public class ShatterFieldPassive : MonoBehaviour
     {
         if (!exploit) return;
 
-        var toRemove = new List<EnemyHealth>();
+        var toRemove = new List<HealthBase>();
         foreach (var enemy in trackedForExploit)
         {
             if (enemy == null || enemy.IsDead)
@@ -165,40 +164,44 @@ public class ShatterFieldPassive : MonoBehaviour
             trackedForExploit.Remove(e);
     }
 
-    private void OnEnemyKilled(EnemyHealth enemy)
+    private void OnEnemyKilled(HealthBase enemy)
     {
         CheckExploit();
     }
 
-    private void ApplyRoot(EnemyHealth enemy, EnemyStatusHandler status, EnemySlowState state)
+    private void ApplyRoot(HealthBase enemy, EnemySlowState state)
     {
         state.isRooted = true;
 
-        status.RemoveMultiplierModifier(state.currentModifier);
+        var entityStats = enemy?.GetComponent<EntityStats>();
+        entityStats?.RemoveMultiplierModifier(state.currentModifier);
         if (state.expireCoroutine != null) StopCoroutine(state.expireCoroutine);
         state.stacks = 0;
         state.currentModifier.moveSpeed = 0f;
         state.expireCoroutine = null;
 
         state.rootModifier.moveSpeed = RootMoveSpeedModifier;
-        status.AddMultiplierModifier(state.rootModifier);
+        entityStats?.AddMultiplierModifier(state.rootModifier);
 
         if (brittle)
         {
             state.brittleModifier.damageTaken = BrittleDamageTakenBonus;
-            status.AddMultiplierModifier(state.brittleModifier);
+            entityStats?.AddMultiplierModifier(state.brittleModifier);
         }
 
         if (state.rootCoroutine != null) StopCoroutine(state.rootCoroutine);
-        state.rootCoroutine = StartCoroutine(RootExpire(enemy, status, state));
+        state.rootCoroutine = StartCoroutine(RootExpire(enemy, state));
     }
 
-    private IEnumerator SlowExpire(EnemyHealth enemy, EnemyStatusHandler status, EnemySlowState state)
+    private IEnumerator SlowExpire(HealthBase enemy, EnemySlowState state)
     {
         yield return new WaitForSeconds(slowDuration);
 
-        if (status != null)
-            status.RemoveMultiplierModifier(state.currentModifier);
+        if (enemy != null)
+        {
+            var entityStats = enemy.GetComponent<EntityStats>();
+            entityStats?.RemoveMultiplierModifier(state.currentModifier);
+        }
 
         state.stacks = 0;
         state.currentModifier.moveSpeed = 0f;
@@ -206,15 +209,16 @@ public class ShatterFieldPassive : MonoBehaviour
         slowStates.Remove(enemy);
     }
 
-    private IEnumerator RootExpire(EnemyHealth enemy, EnemyStatusHandler status, EnemySlowState state)
+    private IEnumerator RootExpire(HealthBase enemy, EnemySlowState state)
     {
         yield return new WaitForSeconds(rootDuration);
 
-        if (status != null)
+        if (enemy != null)
         {
-            status.RemoveMultiplierModifier(state.rootModifier);
+            var entityStats = enemy.GetComponent<EntityStats>();
+            entityStats?.RemoveMultiplierModifier(state.rootModifier);
             if (brittle)
-                status.RemoveMultiplierModifier(state.brittleModifier);
+                entityStats?.RemoveMultiplierModifier(state.brittleModifier);
         }
 
         state.rootModifier.moveSpeed = 0f;

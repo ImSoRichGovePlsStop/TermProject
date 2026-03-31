@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 453814550232931400}
   - component: {fileID: 5875731924024308156}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: AttackHitbox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -53,7 +53,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7423755363756834439}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: PassiveHandlerContainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -87,15 +87,16 @@ GameObject:
   - component: {fileID: 193443651079528124}
   - component: {fileID: 1461039391149267031}
   - component: {fileID: 2550625429019843902}
+  - component: {fileID: 4315729520793633725}
   - component: {fileID: 6699237877294229590}
   - component: {fileID: 2787225686031908883}
   - component: {fileID: 2654450303875858809}
   - component: {fileID: 3563984915877921471}
   - component: {fileID: 6499088522283101609}
   - component: {fileID: 4982785343660528164}
-  - component: {fileID: 729556872348505225}
   - component: {fileID: 6724364974160022513}
-  m_Layer: 0
+  - component: {fileID: 2649959589608857903}
+  m_Layer: 6
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -273,6 +274,29 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 1
+--- !u!136 &4315729520793633725
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6821820435605495984}
+  m_Material: {fileID: 13400000, guid: 6527ba2ea418b894b8460f0be6300429, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.06442419
+  m_Height: 0.48836905
+  m_Direction: 1
+  m_Center: {x: -0.002236694, y: 0.06845763, z: 0}
 --- !u!114 &6699237877294229590
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -351,27 +375,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da36a54957fd9dd47a2f4c595b0e90d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponLevelManager
---- !u!65 &729556872348505225
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6821820435605495984}
-  m_Material: {fileID: 13400000, guid: 6527ba2ea418b894b8460f0be6300429, type: 2}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.10007988, y: 0.31, z: 0.08132276}
-  m_Center: {x: 0.0008589253, y: 0, z: -0.0023121536}
 --- !u!114 &6724364974160022513
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -386,7 +389,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WandAttack
   normalProjectilePrefab: {fileID: 6020657565367428352, guid: 5489ff0ad2772eb488ae79ac7c783f0e, type: 3}
   bigProjectilePrefab: {fileID: 1498933385405443144, guid: 0689d45a3ee982f4a9e69452e08c3f03, type: 3}
+  totemPrefab: {fileID: 4737737749466170205, guid: 2c60181e9c4a990458cc7a8544a71be3, type: 3}
   projectileSpawnPoint: {fileID: 0}
+  totemCooldownIcon: {fileID: 379350332, guid: c7a80c8c83325df41b367ecdc86972d6, type: 3}
+--- !u!114 &2649959589608857903
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6821820435605495984}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1921dd3b6514994ea506d08a7dec137, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GroundSnap
+  groundOffset: 0.01
+  heightOffset: 0.25
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 1024
 --- !u!1 &7199941304210273291
 GameObject:
   m_ObjectHideFlags: 0
@@ -400,7 +422,7 @@ GameObject:
   - component: {fileID: 2637183520048015493}
   - component: {fileID: 1370494549704891401}
   - component: {fileID: 5544963485620162098}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Sprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -515,6 +537,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e6d50285b3671548a01de664f2a07da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BillboardSprite
+  isBillboard: 1
 --- !u!114 &5544963485620162098
 MonoBehaviour:
   m_ObjectHideFlags: 0

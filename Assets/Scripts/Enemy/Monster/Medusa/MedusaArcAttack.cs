@@ -28,7 +28,9 @@ public class MedusaArcAttack : MonoBehaviour
     [SerializeField] private string targetTag = "Player";
 
     [Header("Damage")]
-    [SerializeField] private float damage = 10f;
+    [SerializeField] private float damageScale = 1f;
+    private EntityStats entityStats;
+    private HealthBase selfHealth;
 
     [Header("Timing")]
     [SerializeField] private float redDuration = 2f;
@@ -81,6 +83,9 @@ public class MedusaArcAttack : MonoBehaviour
     {
         if (facing == null)
             facing = GetComponent<MedusaFacing>();
+
+        entityStats = GetComponent<EntityStats>();
+        selfHealth = GetComponent<HealthBase>();
 
         if (facing == null)
             facing = GetComponentInChildren<MedusaFacing>();
@@ -175,7 +180,6 @@ public class MedusaArcAttack : MonoBehaviour
                 break;
         }
 
-        Debug.Log($"Medusa mode: {currentMode} | yawOffset: {currentYawOffset}");
     }
 
     private void UpdateConeDirection()
@@ -214,7 +218,19 @@ public class MedusaArcAttack : MonoBehaviour
             if (playerStats == null) playerStats = hit.GetComponentInChildren<PlayerStats>();
 
             if (playerStats == null)
+            {
+                var hb = hit.GetComponent<HealthBase>() ?? hit.GetComponentInParent<HealthBase>();
+                if (hb == null || hb.IsDead || hb == selfHealth) continue;
+
+                Vector3 toHb = hit.ClosestPoint(origin) - origin;
+                toHb.y = 0f;
+                if (toHb.sqrMagnitude < 0.0001f) continue;
+                if (toHb.magnitude > radius) continue;
+                if (Vector3.Angle(attackDir, toHb.normalized) > angle * 0.5f) continue;
+
+                hb.TakeDamage(GetDamage());
                 continue;
+            }
 
             if (!playerStats.CompareTag(targetTag))
                 continue;
@@ -236,9 +252,8 @@ public class MedusaArcAttack : MonoBehaviour
 
             if (currentAngle <= angle * 0.5f)
             {
-                playerStats.TakeDamage(damage);
+                playerStats.TakeDamage(GetDamage());
                 hasDamagedThisYellowPhase = true;
-                Debug.Log("Damaged " + playerStats.name);
                 return;
             }
         }
@@ -412,19 +427,21 @@ public class MedusaArcAttack : MonoBehaviour
     }
 
     public void ClearSpawnedIndicators()
-{
-    if (currentRedInstance != null)
     {
-        Destroy(currentRedInstance);
-        currentRedInstance = null;
-        currentRedMesh = null;
+        if (currentRedInstance != null)
+        {
+            Destroy(currentRedInstance);
+            currentRedInstance = null;
+            currentRedMesh = null;
+        }
+
+        if (currentYellowInstance != null)
+        {
+            Destroy(currentYellowInstance);
+            currentYellowInstance = null;
+            currentYellowMesh = null;
+        }
     }
 
-    if (currentYellowInstance != null)
-    {
-        Destroy(currentYellowInstance);
-        currentYellowInstance = null;
-        currentYellowMesh = null;
-    }
-}
+    private float GetDamage() => (entityStats != null ? entityStats.Damage : 1f) * damageScale;
 }

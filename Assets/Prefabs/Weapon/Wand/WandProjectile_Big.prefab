@@ -79,6 +79,8 @@ MonoBehaviour:
   pulseRate: 0
   shooterStats: {fileID: 0}
   context: {fileID: 0}
+  pulseVFXPrefab: {fileID: 5829486113821913516, guid: aa9d66d720d519f4c93755e165425ce4, type: 3}
+  vfxDuration: 1
 --- !u!136 &-1838856735346861237
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -182,7 +184,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_MaskInteraction: 0
   m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}

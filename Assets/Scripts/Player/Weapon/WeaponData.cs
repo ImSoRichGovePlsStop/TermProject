@@ -92,7 +92,7 @@ public class ComboHit
     public float vfxLoops = 1f;
 }
 
-// Wand-specific projectile settings — only used when weaponType == Wand
+// Wand-specific projectile settings
 [System.Serializable]
 public class WandProjectileData
 {
@@ -109,22 +109,16 @@ public class WandProjectileData
     public float bigSpriteScale = 1.8f;
 
     [Header("Deceleration")]
-    [Tooltip("Easing exponent applied to travel progress. 1 = linear, 2 = quadratic, 3 = cubic. Higher values decelerate faster near the end.")]
     public float easePower = 2f;
 
     [Header("Sprite Animation")]
-    [Tooltip("Switch to slow clip when current speed drops below maxSpeed * slowThreshold.")]
     [Range(0f, 1f)]
     public float slowThreshold = 0.4f;
-    [Tooltip("Animation clip played while projectile is moving fast.")]
     public AnimationClip fastClip;
-    [Tooltip("Animation clip played while projectile is slow or stopped. Also used by big projectile at all times.")]
     public AnimationClip slowClip;
 
     [Header("AoE Pulse (Hit 5)")]
-    [Tooltip("Damage per tick as a fraction of player damage. 0.3 = 30% per second.")]
     public float aoePulseDamageScale = 0.30f;
     public float aoePulseRadius = 1.8f;
-    [Tooltip("Number of pulses per second.")]
-    public float aoePulseRate = 1f;
+    public float aoePulseInterval = 1f;
 }

@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class DamageNumberSpawner : MonoBehaviour
 {
+    public static DamageNumberSpawner Instance { get; private set; }
+
     [SerializeField] private DamageNumberUI prefab;
 
     private float baseRandomRangeX = 0.3f;
@@ -10,6 +12,11 @@ public class DamageNumberSpawner : MonoBehaviour
 
     private PlayerStats playerStats;
     private Vector3 playerDamageOffset = new Vector3(0f, 0.4f, 0f);
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     private void Start()
     {
@@ -25,13 +32,14 @@ public class DamageNumberSpawner : MonoBehaviour
             playerStats.OnPlayerDamaged -= OnPlayerDamaged;
     }
 
-    public void RegisterEnemy(EnemyHealth enemy)
+    public void RegisterEntity(HealthBase entity, float heightOffset = 0.5f)
     {
-        enemy.OnDamageReceived += (damage, isCrit) =>
+        entity.OnDamageReceived += (damage, isCrit) =>
         {
-            float rangeX = baseRandomRangeX * enemy.HealthBarScale.x;
-            float rangeY = baseRandomRangeY * enemy.HealthBarScale.y;
-            SpawnNumber(enemy.transform.position + enemy.HealthBarOffset, damage, isCrit, false, rangeX, rangeY);
+            float tiltRad = Camera.main.transform.eulerAngles.x * Mathf.Deg2Rad;
+            float zOffset = heightOffset * Mathf.Tan(tiltRad);
+            Vector3 offset = new Vector3(0f, heightOffset, zOffset);
+            SpawnNumber(entity.transform.position + offset, damage, isCrit, false);
         };
     }
 

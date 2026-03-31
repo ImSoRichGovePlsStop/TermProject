@@ -1,31 +1,92 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
-// Attached to the Player GameObject alongside PlayerController.
-// Reads all projectile settings from WeaponData.wandProjectile — no magic numbers here.
 [RequireComponent(typeof(PlayerStats))]
 [RequireComponent(typeof(PlayerCombatContext))]
 public class WandAttack : MonoBehaviour
 {
     [Header("Projectile Prefabs")]
-    [Tooltip("Prefab for hits 1-4 (requires: WandProjectile, SphereCollider with Is Trigger, SpriteRenderer)")]
     [SerializeField] private GameObject normalProjectilePrefab;
-
-    [Tooltip("Prefab for hit 5 (requires: WandProjectile, WandAoEPulse, SphereCollider with Is Trigger, SpriteRenderer)")]
     [SerializeField] private GameObject bigProjectilePrefab;
+
+    [Header("Totem")]
+    [SerializeField] private GameObject totemPrefab;
 
     [Header("Spawn")]
     [SerializeField] private Transform projectileSpawnPoint;
 
+    [Header("Status HUD")]
+    [SerializeField] private Sprite totemCooldownIcon;
+
     private PlayerStats stats;
     private PlayerCombatContext context;
     private WeaponEquip weaponEquip;
+    private PlayerController controller;
+    private List<Totem> activeTotems = new List<Totem>();
+
+    private StatusEntry cooldownEntry;
+    private const string COOLDOWN_ID = "wand_totem_cooldown";
 
     private void Awake()
     {
         stats = GetComponent<PlayerStats>();
         context = GetComponent<PlayerCombatContext>();
         weaponEquip = GetComponent<WeaponEquip>();
+        controller = GetComponent<PlayerController>();
     }
+
+    private void Start()
+    {
+        cooldownEntry = new StatusEntry(COOLDOWN_ID, totemCooldownIcon);
+        cooldownEntry.sweepClockwise = false;
+        cooldownEntry.isActive = false;
+        PlayerStatusHUD.Instance?.Register(cooldownEntry);
+    }
+
+    private void OnDestroy()
+    {
+        PlayerStatusHUD.Instance?.Unregister(COOLDOWN_ID);
+    }
+
+    private void Update()
+    {
+        if (cooldownEntry == null || PlayerStatusHUD.Instance == null) return;
+
+        WeaponData weapon = weaponEquip?.GetCurrentWeapon();
+
+        if (weapon == null || weapon.weaponType != WeaponType.Wand)
+        {
+            PlayerStatusHUD.Instance.Unregister(COOLDOWN_ID);
+            return;
+        }
+
+        PlayerStatusHUD.Instance.Register(cooldownEntry);
+
+        float cooldown = weapon.secondaryCooldown;
+        float remaining = controller != null ? controller.SecondaryCooldownRemaining : 0f;
+        float ratio = cooldown > 0f ? Mathf.Clamp01(remaining / cooldown) : 0f;
+
+        cooldownEntry.sweepFill = ratio;
+        cooldownEntry.isActive = remaining <= 0f;
+        PlayerStatusHUD.Instance.Refresh(COOLDOWN_ID);
+    }
+
+    public void PlaceTotem()
+    {
+        if (totemPrefab == null) return;
+
+        activeTotems.RemoveAll(t => t == null || t.IsDead);
+
+        GameObject obj = Instantiate(totemPrefab, transform.position, Quaternion.identity);
+        var totem = obj.GetComponent<Totem>();
+        if (totem != null)
+        {
+            totem.Init(stats, context);
+            activeTotems.Add(totem);
+        }
+    }
+
+    public List<Totem> GetActiveTotems() => activeTotems;
 
     public void FireProjectile(ComboHit hit, int comboIndex, Vector3 direction)
     {
@@ -86,7 +147,7 @@ public class WandAttack : MonoBehaviour
             {
                 pulse.pulseDamageScale = data.aoePulseDamageScale;
                 pulse.pulseRadius = data.aoePulseRadius;
-                pulse.pulseRate = data.aoePulseRate;
+                pulse.pulseInterval = data.aoePulseInterval;
                 pulse.shooterStats = stats;
                 pulse.context = context;
             }

@@ -20,4 +20,6 @@ public abstract class GenericTreeHandlerBase : MonoBehaviour
     {
         return manager.GetState(treeOwner, tree).IsUnlocked(node);
     }
+
+    public virtual void Cleanup() { }
 }

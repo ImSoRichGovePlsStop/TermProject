@@ -80,13 +80,13 @@ public class UIManager : MonoBehaviour
                 if (IsCardPhaseOpen)
                     return;
                 else if (IsGamblerOpen)
-                    gamblerScreenUI.Close();
+                    CloseGambler();
                 else if (IsStorageOpen)
                     CloseStorage();
                 else if (!IsPassiveOpen)
                     ToggleInventory();
                 else
-                    passiveScreenUI.Close();
+                    ClosePassive();
             }
 
             if (Keyboard.current[Key.Escape].wasPressedThisFrame)
@@ -94,9 +94,9 @@ public class UIManager : MonoBehaviour
                 if (IsCardPhaseOpen)
                     return;
                 else if (IsPassiveOpen)
-                    passiveScreenUI.Close();
+                    ClosePassive();
                 else if (IsGamblerOpen)
-                    gamblerScreenUI.Close();
+                    CloseGambler();
                 else if (IsStorageOpen)
                     CloseStorage();
                 else if (_upgradeOpen)

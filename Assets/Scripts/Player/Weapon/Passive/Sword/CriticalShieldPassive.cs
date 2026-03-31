@@ -111,7 +111,7 @@ public class CriticalShieldPassive : MonoBehaviour
 
         context.OnCritHit += OnCritHit;
         context.OnAttack += OnSwing;
-        context.OnEnemyKilled += OnEnemyKilled;
+        context.OnEntityKilled += OnEnemyKilled;
         stats.OnShieldInstanceLost += OnShieldLost;
     }
 
@@ -121,7 +121,7 @@ public class CriticalShieldPassive : MonoBehaviour
         {
             context.OnCritHit -= OnCritHit;
             context.OnAttack -= OnSwing;
-            context.OnEnemyKilled -= OnEnemyKilled;
+            context.OnEntityKilled -= OnEnemyKilled;
         }
         if (stats != null)
             stats.OnShieldInstanceLost -= OnShieldLost;
@@ -265,7 +265,7 @@ public class CriticalShieldPassive : MonoBehaviour
         }
     }
 
-    private void OnEnemyKilled(EnemyHealth enemy)
+    private void OnEnemyKilled(HealthBase enemy)
     {
         if (!enabled || !temperedSoul || aegisShieldInstance == null) return;
         stats.ExtendShield(aegisShieldInstance, 0f, enemy.MaxHP * TemperedKillShieldPercent);

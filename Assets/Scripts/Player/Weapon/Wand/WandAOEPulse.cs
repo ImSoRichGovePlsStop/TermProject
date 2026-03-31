@@ -1,25 +1,26 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-// Attached to the hit 5 big projectile prefab alongside WandProjectile.
-// Pulses AoE damage around itself at a fixed rate while the projectile is alive.
-// The same enemy can be hit by multiple pulses (by design).
 [RequireComponent(typeof(WandProjectile))]
 public class WandAoEPulse : MonoBehaviour
 {
-    // Set by WandAttack after spawn
-    [HideInInspector] public float pulseDamageScale;   // damage per tick as a fraction of player damage
+    [HideInInspector] public float pulseDamageScale;
     [HideInInspector] public float pulseRadius;
-    [HideInInspector] public float pulseRate;           // pulses per second
+    [HideInInspector] public float pulseInterval;
     [HideInInspector] public PlayerStats shooterStats;
     [HideInInspector] public PlayerCombatContext context;
+
+    [Header("Pulse VFX")]
+    [SerializeField] private GameObject pulseVFXPrefab;
+    [SerializeField] private float vfxDuration = 0.5f;
 
     private float pulseTimer = 0f;
 
     void Update()
     {
         pulseTimer += Time.deltaTime;
-        if (pulseTimer >= 1f / pulseRate)
+
+        if (pulseTimer >= pulseInterval)
         {
             pulseTimer = 0f;
             DoPulse();
@@ -31,23 +32,56 @@ public class WandAoEPulse : MonoBehaviour
         if (shooterStats == null) return;
 
         Collider[] hits = Physics.OverlapSphere(transform.position, pulseRadius);
-        var result = new HashSet<EnemyHealth>();
+        var result = new HashSet<HealthBase>();
 
         foreach (Collider hit in hits)
         {
             if (!hit.CompareTag("Enemy")) continue;
-            var enemyHealth = hit.GetComponentInParent<EnemyHealth>();
+
+            float dmg = shooterStats.CalculateDamage(pulseDamageScale);
+
+            var healthBase = hit.GetComponentInParent<HealthBase>();
+            if (healthBase != null && !healthBase.IsDead)
+            {
+                healthBase.TakeDamage(dmg, shooterStats.LastHitWasCrit);
+                continue;
+            }
+
+            var enemyHealth = hit.GetComponentInParent<HealthBase>();
             if (enemyHealth == null) continue;
-
-            // damage = scale * playerDamage / pulseRate  (converts per-second value to per-tick)
-            float dmg = shooterStats.CalculateDamage(pulseDamageScale) / pulseRate;
-
             enemyHealth.TakeDamage(dmg, shooterStats.LastHitWasCrit);
             result.Add(enemyHealth);
         }
 
         if (result.Count > 0)
-            context?.NotifyAttack(result, 4); // comboIndex 4 = hit 5
+            context?.NotifyAttack(result, 4);
+
+        SpawnPulseVFX();
+    }
+
+    private void SpawnPulseVFX()
+    {
+        if (pulseVFXPrefab == null) return;
+
+        Vector3 spawnPos = new Vector3(transform.position.x, 0.01f, transform.position.z);
+        Quaternion prefabRot = pulseVFXPrefab.transform.rotation;
+        GameObject vfx = Instantiate(pulseVFXPrefab, spawnPos, prefabRot);
+
+        var ps = vfx.GetComponent<ParticleSystem>();
+        if (ps != null)
+        {
+            ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+
+            var main = ps.main;
+            main.duration = vfxDuration;
+            main.startLifetime = vfxDuration;
+            main.loop = false;
+            main.startSize = pulseRadius * 2f;
+
+            ps.Play();
+        }
+
+        Destroy(vfx, vfxDuration);
     }
 
     void OnDrawGizmosSelected()

@@ -3,10 +3,12 @@ using UnityEngine;
 public class PlayerAnimationEvents : MonoBehaviour
 {
     private PlayerController controller;
+    private WandAttack wandAttack;
 
     void Start()
     {
         controller = GetComponentInParent<PlayerController>();
+        wandAttack = GetComponentInParent<WandAttack>();
     }
 
     public void OnAttackActive()
@@ -27,5 +29,10 @@ public class PlayerAnimationEvents : MonoBehaviour
     public void OnHitVFX()
     {
         controller.OnHitVFX();
+    }
+
+    public void PlaceTotem()
+    {
+        wandAttack?.PlaceTotem();
     }
 }
