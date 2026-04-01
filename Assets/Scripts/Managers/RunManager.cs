@@ -25,7 +25,6 @@ public class RunManager : MonoBehaviour
     {
         TotalBossKilled++;
         CurrentFloor++;
-        Debug.Log($"[RunManager] Boss killed! Entering floor {CurrentFloor}");
     }
 
     public void ResetRun()

@@ -15,6 +15,9 @@ public class ShopRoom : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
+        {
+            RunManager.Instance?.OnEventRoomEntered();
             FindFirstObjectByType<MinimapManager>()?.OnPlayerEnterRoom(node);
+        }
     }
 }

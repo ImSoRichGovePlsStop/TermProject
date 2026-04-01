@@ -51,7 +51,8 @@ public class MapGenerator : MonoBehaviour
     [Header("Enemy / Loot")]
     [Tooltip("Normal enemies — floor 1 picks index 0, floor 4 picks last index")]
     public GameObject[] normalEnemyPrefabs;
-    public GameObject bossPrefab;
+    [Tooltip("One boss per floor — index 0 = floor 1, index 1 = floor 2, etc.")]
+    public GameObject[] bossPrefabs;
     public GameObject lootPrefab;
 
     [Header("Materials")]
@@ -526,17 +527,15 @@ public class MapGenerator : MonoBehaviour
         var obj = Instantiate(node.ChosenPrefab, node.WorldPosition, Quaternion.identity);
         obj.name = "BattleRoom";
 
-        // Always use node.Size — this is what was stamped into the matrix
-        // and what SpawnAllWalls uses. preset.roomSize is intentionally ignored
-        // here to keep walls, trigger, and prefab footprint all in sync.
+  
         Vector3 vol = new Vector3(node.Size.x, triggerHeight, node.Size.y);
 
         var room = obj.AddComponent<BattleRoom>();
         room.node = node;
         room.lootPrefab = lootPrefab;
         room.boundaryMaterial = boundaryMaterial;
-        room.enemyCount = Random.Range(1, 4) + (RunManager.Instance?.CurrentFloor ?? 1);
-        room.enemyPrefabs = PickFloorWeightedEnemyPrefabs(Random.Range(2, 4));
+        room.enemyCount = Random.Range(1, 4) ;
+        room.enemyPrefabs = PickFloorWeightedEnemyPrefabs();
         room.SetRoomSize(vol);
 
         var col = obj.AddComponent<BoxCollider>();
@@ -555,7 +554,9 @@ public class MapGenerator : MonoBehaviour
 
         var room = obj.AddComponent<BossRoom>();
         room.node = node;
-        room.bossPrefab = bossPrefab;
+      
+        int floorIndex = Mathf.Clamp((RunManager.Instance?.CurrentFloor ?? 1) - 1, 0, bossPrefabs.Length - 1);
+        room.bossPrefab = bossPrefabs.Length > 0 ? bossPrefabs[floorIndex] : null;
         room.lootPrefab = lootPrefab;
         room.portalPrefab = portalPrefab;
         room.portalFinalPrefab = portalFinalPrefab;
@@ -708,64 +709,30 @@ public class MapGenerator : MonoBehaviour
         _ => battleRoomPrefabs
     };
 
-    GameObject Pick(GameObject[] arr) => arr[Random.Range(0, arr.Length)];
 
-    // Floor 1: picks from index 0-1, likely 0  (weights 3:1)
-    // Floor 2: picks from index 0-1, likely 1  (weights 1:3)
-    // Floor 3: picks from index 0-2, likely 1  (weights 1:3:1)
-    // Floor 4: picks from index 0-3, even chance (weights 1:1:1:1)
-    GameObject[] PickFloorWeightedEnemyPrefabs(int count)
+   
+    GameObject[] PickFloorWeightedEnemyPrefabs()
     {
         if (normalEnemyPrefabs == null || normalEnemyPrefabs.Length == 0)
             return new GameObject[0];
 
         int floor = Mathf.Clamp(RunManager.Instance?.CurrentFloor ?? 1, 1, 4);
 
-        // Define pick pool and weights per floor
-        int[] indices;
-        float[] weights;
-        switch (floor)
+        // How many types are available this floor
+        int availableCount = floor switch
         {
-            case 1:
-                indices = new[] { 0, 1 };
-                weights = new[] { 3f, 1f };
-                break;
-            case 2:
-                indices = new[] { 0, 1 };
-                weights = new[] { 1f, 3f };
-                break;
-            case 3:
-                indices = new[] { 0, 1, 2 };
-                weights = new[] { 1f, 3f, 1f };
-                break;
-            default: // floor 4
-                indices = new[] { 0, 1, 2, 3 };
-                weights = new[] { 1f, 1f, 1f, 1f };
-                break;
-        }
+            1 => 2,
+            2 => 2,
+            3 => Mathf.Min(3, normalEnemyPrefabs.Length),
+            _ => Mathf.Min(4, normalEnemyPrefabs.Length)
+        };
 
-        // Clamp indices to actual array length
-        float total = 0f;
-        for (int i = 0; i < indices.Length; i++)
-        {
-            indices[i] = Mathf.Clamp(indices[i], 0, normalEnemyPrefabs.Length - 1);
-            total += weights[i];
-        }
+        // Build the available pool for this floor
+        var pool = new GameObject[availableCount];
+        for (int i = 0; i < availableCount; i++)
+            pool[i] = normalEnemyPrefabs[i];
 
-        var result = new GameObject[count];
-        for (int p = 0; p < count; p++)
-        {
-            float roll = Random.Range(0f, total);
-            float cumulative = 0f;
-            int chosen = indices[indices.Length - 1];
-            for (int i = 0; i < indices.Length; i++)
-            {
-                cumulative += weights[i];
-                if (roll <= cumulative) { chosen = indices[i]; break; }
-            }
-            result[p] = normalEnemyPrefabs[chosen];
-        }
-        return result;
+        return pool;
     }
 
     int OddClamp(int v)

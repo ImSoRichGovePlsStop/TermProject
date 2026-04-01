@@ -25,10 +25,24 @@ public class RandomLoot : MonoBehaviour, IInteractable
 
     public string GetPromptText() => "[ E ]  Open Loot";
 
+    public void Configure(int floor, int roomsCleared)
+    {
+        minLootCount = 1;
+        maxLootCount = 2;
+
+        float floorBase = (floor ) * 30f;
+        float roomBonus = roomsCleared * 5f;
+        meanCost = 50f + floorBase + roomBonus + 10f;
+
+        sd = 20f + (floor - 1) * 3f;
+    }
+
     private void Start()
     {
         InventoryManager.Instance.EnvGrid.OnModulePlaced += OnEnvModulePlaced;
     }
+
+
 
     private void Update()
     {

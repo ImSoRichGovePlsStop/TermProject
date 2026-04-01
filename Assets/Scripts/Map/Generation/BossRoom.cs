@@ -77,7 +77,7 @@ public class BossRoom : MonoBehaviour
 
         // pick portal based on next floor
         int nextFloor = (RunManager.Instance?.CurrentFloor ?? 1) + 1;
-        GameObject selectedPortal = nextFloor > 2 && portalFinalPrefab != null
+        GameObject selectedPortal = nextFloor > 4 && portalFinalPrefab != null
             ? portalFinalPrefab
             : portalPrefab;
 
@@ -165,7 +165,7 @@ public class BossRoom : MonoBehaviour
 
     private System.Collections.IEnumerator WaitForPlayerInside(Transform playerTransform)
     {
-        float inset = 1f;
+        float inset = 0.3f;
         while (true)
         {
             Vector3 playerFlat = new Vector3(playerTransform.position.x, transform.position.y, playerTransform.position.z);

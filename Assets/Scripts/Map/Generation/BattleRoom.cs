@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.ProBuilder;
 using UnityEngine.ProBuilder.MeshOperations;
@@ -39,13 +39,18 @@ public class BattleRoom : MonoBehaviour
     {
         if (isLocked && !isCleared)
         {
+            int before = spawnedEnemies.Count;
             spawnedEnemies.RemoveAll(e => e == null);
+            int killed = before - spawnedEnemies.Count;
+
+            for (int i = 0; i < killed; i++)
+                RunManager.Instance?.OnEnemyKilled();
+
             if (spawnedEnemies.Count == 0) {
                 UIManager _uiManager = FindFirstObjectByType<UIManager>();
                 _uiManager.isInBattle = false;
                 ClearRoom();
             }
-                
         }
     }
 
@@ -149,11 +154,19 @@ public class BattleRoom : MonoBehaviour
         isCleared = true;
         isLocked = false;
         RemoveInvisibleWalls();
-        Instantiate(lootPrefab, transform.position, Quaternion.identity);
 
-        int floor = RunManager.Instance?.CurrentFloor ?? 1;
-        int baseCoins = Random.Range(25, 75);
-        int bonusCoins = (floor - 1) * 25;
+        var lootObj = Instantiate(lootPrefab, transform.position, Quaternion.identity);
+
+        var randomLoot = lootObj.GetComponent<RandomLoot>();
+        if (randomLoot != null)
+        {
+            int floor        = RunManager.Instance?.CurrentFloor ?? 1;
+            int roomsCleared = RunManager.Instance?.TotalEnemyKilled ?? 0;
+            randomLoot.Configure(floor, roomsCleared);
+        }
+
+        int baseCoins  = Random.Range(25, 75);
+        int bonusCoins = ((RunManager.Instance?.CurrentFloor ?? 1) - 1) * 25;
 
         CurrencyManager wallet = Object.FindFirstObjectByType<CurrencyManager>();
         wallet.AddCoins(baseCoins + bonusCoins);
