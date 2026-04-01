@@ -21,14 +21,14 @@ public class RoomNode
     public Vector2Int MatrixCenter;
     public Vector2Int Size;
     public Vector3 WorldPosition;
-    public GameObject ChosenPrefab;  // prefab whose roomSize was used to stamp the matrix
+    public GameObject ChosenPrefab;  
     public GameObject RoomObject;
     public List<RoomNode> Neighbors = new();
 }
 
 public class MapGenerator : MonoBehaviour
 {
-    // ── Prefab arrays ────────────────────────────────────────────────────────
+    
     [Header("Room Prefabs (randomly selected per room)")]
     public GameObject[] spawnRoomPrefabs;
     public GameObject[] battleRoomPrefabs;
@@ -231,35 +231,97 @@ public class MapGenerator : MonoBehaviour
 
     void AddBranches(List<RoomNode> mainPath)
     {
-        var eventTypes = new[] { RoomType.Shop, RoomType.Merge, RoomType.Heal, RoomType.Upgrade };
+        // Base weights — Heal most common, Shop second, Upgrade third, Merge least
+        var eventWeights = new Dictionary<RoomType, float>
+        {
+            { RoomType.Heal,    4f },
+            { RoomType.Shop,    3f },
+            { RoomType.Upgrade, 2f },
+            { RoomType.Merge,   1f },
+        };
 
-        // Count battle rooms already placed on the main path
+        // Boost weight of any event type that did not appear on the previous floor
+        foreach (var key in new List<RoomType>(eventWeights.Keys))
+            if (RunManager.Instance != null && RunManager.Instance.WasMissingLastFloor(key))
+                eventWeights[key] *= 2f;
+
+        // Track which event types have already been placed this map — no duplicates
+        var usedEventTypes = new HashSet<RoomType>();
+
         int battleCount = mainPath.Count;
 
         for (int i = 0; i < mainPath.Count - 1; i++)
         {
             if (Random.value > branchChance) continue;
 
-            // If we've hit the cap, force event rooms on branches
             bool canPlaceBattle = battleCount < maxBattleRooms;
-            RoomType type = (canPlaceBattle && Random.value >= 0.25f)
-                ? RoomType.Battle
-                : eventTypes[Random.Range(0, eventTypes.Length)];
+            RoomType type;
+
+            if (canPlaceBattle && Random.value >= 0.25f)
+            {
+                type = RoomType.Battle;
+            }
+            else
+            {
+                type = PickUnusedEventType(eventWeights, usedEventTypes);
+                if (type == RoomType.None) type = RoomType.Battle;
+            }
 
             var hint = Clamped(mainPath[i].MatrixCenter + RandomCardinalOffset(10, 20));
             var branch = PlaceRoom(type, hint.x, hint.y);
             if (branch == null) continue;
             AddConnection(mainPath[i], branch);
 
-            if (type == RoomType.Battle) battleCount++;
+            if (type == RoomType.Battle)
+            {
+                battleCount++;
+            }
+            else
+            {
+                usedEventTypes.Add(type);
+                RunManager.Instance?.RegisterEventRoomPlaced(type);
+            }
 
             if (Random.value < 0.3f)
             {
-                var hint2 = Clamped(branch.MatrixCenter + RandomCardinalOffset(10, 20));
-                var branch2 = PlaceRoom(eventTypes[Random.Range(0, eventTypes.Length)], hint2.x, hint2.y);
-                if (branch2 != null) AddConnection(branch, branch2);
+                RoomType type2 = PickUnusedEventType(eventWeights, usedEventTypes);
+                if (type2 != RoomType.None)
+                {
+                    var hint2 = Clamped(branch.MatrixCenter + RandomCardinalOffset(10, 20));
+                    var branch2 = PlaceRoom(type2, hint2.x, hint2.y);
+                    if (branch2 != null)
+                    {
+                        AddConnection(branch, branch2);
+                        usedEventTypes.Add(type2);
+                        RunManager.Instance?.RegisterEventRoomPlaced(type2);
+                    }
+                }
             }
         }
+    }
+
+    // Returns a weighted random event type not yet used this map.
+    // Returns RoomType.None if all event types are exhausted.
+    RoomType PickUnusedEventType(Dictionary<RoomType, float> weights, HashSet<RoomType> used)
+    {
+        var available = new List<(RoomType t, float w)>();
+        foreach (var kvp in weights)
+            if (!used.Contains(kvp.Key))
+                available.Add((kvp.Key, kvp.Value));
+
+        if (available.Count == 0) return RoomType.None;
+
+        float total = 0f;
+        foreach (var (_, w) in available) total += w;
+
+        float roll = Random.Range(0f, total);
+        float cumulative = 0f;
+        foreach (var (t, w) in available)
+        {
+            cumulative += w;
+            if (roll <= cumulative) return t;
+        }
+        return available[available.Count - 1].t;
     }
 
     // ── Connections ──────────────────────────────────────────────────────────
@@ -527,14 +589,16 @@ public class MapGenerator : MonoBehaviour
         var obj = Instantiate(node.ChosenPrefab, node.WorldPosition, Quaternion.identity);
         obj.name = "BattleRoom";
 
-  
+        // Always use node.Size — this is what was stamped into the matrix
+        // and what SpawnAllWalls uses. preset.roomSize is intentionally ignored
+        // here to keep walls, trigger, and prefab footprint all in sync.
         Vector3 vol = new Vector3(node.Size.x, triggerHeight, node.Size.y);
 
         var room = obj.AddComponent<BattleRoom>();
         room.node = node;
         room.lootPrefab = lootPrefab;
         room.boundaryMaterial = boundaryMaterial;
-        room.enemyCount = Random.Range(1, 4) ;
+        room.enemyCount = Random.Range(1, 4) + (RunManager.Instance?.CurrentFloor ?? 1);
         room.enemyPrefabs = PickFloorWeightedEnemyPrefabs();
         room.SetRoomSize(vol);
 
@@ -554,7 +618,7 @@ public class MapGenerator : MonoBehaviour
 
         var room = obj.AddComponent<BossRoom>();
         room.node = node;
-      
+        // Pick boss by floor index — floor 1 → index 0, floor 2 → index 1, etc.
         int floorIndex = Mathf.Clamp((RunManager.Instance?.CurrentFloor ?? 1) - 1, 0, bossPrefabs.Length - 1);
         room.bossPrefab = bossPrefabs.Length > 0 ? bossPrefabs[floorIndex] : null;
         room.lootPrefab = lootPrefab;
@@ -709,8 +773,11 @@ public class MapGenerator : MonoBehaviour
         _ => battleRoomPrefabs
     };
 
+    GameObject Pick(GameObject[] arr) => arr[Random.Range(0, arr.Length)];
 
-   
+    // Returns a subset of normalEnemyPrefabs available for the current floor.
+    // Floor 1: indices 0-1  Floor 2: indices 0-1  Floor 3: indices 0-2  Floor 4: indices 0-3
+    // BattleRoom.SpawnEnemies picks randomly from this array each spawn.
     GameObject[] PickFloorWeightedEnemyPrefabs()
     {
         if (normalEnemyPrefabs == null || normalEnemyPrefabs.Length == 0)
