@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.ProBuilder;
 using UnityEngine.ProBuilder.MeshOperations;
@@ -8,6 +8,8 @@ public class BattleRoom : MonoBehaviour
     [Header("State")]
     public bool isLocked = false;
     public bool isCleared = false;
+
+    [HideInInspector] public RoomNode node;
 
     [Header("Room")]
     private Vector3 roomSize;
@@ -37,13 +39,18 @@ public class BattleRoom : MonoBehaviour
     {
         if (isLocked && !isCleared)
         {
+            int before = spawnedEnemies.Count;
             spawnedEnemies.RemoveAll(e => e == null);
+            int killed = before - spawnedEnemies.Count;
+
+            for (int i = 0; i < killed; i++)
+                RunManager.Instance?.OnEnemyKilled();
+
             if (spawnedEnemies.Count == 0) {
                 UIManager _uiManager = FindFirstObjectByType<UIManager>();
                 _uiManager.isInBattle = false;
                 ClearRoom();
             }
-                
         }
     }
 
@@ -58,11 +65,10 @@ public class BattleRoom : MonoBehaviour
             _uiManager.CloseShop();
 
             if (_uiManager.IsInventoryOpen)
-            {
                 _uiManager.ToggleInventory();
-            }
-        }
 
+            FindFirstObjectByType<MinimapManager>()?.OnPlayerEnterRoom(node);
+        }
     }
 
 
@@ -148,11 +154,19 @@ public class BattleRoom : MonoBehaviour
         isCleared = true;
         isLocked = false;
         RemoveInvisibleWalls();
-        Instantiate(lootPrefab, transform.position, Quaternion.identity);
 
-        int floor = RunManager.Instance?.CurrentFloor ?? 1;
-        int baseCoins = Random.Range(25, 75);
-        int bonusCoins = (floor - 1) * 25;
+        var lootObj = Instantiate(lootPrefab, transform.position, Quaternion.identity);
+
+        var randomLoot = lootObj.GetComponent<RandomLoot>();
+        if (randomLoot != null)
+        {
+            int floor        = RunManager.Instance?.CurrentFloor ?? 1;
+            int roomsCleared = RunManager.Instance?.TotalEnemyKilled ?? 0;
+            randomLoot.Configure(floor, roomsCleared);
+        }
+
+        int baseCoins  = Random.Range(25, 75);
+        int bonusCoins = ((RunManager.Instance?.CurrentFloor ?? 1) - 1) * 25;
 
         CurrencyManager wallet = Object.FindFirstObjectByType<CurrencyManager>();
         wallet.AddCoins(baseCoins + bonusCoins);
@@ -182,8 +196,33 @@ public class BattleRoom : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
-            OnPlayerEnter();
+        if (!other.CompareTag("Player")) return;
+        StartCoroutine(WaitForPlayerInside(other.transform));
+    }
+
+    private System.Collections.IEnumerator WaitForPlayerInside(Transform playerTransform)
+    {
+        // Require player to be 1 unit inside the room boundary before triggering
+        float inset = 1f;
+        while (true)
+        {
+            Vector3 playerFlat = new Vector3(playerTransform.position.x, transform.position.y, playerTransform.position.z);
+            Vector3 roomMin    = transform.position - new Vector3(roomSize.x / 2f - inset, 0, roomSize.z / 2f - inset);
+            Vector3 roomMax    = transform.position + new Vector3(roomSize.x / 2f - inset, 0, roomSize.z / 2f - inset);
+
+            bool insideX = playerFlat.x >= roomMin.x && playerFlat.x <= roomMax.x;
+            bool insideZ = playerFlat.z >= roomMin.z && playerFlat.z <= roomMax.z;
+
+            if (insideX && insideZ) break;
+
+            float distFromCenter = Vector3.Distance(playerFlat, transform.position);
+            float maxDist = Mathf.Max(roomSize.x, roomSize.z);
+            if (distFromCenter > maxDist) yield break;
+
+            yield return null;
+        }
+
+        OnPlayerEnter();
     }
 
     void OnDrawGizmosSelected()

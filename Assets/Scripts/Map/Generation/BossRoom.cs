@@ -9,6 +9,8 @@ public class BossRoom : MonoBehaviour
     public bool isLocked  = false;
     public bool isCleared = false;
 
+    [HideInInspector] public RoomNode node;
+
     [Header("Room")]
     private Vector3          roomSize;
     private List<GameObject> invisibleWalls = new List<GameObject>();
@@ -53,6 +55,7 @@ public class BossRoom : MonoBehaviour
             _uiManager.CloseShop();
             if (_uiManager.IsInventoryOpen)
                 _uiManager.ToggleInventory();
+            FindFirstObjectByType<MinimapManager>()?.OnPlayerEnterRoom(node);
         }
     }
 
@@ -74,7 +77,7 @@ public class BossRoom : MonoBehaviour
 
         // pick portal based on next floor
         int nextFloor = (RunManager.Instance?.CurrentFloor ?? 1) + 1;
-        GameObject selectedPortal = nextFloor > 2 && portalFinalPrefab != null
+        GameObject selectedPortal = nextFloor > 4 && portalFinalPrefab != null
             ? portalFinalPrefab
             : portalPrefab;
 
@@ -156,7 +159,32 @@ public class BossRoom : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player")) OnPlayerEnter();
+        if (!other.CompareTag("Player")) return;
+        StartCoroutine(WaitForPlayerInside(other.transform));
+    }
+
+    private System.Collections.IEnumerator WaitForPlayerInside(Transform playerTransform)
+    {
+        float inset = 0.3f;
+        while (true)
+        {
+            Vector3 playerFlat = new Vector3(playerTransform.position.x, transform.position.y, playerTransform.position.z);
+            Vector3 roomMin    = transform.position - new Vector3(roomSize.x / 2f - inset, 0, roomSize.z / 2f - inset);
+            Vector3 roomMax    = transform.position + new Vector3(roomSize.x / 2f - inset, 0, roomSize.z / 2f - inset);
+
+            bool insideX = playerFlat.x >= roomMin.x && playerFlat.x <= roomMax.x;
+            bool insideZ = playerFlat.z >= roomMin.z && playerFlat.z <= roomMax.z;
+
+            if (insideX && insideZ) break;
+
+            float distFromCenter = Vector3.Distance(playerFlat, transform.position);
+            float maxDist = Mathf.Max(roomSize.x, roomSize.z);
+            if (distFromCenter > maxDist) yield break;
+
+            yield return null;
+        }
+
+        OnPlayerEnter();
     }
 
     void OnDrawGizmosSelected()

@@ -55,7 +55,7 @@ public class UpgradeOptionUI : MonoBehaviour, IPointerClickHandler, IPointerEnte
             string nextDesc = instance.Data.moduleEffect.GetDescription(
                 instance.Rarity, instance.Level + 1, instance.RuntimeState);
 
-            descriptionText.text = $"<s><color=#888888>{currentDesc}</color></s>\n{nextDesc}";
+            descriptionText.text = $"{nextDesc}";
         }
         else if (descriptionText != null)
         {
