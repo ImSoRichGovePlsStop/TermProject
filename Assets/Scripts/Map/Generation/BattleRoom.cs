@@ -46,7 +46,8 @@ public class BattleRoom : MonoBehaviour
             for (int i = 0; i < killed; i++)
                 RunManager.Instance?.OnEnemyKilled();
 
-            if (spawnedEnemies.Count == 0) {
+            if (spawnedEnemies.Count == 0)
+            {
                 UIManager _uiManager = FindFirstObjectByType<UIManager>();
                 _uiManager.isInBattle = false;
                 ClearRoom();
@@ -56,6 +57,9 @@ public class BattleRoom : MonoBehaviour
 
     public void OnPlayerEnter()
     {
+        
+        FindFirstObjectByType<MinimapManager>()?.OnPlayerEnterRoom(node);
+
         if (!isCleared)
         {
             LockRoom();
@@ -66,8 +70,6 @@ public class BattleRoom : MonoBehaviour
 
             if (_uiManager.IsInventoryOpen)
                 _uiManager.ToggleInventory();
-
-            FindFirstObjectByType<MinimapManager>()?.OnPlayerEnterRoom(node);
         }
     }
 
@@ -126,7 +128,7 @@ public class BattleRoom : MonoBehaviour
 
         pbMesh.CreateShapeFromPolygon(polyShape.controlPoints, polyShape.extrude, polyShape.flipNormals);
         pbMesh.transform.SetParent(transform);
-        pbMesh.transform.localPosition = new Vector3(0f, - 0.01f, 0f);
+        pbMesh.transform.localPosition = new Vector3(0f, -0.01f, 0f);
         pbMesh.ToMesh();
         pbMesh.Refresh();
 
@@ -160,12 +162,12 @@ public class BattleRoom : MonoBehaviour
         var randomLoot = lootObj.GetComponent<RandomLoot>();
         if (randomLoot != null)
         {
-            int floor        = RunManager.Instance?.CurrentFloor ?? 1;
+            int floor = RunManager.Instance?.CurrentFloor ?? 1;
             int roomsCleared = RunManager.Instance?.TotalEnemyKilled ?? 0;
             randomLoot.Configure(floor, roomsCleared);
         }
 
-        int baseCoins  = Random.Range(25, 75);
+        int baseCoins = Random.Range(25, 75);
         int bonusCoins = ((RunManager.Instance?.CurrentFloor ?? 1) - 1) * 25;
 
         CurrencyManager wallet = Object.FindFirstObjectByType<CurrencyManager>();
@@ -182,10 +184,10 @@ public class BattleRoom : MonoBehaviour
 
         for (int i = 0; i < enemyCount; i++)
         {
-            
+
             GameObject prefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
 
-            
+
             Vector2 randomCircle = Random.insideUnitCircle.normalized * Random.Range(1f, spawnRadius);
             Vector3 spawnPosition = transform.position + new Vector3(randomCircle.x, 0.5f, randomCircle.y);
 
@@ -202,13 +204,13 @@ public class BattleRoom : MonoBehaviour
 
     private System.Collections.IEnumerator WaitForPlayerInside(Transform playerTransform)
     {
-        // Require player to be 1 unit inside the room boundary before triggering
-        float inset = 1f;
+        
+        float inset = 0.3f;
         while (true)
         {
             Vector3 playerFlat = new Vector3(playerTransform.position.x, transform.position.y, playerTransform.position.z);
-            Vector3 roomMin    = transform.position - new Vector3(roomSize.x / 2f - inset, 0, roomSize.z / 2f - inset);
-            Vector3 roomMax    = transform.position + new Vector3(roomSize.x / 2f - inset, 0, roomSize.z / 2f - inset);
+            Vector3 roomMin = transform.position - new Vector3(roomSize.x / 2f - inset, 0, roomSize.z / 2f - inset);
+            Vector3 roomMax = transform.position + new Vector3(roomSize.x / 2f - inset, 0, roomSize.z / 2f - inset);
 
             bool insideX = playerFlat.x >= roomMin.x && playerFlat.x <= roomMax.x;
             bool insideZ = playerFlat.z >= roomMin.z && playerFlat.z <= roomMax.z;

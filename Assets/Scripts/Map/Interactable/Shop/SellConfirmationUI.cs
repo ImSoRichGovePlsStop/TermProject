@@ -32,8 +32,8 @@ public class SellConfirmationUI : MonoBehaviour
 
         BuildShapePreview(inst.Data, inst.Rarity);
 
-        
-        GetComponent<RectTransform>().position = screenPos;
+
+        GetComponent<RectTransform>().position = new Vector2(Screen.width / 2f, Screen.height / 2f);
 
         gameObject.SetActive(true);
     }
