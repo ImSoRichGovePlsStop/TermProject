@@ -79,6 +79,8 @@ public class MapGenerator : MonoBehaviour
 
     [Header("Generation")]
     [Range(3, 10)] public int minBattleRooms = 3;
+    [Tooltip("Max allowed distance from closest existing room — prevents sprawl")]
+    public int maxRoomDistance = 40;
     [Range(3, 10)] public int maxBattleRooms = 7;
     [Range(0f, 1f)] public float branchChance = 0.4f;
     public int maxPlacementAttempts = 50;
@@ -130,17 +132,12 @@ public class MapGenerator : MonoBehaviour
         SpawnAllRooms();
         SpawnCorridorGeometry();
         SpawnAllWalls();
- 
 
         var minimap = FindFirstObjectByType<MinimapManager>();
         minimap?.BuildMinimapFromMatrix(_matrix, matrixSize, _rooms);
 
         if (navMeshSurface != null)
-        {
-
             navMeshSurface.BuildNavMesh();
-
-        }
         else
             Debug.LogWarning("[MapGen] NavMeshSurface not assigned — skipping navmesh bake.");
     }
@@ -171,6 +168,19 @@ public class MapGenerator : MonoBehaviour
 
             if (!forced && !AreaFree(ox - 3, oz - 3, sx + 6, sz + 6))
                 continue;
+
+            // reject if too far from every existing room
+            if (!forced && _rooms.Count > 0)
+            {
+                int mcxCheck = ox + (sx - 1) / 2;
+                int mczCheck = oz + (sz - 1) / 2;
+                var checkCenter = new Vector2Int(mcxCheck, mczCheck);
+                bool withinRange = false;
+                foreach (var r in _rooms)
+                    if (ManhattanDist(checkCenter, r.MatrixCenter) <= maxRoomDistance)
+                    { withinRange = true; break; }
+                if (!withinRange) continue;
+            }
 
             StampRoom(ox, oz, sx, sz);
             StampOccupied(ox, oz, sx, sz);

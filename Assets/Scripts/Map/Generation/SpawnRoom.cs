@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class SpawnRoom : MonoBehaviour
 {
-    public float spawnHeightOffset = 0.3f;
+    public float spawnHeightOffset = 0.33f;
 
     [HideInInspector] public RoomNode node;
 
