@@ -64,7 +64,7 @@ public class MinimapManager : MonoBehaviour
             for (int z = _minZ; z <= maxZ; z++)
             {
                 byte v = matrix[x, z];
-                if (v == Cell.Empty) continue;
+                if (v == Cell.Empty || v == Cell.Occupied) continue;
 
                 var img = MakeCell($"MC_{x}_{z}", minimapRoot);
                 img.rectTransform.sizeDelta = Vector2.one * cellPixels;
@@ -89,13 +89,17 @@ public class MinimapManager : MonoBehaviour
 
     public void OnPlayerEnterRoom(RoomNode node)
     {
-        if (_visited.Contains(_currentRoomCell))
+        // Repaint the previous room to its visited color (if there was one)
+        if (_currentRoomCell != default && _visited.Contains(_currentRoomCell))
             PaintRoomCells(_currentRoomCell, VisitedColor(_currentRoomCell));
 
         _currentRoomCell = node.MatrixCenter;
         _visited.Add(_currentRoomCell);
+
+        // Always paint current room white — even on re-entry after clearing
         PaintRoomCells(_currentRoomCell, currentColor);
 
+        // Reveal unvisited neighbours
         foreach (var neighbor in node.Neighbors)
         {
             if (_visited.Contains(neighbor.MatrixCenter)) continue;

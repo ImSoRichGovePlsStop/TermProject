@@ -312,14 +312,15 @@ MonoBehaviour:
   corridorMat: {fileID: 2100000, guid: bc13fd34aabd1de4a8587dbfd164dc30, type: 2}
   wallMat: {fileID: 2100000, guid: 9cc3a09839bd23045a23680971b8c414, type: 2}
   boundaryMaterial: {fileID: 2100000, guid: b59bfbcef27325640a17d8406da59c7a, type: 2}
-  matrixSize: 150
+  matrixSize: 200
   minRoomSize: 3
   maxRoomSize: 15
   minBattleRooms: 3
   maxBattleRooms: 3
-  branchChance: 0.75
-  maxPlacementAttempts: 50
+  branchChance: 1
+  maxPlacementAttempts: 20
   corridorWidth: 1
+  exitStubLength: 1
   wallHeight: 10
   wallThickness: 0.01
   floorThickness: 0
@@ -368,7 +369,7 @@ MonoBehaviour:
   m_OverrideTileSize: 0
   m_TileSize: 256
   m_OverrideVoxelSize: 0
-  m_VoxelSize: 0.16666667
+  m_VoxelSize: 0.016666668
   m_MinRegionArea: 2
   m_NavMeshData: {fileID: 0}
   m_BuildHeightMesh: 0
