@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
+using Unity.AI.Navigation;
 using UnityEngine;
 using UnityEngine.ProBuilder;
 using UnityEngine.ProBuilder.MeshOperations;
-using Unity.AI.Navigation;
+using Random = UnityEngine.Random;
 
 public enum RoomType { None, Spawn, Battle, Boss, Shop, Merge, Heal, Upgrade }
 
@@ -33,8 +35,8 @@ public class RoomNode
     public Vector3 WorldPosition;
     public GameObject ChosenPrefab;
     public GameObject RoomObject;
-    public List<RoomNode> Neighbors = new();
-    public RoomPort[] Ports;   // 4 entries: Right, Left, Forward, Back
+    [NonSerialized] public List<RoomNode> Neighbors = new();
+    [NonSerialized] public RoomPort[] Ports;   // 4 entries: Right, Left, Forward, Back
 }
 
 public class MapGenerator : MonoBehaviour
@@ -123,18 +125,22 @@ public class MapGenerator : MonoBehaviour
         PlaceBoss(mainPath[mainPath.Count - 1]);
         AddBranches(mainPath);
 
-        // Build MST over all placed rooms then carve corridors along MST edges
         BuildMSTCorridors();
 
         SpawnAllRooms();
         SpawnCorridorGeometry();
         SpawnAllWalls();
+ 
 
         var minimap = FindFirstObjectByType<MinimapManager>();
         minimap?.BuildMinimapFromMatrix(_matrix, matrixSize, _rooms);
 
         if (navMeshSurface != null)
+        {
+
             navMeshSurface.BuildNavMesh();
+
+        }
         else
             Debug.LogWarning("[MapGen] NavMeshSurface not assigned — skipping navmesh bake.");
     }
@@ -206,7 +212,6 @@ public class MapGenerator : MonoBehaviour
         for (int i = 0; i < 4; i++)
         {
             var dir = cardinals[i];
-            // exit cell calc
             var outerEdge = new Vector2Int(
                 mcx + dir.x * ((sx - 1) / 2),
                 mcz + dir.y * ((sz - 1) / 2));
@@ -404,7 +409,6 @@ public class MapGenerator : MonoBehaviour
     {
         if (_rooms.Count == 0) return;
 
-        // spawn port guard
         bool spawnPortUsed = false;
 
         var inMST = new HashSet<RoomNode>();
@@ -428,7 +432,6 @@ public class MapGenerator : MonoBehaviour
                     if (excluded.Contains(b)) continue;
                     if (!HasFreePort(b)) continue;
 
-                    // Spawn room: only connect to a battle room, only once
                     if (a.Type == RoomType.Spawn && b.Type != RoomType.Battle) continue;
                     if (b.Type == RoomType.Spawn && a.Type != RoomType.Battle) continue;
                     if (a.Type == RoomType.Spawn && spawnPortUsed) continue;
@@ -441,7 +444,6 @@ public class MapGenerator : MonoBehaviour
 
             if (bestA == null || bestB == null)
             {
-                // force remaining in
                 foreach (var r in _rooms)
                     if (!inMST.Contains(r)) inMST.Add(r);
                 break;
@@ -468,7 +470,7 @@ public class MapGenerator : MonoBehaviour
                 if (portA != null) portA.IsUsed = false;
                 if (portB != null) portB.IsUsed = false;
                 excluded.Add(bestB);
-                Debug.LogWarning($"[MapGen] MST: could not claim ports {bestA.Type}↔{bestB.Type}");
+                Debug.LogWarning($"[MapGen] MST: could not claim ports {bestA.Type}\u2194{bestB.Type}");
             }
         }
 
@@ -498,14 +500,12 @@ public class MapGenerator : MonoBehaviour
             {
                 if (pb.IsUsed) continue;
 
-                // estimated tips
-                Vector2Int tipA = pa.ExitCell + pa.Direction * (exitStubLength);
-                Vector2Int tipB = pb.ExitCell + pb.Direction * (exitStubLength);
+                Vector2Int tipA = pa.ExitCell + pa.Direction * exitStubLength;
+                Vector2Int tipB = pb.ExitCell + pb.Direction * exitStubLength;
 
                 Vector2Int aToB = tipB - tipA;
                 Vector2Int bToA = tipA - tipB;
 
-                // score turns
                 int turnsA = TurnCost(pa.Direction, aToB);
                 int turnsB = TurnCost(pb.Direction, bToA);
                 int score = turnsA + turnsB;
@@ -528,18 +528,14 @@ public class MapGenerator : MonoBehaviour
     {
         if (toTarget == Vector2Int.zero) return 0;
 
-        // dominant axis
         bool targetIsHorizontal = Mathf.Abs(toTarget.x) >= Mathf.Abs(toTarget.y);
         bool dirIsHorizontal = dir.x != 0;
 
-        // axis match
         if (dirIsHorizontal == targetIsHorizontal)
         {
-            // sign check
             float dot = Vector2.Dot((Vector2)dir, (Vector2)toTarget);
             return dot >= 0 ? 0 : 2;
         }
-        // one turn
         return 1;
     }
 
@@ -550,7 +546,6 @@ public class MapGenerator : MonoBehaviour
         Vector2Int tipA = CarveStub(portA.ExitCell, portA.Direction);
         Vector2Int tipB = CarveStub(portB.ExitCell, portB.Direction);
 
-        // force open start
         Vector2Int startA = ForceStep(tipA, portA.Direction);
         Vector2Int startB = ForceStep(tipB, portB.Direction);
 
@@ -576,7 +571,6 @@ public class MapGenerator : MonoBehaviour
         {
             Vector2Int c = exitCell + dir * i;
             if (c.x < 0 || c.y < 0 || c.x >= matrixSize || c.y >= matrixSize) break;
-            // stamp doorway
             if (_matrix[c.x, c.y] != Cell.Room)
                 _matrix[c.x, c.y] = Cell.Corridor;
             tip = c;
@@ -626,7 +620,7 @@ public class MapGenerator : MonoBehaviour
                 {
                     Cell.Corridor => 1,
                     Cell.Room => 100,
-                    Cell.Occupied => 80,   //route around room borders
+                    Cell.Occupied => 80,
                     _ => 2
                 };
 
@@ -644,7 +638,7 @@ public class MapGenerator : MonoBehaviour
             }
         }
 
-        Debug.LogWarning($"[MapGen] A* failed: {start} → {goal}");
+        Debug.LogWarning($"[MapGen] A* failed: {start} to {goal}");
     }
 
     int Heuristic(Vector2Int a, Vector2Int b) =>
@@ -665,7 +659,6 @@ public class MapGenerator : MonoBehaviour
         int half = corridorWidth / 2;
         foreach (var cell in path)
         {
-            // doorway width guard
             if (WouldTouchRoom(cell, half))
             {
                 if (_matrix[cell.x, cell.y] == Cell.Empty)
@@ -684,7 +677,6 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    // touches room check
     bool WouldTouchRoom(Vector2Int cell, int half)
     {
         for (int dx = -half; dx < corridorWidth - half; dx++)
@@ -692,7 +684,7 @@ public class MapGenerator : MonoBehaviour
             {
                 int cx = cell.x + dx, cz = cell.y + dz;
                 if (cx < 0 || cz < 0 || cx >= matrixSize || cz >= matrixSize) continue;
-    
+
                 if (cx > 0 && (_matrix[cx - 1, cz] == Cell.Room || _matrix[cx - 1, cz] == Cell.Occupied)) return true;
                 if (cx < matrixSize - 1 && (_matrix[cx + 1, cz] == Cell.Room || _matrix[cx + 1, cz] == Cell.Occupied)) return true;
                 if (cz > 0 && (_matrix[cx, cz - 1] == Cell.Room || _matrix[cx, cz - 1] == Cell.Occupied)) return true;
@@ -814,7 +806,6 @@ public class MapGenerator : MonoBehaviour
             for (int z = 0; z < matrixSize; z++)
                 if (_matrix[x, z] == Cell.Corridor)
                     SpawnFloorQuad(parent, x, z);
-        // skip occupied
     }
 
     void SpawnFloorQuad(Transform parent, int x, int z)
@@ -842,6 +833,7 @@ public class MapGenerator : MonoBehaviour
             pb.GetComponent<Renderer>().material = corridorMat;
     }
 
+
     // walls
 
     void SpawnAllWalls()
@@ -856,14 +848,13 @@ public class MapGenerator : MonoBehaviour
         for (int x = 0; x < matrixSize; x++)
             for (int z = 0; z < matrixSize; z++)
             {
-                // skip occupied
                 if (_matrix[x, z] == Cell.Empty || _matrix[x, z] == Cell.Occupied) continue;
                 foreach (var d in dirs)
                 {
                     int nx = x + d.x, nz = z + d.y;
                     bool empty = nx < 0 || nz < 0 || nx >= matrixSize || nz >= matrixSize
                                  || _matrix[nx, nz] == Cell.Empty
-                                 || _matrix[nx, nz] == Cell.Occupied; // open space
+                                 || _matrix[nx, nz] == Cell.Occupied;
                     if (empty) SpawnWallQuad(parent, x, z, d);
                 }
             }
