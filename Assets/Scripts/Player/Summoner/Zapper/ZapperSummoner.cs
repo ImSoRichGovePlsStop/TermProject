@@ -13,9 +13,6 @@ public class ZapperSummoner : SummonerBase
         Attached
     }
 
-    [Header("Search")]
-    [SerializeField] private float searchRadius = 10f;
-
     [Header("Attach")]
     [SerializeField] private float attachDuration = 4f;
     [SerializeField] private float attachRange = 1f;
@@ -37,6 +34,22 @@ public class ZapperSummoner : SummonerBase
     [Header("Player Scaling")]
     [SerializeField] private float hpScale = 0.05f;
     [SerializeField] private float speedScale = 0.1f;
+
+    [Header("Mini Tier")]
+    [SerializeField] private StatScale miniStatScale = new StatScale { hp = 0.4f, damage = 0.4f, moveSpeed = 0.7f };
+    [SerializeField] private float miniAttachRangeMult = 0.7f;
+    [SerializeField] private float miniAttachDurationMult = 0.7f;
+    [SerializeField] private float miniDamageAmpMult = 0.6f;
+    [SerializeField] private float miniChainPercentMult = 0.6f;
+    [SerializeField] private float miniSizeMult = 0.5f;
+
+    [Header("Elite Tier")]
+    [SerializeField] private StatScale eliteStatScale = new StatScale { hp = 3f, damage = 2f, moveSpeed = 1.2f };
+    [SerializeField] private float eliteAttachRangeMult = 1.5f;
+    [SerializeField] private float eliteAttachDurationMult = 1.5f;
+    [SerializeField] private float eliteDamageAmpMult = 2f;
+    [SerializeField] private float eliteChainPercentMult = 1.5f;
+    [SerializeField] private float eliteSizeMult = 1.5f;
 
     private Vector3 GetAttachPosition(Vector3 targetPos)
     {
@@ -61,15 +74,36 @@ public class ZapperSummoner : SummonerBase
         if (playerStats == null) return;
         stats.AddFlatModifier(new EntityStatModifier
         {
-            maxHP = playerStats.MaxHealth * hpScale,
-            moveSpeed = playerStats.MoveSpeed * speedScale
+            maxHP = playerStats.MaxHealth * (hpScale + hpScaleBonus),
+            moveSpeed = playerStats.MoveSpeed * (speedScale + speedScaleBonus)
         });
+
+        switch (tier)
+        {
+            case SummonerTier.Mini:
+                stats.SetStatScale(miniStatScale);
+                attachRange *= miniAttachRangeMult;
+                attachDuration *= miniAttachDurationMult;
+                damageAmpPercent *= miniDamageAmpMult;
+                chainPercent *= miniChainPercentMult;
+                transform.localScale *= miniSizeMult;
+                break;
+            case SummonerTier.Elite:
+                stats.SetStatScale(eliteStatScale);
+                attachRange *= eliteAttachRangeMult;
+                attachDuration *= eliteAttachDurationMult;
+                damageAmpPercent *= eliteDamageAmpMult;
+                chainPercent *= eliteChainPercentMult;
+                transform.localScale *= eliteSizeMult;
+                break;
+        }
+
         health.SetMaxHP(stats.MaxHP);
     }
 
-    public override void Init(PlayerStats playerStats)
+    public override void Init(PlayerStats playerStats, SummonerTier tier = SummonerTier.Normal)
     {
-        base.Init(playerStats);
+        base.Init(playerStats, tier);
         context = playerStats.GetComponent<PlayerCombatContext>();
         context.OnEntityKilled += OnEntityKilled;
     }

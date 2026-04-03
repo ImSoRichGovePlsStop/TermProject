@@ -12,7 +12,7 @@ public class Totem : HealthBase
 
     [Header("Spawn Intervals")]
     [SerializeField] private float brawlerInterval = 3f;
-    [SerializeField] private float zapperInterval = 4f;
+    [SerializeField] private float zapperInterval = 2f;
     [SerializeField] private float bomberInterval = 5f;
 
     [Header("Spawn Settings")]
@@ -28,12 +28,14 @@ public class Totem : HealthBase
     private PlayerStats playerStats;
     private PlayerCombatContext context;
 
+    public float hpScaleBonus = 0f;
+
     public void Init(PlayerStats playerStats, PlayerCombatContext context)
     {
         this.playerStats = playerStats;
         this.context = context;
 
-        currentHP = maxHP;
+        currentHP = maxHP + playerStats.MaxHealth * hpScaleBonus;
 
         brawlerTimer = brawlerInterval;
         zapperTimer = zapperInterval;
@@ -44,6 +46,13 @@ public class Totem : HealthBase
     {
         canSpawnZapper = canZapper;
         canSpawnBomber = canBomber;
+    }
+
+    public void ReduceSpawnIntervals(float amount)
+    {
+        brawlerInterval = Mathf.Max(0.5f, brawlerInterval - amount);
+        zapperInterval = Mathf.Max(0.5f, zapperInterval - amount);
+        bomberInterval = Mathf.Max(0.5f, bomberInterval - amount);
     }
 
     public void AddHP(float amount)
@@ -78,7 +87,7 @@ public class Totem : HealthBase
         }
     }
 
-    private void SpawnSummoner(GameObject prefab)
+    private void SpawnSummoner(GameObject prefab, SummonerTier tier = SummonerTier.Normal)
     {
         if (playerStats == null) return;
 
@@ -88,7 +97,7 @@ public class Totem : HealthBase
         GameObject obj = Instantiate(prefab, spawnPos, Quaternion.identity);
         var summoner = obj.GetComponent<SummonerBase>();
         if (summoner != null)
-            summoner.Init(playerStats);
+            summoner.Init(playerStats, tier);
     }
 
     protected override void OnDamageTaken(float damage, bool isCrit) { }

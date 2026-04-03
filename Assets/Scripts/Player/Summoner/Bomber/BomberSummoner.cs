@@ -12,9 +12,6 @@ public class BomberSummoner : SummonerBase
         Detonating
     }
 
-    [Header("Search")]
-    [SerializeField] private float searchRadius = 10f;
-
     [Header("Explosion")]
     [SerializeField] private float explosionRadius = 2f;
     [SerializeField] private float baseExplosionRadius = 2f;
@@ -35,18 +32,52 @@ public class BomberSummoner : SummonerBase
     [SerializeField] private float hpScale = 0.05f;
     [SerializeField] private float speedScale = 0.1f;
 
+    [Header("Mini Tier")]
+    [SerializeField] private StatScale miniStatScale = new StatScale { hp = 0.4f, damage = 0.4f, moveSpeed = 0.7f };
+    [SerializeField] private float miniRadiusMult = 0.6f;
+    [SerializeField] private float miniTriggerRangeMult = 0.7f;
+    [SerializeField] private float miniSizeMult = 0.5f;
+
+    [Header("Elite Tier")]
+    [SerializeField] private StatScale eliteStatScale = new StatScale { hp = 3f, damage = 2f, moveSpeed = 1.2f };
+    [SerializeField] private float eliteRadiusMult = 1.5f;
+    [SerializeField] private float eliteTriggerRangeMult = 1.3f;
+    [SerializeField] private float eliteSizeMult = 1.5f;
+
     private HealthBase currentTarget;
     private BomberState currentState = BomberState.Wander;
     private LayerMask enemyMask;
+
+    public float centerDamageScaleBonus = 0f;
+    public float edgeDamageScaleBonus = 0f;
 
     protected override void ApplyPlayerScaling()
     {
         if (playerStats == null) return;
         stats.AddFlatModifier(new EntityStatModifier
         {
-            maxHP = playerStats.MaxHealth * hpScale,
-            moveSpeed = playerStats.MoveSpeed * speedScale
+            maxHP = playerStats.MaxHealth * (hpScale + hpScaleBonus),
+            moveSpeed = playerStats.MoveSpeed * (speedScale + speedScaleBonus)
         });
+
+        switch (tier)
+        {
+            case SummonerTier.Mini:
+                stats.SetStatScale(miniStatScale);
+                explosionRadius *= miniRadiusMult;
+                centerRadius *= miniRadiusMult;
+                triggerRange *= miniTriggerRangeMult;
+                transform.localScale *= miniSizeMult;
+                break;
+            case SummonerTier.Elite:
+                stats.SetStatScale(eliteStatScale);
+                explosionRadius *= eliteRadiusMult;
+                centerRadius *= eliteRadiusMult;
+                triggerRange *= eliteTriggerRangeMult;
+                transform.localScale *= eliteSizeMult;
+                break;
+        }
+
         health.SetMaxHP(stats.MaxHP);
     }
 
@@ -156,8 +187,8 @@ public class BomberSummoner : SummonerBase
             bool isCenter = dist <= centerRadius;
 
             float damage = isCenter
-                ? stats.Damage * centerDamageMultiplier + (playerStats != null ? playerStats.Damage * centerDamageScale : 0f)
-                : stats.Damage * edgeDamageMultiplier + (playerStats != null ? playerStats.Damage * edgeDamageScale : 0f);
+                ? stats.Damage * centerDamageMultiplier + (playerStats != null ? playerStats.Damage * (centerDamageScale + centerDamageScaleBonus) : 0f)
+                : stats.Damage * edgeDamageMultiplier + (playerStats != null ? playerStats.Damage * (edgeDamageScale + edgeDamageScaleBonus) : 0f);
 
             target.TakeDamage(damage);
         }

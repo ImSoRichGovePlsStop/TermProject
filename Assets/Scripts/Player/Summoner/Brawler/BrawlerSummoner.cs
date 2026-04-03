@@ -19,15 +19,26 @@ public class BrawlerSummoner : SummonerBase
     [SerializeField] private float damageScale = 0.25f;
     [SerializeField] private Animator animator;
 
-    [Header("Search")]
-    [SerializeField] private float searchRadius = 10f;
-
     [Header("Wander")]
     [SerializeField] private WanderBehavior wander;
 
     [Header("Player Scaling")]
     [SerializeField] private float hpScale = 0.1f;
     [SerializeField] private float speedScale = 0.1f;
+
+    [Header("Mini Tier")]
+    [SerializeField] private StatScale miniStatScale = new StatScale { hp = 0.4f, damage = 0.4f, moveSpeed = 0.7f };
+    [SerializeField] private float miniAttackRangeMult = 0.7f;
+    [SerializeField] private float miniAttackAngleMult = 0.8f;
+    [SerializeField] private float miniAttackCooldownMult = 1.3f;
+    [SerializeField] private float miniSizeMult = 0.5f;
+
+    [Header("Elite Tier")]
+    [SerializeField] private StatScale eliteStatScale = new StatScale { hp = 3f, damage = 2f, moveSpeed = 1.2f };
+    [SerializeField] private float eliteAttackRangeMult = 1.5f;
+    [SerializeField] private float eliteAttackAngleMult = 1.2f;
+    [SerializeField] private float eliteAttackCooldownMult = 0.7f;
+    [SerializeField] private float eliteSizeMult = 1.5f;
 
     private HealthBase currentTarget;
     private BrawlerState currentState = BrawlerState.Wander;
@@ -38,14 +49,35 @@ public class BrawlerSummoner : SummonerBase
 
     private LayerMask _enemyMask;
 
+    public float damageScaleBonus = 0f;
+
     protected override void ApplyPlayerScaling()
     {
         if (playerStats == null) return;
         stats.AddFlatModifier(new EntityStatModifier
         {
-            maxHP = playerStats.MaxHealth * hpScale,
-            moveSpeed = playerStats.MoveSpeed * speedScale
+            maxHP = playerStats.MaxHealth * (hpScale + hpScaleBonus),
+            moveSpeed = playerStats.MoveSpeed * (speedScale + speedScaleBonus)
         });
+
+        switch (tier)
+        {
+            case SummonerTier.Mini:
+                stats.SetStatScale(miniStatScale);
+                attackRange *= miniAttackRangeMult;
+                attackAngle *= miniAttackAngleMult;
+                attackCooldown *= miniAttackCooldownMult;
+                transform.localScale *= miniSizeMult;
+                break;
+            case SummonerTier.Elite:
+                stats.SetStatScale(eliteStatScale);
+                attackRange *= eliteAttackRangeMult;
+                attackAngle *= eliteAttackAngleMult;
+                attackCooldown *= eliteAttackCooldownMult;
+                transform.localScale *= eliteSizeMult;
+                break;
+        }
+
         health.SetMaxHP(stats.MaxHP);
     }
 
@@ -148,7 +180,7 @@ public class BrawlerSummoner : SummonerBase
     {
         if (currentTarget == null || currentTarget.IsDead) return;
 
-        float damage = stats.Damage + (playerStats != null ? playerStats.Damage * damageScale : 0f);
+        float damage = stats.Damage + (playerStats != null ? playerStats.Damage * (damageScale + damageScaleBonus) : 0f);
 
         Vector3 attackDir = currentTarget.transform.position - transform.position;
         attackDir.y = 0f;

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerStats))]
@@ -11,6 +12,7 @@ public class WandAttack : MonoBehaviour
 
     [Header("Totem")]
     [SerializeField] private GameObject totemPrefab;
+    [SerializeField] private float totemCooldown = 20f;
 
     [Header("Spawn")]
     [SerializeField] private Transform projectileSpawnPoint;
@@ -21,8 +23,12 @@ public class WandAttack : MonoBehaviour
     private PlayerStats stats;
     private PlayerCombatContext context;
     private WeaponEquip weaponEquip;
-    private PlayerController controller;
     private List<Totem> activeTotems = new List<Totem>();
+
+    private float totemCooldownRemaining = 0f;
+    public float TotemCooldownRemaining => totemCooldownRemaining;
+    public float TotemCooldown => totemCooldown;
+    public bool IsTotemReady => totemCooldownRemaining <= 0f;
 
     private StatusEntry cooldownEntry;
     private const string COOLDOWN_ID = "wand_totem_cooldown";
@@ -32,7 +38,6 @@ public class WandAttack : MonoBehaviour
         stats = GetComponent<PlayerStats>();
         context = GetComponent<PlayerCombatContext>();
         weaponEquip = GetComponent<WeaponEquip>();
-        controller = GetComponent<PlayerController>();
     }
 
     private void Start()
@@ -50,10 +55,17 @@ public class WandAttack : MonoBehaviour
 
     private void Update()
     {
+        if (totemCooldownRemaining > 0f)
+            totemCooldownRemaining -= Time.deltaTime;
+
+        UpdateHUD();
+    }
+
+    private void UpdateHUD()
+    {
         if (cooldownEntry == null || PlayerStatusHUD.Instance == null) return;
 
         WeaponData weapon = weaponEquip?.GetCurrentWeapon();
-
         if (weapon == null || weapon.weaponType != WeaponType.Wand)
         {
             PlayerStatusHUD.Instance.Unregister(COOLDOWN_ID);
@@ -61,19 +73,22 @@ public class WandAttack : MonoBehaviour
         }
 
         PlayerStatusHUD.Instance.Register(cooldownEntry);
-
-        float cooldown = weapon.secondaryCooldown;
-        float remaining = controller != null ? controller.SecondaryCooldownRemaining : 0f;
-        float ratio = cooldown > 0f ? Mathf.Clamp01(remaining / cooldown) : 0f;
-
+        float ratio = totemCooldown > 0f ? Mathf.Clamp01(totemCooldownRemaining / totemCooldown) : 0f;
         cooldownEntry.sweepFill = ratio;
-        cooldownEntry.isActive = remaining <= 0f;
+        cooldownEntry.isActive = totemCooldownRemaining <= 0f;
         PlayerStatusHUD.Instance.Refresh(COOLDOWN_ID);
     }
 
+    public void ReduceTotemCooldown(float percent)
+    {
+        totemCooldownRemaining *= (1f - percent);
+    }
+
+    public static event Action<Totem> OnTotemSpawned;
+
     public void PlaceTotem()
     {
-        if (totemPrefab == null) return;
+        if (totemPrefab == null || !IsTotemReady) return;
 
         activeTotems.RemoveAll(t => t == null || t.IsDead);
 
@@ -81,9 +96,12 @@ public class WandAttack : MonoBehaviour
         var totem = obj.GetComponent<Totem>();
         if (totem != null)
         {
+            OnTotemSpawned?.Invoke(totem);
             totem.Init(stats, context);
             activeTotems.Add(totem);
         }
+
+        totemCooldownRemaining = totemCooldown;
     }
 
     public List<Totem> GetActiveTotems() => activeTotems;

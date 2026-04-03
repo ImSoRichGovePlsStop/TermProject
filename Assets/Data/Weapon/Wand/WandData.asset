@@ -91,7 +91,7 @@ MonoBehaviour:
     vfxDurationMultiplier: 1
     vfxLoops: 1
   comboCooldown: 0.5
-  secondaryCooldown: 20
+  secondaryCooldown: 0
   comboResetTime: 0.6
   wandProjectile:
     normalMaxSpeed: 8
