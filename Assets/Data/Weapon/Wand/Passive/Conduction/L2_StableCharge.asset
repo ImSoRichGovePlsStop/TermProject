@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: L2_StableCharge
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Stable Charge
-  description: Zapper attach duration increases from 4s to 6s
+  description: Zapper attach duration increases from 5s to 8s
   cost: 1
   parents:
   - {fileID: 11400000, guid: 66dd8c22cb6daf74f99fe20f494ab621, type: 2}

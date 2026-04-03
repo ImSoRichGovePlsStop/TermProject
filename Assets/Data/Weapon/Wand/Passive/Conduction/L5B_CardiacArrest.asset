@@ -10,14 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L5A_DeathSurge
+  m_Name: L5B_CardiacArrest
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Death Surge
-  description: When attached enemy dies, triggers AoE explosion in a 2.5m radius
+  nodeName: Cardiac Arrest
+  description: When Zapper detaches, if enemy HP is below 25% the enemy is instantly
+    killed. Does not apply to mini-bosses and bosses
   cost: 3
   parents:
   - {fileID: 11400000, guid: fee9688b542fd9a489c4ff48c227a8a1, type: 2}
   requireAllParents: 0
   layer: 5
-  branch: 1
+  branch: 2
   overrideCost: 0

@@ -314,7 +314,7 @@ MonoBehaviour:
   stats: {fileID: 0}
   hpScaleBonus: 0
   speedScaleBonus: 0
-  attachDuration: 4
+  attachDuration: 5
   attachRange: 0.4
   damageAmpPercent: 0.1
   chainPercent: 0.3
@@ -338,6 +338,9 @@ MonoBehaviour:
   miniDamageAmpMult: 0.6
   miniChainPercentMult: 0.6
   miniSizeMult: 0.7
+  miniLightningRodPenaltyMult: 0.5
+  miniArcPulseDamageMult: 0.4
+  miniInstantKillThresholdMult: 0.5
   eliteStatScale:
     hp: 3
     damage: 2
@@ -345,5 +348,22 @@ MonoBehaviour:
   eliteAttachRangeMult: 1.5
   eliteAttachDurationMult: 1.5
   eliteDamageAmpMult: 2
-  eliteChainPercentMult: 1.5
+  eliteChainPercentMult: 2
   eliteSizeMult: 1.4
+  eliteLightningRodPenaltyMult: 2
+  eliteArcPulseDamageMult: 4
+  eliteInstantKillThresholdMult: 1.5
+  attachDurationBonus: 0
+  chainPercentBonus: 0
+  lightningRod: 0
+  lightningRodPenaltyTierMult: 1
+  lightningRodDamagePenalty: 0.3
+  cardiacArrest: 0
+  arcPulse: 0
+  arcPulseTierMult: 1
+  instantKillThresholdTierMult: 1
+  cardiacArrestHpThreshold: 0.25
+  arcPulseInterval: 0.5
+  arcPulseDamageScale: 0.05
+  arcPulseTargets: 2
+  arcPulseRadius: 5

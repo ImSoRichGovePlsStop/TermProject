@@ -84,6 +84,12 @@ public class Totem : HealthBase
         SpawnSummoner(brawlerPrefab, SummonerTier.Elite);
     }
 
+    [ContextMenu("Debug: Force Spawn Elite Zapper")]
+    private void Debug_SpawnEliteZapper()
+    {
+        SpawnSummoner(zapperPrefab, SummonerTier.Elite);
+    }
+
     public void AddHP(float amount)
     {
         Heal(amount);
@@ -116,6 +122,7 @@ public class Totem : HealthBase
     }
 
     public float eliteBrawlerChance = 0f;
+    public float eliteZapperChance = 0f;
 
     private void SpawnSummoner(GameObject prefab, SummonerTier tier = SummonerTier.Normal)
     {
@@ -123,6 +130,8 @@ public class Totem : HealthBase
 
         SummonerTier spawnTier = tier;
         if (prefab == brawlerPrefab && eliteBrawlerChance > 0f && Random.value < eliteBrawlerChance)
+            spawnTier = SummonerTier.Elite;
+        else if (prefab == zapperPrefab && eliteZapperChance > 0f && Random.value < eliteZapperChance)
             spawnTier = SummonerTier.Elite;
 
         Vector2 randomCircle = Random.insideUnitCircle * spawnRadius;

@@ -112,8 +112,24 @@ public class BrawlerSummoner : SummonerBase
         TickState();
     }
 
+    public bool lightningRod = false;
+
     private void UpdateTarget()
     {
+        if (lightningRod)
+        {
+            HealthBase nearest = null;
+            float nearestDist = Mathf.Infinity;
+            var candidates = CombatUtility.FindAround<HealthBase>(transform.position, searchRadius, _enemyMask);
+            foreach (var h in candidates)
+            {
+                if (h == null || h.IsDead) continue;
+                if (!ZapperSummoner.attachedEnemies.Contains(h)) continue;
+                float dist = Vector3.Distance(transform.position, h.transform.position);
+                if (dist < nearestDist) { nearestDist = dist; nearest = h; }
+            }
+            if (nearest != null) { currentTarget = nearest; return; }
+        }
         currentTarget = CombatUtility.FindNearest<HealthBase>(transform.position, searchRadius, _enemyMask);
     }
 

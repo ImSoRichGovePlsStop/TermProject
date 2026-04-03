@@ -116,8 +116,31 @@ public class BomberSummoner : SummonerBase
         }
     }
 
+    public bool lightningRod = false;
+
     private void TickWander()
     {
+        if (lightningRod)
+        {
+            HealthBase nearest = null;
+            float nearestDist = Mathf.Infinity;
+            var candidates = CombatUtility.FindAround<HealthBase>(transform.position, searchRadius, enemyMask);
+            foreach (var h in candidates)
+            {
+                if (h == null || h.IsDead) continue;
+                if (!ZapperSummoner.attachedEnemies.Contains(h)) continue;
+                float dist = Vector3.Distance(transform.position, h.transform.position);
+                if (dist < nearestDist) { nearestDist = dist; nearest = h; }
+            }
+            if (nearest != null)
+            {
+                currentTarget = nearest;
+                wander.Reset(movement, stats);
+                currentState = BomberState.Chase;
+                return;
+            }
+        }
+
         currentTarget = CombatUtility.FindNearest<HealthBase>(transform.position, searchRadius, enemyMask);
 
         if (currentTarget != null)
