@@ -10,17 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L6_LivingLegacy
+  m_Name: L5B_GreatConjuction
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Living Legacy
-  description: On Totem placement, instantly spawn 1 Elite per unlocked type. When
-    Totem is destroyed or expires, spawn 1 Elite per unlocked type again. Elites
-    have x2 stats
-  cost: 4
+  nodeName: Great Conjunction
+  description: ncreased Totem charges from 1 to 2 and spawn at 70% health
+  cost: 3
   parents:
-  - {fileID: 11400000, guid: f10068766ef7d064eb3cce5df0bbf7f5, type: 2}
-  - {fileID: 11400000, guid: 188d28d7ad01ba74abafce20f89baa34, type: 2}
+  - {fileID: 11400000, guid: 63447711e67cd9e4bb0c15f3683875b2, type: 2}
   requireAllParents: 0
-  layer: 6
-  branch: 0
+  layer: 5
+  branch: 2
   overrideCost: 0

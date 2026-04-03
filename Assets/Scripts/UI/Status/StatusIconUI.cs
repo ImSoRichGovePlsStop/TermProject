@@ -25,6 +25,10 @@ public class StatusIconUI : MonoBehaviour
         {
             outerBorder.color = Color.red;
         }
+        else if (entry.outerBorderType == StatusBorderType.Blue)
+        {
+            outerBorder.color = new Color(0.2f, 0.6f, 1f);
+        }
         else
         {
             outerBorder.color = new Color(0.25f, 0.25f, 0.25f, 1f);
@@ -33,6 +37,7 @@ public class StatusIconUI : MonoBehaviour
         innerBorderFill.gameObject.SetActive(entry.showInnerBorder);
         innerBorderFill.fillAmount = entry.innerFill;
         innerBorderFill.fillClockwise = entry.innerFillClockwise;
+        innerBorderFill.color = entry.innerBorderColor;
 
         iconImage.sprite = entry.icon;
         iconImage.canvasRenderer.SetAlpha(entry.isActive ? 1f : 0.4f);

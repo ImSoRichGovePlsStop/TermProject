@@ -10,10 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L1_ReinforcedTotem
+  m_Name: L1_InfectiousStrike
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Reinforced Totem
-  description: Totem HP increases from 50 to 60
+  nodeName: Infectious Strike
+  description: Each primary attack hit has an 8% chance to instantly spawn a Mini
+    Summoner of a random unlocked type at the hit location
   cost: 1
   parents: []
   requireAllParents: 0

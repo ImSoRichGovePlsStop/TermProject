@@ -13,6 +13,8 @@ public class WandAttack : MonoBehaviour
     [Header("Totem")]
     [SerializeField] private GameObject totemPrefab;
     [SerializeField] private float totemCooldown = 20f;
+    [SerializeField] private float interChargeDelay = 3f;
+    [SerializeField] private int maxCharges = 1;
 
     [Header("Spawn")]
     [SerializeField] private Transform projectileSpawnPoint;
@@ -25,10 +27,15 @@ public class WandAttack : MonoBehaviour
     private WeaponEquip weaponEquip;
     private List<Totem> activeTotems = new List<Totem>();
 
-    private float totemCooldownRemaining = 0f;
-    public float TotemCooldownRemaining => totemCooldownRemaining;
+    private int currentCharges = 1;
+    private float chargeCooldownRemaining = 0f;
+    private float interChargeDelayRemaining = 0f;
+
     public float TotemCooldown => totemCooldown;
-    public bool IsTotemReady => totemCooldownRemaining <= 0f;
+    public float ChargeCooldownRemaining => chargeCooldownRemaining;
+    public int CurrentCharges => currentCharges;
+    public int MaxCharges => maxCharges;
+    public bool IsTotemReady => currentCharges > 0 && interChargeDelayRemaining <= 0f;
 
     private StatusEntry cooldownEntry;
     private const string COOLDOWN_ID = "wand_totem_cooldown";
@@ -38,6 +45,7 @@ public class WandAttack : MonoBehaviour
         stats = GetComponent<PlayerStats>();
         context = GetComponent<PlayerCombatContext>();
         weaponEquip = GetComponent<WeaponEquip>();
+        currentCharges = maxCharges;
     }
 
     private void Start()
@@ -55,10 +63,32 @@ public class WandAttack : MonoBehaviour
 
     private void Update()
     {
-        if (totemCooldownRemaining > 0f)
-            totemCooldownRemaining -= Time.deltaTime;
+        if (interChargeDelayRemaining > 0f)
+            interChargeDelayRemaining -= Time.deltaTime;
+
+        if (chargeCooldownRemaining > 0f)
+        {
+            chargeCooldownRemaining -= Time.deltaTime;
+            if (chargeCooldownRemaining <= 0f)
+            {
+                currentCharges++;
+                if (currentCharges < maxCharges)
+                    chargeCooldownRemaining = totemCooldown;
+            }
+        }
 
         UpdateHUD();
+    }
+
+    private bool showChargeCount = false;
+    private float innerBorderFill = 0f;
+    private bool showInnerBorder = false;
+
+    public void SetShowChargeCount(bool show) => showChargeCount = show;
+    public void SetInnerBorder(float fill, bool show)
+    {
+        innerBorderFill = fill;
+        showInnerBorder = show;
     }
 
     private void UpdateHUD()
@@ -73,18 +103,38 @@ public class WandAttack : MonoBehaviour
         }
 
         PlayerStatusHUD.Instance.Register(cooldownEntry);
-        float ratio = totemCooldown > 0f ? Mathf.Clamp01(totemCooldownRemaining / totemCooldown) : 0f;
-        cooldownEntry.sweepFill = ratio;
-        cooldownEntry.isActive = totemCooldownRemaining <= 0f;
+
+        cooldownEntry.isActive = currentCharges > 0;
+        cooldownEntry.count = showChargeCount ? currentCharges : 0;
+        cooldownEntry.showInnerBorder = showInnerBorder;
+        cooldownEntry.innerFill = innerBorderFill;
+        cooldownEntry.innerFillClockwise = true;
+        cooldownEntry.innerBorderColor = new Color(0.2f, 0.6f, 1f);
+
+        if (interChargeDelayRemaining > 0f && currentCharges > 0)
+            cooldownEntry.sweepFill = interChargeDelayRemaining / interChargeDelay;
+        else
+            cooldownEntry.sweepFill = totemCooldown > 0f ? Mathf.Clamp01(chargeCooldownRemaining / totemCooldown) : 0f;
+
         PlayerStatusHUD.Instance.Refresh(COOLDOWN_ID);
     }
 
     public void ReduceTotemCooldown(float percent)
     {
-        totemCooldownRemaining *= (1f - percent);
+        chargeCooldownRemaining *= (1f - percent);
     }
 
     public static event Action<Totem> OnTotemSpawned;
+
+    private float totemStartHpPercent = 1f;
+
+    public void SetMaxCharges(int max)
+    {
+        maxCharges = max;
+        currentCharges = Mathf.Min(currentCharges, maxCharges);
+    }
+
+    public void SetTotemStartHpPercent(float percent) => totemStartHpPercent = percent;
 
     public void PlaceTotem()
     {
@@ -97,11 +147,15 @@ public class WandAttack : MonoBehaviour
         if (totem != null)
         {
             OnTotemSpawned?.Invoke(totem);
+            totem.startHpPercent = totemStartHpPercent;
             totem.Init(stats, context);
             activeTotems.Add(totem);
         }
 
-        totemCooldownRemaining = totemCooldown;
+        currentCharges--;
+        interChargeDelayRemaining = interChargeDelay;
+        if (chargeCooldownRemaining <= 0f)
+            chargeCooldownRemaining = totemCooldown;
     }
 
     public List<Totem> GetActiveTotems() => activeTotems;

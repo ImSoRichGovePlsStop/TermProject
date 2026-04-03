@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
+  m_Name: L6_WarLord
+  m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
+  nodeName: Warlord
+  description: "New Elite Unlocked: The Elite Brawler now has a 15% chance to appear
+    from Totems, featuring a 1.0m War Aura on spawn.\nWar Aura Effects (while inside):\n-
+    Regeneration: Summoners and Totems restore 2.5% of the Brawler\u2019s Max HP
+    every 0.5s.\n- Summoners: Gain +40% Move Speed.\n- Totems: Spawn interval reduced
+    by 50%.\n- Player: Gain +20% Move Speed and +25% Attack Speed."
+  cost: 4
+  parents:
+  - {fileID: 11400000, guid: f10068766ef7d064eb3cce5df0bbf7f5, type: 2}
+  - {fileID: 11400000, guid: 188d28d7ad01ba74abafce20f89baa34, type: 2}
+  requireAllParents: 0
+  layer: 6
+  branch: 0
+  overrideCost: 0

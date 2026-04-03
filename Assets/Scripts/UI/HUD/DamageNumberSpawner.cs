@@ -49,6 +49,19 @@ public class DamageNumberSpawner : MonoBehaviour
         SpawnNumber(playerStats.transform.position + playerDamageOffset, damage, false, true);
     }
 
+    public void SpawnHealNumber(Vector3 worldPos, float amount, float heightOffset = 0.5f)
+    {
+        if (prefab == null || amount <= 0f) return;
+
+        float tiltRad = Camera.main.transform.eulerAngles.x * Mathf.Deg2Rad;
+        float zOffset = heightOffset * Mathf.Tan(tiltRad);
+        Vector3 pos = worldPos + new Vector3(0f, heightOffset, zOffset);
+        pos.x += UnityEngine.Random.Range(-baseRandomRangeX, baseRandomRangeX);
+        pos.y += UnityEngine.Random.Range(0f, baseRandomRangeY);
+
+        var num = Instantiate(prefab, pos, Quaternion.identity);
+        num.InitHeal(amount);
+    }
     private void SpawnNumber(Vector3 basePos, float damage, bool isCrit, bool isPlayerDamage, float rangeX = -1f, float rangeY = -1f)
     {
         if (prefab == null) return;

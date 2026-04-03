@@ -5,6 +5,8 @@ public class FoundationPassive : MonoBehaviour
 {
     [Header("Prefabs")]
     public GameObject brawlerPrefab;
+    public GameObject zapperPrefab;
+    public GameObject bomberPrefab;
 
     [Header("Infectious Strike")]
     [SerializeField] private float infectiousStrikeChance = 0.08f;
@@ -19,6 +21,13 @@ public class FoundationPassive : MonoBehaviour
     [SerializeField] private int stackElite = 8;
     [SerializeField] private int stackMiniboss = 12;
     [SerializeField] private int stackBoss = 16;
+
+    [Header("Great Conjunction")]
+    [SerializeField] private int greatConjunctionMaxTotems = 2;
+    [SerializeField] private float greatConjunctionStartHpPercent = 0.7f;
+
+    [Header("Mana Feedback")]
+    [SerializeField] private float manaFeedbackHPPerHit = 0.5f;
 
     [Header("Rapid Spawn")]
     [SerializeField] private float rapidSpawnIntervalReduction = 1f;
@@ -41,11 +50,19 @@ public class FoundationPassive : MonoBehaviour
     [SerializeField] private float sharedEssenceBomberCenterDamageScale = 0.5f;
     [SerializeField] private float sharedEssenceBomberEdgeDamageScale = 0.5f;
 
+    [Header("Warlord")]
+    [SerializeField] private float warlordEliteBrawlerChance = 0.15f;
+
     public bool infectiousStrike = false;
     public bool swiftMinions = false;
     public bool recycledEssence = false;
     public bool sharedEssence = false;
     public bool rapidSpawn = false;
+    public bool manaFeedback = false;
+    public bool greatConjunction = false;
+    public bool warlord = false;
+    public bool canSpawnZapper = false;
+    public bool canSpawnBomber = false;
 
     private PlayerStats stats;
     private PlayerCombatContext context;
@@ -72,11 +89,30 @@ public class FoundationPassive : MonoBehaviour
         WandAttack.OnTotemSpawned -= OnTotemSpawned;
     }
 
+    private void Update()
+    {
+        if (wandAttack == null) return;
+        if (recycledEssence)
+            wandAttack.SetInnerBorder((float)currentStacks / recycledEssenceMaxStacks, true);
+        else
+            wandAttack.SetInnerBorder(0f, false);
+    }
+
+    public void ApplyTotemConfig()
+    {
+        if (wandAttack == null) return;
+        wandAttack.SetMaxCharges(greatConjunction ? greatConjunctionMaxTotems : 1);
+        wandAttack.SetTotemStartHpPercent(greatConjunction ? greatConjunctionStartHpPercent : 1f);
+        wandAttack.SetShowChargeCount(greatConjunction);
+    }
+
     private void OnTotemSpawned(Totem totem)
     {
         if (!enabled) return;
         if (sharedEssence) totem.hpScaleBonus += sharedEssenceTotemHpScale;
         if (rapidSpawn) totem.ReduceSpawnIntervals(rapidSpawnIntervalReduction);
+        totem.eliteBrawlerChance = warlord ? warlordEliteBrawlerChance : 0f;
+        totem.SetSpawnConfig(canSpawnZapper, canSpawnBomber);
     }
 
     private void OnSummonerPreInit(SummonerBase summoner)
@@ -114,14 +150,25 @@ public class FoundationPassive : MonoBehaviour
     {
         if (!enabled) return;
 
-        if (infectiousStrike && brawlerPrefab != null)
+        if (infectiousStrike)
         {
-            foreach (var enemy in context.LastHitEnemies)
+            var pool = new System.Collections.Generic.List<GameObject>();
+            if (brawlerPrefab != null) pool.Add(brawlerPrefab);
+            if (canSpawnZapper && zapperPrefab != null) pool.Add(zapperPrefab);
+            if (canSpawnBomber && bomberPrefab != null) pool.Add(bomberPrefab);
+
+            if (pool.Count > 0)
             {
-                if (enemy == null || enemy.IsDead) continue;
-                if (Random.value > infectiousStrikeChance) continue;
-                GameObject obj = Instantiate(brawlerPrefab, enemy.transform.position, Quaternion.identity);
-                obj.GetComponent<SummonerBase>()?.Init(stats, SummonerTier.Mini);
+                foreach (var enemy in context.LastHitEnemies)
+                {
+                    if (enemy == null || enemy.IsDead) continue;
+                    if (Random.value > infectiousStrikeChance) continue;
+                    var prefab = pool[Random.Range(0, pool.Count)];
+                    Vector2 randCircle = Random.insideUnitCircle * 0.5f;
+                    Vector3 spawnPos = enemy.transform.position + new Vector3(randCircle.x, 0f, -Mathf.Abs(randCircle.y) - 0.3f);
+                    GameObject obj = Instantiate(prefab, spawnPos, Quaternion.identity);
+                    obj.GetComponent<SummonerBase>()?.Init(stats, SummonerTier.Mini);
+                }
             }
         }
 
@@ -139,6 +186,15 @@ public class FoundationPassive : MonoBehaviour
                     currentStacks = 0;
                     wandAttack.ReduceTotemCooldown(recycledEssenceCooldownReduce);
                 }
+            }
+        }
+        if (manaFeedback && wandAttack != null && context.LastHitEnemies.Count > 0)
+        {
+            float hp = context.LastHitEnemies.Count * manaFeedbackHPPerHit;
+            foreach (var totem in wandAttack.GetActiveTotems())
+            {
+                if (totem == null || totem.IsDead) continue;
+                totem.AddHP(hp);
             }
         }
     }

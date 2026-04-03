@@ -32,9 +32,9 @@ Transform:
   m_GameObject: {fileID: 4010689275156611331}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.88685, y: -0, z: 2.30727}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalPosition: {x: 0, y: -0, z: 0}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 7916544685440498549}
   m_Father: {fileID: 0}
@@ -108,7 +108,7 @@ NavMeshAgent:
   m_AutoBraking: 1
   m_AutoRepath: 1
   m_Height: 2
-  m_BaseOffset: 0
+  m_BaseOffset: 0.1
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 0
 --- !u!114 &4480939903498419202
@@ -174,13 +174,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0ebf62054507174a8d78a60f5ff6d26, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BomberSummoner
+  searchRadius: 10
   lifetime: 5
+  miniLifetimeMult: 0.6
+  miniSearchRadiusMult: 0.7
+  eliteLifetimeMult: 1.5
+  eliteSearchRadiusMult: 1.5
+  maxHeightDiff: 1
   health: {fileID: 0}
   movement: {fileID: 0}
   stats: {fileID: 0}
-  searchRadius: 10
+  hpScaleBonus: 0
+  speedScaleBonus: 0
   explosionRadius: 1
-  baseExplosionRadius: 0.25
+  baseExplosionRadius: 0.4
   centerRadius: 0.4
   centerDamageMultiplier: 1
   centerDamageScale: 1.5
@@ -196,6 +203,22 @@ MonoBehaviour:
   animator: {fileID: 0}
   hpScale: 0.05
   speedScale: 0.1
+  miniStatScale:
+    hp: 0.4
+    damage: 0.4
+    moveSpeed: 0.7
+  miniRadiusMult: 0.6
+  miniTriggerRangeMult: 0.7
+  miniSizeMult: 0.7
+  eliteStatScale:
+    hp: 3
+    damage: 2
+    moveSpeed: 1.2
+  eliteRadiusMult: 1.5
+  eliteTriggerRangeMult: 1.3
+  eliteSizeMult: 1.4
+  centerDamageScaleBonus: 0
+  edgeDamageScaleBonus: 0
 --- !u!1 &6481148339588263528
 GameObject:
   m_ObjectHideFlags: 0

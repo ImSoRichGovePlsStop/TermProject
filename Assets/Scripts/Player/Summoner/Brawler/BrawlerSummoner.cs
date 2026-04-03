@@ -33,7 +33,8 @@ public class BrawlerSummoner : SummonerBase
     [SerializeField] private float miniAttackCooldownMult = 1.3f;
     [SerializeField] private float miniSizeMult = 0.5f;
 
-    [Header("Elite Tier")]
+    [Header("Elite Tier VFX")]
+    [SerializeField] private GameObject auraPrefab;
     [SerializeField] private StatScale eliteStatScale = new StatScale { hp = 3f, damage = 2f, moveSpeed = 1.2f };
     [SerializeField] private float eliteAttackRangeMult = 1.5f;
     [SerializeField] private float eliteAttackAngleMult = 1.2f;
@@ -79,6 +80,14 @@ public class BrawlerSummoner : SummonerBase
         }
 
         health.SetMaxHP(stats.MaxHP);
+
+        if (tier == SummonerTier.Elite && auraPrefab != null)
+        {
+            var auraObj = Instantiate(auraPrefab, transform.position, Quaternion.identity);
+            var aura = auraObj.GetComponent<EliteBrawlerAura>();
+            if (aura != null)
+                aura.Init(stats, playerStats, GetComponent<HealthBase>());
+        }
     }
 
     protected override void Awake()
@@ -168,9 +177,10 @@ public class BrawlerSummoner : SummonerBase
     private bool TryAttack()
     {
         if (isAttacking) return true;
-        if (Time.time < lastAttackTime + attackCooldown) return false;
+        if (Time.time < lastAttackTime + attackCooldown / stats.AttackSpeed) return false;
 
         isAttacking = true;
+        animator.speed = stats.AttackSpeed;
         animator.SetTrigger("Attack");
         return true;
     }
@@ -210,6 +220,7 @@ public class BrawlerSummoner : SummonerBase
     {
         isAttacking = false;
         lastAttackTime = Time.time;
+        animator.speed = 1f;
     }
 
     private void OnDrawGizmosSelected()
