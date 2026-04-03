@@ -56,13 +56,13 @@ public class EliteHopliteController : HopliteController
         if (!HasTarget)
         {
             if (currentState != HopliteState.Wander)
-                wander.Reset(movement);
+                wander.Reset(movement, stats);
             currentState = HopliteState.Wander;
             return;
         }
 
         if (currentState == HopliteState.Wander)
-            wander.Reset(movement);
+            wander.Reset(movement, stats);
 
         float dist = Vector3.Distance(transform.position, TargetPosition);
         currentState = dist <= attackRange ? HopliteState.Attack : HopliteState.Chase;

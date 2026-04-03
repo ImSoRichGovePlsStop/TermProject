@@ -122,13 +122,13 @@ public class ZapperSummoner : SummonerBase
 
         if (target != null)
         {
-            wander.Reset(movement);
+            wander.Reset(movement, stats);
             currentTarget = target;
             currentState = ZapperState.Chase;
             return;
         }
 
-        wander.Tick(transform, playerStats?.transform, movement);
+        wander.Tick(transform, playerStats?.transform, movement, stats);
     }
 
     private void TickChase()

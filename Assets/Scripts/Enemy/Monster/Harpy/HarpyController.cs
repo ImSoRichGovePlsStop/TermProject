@@ -35,13 +35,13 @@ public class HarpyController : EnemyBase
         if (!HasTarget)
         {
             if (currentState != HarpyState.Wander)
-                wander.Reset(movement);
+                wander.Reset(movement, stats);
             currentState = HarpyState.Wander;
             return;
         }
 
         if (currentState == HarpyState.Wander)
-            wander.Reset(movement);
+            wander.Reset(movement, stats);
 
         float dist = Vector3.Distance(transform.position, TargetPosition);
         currentState = dist <= attackRange ? HarpyState.Attack : HarpyState.Chase;
@@ -52,7 +52,7 @@ public class HarpyController : EnemyBase
         switch (currentState)
         {
             case HarpyState.Wander:
-                wander.Tick(transform, transform, movement);
+                wander.Tick(transform, transform, movement, stats);
                 break;
 
             case HarpyState.Chase:

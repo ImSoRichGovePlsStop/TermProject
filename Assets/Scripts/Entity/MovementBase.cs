@@ -46,7 +46,7 @@ public abstract class MovementBase : MonoBehaviour
         if (agent.velocity.sqrMagnitude > 0.001f)
             FaceDirection(agent.velocity.normalized);
 
-        agent.speed = GetCurrentMoveSpeed();
+        agent.speed = stats != null ? stats.MoveSpeed : 3f;
     }
 
     public virtual void MoveToTarget(Vector3 targetPosition)
@@ -81,24 +81,6 @@ public abstract class MovementBase : MonoBehaviour
 
         if (!canMove)
             StopMoving();
-    }
-
-    private float speedMultiplier = 1f;
-
-    public void SetSpeedMultiplier(float multiplier)
-    {
-        speedMultiplier = Mathf.Max(0f, multiplier);
-    }
-
-    public void ResetSpeedMultiplier()
-    {
-        speedMultiplier = 1f;
-    }
-
-    protected virtual float GetCurrentMoveSpeed()
-    {
-        float base_speed = stats != null ? stats.MoveSpeed : 3f;
-        return base_speed * speedMultiplier;
     }
 
     protected abstract void FaceDirection(Vector3 direction);

@@ -91,12 +91,12 @@ public class BomberSummoner : SummonerBase
 
         if (currentTarget != null)
         {
-            wander.Reset(movement);
+            wander.Reset(movement, stats);
             currentState = BomberState.Chase;
             return;
         }
 
-        wander.Tick(transform, playerStats?.transform, movement);
+        wander.Tick(transform, playerStats?.transform, movement, stats);
     }
 
     private void TickChase()

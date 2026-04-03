@@ -108,7 +108,7 @@ public class BrawlerSummoner : SummonerBase
         }
 
         if (prevState == BrawlerState.Wander && currentState != BrawlerState.Wander)
-            wander.Reset(movement);
+            wander.Reset(movement, stats);
     }
 
     private void TickState()
@@ -128,7 +128,7 @@ public class BrawlerSummoner : SummonerBase
                 break;
 
             case BrawlerState.Wander:
-                wander.Tick(transform, playerStats?.transform, movement);
+                wander.Tick(transform, playerStats?.transform, movement, stats);
                 break;
         }
     }

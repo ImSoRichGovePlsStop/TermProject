@@ -36,13 +36,13 @@ public class HopliteController : EnemyBase
         if (!HasTarget)
         {
             if (currentState != HopliteState.Wander)
-                wander.Reset(movement);
+                wander.Reset(movement, stats);
             currentState = HopliteState.Wander;
             return;
         }
 
         if (currentState == HopliteState.Wander)
-            wander.Reset(movement);
+            wander.Reset(movement, stats);
 
         float dist = Vector3.Distance(transform.position, TargetPosition);
         currentState = dist <= attackRange ? HopliteState.Attack : HopliteState.Chase;
@@ -53,7 +53,7 @@ public class HopliteController : EnemyBase
         switch (currentState)
         {
             case HopliteState.Wander:
-                wander.Tick(transform, transform, movement);
+                wander.Tick(transform, transform, movement, stats);
                 break;
 
             case HopliteState.Chase:
