@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Damage (2)
   m_EditorClassIdentifier: Assembly-CSharp::DamageModule
   baseStatPerRarity:
-  - 0.09
-  - 0.12
-  - 0.18
-  - 0.21
-  - 0.27
+  - 0.3
+  - 0.45
+  - 0.6
+  - 0.75
+  - 0.9
   levelMultiplier: 0.33

@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AttackSpeedModule
   baseStatPerRarity:
   - 0
-  - 0.15
-  - 0.18
-  - 0.24
-  - 0.3
+  - 0.6
+  - 0.9
+  - 1.2
+  - 1.5
   levelMultiplier: 0.33

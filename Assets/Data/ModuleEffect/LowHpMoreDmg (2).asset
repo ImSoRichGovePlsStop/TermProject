@@ -13,16 +13,15 @@ MonoBehaviour:
   m_Name: LowHpMoreDmg (2)
   m_EditorClassIdentifier: Assembly-CSharp::LowHpDamageModule
   baseStatPerRarity:
-  - 0.25
   - 0.5
   - 0.75
   - 1
+  - 1.25
   - 1.5
   levelMultiplier: 0.2
   baseThresholdPerRarity:
   - 0.1
   - 0.2
+  - 0.3
   - 0.4
-  - 0.6
-  - 0.8
-  thresholdPerLevel: 0.05
+  - 0.5
