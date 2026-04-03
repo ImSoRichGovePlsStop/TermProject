@@ -16,12 +16,12 @@ public static class Cell
     public const byte Occupied = 3;  // room border
 }
 
-// perpendicular doorway ports
+
 public class RoomPort
 {
     public RoomNode Owner;
-    public Vector2Int Direction;  // unit cardinal pointing OUT of the room
-    public Vector2Int ExitCell;   // first cell outside the room wall (stub starts here)
+    public Vector2Int Direction; 
+    public Vector2Int ExitCell;   
     public bool IsUsed;
 }
 
@@ -36,7 +36,7 @@ public class RoomNode
     public GameObject ChosenPrefab;
     public GameObject RoomObject;
     [NonSerialized] public List<RoomNode> Neighbors = new();
-    [NonSerialized] public RoomPort[] Ports;   // 4 entries: Right, Left, Forward, Back
+    [NonSerialized] public RoomPort[] Ports;   
 }
 
 public class MapGenerator : MonoBehaviour
@@ -79,21 +79,19 @@ public class MapGenerator : MonoBehaviour
 
     [Header("Generation")]
     [Range(3, 10)] public int minBattleRooms = 3;
-    [Tooltip("Max allowed distance from closest existing room — prevents sprawl")]
-    public int maxRoomDistance = 40;
+    public int maxRoomDistance = 15;
     [Range(3, 10)] public int maxBattleRooms = 7;
     [Range(0f, 1f)] public float branchChance = 0.4f;
     public int maxPlacementAttempts = 50;
 
     [Header("Corridors")]
-    public int corridorWidth = 2;
-    [Tooltip("Cells the corridor travels straight out from the room wall before the A* bend")]
-    public int exitStubLength = 3;
+    public int corridorWidth = 1;
+    public int exitStubLength = 1;
 
     [Header("Walls")]
     public float wallHeight = 2f;
-    public float wallThickness = 0.1f;
-    public float floorThickness = 0.01f;
+    public float wallThickness = 0.01f;
+    public float floorThickness = -50f;
 
     [Header("Trigger")]
     public float triggerHeight = 3f;
@@ -169,7 +167,7 @@ public class MapGenerator : MonoBehaviour
             if (!forced && !AreaFree(ox - 3, oz - 3, sx + 6, sz + 6))
                 continue;
 
-            // reject if too far from every existing room
+            // reject if edge-to-edge distance to every existing room exceeds max
             if (!forced && _rooms.Count > 0)
             {
                 int mcxCheck = ox + (sx - 1) / 2;
@@ -177,8 +175,14 @@ public class MapGenerator : MonoBehaviour
                 var checkCenter = new Vector2Int(mcxCheck, mczCheck);
                 bool withinRange = false;
                 foreach (var r in _rooms)
-                    if (ManhattanDist(checkCenter, r.MatrixCenter) <= maxRoomDistance)
+                {
+                    int centerDist = ManhattanDist(checkCenter, r.MatrixCenter);
+                    int halfSelf = (sx + sz) / 4;   // approx half-extent of candidate
+                    int halfOther = (r.Size.x + r.Size.y) / 4; // approx half-extent of existing
+                    int edgeDist = Mathf.Max(0, centerDist - halfSelf - halfOther);
+                    if (edgeDist <= maxRoomDistance)
                     { withinRange = true; break; }
+                }
                 if (!withinRange) continue;
             }
 
@@ -484,8 +488,35 @@ public class MapGenerator : MonoBehaviour
             }
         }
 
+        // carve priority: spawn+battle first, boss second, event rooms last
+        // so the main path is always carved through clean matrix space
+        var priority = new System.Comparison<(RoomPort, RoomPort)>((x, y) =>
+        {
+            int ScorePair(RoomPort a, RoomPort b)
+            {
+                bool aEvent = IsEventRoom(a.Owner);
+                bool bEvent = IsEventRoom(b.Owner);
+                bool aBoss = a.Owner?.Type == RoomType.Boss || b.Owner?.Type == RoomType.Boss;
+                if (!aEvent && !bEvent && !aBoss) return 0;
+                if (aBoss) return 1;
+                return 2;
+            }
+            return ScorePair(x.Item1, x.Item2).CompareTo(ScorePair(y.Item1, y.Item2));
+        });
+
+        _corridorPairs.Sort(priority);
+
         foreach (var (pA, pB) in _corridorPairs)
             CarvePortToPort(pA, pB);
+    }
+
+    bool IsEventRoom(RoomNode node)
+    {
+        if (node == null) return false;
+        return node.Type == RoomType.Heal ||
+               node.Type == RoomType.Shop ||
+               node.Type == RoomType.Upgrade ||
+               node.Type == RoomType.Merge;
     }
 
     bool HasFreePort(RoomNode node)

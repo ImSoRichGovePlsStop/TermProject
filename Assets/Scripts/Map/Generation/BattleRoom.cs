@@ -172,6 +172,7 @@ public class BattleRoom : MonoBehaviour
 
         CurrencyManager wallet = Object.FindFirstObjectByType<CurrencyManager>();
         wallet.AddCoins(baseCoins + bonusCoins);
+        RunManager.Instance.OnRoomCleared();
     }
 
     private void SpawnEnemies()
