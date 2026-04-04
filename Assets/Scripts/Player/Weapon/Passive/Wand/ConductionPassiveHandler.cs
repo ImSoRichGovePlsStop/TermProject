@@ -5,6 +5,9 @@ public class ConductionPassiveHandler : PassiveHandlerBase
     [Header("Prefabs")]
     public GameObject zapperPrefab;
 
+    [Header("Unstable Conductor")]
+    [SerializeField] private float eliteZapperChance = 0.15f;
+
     private FoundationPassive foundation;
     private ConductionPassive conduction;
 
@@ -16,6 +19,7 @@ public class ConductionPassiveHandler : PassiveHandlerBase
 
         conduction = gameObject.AddComponent<ConductionPassive>();
         conduction.zapperPrefab = zapperPrefab;
+        conduction.eliteZapperChance = eliteZapperChance;
         conduction.Init(stats, context);
 
         base.Init(tree, data, manager, stats, context);

@@ -62,7 +62,8 @@ public class BrawlerSummoner : SummonerBase
         stats.AddFlatModifier(new EntityStatModifier
         {
             maxHP = playerStats.MaxHealth * (hpScale + hpScaleBonus),
-            moveSpeed = playerStats.MoveSpeed * (speedScale + speedScaleBonus)
+            moveSpeed = playerStats.MoveSpeed * (speedScale + speedScaleBonus),
+            damage = playerStats.Damage * (damageScale + damageScaleBonus)
         });
 
         switch (tier)
@@ -210,7 +211,7 @@ public class BrawlerSummoner : SummonerBase
     {
         if (currentTarget == null || currentTarget.IsDead) return;
 
-        float damage = stats.Damage + (playerStats != null ? playerStats.Damage * (damageScale + damageScaleBonus) : 0f);
+        float damage = stats.Damage;
 
         Vector3 attackDir = currentTarget.transform.position - transform.position;
         attackDir.y = 0f;

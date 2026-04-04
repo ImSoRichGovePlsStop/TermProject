@@ -107,7 +107,7 @@ public class HopliteController : EnemyBase
 
         while (elapsed < attackDashDuration)
         {
-            transform.position += dashDir * attackDashSpeed * Time.deltaTime;
+            transform.position += dashDir * attackDashSpeed * stats.MoveSpeedRatio * Time.deltaTime;
             elapsed += Time.deltaTime;
 
             Collider[] hits = Physics.OverlapSphere(transform.position, attackDashHitRadius, hitMask);

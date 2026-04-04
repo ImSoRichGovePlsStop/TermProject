@@ -142,10 +142,10 @@ public class EliteHopliteController : HopliteController
 
         while (elapsed < chargeDuration)
         {
-            if (Physics.SphereCast(transform.position, chargeHitRadius, chargeDir, out RaycastHit _, chargeSpeed * Time.deltaTime, wallMask))
+            if (Physics.SphereCast(transform.position, chargeHitRadius, chargeDir, out RaycastHit _, chargeSpeed * stats.MoveSpeedRatio * Time.deltaTime, wallMask))
                 break;
 
-            Vector3 nextPos = transform.position + chargeDir * chargeSpeed * Time.deltaTime;
+            Vector3 nextPos = transform.position + chargeDir * chargeSpeed * stats.MoveSpeedRatio * Time.deltaTime;
             if (agent != null)
                 agent.Warp(nextPos);
             else
@@ -190,8 +190,15 @@ public class EliteHopliteController : HopliteController
         pos.y = transform.position.y;
         Quaternion rot = Quaternion.LookRotation(chargeDir, Vector3.up);
         GameObject warning = Instantiate(chargeWarningPrefab, pos, rot);
-        float chargeDistance = chargeSpeed * chargeDuration;
-        warning.transform.localScale = new Vector3(chargeHitRadius * 2f, 1f, chargeDistance);
+
+        var vfx = warning.GetComponent<ChargeWarningVFX>();
+        if (vfx != null)
+            vfx.SetDynamicScale(chargeHitRadius * 2f, () => chargeSpeed * stats.MoveSpeedRatio * chargeDuration);
+        else
+        {
+            float chargeDistance = chargeSpeed * stats.MoveSpeedRatio * chargeDuration;
+            warning.transform.localScale = new Vector3(chargeHitRadius * 2f, 1f, chargeDistance);
+        }
         return warning;
     }
 

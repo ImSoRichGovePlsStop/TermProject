@@ -12,7 +12,7 @@ public class ConductionPassive : MonoBehaviour
     [SerializeField] private float highVoltageChainBonus = 0.2f;
 
     [Header("Unstable Conductor")]
-    [SerializeField] private float eliteZapperChance = 0.15f;
+    [System.NonSerialized] public float eliteZapperChance = 0.15f;
 
     public bool stableCharge = false;
     public bool residualCurrent = false;

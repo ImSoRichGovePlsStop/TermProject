@@ -125,7 +125,7 @@ public class MinotaurController : EnemyBase
         float elapsed = 0f;
         while (elapsed < dashDuration)
         {
-            transform.position += dashDir * dashSpeed * Time.deltaTime;
+            transform.position += dashDir * dashSpeed * stats.MoveSpeedRatio * Time.deltaTime;
             elapsed += Time.deltaTime;
             yield return null;
         }

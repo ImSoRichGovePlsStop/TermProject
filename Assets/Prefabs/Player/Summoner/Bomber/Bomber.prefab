@@ -184,15 +184,13 @@ MonoBehaviour:
   health: {fileID: 0}
   movement: {fileID: 0}
   stats: {fileID: 0}
-  hpScaleBonus: 0
-  speedScaleBonus: 0
+  tier: 1
   explosionRadius: 1
   baseExplosionRadius: 0.4
-  centerRadius: 0.4
+  centerRadius: 0.5
   centerDamageMultiplier: 1
-  centerDamageScale: 1.5
   edgeDamageMultiplier: 0.6
-  edgeDamageScale: 1
+  damageScale: 1
   triggerRange: 0.4
   wander:
     mode: 0
@@ -203,22 +201,41 @@ MonoBehaviour:
   animator: {fileID: 0}
   hpScale: 0.05
   speedScale: 0.1
+  pullRadius: 5
+  pullDuration: 0.2
+  pullDistanceFactor: 0.3
+  pullSlowPercent: 0.4
+  pullSlowDuration: 3
+  unstableChargePerSecond: 0.08
+  unstableChargeMax: 0.4
+  fireFieldPrefab: {fileID: 3269173832701851607, guid: 5ab17a21af9c53446ba5b380d2851e1f, type: 3}
+  fireTrailInterval: 0.25
+  fireTrailDuration: 1
+  fireFieldDuration: 4
+  fireFieldDamagePercent: 0.1
+  shrapnelLaunchSpeedMult: 3
+  shrapnelCount: 6
+  shrapnelDistance: 3
   miniStatScale:
     hp: 0.4
-    damage: 0.4
+    damage: 0.25
     moveSpeed: 0.7
   miniRadiusMult: 0.6
-  miniTriggerRangeMult: 0.7
+  miniTriggerRangeMult: 0.6
+  miniFireTrailDurationMult: 0.6
+  miniFireFieldDurationMult: 0.6
   miniSizeMult: 0.7
   eliteStatScale:
     hp: 3
     damage: 2
     moveSpeed: 1.2
   eliteRadiusMult: 1.5
-  eliteTriggerRangeMult: 1.3
+  eliteTriggerRangeMult: 1
+  eliteFireTrailDurationMult: 1.5
+  eliteFireFieldDurationMult: 1.5
+  eliteShrapnelCount: 8
+  eliteShrapnelDistance: 4
   eliteSizeMult: 1.4
-  centerDamageScaleBonus: 0
-  edgeDamageScaleBonus: 0
 --- !u!1 &6481148339588263528
 GameObject:
   m_ObjectHideFlags: 0

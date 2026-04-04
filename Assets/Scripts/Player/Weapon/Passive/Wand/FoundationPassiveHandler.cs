@@ -7,6 +7,9 @@ public class FoundationPassiveHandler : PassiveHandlerBase
     public GameObject zapperPrefab;
     public GameObject bomberPrefab;
 
+    [Header("Warlord")]
+    [SerializeField] private float eliteBrawlerChance = 0.15f;
+
     private FoundationPassive foundation;
 
     public override void Init(GenericTreeData tree, WeaponPassiveData data,
@@ -17,6 +20,7 @@ public class FoundationPassiveHandler : PassiveHandlerBase
         foundation.brawlerPrefab = brawlerPrefab;
         foundation.zapperPrefab = zapperPrefab;
         foundation.bomberPrefab = bomberPrefab;
+        foundation.eliteBrawlerChance = eliteBrawlerChance;
         foundation.Init(stats, context);
         base.Init(tree, data, manager, stats, context);
     }

@@ -47,11 +47,10 @@ public class FoundationPassive : MonoBehaviour
     [Header("Shared Essence - Bomber")]
     [SerializeField] private float sharedEssenceBomberHpScale = 0.1f;
     [SerializeField] private float sharedEssenceBomberSpeedScale = 0.2f;
-    [SerializeField] private float sharedEssenceBomberCenterDamageScale = 0.5f;
-    [SerializeField] private float sharedEssenceBomberEdgeDamageScale = 0.5f;
+    [SerializeField] private float sharedEssenceBomberDamageScale = 0.5f;
 
     [Header("Warlord")]
-    [SerializeField] private float warlordEliteBrawlerChance = 0.15f;
+    [System.NonSerialized] public float eliteBrawlerChance = 0.15f;
 
     public bool infectiousStrike = false;
     public bool swiftMinions = false;
@@ -111,7 +110,7 @@ public class FoundationPassive : MonoBehaviour
         if (!enabled) return;
         if (sharedEssence) totem.hpScaleBonus += sharedEssenceTotemHpScale;
         if (rapidSpawn) totem.ReduceSpawnIntervals(rapidSpawnIntervalReduction);
-        totem.eliteBrawlerChance = warlord ? warlordEliteBrawlerChance : 0f;
+        totem.eliteBrawlerChance = warlord ? eliteBrawlerChance : 0f;
         totem.SetSpawnConfig(canSpawnZapper, canSpawnBomber);
     }
 
@@ -134,8 +133,7 @@ public class FoundationPassive : MonoBehaviour
         {
             bomber.hpScaleBonus += sharedEssenceBomberHpScale;
             bomber.speedScaleBonus += sharedEssenceBomberSpeedScale;
-            bomber.centerDamageScaleBonus += sharedEssenceBomberCenterDamageScale;
-            bomber.edgeDamageScaleBonus += sharedEssenceBomberEdgeDamageScale;
+            bomber.damageScaleBonus += sharedEssenceBomberDamageScale;
         }
     }
 

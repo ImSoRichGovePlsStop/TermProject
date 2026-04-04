@@ -193,7 +193,7 @@ public class EliteHarpyController : HarpyController
         while (Vector3.Distance(transform.position, diveTarget) > 0.3f)
         {
             Vector3 dir = (diveTarget - transform.position).normalized;
-            transform.position += dir * diveSpeed * Time.deltaTime;
+            transform.position += dir * diveSpeed * stats.MoveSpeedRatio * Time.deltaTime;
 
             if (!hitSomething)
             {
@@ -230,7 +230,7 @@ public class EliteHarpyController : HarpyController
         while (Mathf.Abs(transform.position.y - targetY) > 0.1f)
         {
             Vector3 pos = transform.position;
-            pos.y = Mathf.MoveTowards(pos.y, targetY, flySpeed * Time.deltaTime);
+            pos.y = Mathf.MoveTowards(pos.y, targetY, flySpeed * stats.MoveSpeedRatio * Time.deltaTime);
             transform.position = pos;
             yield return null;
         }
@@ -240,7 +240,7 @@ public class EliteHarpyController : HarpyController
     {
         while (Vector3.Distance(transform.position, target) > 0.2f)
         {
-            transform.position = Vector3.MoveTowards(transform.position, target, flySpeed * Time.deltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, target, flySpeed * stats.MoveSpeedRatio * Time.deltaTime);
             yield return null;
         }
         transform.position = target;

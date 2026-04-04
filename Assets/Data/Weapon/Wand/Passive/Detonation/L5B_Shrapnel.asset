@@ -13,8 +13,7 @@ MonoBehaviour:
   m_Name: L5B_Shrapnel
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Shrapnel
-  description: After explosion, scatters 6 mini-bombs in all directions. Each detonates
-    on enemy contact or at max range dealing 30% of main explosion damage
+  description: After explosion, scatters 6 mini-bomber in all directions
   cost: 3
   parents:
   - {fileID: 11400000, guid: 68015dde086706640bb7e2bc2aa131b8, type: 2}

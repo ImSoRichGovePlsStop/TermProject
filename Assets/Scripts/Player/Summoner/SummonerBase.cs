@@ -29,7 +29,7 @@ public abstract class SummonerBase : MonoBehaviour
     [SerializeField] protected EntityStats stats;
 
     protected PlayerStats playerStats;
-    protected SummonerTier tier = SummonerTier.Normal;
+    public SummonerTier tier = SummonerTier.Normal;
     protected float remainingLifetime;
 
     public static event Action<SummonerBase> OnSummonerPreInit;
