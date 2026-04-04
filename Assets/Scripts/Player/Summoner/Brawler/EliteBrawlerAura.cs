@@ -20,31 +20,25 @@ public class EliteBrawlerAura : MonoBehaviour
     [SerializeField] private float regenPercent = 0.025f;
 
     [Header("Buffs")]
-    [SerializeField] private float summonerSpeedMult = 0.4f;
-    [SerializeField] private float summonerAttackSpeedMult = 0.25f;
-    [SerializeField] private float playerSpeedMult = 0.2f;
-    [SerializeField] private float playerAttackSpeedMult = 0.25f;
-    [SerializeField] private float totemSpawnMult = 0.5f;
+    [SerializeField] private float summonerAttackSpeedMult = 0.4f;
+    [SerializeField] private float playerAttackSpeedMult = 0.4f;
+    [SerializeField] private float playerDamageTakenReduction = 0.15f;
 
     private EntityStats ownerStats;
     private PlayerStats playerStats;
 
     private LayerMask summonerMask;
-    private LayerMask totemMask;
     private LayerMask playerMask;
 
     private StatModifier playerModifier = new StatModifier();
     private EntityStatModifier summonerModifier = new EntityStatModifier();
 
     private HashSet<EntityStats> buffedSummoners = new HashSet<EntityStats>();
-    private HashSet<Totem> buffedTotems = new HashSet<Totem>();
     private bool playerBuffed = false;
 
     private static bool playerBuffedByAura = false;
     private static HashSet<EntityStats> globalBuffedSummoners = new HashSet<EntityStats>();
-    private static HashSet<Totem> globalBuffedTotems = new HashSet<Totem>();
     private static Dictionary<HealthBase, float> lastRegenTimePerEntity = new Dictionary<HealthBase, float>();
-
 
     public void Init(EntityStats stats, PlayerStats pStats, HealthBase ownerHealth)
     {
@@ -52,19 +46,16 @@ public class EliteBrawlerAura : MonoBehaviour
         playerStats = pStats;
 
         summonerMask = 1 << LayerMask.NameToLayer("Summoner");
-        totemMask = 1 << LayerMask.NameToLayer("Totem");
         playerMask = 1 << LayerMask.NameToLayer("Player");
 
-        playerModifier.moveSpeed = playerSpeedMult;
         playerModifier.attackSpeed = playerAttackSpeedMult;
+        playerModifier.damageTaken = -playerDamageTakenReduction;
 
-        summonerModifier.moveSpeed = summonerSpeedMult;
         summonerModifier.attackSpeed = summonerAttackSpeedMult;
 
         if (ownerHealth != null)
             ownerHealth.OnDeath += OnOwnerDeath;
 
-        // Find cylinder child
         auraVFX = transform.childCount > 0 ? transform.GetChild(0) : null;
         if (auraVFX != null)
         {
@@ -104,7 +95,6 @@ public class EliteBrawlerAura : MonoBehaviour
 
         UpdatePlayerBuff();
         UpdateSummonerBuffs();
-        UpdateTotemBuffs();
         DoRegen();
 
         if (auraRenderer != null)
@@ -174,38 +164,6 @@ public class EliteBrawlerAura : MonoBehaviour
         foreach (var s in toRemove) buffedSummoners.Remove(s);
     }
 
-    private void UpdateTotemBuffs()
-    {
-        var hits = Physics.OverlapSphere(transform.position, auraRadius, totemMask);
-        var inAura = new HashSet<Totem>();
-
-        foreach (var hit in hits)
-        {
-            var totem = hit.GetComponentInParent<Totem>();
-            if (totem == null) continue;
-            inAura.Add(totem);
-            if (!buffedTotems.Contains(totem) && !globalBuffedTotems.Contains(totem))
-            {
-                totem.auraSpeedMult = totemSpawnMult;
-                buffedTotems.Add(totem);
-                globalBuffedTotems.Add(totem);
-            }
-        }
-
-        var toRemove = new List<Totem>();
-        foreach (var totem in buffedTotems)
-        {
-            if (!inAura.Contains(totem))
-            {
-                globalBuffedTotems.Remove(totem);
-                if (!globalBuffedTotems.Contains(totem))
-                    totem.auraSpeedMult = 1f;
-                toRemove.Add(totem);
-            }
-        }
-        foreach (var t in toRemove) buffedTotems.Remove(t);
-    }
-
     private void DoRegen()
     {
         if (ownerStats == null) return;
@@ -220,17 +178,6 @@ public class EliteBrawlerAura : MonoBehaviour
                 if (Time.time - last < regenInterval) continue;
             health.Heal(regenAmount);
             lastRegenTimePerEntity[health] = Time.time;
-        }
-
-        var totemHits = Physics.OverlapSphere(transform.position, auraRadius, totemMask);
-        foreach (var hit in totemHits)
-        {
-            var totem = hit.GetComponentInParent<Totem>();
-            if (totem == null) continue;
-            if (lastRegenTimePerEntity.TryGetValue(totem, out float last))
-                if (Time.time - last < regenInterval) continue;
-            totem.AddHP(regenAmount);
-            lastRegenTimePerEntity[totem] = Time.time;
         }
     }
 
@@ -249,15 +196,6 @@ public class EliteBrawlerAura : MonoBehaviour
             globalBuffedSummoners.Remove(stats);
         }
         buffedSummoners.Clear();
-
-        foreach (var totem in buffedTotems)
-        {
-            if (totem == null) continue;
-            globalBuffedTotems.Remove(totem);
-            if (!globalBuffedTotems.Contains(totem))
-                totem.auraSpeedMult = 1f;
-        }
-        buffedTotems.Clear();
     }
 
     private void OnDrawGizmosSelected()

@@ -13,11 +13,10 @@ MonoBehaviour:
   m_Name: L6_WarLord
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Warlord
-  description: "New Elite Unlocked: The Elite Brawler now has a 15% chance to appear
-    from Totems, featuring a 1.0m War Aura on spawn.\nWar Aura Effects (while inside):\n-
-    Regeneration: Summoners and Totems restore 2.5% of the Brawler\u2019s Max HP
-    every 0.5s.\n- Summoners: Gain +40% Move Speed.\n- Totems: Spawn interval reduced
-    by 50%.\n- Player: Gain +20% Move Speed and +25% Attack Speed."
+  description: "New Elite Unlocked: The Elite Brawler now has a 20% chance to appear
+    from Totems, featuring a 2m War Aura on spawn.\nWar Aura Effects (while inside):\n-
+    Summoners restore 5% of the Brawler\u2019s Max HP every second.\n- Summoners
+    and Player: Gain +40% Attack speed"
   cost: 4
   parents:
   - {fileID: 11400000, guid: f10068766ef7d064eb3cce5df0bbf7f5, type: 2}

@@ -143,11 +143,9 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 1024
-  auraRadius: 1
-  regenInterval: 0.5
-  regenPercent: 0.025
-  summonerSpeedMult: 0.4
-  summonerAttackSpeedMult: 0.25
-  playerSpeedMult: 0.2
-  playerAttackSpeedMult: 0.25
-  totemSpawnMult: 0.5
+  auraRadius: 2
+  regenInterval: 1
+  regenPercent: 0.05
+  summonerAttackSpeedMult: 0.4
+  playerAttackSpeedMult: 0.4
+  playerDamageTakenReduction: 0.25

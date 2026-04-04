@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Recycled Essence
   description: Primary attacks build up stacks. At max stacks, reset stacks and reduce
-    Totem's remaining cooldown by 20%
+    Totem's remaining cooldown by 3s
   cost: 2
   parents:
   - {fileID: 11400000, guid: 6cc3240ab693b5f429fc93ed620a1f69, type: 2}

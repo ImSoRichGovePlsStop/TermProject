@@ -3,10 +3,10 @@ using UnityEngine;
 public class DetonationPassive : MonoBehaviour
 {
     [Header("Overcharge")]
-    [SerializeField] private float overchargeDamageBonus = 0.35f;
+    [SerializeField] private float overchargeDamageBonus = 0.25f;
 
     [Header("Wide Blast")]
-    [SerializeField] private float wideBlastRadiusBonus = 0.4f;
+    [SerializeField] private float wideBlastRadiusBonus = 0.35f;
 
     [Header("Shrapnel")]
     [System.NonSerialized] public GameObject bomberPrefab;

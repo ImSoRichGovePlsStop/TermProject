@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: L5B_GreatConjuction
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Great Conjunction
-  description: ncreased Totem charges from 1 to 2 and spawn at 70% health
+  description: Increased Totem charges from 1 to 2 and spawn at 70% health
   cost: 3
   parents:
   - {fileID: 11400000, guid: 63447711e67cd9e4bb0c15f3683875b2, type: 2}

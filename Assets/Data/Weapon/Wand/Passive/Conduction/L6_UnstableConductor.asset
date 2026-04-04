@@ -14,19 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Unstable Conductor
   description: 'New Elite Unlocked: The Elite Zapper now has a 15% chance to appear
-    from Totems, prioritizes attaching to the Player, converting its currentl HP
-    into a  Shield.
+    from Totems, prioritizes attaching to the Player, converting its current HP into
+    a Shield.
 
     Elite Zapper Effects (while attached):
 
-    - Incoming enemy
-    attacks chain damage to any enemy with a Zapper attached.
+    - Player gains the
+    Arc Pulse effect (if Arc Pulse is unlocked).
 
-    - Player gains
-    the Arc Pulse effect (if Arc Pulse is unlocked).
-
-    - Enemies below 25% HP
-    that attack the Player are instantly killed (if Cardiac Arrest is unlocked).'
+    - Low HP enemies that attack
+    the Player are instantly killed (if Cardiac Arrest is unlocked)'
   cost: 4
   parents:
   - {fileID: 11400000, guid: b59ce865452aefb4e9aab6c426c8c0ca, type: 2}

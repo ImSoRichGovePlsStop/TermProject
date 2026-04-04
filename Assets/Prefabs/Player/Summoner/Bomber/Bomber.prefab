@@ -201,13 +201,12 @@ MonoBehaviour:
   animator: {fileID: 0}
   hpScale: 0.05
   speedScale: 0.1
-  pullRadius: 5
-  pullDuration: 0.2
-  pullDistanceFactor: 0.3
+  pullRadius: 6
+  pullDuration: 0.25
+  pullDistanceFactor: 0.2
   pullSlowPercent: 0.4
   pullSlowDuration: 3
-  unstableChargePerSecond: 0.08
-  unstableChargeMax: 0.4
+  unstableChargePerSecond: 0.1
   fireFieldPrefab: {fileID: 3269173832701851607, guid: 5ab17a21af9c53446ba5b380d2851e1f, type: 3}
   fireTrailInterval: 0.25
   fireTrailDuration: 1
@@ -226,8 +225,8 @@ MonoBehaviour:
   miniFireFieldDurationMult: 0.6
   miniSizeMult: 0.7
   eliteStatScale:
-    hp: 3
-    damage: 2
+    hp: 2
+    damage: 1.6
     moveSpeed: 1.2
   eliteRadiusMult: 1.5
   eliteTriggerRangeMult: 1

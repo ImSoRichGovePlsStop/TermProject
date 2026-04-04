@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: L5A_ArcPulse
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Arc Pulse
-  description: Zappers zap 2 nearby enemies for 5% damage every 0.5s. This works
-    before and during attachment.
+  description: Zappers zap 2 nearby enemies within 3m for 5% damage every 0.5s. This
+    triggers before and during attachment
   cost: 3
   parents:
   - {fileID: 11400000, guid: fee9688b542fd9a489c4ff48c227a8a1, type: 2}

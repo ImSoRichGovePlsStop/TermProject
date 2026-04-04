@@ -312,12 +312,9 @@ MonoBehaviour:
   health: {fileID: 0}
   movement: {fileID: 0}
   stats: {fileID: 0}
-  hpScaleBonus: 0
-  speedScaleBonus: 0
-  attachDuration: 5
-  attachRange: 0.4
-  damageAmpPercent: 0.1
-  chainPercent: 0.3
+  tier: 1
+  zapperCollider: {fileID: 1896343501680625985}
+  shockedVFXPrefab: {fileID: 2607991509391093971, guid: 689166e7f0822d54ab53ccb359d3c256, type: 3}
   wander:
     mode: 0
     wanderRadius: 1.5
@@ -325,10 +322,18 @@ MonoBehaviour:
     idleTimeMin: 0.5
     idleTimeMax: 1
   animator: {fileID: 0}
-  zapperCollider: {fileID: 1896343501680625985}
-  shockedVFXPrefab: {fileID: 2607991509391093971, guid: 689166e7f0822d54ab53ccb359d3c256, type: 3}
+  attachDuration: 5
+  attachRange: 0.4
+  damageAmpPercent: 0.1
+  chainPercent: 0.3
   hpScale: 0.05
   speedScale: 0.15
+  cardiacArrestHpThreshold: 0.25
+  arcPulseInterval: 0.5
+  arcPulseDamageScale: 0.05
+  arcPulseTargets: 2
+  arcPulseRadius: 3
+  lightningRodDamagePenalty: 0.3
   miniStatScale:
     hp: 0.4
     damage: 0.4
@@ -339,7 +344,8 @@ MonoBehaviour:
   miniChainPercentMult: 0.6
   miniSizeMult: 0.7
   miniLightningRodPenaltyMult: 0.5
-  miniArcPulseDamageMult: 0.4
+  miniArcPulseDamageMult: 0.6
+  miniArcPulseRadiusMult: 0.6
   miniInstantKillThresholdMult: 0.5
   eliteStatScale:
     hp: 3
@@ -352,18 +358,6 @@ MonoBehaviour:
   eliteSizeMult: 1.4
   eliteLightningRodPenaltyMult: 2
   eliteArcPulseDamageMult: 4
+  eliteArcPulseRadiusMult: 1.5
+  eliteArcPulseTargets: 4
   eliteInstantKillThresholdMult: 1.5
-  attachDurationBonus: 0
-  chainPercentBonus: 0
-  lightningRod: 0
-  lightningRodPenaltyTierMult: 1
-  lightningRodDamagePenalty: 0.3
-  cardiacArrest: 0
-  arcPulse: 0
-  arcPulseTierMult: 1
-  instantKillThresholdTierMult: 1
-  cardiacArrestHpThreshold: 0.25
-  arcPulseInterval: 0.5
-  arcPulseDamageScale: 0.05
-  arcPulseTargets: 2
-  arcPulseRadius: 5

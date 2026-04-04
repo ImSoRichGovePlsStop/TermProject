@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: L5B_CardiacArrest
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Cardiac Arrest
-  description: When Zapper detaches, if enemy HP is below 25% the enemy is instantly
-    killed. Does not apply to mini-bosses and bosses
+  description: When Zapper detaches, if the enemy's HP is below 25%, they are instantly
+    killed. This effect does not apply to mini-bosses and bosses
   cost: 3
   parents:
   - {fileID: 11400000, guid: fee9688b542fd9a489c4ff48c227a8a1, type: 2}

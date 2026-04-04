@@ -15,12 +15,12 @@ public class FoundationPassive : MonoBehaviour
     [SerializeField] private float swiftMinionSpeedMult = 0.3f;
 
     [Header("Recycled Essence")]
-    [SerializeField] private int recycledEssenceMaxStacks = 100;
-    [SerializeField] private float recycledEssenceCooldownReduce = 0.2f;
+    [SerializeField] private int recycledEssenceMaxStacks = 60;
+    [SerializeField] private float recycledEssenceCooldownReduceSeconds = 3f;
     [SerializeField] private int stackNormal = 4;
     [SerializeField] private int stackElite = 8;
-    [SerializeField] private int stackMiniboss = 12;
-    [SerializeField] private int stackBoss = 16;
+    [SerializeField] private int stackMiniboss = 10;
+    [SerializeField] private int stackBoss = 12;
 
     [Header("Great Conjunction")]
     [SerializeField] private int greatConjunctionMaxTotems = 2;
@@ -182,7 +182,7 @@ public class FoundationPassive : MonoBehaviour
                 if (currentStacks >= recycledEssenceMaxStacks)
                 {
                     currentStacks = 0;
-                    wandAttack.ReduceTotemCooldown(recycledEssenceCooldownReduce);
+                    wandAttack.ReduceTotemCooldownSeconds(recycledEssenceCooldownReduceSeconds);
                 }
             }
         }

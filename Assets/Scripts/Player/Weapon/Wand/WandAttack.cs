@@ -124,6 +124,11 @@ public class WandAttack : MonoBehaviour
         chargeCooldownRemaining *= (1f - percent);
     }
 
+    public void ReduceTotemCooldownSeconds(float seconds)
+    {
+        chargeCooldownRemaining = Mathf.Max(0f, chargeCooldownRemaining - seconds);
+    }
+
     public static event Action<Totem> OnTotemSpawned;
 
     private float totemStartHpPercent = 1f;

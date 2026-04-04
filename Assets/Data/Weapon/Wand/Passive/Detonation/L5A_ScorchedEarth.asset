@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Scorched Earth
   description: Bomber walk leave Fire trail. After explosion, leaves a Fire Field
-    at that location. Deals 10% of center explosion damage every 0.5s  for 4s
+    at that location. Deals 10% of center explosion damage every 0.5s for 4s
   cost: 3
   parents:
   - {fileID: 11400000, guid: 68015dde086706640bb7e2bc2aa131b8, type: 2}

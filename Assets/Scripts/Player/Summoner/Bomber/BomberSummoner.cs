@@ -53,8 +53,7 @@ public class BomberSummoner : SummonerBase
     [SerializeField] private float pullSlowDuration = 3f;
 
     [Header("Unstable Charge")]
-    [SerializeField] private float unstableChargePerSecond = 0.08f;
-    [SerializeField] private float unstableChargeMax = 0.4f;
+    [SerializeField] private float unstableChargePerSecond = 0.1f;
 
     [Header("Scorched Earth")]
     [SerializeField] private GameObject fireFieldPrefab;
@@ -290,7 +289,6 @@ public class BomberSummoner : SummonerBase
         if (heightDiff > maxHeightDiff) { currentTarget = null; currentState = BomberState.Wander; return; }
         if (dist <= triggerRange)
         {
-            Debug.Log($"[Singularity] tier={tier}, singularity={singularity}");
             if (singularity && tier == SummonerTier.Elite)
                 StartCoroutine(PullAndDetonate());
             else
@@ -387,7 +385,7 @@ public class BomberSummoner : SummonerBase
         var hits = CombatUtility.FindAround<HealthBase>(transform.position, explosionRadius, enemyMask);
 
         float unstableBonus = unstableCharge
-            ? Mathf.Min(aliveTimer * unstableChargePerSecond, unstableChargeMax)
+            ? aliveTimer * unstableChargePerSecond
             : 0f;
         float finalDamageMult = explosionDamageMult + unstableBonus;
 

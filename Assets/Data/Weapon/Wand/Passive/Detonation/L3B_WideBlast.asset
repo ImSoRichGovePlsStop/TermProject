@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: L3B_WideBlast
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Wide Blast
-  description: Explosion radius +40%
+  description: Explosion radius +35%
   cost: 1
   parents:
   - {fileID: 11400000, guid: e59bb6275e1bd094b9bae215cf0b6bb4, type: 2}

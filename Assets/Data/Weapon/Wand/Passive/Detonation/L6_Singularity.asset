@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: L6_Singularity
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Singularity
-  description: 'New Elite Unlocked: The Elite Bomber now has a 15% chance to spawn
-    from Totems. Before detonating, it pulls all nearby enemies toward itself and
-    slows them by 40% for 3s'
+  description: 'New Elite Unlocked: The Elite Bomber now has a 25% chance to spawn
+    from Totems. Before detonating, it pulls all nearby enemies within 6m toward
+    itself and slows them by 40% for 3s'
   cost: 4
   parents:
   - {fileID: 11400000, guid: 00f32ceb776308e47904f8cb1a497b10, type: 2}
