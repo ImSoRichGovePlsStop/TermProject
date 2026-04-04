@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b7eed258015d6e43af3e1877b980b72, type: 3}
   m_Name: MoveSpeed_3
   m_EditorClassIdentifier: Assembly-CSharp::ModuleData
-  moduleName: New Module
+  moduleName: Move speed
   icon: {fileID: 0}
-  moduleEffect: {fileID: 0}
+  moduleEffect: {fileID: 11400000, guid: 8c61b04306ef88847923a44cf3aec887, type: 2}
   moduleColor: {r: 1, g: 1, b: 1, a: 1}
-  cost: 0000000000000000000000000000000000000000
+  cost: 000000002c01000090010000f401000058020000
   isBuffAdjacent: 0
   buffGrid:
   - cells: 0000000000
@@ -25,8 +25,8 @@ MonoBehaviour:
   - cells: 0000000000
   - cells: 0000000000
   shapeGrid:
-  - cells: 0000000000
-  - cells: 0000000000
+  - cells: 0100000000
+  - cells: 0101000000
   - cells: 0000000000
   - cells: 0000000000
   - cells: 0000000000
