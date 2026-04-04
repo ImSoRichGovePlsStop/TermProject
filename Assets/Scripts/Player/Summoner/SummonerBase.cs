@@ -35,8 +35,8 @@ public abstract class SummonerBase : MonoBehaviour
     public static event Action<SummonerBase> OnSummonerPreInit;
     public static event Action<EntityStats> OnSummonerInit;
 
-    public float hpScaleBonus = 0f;
-    public float speedScaleBonus = 0f;
+    [System.NonSerialized] public float hpScaleBonus = 0f;
+    [System.NonSerialized] public float speedScaleBonus = 0f;
 
     public PlayerStats PlayerStats => playerStats;
 

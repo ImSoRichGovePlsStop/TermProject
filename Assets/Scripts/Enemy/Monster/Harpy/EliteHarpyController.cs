@@ -201,7 +201,7 @@ public class EliteHarpyController : HarpyController
                 foreach (var col in hits)
                 {
                     var ps = col.GetComponent<PlayerStats>() ?? col.GetComponentInParent<PlayerStats>();
-                    if (ps != null && !ps.IsDead) { ps.TakeDamage(stats.Damage * diveDamageScale); hitSomething = true; continue; }
+                    if (ps != null && !ps.IsDead) { ps.TakeDamage(stats.Damage * diveDamageScale, eliteHealth); hitSomething = true; continue; }
 
                     var hb = col.GetComponent<HealthBase>() ?? col.GetComponentInParent<HealthBase>();
                     if (hb != null && !hb.IsDead) { hb.TakeDamage(stats.Damage * diveDamageScale); hitSomething = true; }
@@ -216,7 +216,7 @@ public class EliteHarpyController : HarpyController
         if (shockwavePrefab != null)
         {
             var sw = Instantiate(shockwavePrefab, diveTarget, Quaternion.identity);
-            sw.GetComponent<HarpyShockwave>()?.Init(stats.Damage * shockwaveDamageScale);
+            sw.GetComponent<HarpyShockwave>()?.Init(stats.Damage * shockwaveDamageScale, eliteHealth);
         }
 
         while (!diveLandFinished)

@@ -160,7 +160,7 @@ public class EliteHopliteController : HopliteController
                 alreadyHit.Add(col.gameObject);
 
                 var ps = col.GetComponent<PlayerStats>() ?? col.GetComponentInParent<PlayerStats>();
-                if (ps != null && !ps.IsDead) { ps.TakeDamage(stats.Damage * chargeDamageScale); continue; }
+                if (ps != null && !ps.IsDead) { ps.TakeDamage(stats.Damage * chargeDamageScale, health); continue; }
 
                 var hb = col.GetComponent<HealthBase>() ?? col.GetComponentInParent<HealthBase>();
                 if (hb != null && !hb.IsDead) hb.TakeDamage(stats.Damage * chargeDamageScale);

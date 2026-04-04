@@ -101,7 +101,7 @@ public class PlayerStats : MonoBehaviour
 
     [ContextMenu("Test: Take 20 Damage")]
     private void Debug_TakeDamage()
-        => TakeDamage(20f);
+        => TakeDamage(20f, null);
 
     [ContextMenu("Test: 25 Flat Heal")]
     private void Debug_HealFlat()
@@ -391,7 +391,7 @@ public class PlayerStats : MonoBehaviour
     }
 
 
-    public void TakeDamage(float amount, HealthBase attacker = null)
+    public void TakeDamage(float amount, HealthBase attacker)
     {
         if (IsInvincible) return;
 

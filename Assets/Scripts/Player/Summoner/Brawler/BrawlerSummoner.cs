@@ -17,6 +17,8 @@ public class BrawlerSummoner : SummonerBase
     [SerializeField] private float attackAngle = 120f;
     [SerializeField] private float attackCooldown = 0.5f;
     [SerializeField] private float damageScale = 0.25f;
+
+    [Header("References")]
     [SerializeField] private Animator animator;
 
     [Header("Wander")]
@@ -33,13 +35,15 @@ public class BrawlerSummoner : SummonerBase
     [SerializeField] private float miniAttackCooldownMult = 1.3f;
     [SerializeField] private float miniSizeMult = 0.5f;
 
-    [Header("Elite Tier VFX")]
-    [SerializeField] private GameObject auraPrefab;
+    [Header("Elite Tier")]
     [SerializeField] private StatScale eliteStatScale = new StatScale { hp = 3f, damage = 2f, moveSpeed = 1.2f };
     [SerializeField] private float eliteAttackRangeMult = 1.5f;
     [SerializeField] private float eliteAttackAngleMult = 1.2f;
     [SerializeField] private float eliteAttackCooldownMult = 0.7f;
     [SerializeField] private float eliteSizeMult = 1.5f;
+
+    [Header("Elite Tier VFX")]
+    [SerializeField] private GameObject auraPrefab;
 
     private HealthBase currentTarget;
     private BrawlerState currentState = BrawlerState.Wander;
@@ -50,7 +54,7 @@ public class BrawlerSummoner : SummonerBase
 
     private LayerMask _enemyMask;
 
-    public float damageScaleBonus = 0f;
+    [System.NonSerialized] public float damageScaleBonus = 0f;
 
     protected override void ApplyPlayerScaling()
     {
@@ -112,7 +116,7 @@ public class BrawlerSummoner : SummonerBase
         TickState();
     }
 
-    public bool lightningRod = false;
+    [System.NonSerialized] public bool lightningRod = false;
 
     private void UpdateTarget()
     {

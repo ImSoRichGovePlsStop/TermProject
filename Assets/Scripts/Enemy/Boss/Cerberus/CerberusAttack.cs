@@ -346,7 +346,7 @@ public class CerberusAttack : BaseBossAttack
 
                 if (playerStats != null)
                 {
-                    playerStats.TakeDamage(GetDamage(flameDamageScale));
+                    playerStats.TakeDamage(GetDamage(flameDamageScale), health);
                     Log($"FlameCone hit player for {GetDamage(flameDamageScale)}");
                 }
             }
@@ -489,7 +489,7 @@ public class CerberusAttack : BaseBossAttack
 
             if (playerStats != null)
             {
-                playerStats.TakeDamage(damage);
+                playerStats.TakeDamage(damage, health);
                 Log($"{source} hit player for {damage}");
             }
         }

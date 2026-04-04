@@ -48,8 +48,8 @@ public class BomberSummoner : SummonerBase
     private BomberState currentState = BomberState.Wander;
     private LayerMask enemyMask;
 
-    public float centerDamageScaleBonus = 0f;
-    public float edgeDamageScaleBonus = 0f;
+    [System.NonSerialized] public float centerDamageScaleBonus = 0f;
+    [System.NonSerialized] public float edgeDamageScaleBonus = 0f;
 
     protected override void ApplyPlayerScaling()
     {
@@ -116,7 +116,7 @@ public class BomberSummoner : SummonerBase
         }
     }
 
-    public bool lightningRod = false;
+    [System.NonSerialized] public bool lightningRod = false;
 
     private void TickWander()
     {

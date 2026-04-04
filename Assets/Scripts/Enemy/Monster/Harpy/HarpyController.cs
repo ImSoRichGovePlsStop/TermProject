@@ -116,7 +116,7 @@ public class HarpyController : EnemyBase
                 alreadyHit.Add(col.gameObject);
 
                 var ps = col.GetComponent<PlayerStats>() ?? col.GetComponentInParent<PlayerStats>();
-                if (ps != null && !ps.IsDead) { ps.TakeDamage(stats.Damage * attackDamageScale); continue; }
+                if (ps != null && !ps.IsDead) { ps.TakeDamage(stats.Damage * attackDamageScale, health); continue; }
 
                 var hb = col.GetComponent<HealthBase>() ?? col.GetComponentInParent<HealthBase>();
                 if (hb != null && !hb.IsDead) hb.TakeDamage(stats.Damage * attackDamageScale);

@@ -94,14 +94,14 @@ public class ZapperSummoner : SummonerBase
     private float arcPulseTimer = 0f;
     private LayerMask enemyMask;
 
-    public float attachDurationBonus = 0f;
-    public float chainPercentBonus = 0f;
-    public bool cardiacArrest = false;
-    public bool arcPulse = false;
-    public bool lightningRod = false;
-    public float arcPulseTierMult = 1f;
-    public float instantKillThresholdTierMult = 1f;
-    public float lightningRodPenaltyTierMult = 1f;
+    [System.NonSerialized] public float attachDurationBonus = 0f;
+    [System.NonSerialized] public float chainPercentBonus = 0f;
+    [System.NonSerialized] public bool cardiacArrest = false;
+    [System.NonSerialized] public bool arcPulse = false;
+    [System.NonSerialized] public bool lightningRod = false;
+    [System.NonSerialized] public float arcPulseTierMult = 1f;
+    [System.NonSerialized] public float instantKillThresholdTierMult = 1f;
+    [System.NonSerialized] public float lightningRodPenaltyTierMult = 1f;
 
     private EntityStatModifier lightningRodModifier = new EntityStatModifier();
 
