@@ -15,6 +15,7 @@ public class BossSwordProjectile : MonoBehaviour
     private Vector3 startPosition;
     private Vector3 outwardTarget;
     private Transform owner;
+    private HealthBase ownerHealth;
     private float damage;
     private LayerMask playerLayer;
 
@@ -32,6 +33,7 @@ public class BossSwordProjectile : MonoBehaviour
     public void Initialize(Transform ownerTransform, Vector3 targetPosition, float attackDamage, LayerMask layerMask)
     {
         owner = ownerTransform;
+        ownerHealth = ownerTransform != null ? ownerTransform.GetComponent<HealthBase>() : null;
         damage = attackDamage;
         playerLayer = layerMask;
 
@@ -126,7 +128,7 @@ public class BossSwordProjectile : MonoBehaviour
 
             if (stats != null && !alreadyHit.Contains(stats))
             {
-                stats.TakeDamage(damage);
+                stats.TakeDamage(damage, ownerHealth);
                 alreadyHit.Add(stats);
             }
         }

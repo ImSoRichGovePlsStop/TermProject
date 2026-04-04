@@ -5,6 +5,8 @@ public class BossMovement : MovementBase
     [Header("Boss Movement")]
     [SerializeField] private bool invertFacing = true;
 
+    private EntityStatModifier bossMoveModifier = new EntityStatModifier();
+
     public void DashTo(Vector3 worldDirection, float dashSpeed)
     {
         Vector3 flatDir = worldDirection;
@@ -23,7 +25,10 @@ public class BossMovement : MovementBase
 
     public void MultiplyMoveSpeed(float multiplier)
     {
-        SetSpeedMultiplier(multiplier);
+        if (stats == null) return;
+        stats.RemoveMultiplierModifier(bossMoveModifier);
+        bossMoveModifier.moveSpeed = multiplier - 1f;
+        stats.AddMultiplierModifier(bossMoveModifier);
     }
 
     protected override void FaceDirection(Vector3 dir)

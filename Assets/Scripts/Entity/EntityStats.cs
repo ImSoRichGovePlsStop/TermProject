@@ -10,10 +10,14 @@ public class EntityStats : MonoBehaviour
 
     private EntityStatModifier flatModifier = new EntityStatModifier();
     private EntityStatModifier multiplierModifier = new EntityStatModifier();
+    private StatScale statScale = StatScale.Default;
 
-    public float MaxHP => (baseMaxHP + flatModifier.maxHP) * (1f + multiplierModifier.maxHP);
-    public float MoveSpeed => Mathf.Max(0f, (baseMoveSpeed + flatModifier.moveSpeed) * (1f + multiplierModifier.moveSpeed));
-    public float Damage => Mathf.Max(0f, (baseDamage + flatModifier.damage) * (1f + multiplierModifier.damage));
+    public void SetStatScale(StatScale scale) => statScale = scale;
+
+    public float MaxHP => (baseMaxHP + flatModifier.maxHP) * (1f + multiplierModifier.maxHP) * statScale.hp;
+    public float MoveSpeed => Mathf.Max(0f, (baseMoveSpeed + flatModifier.moveSpeed) * (1f + multiplierModifier.moveSpeed) * statScale.moveSpeed);
+    public float MoveSpeedRatio => baseMoveSpeed > 0f ? MoveSpeed / baseMoveSpeed : 1f;
+    public float Damage => Mathf.Max(0f, (baseDamage + flatModifier.damage) * (1f + multiplierModifier.damage) * statScale.damage);
     public float AttackSpeed => Mathf.Max(0f, (baseAttackSpeed + flatModifier.attackSpeed) * (1f + multiplierModifier.attackSpeed));
     public float DamageTaken => Mathf.Max(0f, 1f + flatModifier.damageTaken + multiplierModifier.damageTaken);
 

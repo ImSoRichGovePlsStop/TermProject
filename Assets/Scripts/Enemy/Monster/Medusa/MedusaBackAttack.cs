@@ -84,7 +84,10 @@ public class MedusaBackAttack : MonoBehaviour
         FindPlayerTarget();
         StartIdlePhase();
         entityStats = GetComponent<EntityStats>();
+        selfHealth = GetComponent<HealthBase>();
     }
+
+    private HealthBase selfHealth;
 
     private void Update()
     {
@@ -443,7 +446,7 @@ public class MedusaBackAttack : MonoBehaviour
 
         float dist = Vector3.Distance(p, lockedTargetPosition);
         if (dist <= circleRadius)
-            stats.TakeDamage(GetDamage());
+            stats.TakeDamage(GetDamage(), selfHealth);
     }
 
     private void ApplyBeamDamage(PlayerStats stats)
@@ -457,7 +460,7 @@ public class MedusaBackAttack : MonoBehaviour
 
         float dist = Vector3.Distance(flatClosest, stats.transform.position);
         if (dist <= beamRadius)
-            stats.TakeDamage(GetDamage());
+            stats.TakeDamage(GetDamage(), selfHealth);
     }
 
     private void ApplyCircleDamageToHealth(HealthBase hb)

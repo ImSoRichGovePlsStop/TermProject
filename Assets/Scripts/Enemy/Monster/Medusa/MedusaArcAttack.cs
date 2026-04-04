@@ -252,7 +252,7 @@ public class MedusaArcAttack : MonoBehaviour
 
             if (currentAngle <= angle * 0.5f)
             {
-                playerStats.TakeDamage(GetDamage());
+                playerStats.TakeDamage(GetDamage(), selfHealth);
                 hasDamagedThisYellowPhase = true;
                 return;
             }

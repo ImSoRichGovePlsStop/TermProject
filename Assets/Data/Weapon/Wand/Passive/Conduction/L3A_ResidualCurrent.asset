@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L5A_DeathSurge
+  m_Name: L3A_ResidualCurrent
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Death Surge
-  description: When attached enemy dies, triggers AoE explosion in a 2.5m radius
-  cost: 3
+  nodeName: Residual Current
+  description: When an attached enemy dies, spawn mini Zapper at the hit location
+  cost: 1
   parents:
-  - {fileID: 11400000, guid: fee9688b542fd9a489c4ff48c227a8a1, type: 2}
+  - {fileID: 11400000, guid: 9478b880633334849b1f5dfd15224455, type: 2}
   requireAllParents: 0
-  layer: 5
+  layer: 3
   branch: 1
-  overrideCost: 0
+  overrideCost: 1

@@ -129,6 +129,8 @@ public class PlayerController : MonoBehaviour
         WeaponData weapon = weaponEquip.GetCurrentWeapon();
         if (weapon == null || weapon.secondaryAttack == null) return;
 
+        if (weapon.weaponType == WeaponType.Wand && wandAttack != null && !wandAttack.IsTotemReady) return;
+
         ComboHit hit = weapon.secondaryAttack;
 
         Vector3 exactDir = GetExactMouseDirection();
@@ -223,7 +225,7 @@ public class PlayerController : MonoBehaviour
         anim.SetFloat("moveY", lastDir.y);
 
         WeaponData weapon = weaponEquip.GetCurrentWeapon();
-        if (weapon != null)
+        if (weapon != null && weapon.weaponType != WeaponType.Wand)
             secondaryCooldownTimer = weapon.secondaryCooldown / stats.AttackSpeed;
     }
 

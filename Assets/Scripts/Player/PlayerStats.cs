@@ -101,7 +101,7 @@ public class PlayerStats : MonoBehaviour
 
     [ContextMenu("Test: Take 20 Damage")]
     private void Debug_TakeDamage()
-        => TakeDamage(20f);
+        => TakeDamage(20f, null);
 
     [ContextMenu("Test: 25 Flat Heal")]
     private void Debug_HealFlat()
@@ -307,21 +307,27 @@ public class PlayerStats : MonoBehaviour
 
     public void Heal(float amount)
     {
+        float actual = Mathf.Min(amount, MaxHealth - CurrentHealth);
         CurrentHealth = Mathf.Clamp(CurrentHealth + amount, 0, MaxHealth);
-        Debug.Log($"Healed {amount}, HP: {CurrentHealth}/{MaxHealth}");
+        if (actual > 0f)
+            DamageNumberSpawner.Instance?.SpawnHealNumber(transform.position, actual);
     }
 
     public void HealPercent(float percent)
     {
         float amount = MaxHealth * percent;
+        float actual = Mathf.Min(amount, MaxHealth - CurrentHealth);
         CurrentHealth = Mathf.Clamp(CurrentHealth + amount, 0, MaxHealth);
-        Debug.Log($"Healed {percent * 100}%, HP: {CurrentHealth}/{MaxHealth}");
+        if (actual > 0f)
+            DamageNumberSpawner.Instance?.SpawnHealNumber(transform.position, actual);
     }
 
     public void HealFull()
     {
+        float actual = MaxHealth - CurrentHealth;
         CurrentHealth = MaxHealth;
-        Debug.Log($"Fully healed, HP: {CurrentHealth}/{MaxHealth}");
+        if (actual > 0f)
+            DamageNumberSpawner.Instance?.SpawnHealNumber(transform.position, actual);
     }
 
     public ShieldInstance GainShield(float value, float duration)
@@ -385,7 +391,7 @@ public class PlayerStats : MonoBehaviour
     }
 
 
-    public void TakeDamage(float amount, HealthBase attacker = null)
+    public void TakeDamage(float amount, HealthBase attacker)
     {
         if (IsInvincible) return;
 

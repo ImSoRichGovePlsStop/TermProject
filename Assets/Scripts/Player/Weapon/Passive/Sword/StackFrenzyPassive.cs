@@ -148,6 +148,7 @@ public class StackFrenzyPassive : MonoBehaviour
         {
             frenzyEntry.showInnerBorder = true;
             frenzyEntry.innerFill = apexTimer / apexDuration;
+            frenzyEntry.innerBorderColor = Color.red;
             frenzyEntry.icon = iconApex;
             frenzyEntry.innerFillClockwise = false;
         }
@@ -155,12 +156,14 @@ public class StackFrenzyPassive : MonoBehaviour
         {
             frenzyEntry.showInnerBorder = true;
             frenzyEntry.innerFill = 1f - (apexCooldownTimer / apexCooldown);
+            frenzyEntry.innerBorderColor = Color.red;
             frenzyEntry.icon = iconStack;
             frenzyEntry.innerFillClockwise = true;
         }
         else
         {
             frenzyEntry.showInnerBorder = apexPredator;
+            frenzyEntry.innerBorderColor = Color.red;
             frenzyEntry.innerFill = 1f;
             frenzyEntry.icon = iconStack;
         }

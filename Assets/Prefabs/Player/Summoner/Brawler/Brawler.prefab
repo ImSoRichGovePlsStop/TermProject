@@ -173,9 +173,9 @@ Transform:
   m_GameObject: {fileID: 2915161808019322072}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.50718, y: -0, z: 12.17135}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalPosition: {x: 0, y: -0, z: 0}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 2199896917627154992}
   m_Father: {fileID: 0}
@@ -249,7 +249,7 @@ NavMeshAgent:
   m_AutoBraking: 1
   m_AutoRepath: 1
   m_Height: 2
-  m_BaseOffset: 0
+  m_BaseOffset: 0.1
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 0
 --- !u!114 &3781395403263602536
@@ -315,16 +315,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02d5505943e2c204f968f7abc2f3395d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BrawlerSummoner
+  searchRadius: 6
   lifetime: 8
+  miniLifetimeMult: 0.6
+  miniSearchRadiusMult: 0.7
+  eliteLifetimeMult: 1.5
+  eliteSearchRadiusMult: 1.5
+  maxHeightDiff: 1
   health: {fileID: 0}
   movement: {fileID: 0}
   stats: {fileID: 0}
+  hpScaleBonus: 0
+  speedScaleBonus: 0
   attackRange: 0.5
   attackAngle: 60
   attackCooldown: 1
   damageScale: 0.25
   animator: {fileID: 0}
-  searchRadius: 6
   wander:
     mode: 0
     wanderRadius: 1.5
@@ -333,3 +340,22 @@ MonoBehaviour:
     idleTimeMax: 1
   hpScale: 0.1
   speedScale: 0.1
+  miniStatScale:
+    hp: 0.4
+    damage: 0.4
+    moveSpeed: 0.7
+  miniAttackRangeMult: 0.7
+  miniAttackAngleMult: 0.8
+  miniAttackCooldownMult: 1.3
+  miniSizeMult: 0.7
+  auraPrefab: {fileID: 7865754226137070314, guid: 1a965814780cb5b41a72990ff4fcd8bc, type: 3}
+  eliteStatScale:
+    hp: 2
+    damage: 2
+    moveSpeed: 1.2
+  eliteAttackRangeMult: 1.5
+  eliteAttackAngleMult: 1.2
+  eliteAttackCooldownMult: 0.7
+  eliteSizeMult: 1.4
+  damageScaleBonus: 0
+  lightningRod: 0

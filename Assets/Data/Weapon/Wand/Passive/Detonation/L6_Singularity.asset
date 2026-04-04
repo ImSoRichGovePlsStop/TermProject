@@ -10,13 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L1_ReinforcedTotem
+  m_Name: L6_Singularity
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Reinforced Totem
-  description: Totem HP increases from 50 to 60
-  cost: 1
-  parents: []
+  nodeName: Singularity
+  description: 'New Elite Unlocked: The Elite Bomber now has a 25% chance to spawn
+    from Totems. Before detonating, it pulls all nearby enemies within 6m toward
+    itself and slows them by 40% for 3s'
+  cost: 4
+  parents:
+  - {fileID: 11400000, guid: 00f32ceb776308e47904f8cb1a497b10, type: 2}
+  - {fileID: 11400000, guid: 229934f1dcad16740bbb573e304878f8, type: 2}
   requireAllParents: 0
-  layer: 1
+  layer: 6
   branch: 0
   overrideCost: 0

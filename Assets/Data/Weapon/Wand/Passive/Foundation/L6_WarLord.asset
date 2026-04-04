@@ -10,15 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L6_LastGift
+  m_Name: L6_WarLord
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Last Gift
-  description: 'When Bomber explodes, spawns summoners at explosion site. If Tree
-    2 is unlocked: 1 Brawler and 1 Zapper. Otherwise: 2 Brawler'
+  nodeName: Warlord
+  description: "New Elite Unlocked: The Elite Brawler now has a 20% chance to appear
+    from Totems, featuring a 2m War Aura on spawn.\nWar Aura Effects (while inside):\n-
+    Summoners restore 5% of the Brawler\u2019s Max HP every second.\n- Summoners
+    and Player: Gain +40% Attack speed"
   cost: 4
   parents:
-  - {fileID: 11400000, guid: 00f32ceb776308e47904f8cb1a497b10, type: 2}
-  - {fileID: 11400000, guid: 229934f1dcad16740bbb573e304878f8, type: 2}
+  - {fileID: 11400000, guid: f10068766ef7d064eb3cce5df0bbf7f5, type: 2}
+  - {fileID: 11400000, guid: 188d28d7ad01ba74abafce20f89baa34, type: 2}
   requireAllParents: 0
   layer: 6
   branch: 0

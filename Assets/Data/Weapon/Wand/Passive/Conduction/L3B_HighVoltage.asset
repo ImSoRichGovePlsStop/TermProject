@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: L3B_HighVoltage
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: High Voltage
-  description: Charged chain damage increases from 35% to 55% of damage received
+  description: Charged chain damage increases from 30% to 50% of damage received
   cost: 1
   parents:
   - {fileID: 11400000, guid: 9478b880633334849b1f5dfd15224455, type: 2}

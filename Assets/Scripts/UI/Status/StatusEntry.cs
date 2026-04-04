@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public enum StatusBorderType { Default, Gold, Red }
+public enum StatusBorderType { Default, Gold, Red, Blue }
 
 public class StatusEntry
 {
@@ -11,6 +11,7 @@ public class StatusEntry
 
     public float innerFill;
     public bool showInnerBorder;
+    public Color innerBorderColor = Color.white;
     public StatusBorderType outerBorderType;
 
     public float sweepFill;
