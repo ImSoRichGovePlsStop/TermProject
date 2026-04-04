@@ -10,15 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L3A_Bodyguard
+  m_Name: L5B_GreatConjuction
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Bodyguard
-  description: "Brawler summoners near the player deal +30% damage. Player takes
-    \u221215% damage while any Brawler is nearby"
-  cost: 2
+  nodeName: Great Conjunction
+  description: Increased Totem charges from 1 to 2 and spawn at 70% health
+  cost: 3
   parents:
-  - {fileID: 11400000, guid: 6cc3240ab693b5f429fc93ed620a1f69, type: 2}
+  - {fileID: 11400000, guid: 63447711e67cd9e4bb0c15f3683875b2, type: 2}
   requireAllParents: 0
-  layer: 3
-  branch: 1
+  layer: 5
+  branch: 2
   overrideCost: 0

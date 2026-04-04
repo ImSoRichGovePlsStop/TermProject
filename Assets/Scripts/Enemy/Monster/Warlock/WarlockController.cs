@@ -79,7 +79,7 @@ public class WarlockController : EnemyBase
         }
 
         if (prevState == WarlockState.Wander)
-            wander.Reset(movement);
+            wander.Reset(movement, stats);
 
         float dist = Vector3.Distance(transform.position, TargetPosition);
         bool canShoot = Time.time >= lastShootTime + shootCooldown;
@@ -105,7 +105,7 @@ public class WarlockController : EnemyBase
 
     private void TickWander()
     {
-        wander.Tick(transform, transform, movement);
+        wander.Tick(transform, transform, movement, stats);
     }
 
     private void TickChase()
@@ -241,7 +241,7 @@ public class WarlockController : EnemyBase
     {
         if (aoeWarningPrefab == null) return;
         var go = Instantiate(aoeWarningPrefab, pos, Quaternion.identity);
-        go.GetComponent<WarlockAOEWarning>()?.Initialize(stats.Damage * damageScale, radius, duration, targetLayers);
+        go.GetComponent<WarlockAOEWarning>()?.Initialize(stats.Damage * damageScale, radius, duration, targetLayers, health);
     }
 
     // ?? Helpers ????????????????????????????????????????????????

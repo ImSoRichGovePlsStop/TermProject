@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Unstable Charge
   description: Each second the Bomber walks before reaching an enemy increases explosion
-    damage by +8%, up to a maximum of +40%
+    damage by +10%
   cost: 2
   parents:
   - {fileID: 11400000, guid: 34b042c8f3453f74ebf1d31960f37421, type: 2}

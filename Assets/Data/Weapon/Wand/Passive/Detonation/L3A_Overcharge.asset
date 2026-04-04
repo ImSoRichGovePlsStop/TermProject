@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: L3A_Overcharge
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Overcharge
-  description: Explosion damage +35%
+  description: Explosion damage +25%
   cost: 1
   parents:
   - {fileID: 11400000, guid: e59bb6275e1bd094b9bae215cf0b6bb4, type: 2}

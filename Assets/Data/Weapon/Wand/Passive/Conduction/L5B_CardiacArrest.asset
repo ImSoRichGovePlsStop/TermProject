@@ -10,17 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L6_LivingLegacy
+  m_Name: L5B_CardiacArrest
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Living Legacy
-  description: On Totem placement, instantly spawn 1 Elite per unlocked type. When
-    Totem is destroyed or expires, spawn 1 Elite per unlocked type again. Elites
-    have x2 stats
-  cost: 4
+  nodeName: Cardiac Arrest
+  description: When Zapper detaches, if the enemy's HP is below 25%, they are instantly
+    killed. This effect does not apply to mini-bosses and bosses
+  cost: 3
   parents:
-  - {fileID: 11400000, guid: f10068766ef7d064eb3cce5df0bbf7f5, type: 2}
-  - {fileID: 11400000, guid: 188d28d7ad01ba74abafce20f89baa34, type: 2}
+  - {fileID: 11400000, guid: fee9688b542fd9a489c4ff48c227a8a1, type: 2}
   requireAllParents: 0
-  layer: 6
-  branch: 0
+  layer: 5
+  branch: 2
   overrideCost: 0

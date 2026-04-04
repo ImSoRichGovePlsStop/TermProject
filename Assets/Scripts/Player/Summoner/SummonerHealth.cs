@@ -28,6 +28,13 @@ public class SummonerHealth : HealthBase
         Die();
     }
 
+    public bool PreventDeath { get; set; } = false;
+
+    public void ForceDestroy()
+    {
+        Destroy(gameObject);
+    }
+
     public void DieWithoutAnimation()
     {
         useAnimation = false;
@@ -37,6 +44,8 @@ public class SummonerHealth : HealthBase
 
     protected override void OnDie()
     {
+        if (PreventDeath) return;
+
         if (useAnimation && animator != null)
             animator.SetTrigger("Die");
 

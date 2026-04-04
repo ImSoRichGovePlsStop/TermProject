@@ -26,6 +26,10 @@ public class DamageNumberUI : MonoBehaviour
     private float lifetime = 0.8f;
     private float fadeDuration = 0.4f;
 
+    // Heal
+    private float healFontSize = 4f;
+    private Color healColor = new Color(0.3f, 1f, 0.4f, 1f);
+
     private Camera cam;
 
     public void Init(float damage, bool isCrit, bool isPlayerDamage)
@@ -45,6 +49,15 @@ public class DamageNumberUI : MonoBehaviour
             damageText.color = isCrit ? critEnemyColor : normalEnemyColor;
 
         StartCoroutine(Animate(actualLifetime));
+    }
+
+    public void InitHeal(float amount)
+    {
+        cam = Camera.main;
+        damageText.text = "+" + Mathf.CeilToInt(amount).ToString();
+        damageText.fontSize = healFontSize;
+        damageText.color = healColor;
+        StartCoroutine(Animate(lifetime));
     }
 
     private void LateUpdate()

@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &205665522
+--- !u!1 &393293300
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,23 +127,149 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 205665525}
-  - component: {fileID: 205665524}
-  - component: {fileID: 205665523}
+  - component: {fileID: 393293302}
+  - component: {fileID: 393293301}
+  - component: {fileID: 393293303}
   m_Layer: 0
-  m_Name: Directional Light
+  m_Name: MapGenerator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &205665523
+--- !u!114 &393293301
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 205665522}
+  m_GameObject: {fileID: 393293300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52891ab0ca0310346886409f3fa0e17b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  spawnRoomPrefabs:
+  - {fileID: 4518944767196815896, guid: e6f8d233161363c4aafc075c2c2c5f48, type: 3}
+  battleRoomPrefabs:
+  - {fileID: 4518944767196815896, guid: eecba8bacd40c6d44a0f26f9ead97b08, type: 3}
+  - {fileID: 4518944767196815896, guid: 10b1124dc2ef15247a1b8f36c0b3be30, type: 3}
+  bossRoomPrefabs:
+  - {fileID: 4518944767196815896, guid: 10b1124dc2ef15247a1b8f36c0b3be30, type: 3}
+  shopRoomPrefabs:
+  - {fileID: 4518944767196815896, guid: e6f8d233161363c4aafc075c2c2c5f48, type: 3}
+  healRoomPrefabs:
+  - {fileID: 4518944767196815896, guid: e6f8d233161363c4aafc075c2c2c5f48, type: 3}
+  upgradeRoomPrefabs:
+  - {fileID: 4518944767196815896, guid: e6f8d233161363c4aafc075c2c2c5f48, type: 3}
+  mergeRoomPrefabs:
+  - {fileID: 4518944767196815896, guid: e6f8d233161363c4aafc075c2c2c5f48, type: 3}
+  healStationPrefab: {fileID: 2767562332682079375, guid: c526cc79c9200bc4c8851ea8886bd976, type: 3}
+  shopStationPrefab: {fileID: 1093928034212126860, guid: 8b795f5129d428344a94c032060bfa9e, type: 3}
+  upgradeStationPrefab: {fileID: 4791528569421838511, guid: 47627ba72b23cd7498bcd1afb60de23a, type: 3}
+  mergeStationPrefab: {fileID: 106242591161022991, guid: fa2d894cb67834243979d6236231c48c, type: 3}
+  portalPrefab: {fileID: 8261454306142249107, guid: 323db3c7dad372342aed4732f194c622, type: 3}
+  portalFinalPrefab: {fileID: 2217644600164415563, guid: ffaead280080565408dde90a744f411c, type: 3}
+  normalEnemyPrefabs:
+  - {fileID: 4095530523079436333, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
+  - {fileID: 1157175084331872940, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
+  - {fileID: 8370733333136472846, guid: 79fb2ac4a6080584db5cc99f39449607, type: 3}
+  - {fileID: 3306226684668820766, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
+  bossPrefabs:
+  - {fileID: 998253066982403686, guid: 2903b8f1bd8b1e64693773095af86e48, type: 3}
+  - {fileID: 2371149561134109772, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
+  - {fileID: 7665104473517315308, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
+  - {fileID: 764309370615633331, guid: 0a732bcad8eab62418a4d1e10c25585e, type: 3}
+  lootPrefab: {fileID: 7487802019810916615, guid: 99d47f9338280df4ca3e55aeb52a23d2, type: 3}
+  corridorMat: {fileID: 2100000, guid: bc13fd34aabd1de4a8587dbfd164dc30, type: 2}
+  wallMat: {fileID: 2100000, guid: 9cc3a09839bd23045a23680971b8c414, type: 2}
+  boundaryMaterial: {fileID: 2100000, guid: b59bfbcef27325640a17d8406da59c7a, type: 2}
+  matrixSize: 200
+  minRoomSize: 3
+  maxRoomSize: 15
+  minBattleRooms: 3
+  maxBattleRooms: 3
+  branchChance: 1
+  maxPlacementAttempts: 20
+  corridorWidth: 1
+  exitStubLength: 1
+  wallHeight: 10
+  wallThickness: 0.01
+  floorThickness: -50
+  triggerHeight: 1
+  navMeshSurface: {fileID: 393293303}
+--- !u!4 &393293302
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 393293300}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 33.62365, y: 0, z: 9.07386}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &393293303
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 393293300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a5ac11cc976e418e8d13136b07e1f52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshSurface
+  m_SerializedVersion: 0
+  m_AgentTypeID: 0
+  m_CollectObjects: 0
+  m_Size: {x: 10, y: 10, z: 10}
+  m_Center: {x: 0, y: 2, z: 0}
+  m_LayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_UseGeometry: 0
+  m_DefaultArea: 0
+  m_GenerateLinks: 0
+  m_IgnoreNavMeshAgent: 1
+  m_IgnoreNavMeshObstacle: 1
+  m_OverrideTileSize: 0
+  m_TileSize: 256
+  m_OverrideVoxelSize: 0
+  m_VoxelSize: 0.16666667
+  m_MinRegionArea: 2
+  m_NavMeshData: {fileID: 0}
+  m_BuildHeightMesh: 0
+--- !u!1 &807351100
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 807351103}
+  - component: {fileID: 807351102}
+  - component: {fileID: 807351101}
+  m_Layer: 0
+  m_Name: Directional Light (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &807351101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 807351100}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
@@ -166,24 +292,24 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
---- !u!108 &205665524
+--- !u!108 &807351102
 Light:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 205665522}
+  m_GameObject: {fileID: 807351100}
   m_Enabled: 1
   serializedVersion: 12
   m_Type: 1
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
   m_Intensity: 1
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize2D: {x: 0.5, y: 0.5}
   m_Shadows:
-    m_Type: 0
+    m_Type: 2
     m_Resolution: -1
     m_CustomResolution: -1
     m_Strength: 1
@@ -231,151 +357,24 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
---- !u!4 &205665525
+--- !u!4 &807351103
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 205665522}
+  m_GameObject: {fileID: 807351100}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 28.21409, y: 0, z: 0.8541899}
+  m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
+  m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
---- !u!1 &393293300
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 393293302}
-  - component: {fileID: 393293301}
-  - component: {fileID: 393293303}
-  m_Layer: 0
-  m_Name: MapGenerator
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &393293301
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 393293300}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 52891ab0ca0310346886409f3fa0e17b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: '::'
-  spawnRoomPrefabs:
-  - {fileID: 4518944767196815896, guid: eecba8bacd40c6d44a0f26f9ead97b08, type: 3}
-  battleRoomPrefabs:
-  - {fileID: 4518944767196815896, guid: eecba8bacd40c6d44a0f26f9ead97b08, type: 3}
-  - {fileID: 4518944767196815896, guid: 10b1124dc2ef15247a1b8f36c0b3be30, type: 3}
-  - {fileID: 4518944767196815896, guid: 928716dc681dbbb4186c13d5f616ad82, type: 3}
-  bossRoomPrefabs:
-  - {fileID: 4518944767196815896, guid: eecba8bacd40c6d44a0f26f9ead97b08, type: 3}
-  shopRoomPrefabs:
-  - {fileID: 4518944767196815896, guid: eecba8bacd40c6d44a0f26f9ead97b08, type: 3}
-  healRoomPrefabs:
-  - {fileID: 4518944767196815896, guid: eecba8bacd40c6d44a0f26f9ead97b08, type: 3}
-  upgradeRoomPrefabs:
-  - {fileID: 4518944767196815896, guid: eecba8bacd40c6d44a0f26f9ead97b08, type: 3}
-  mergeRoomPrefabs:
-  - {fileID: 4518944767196815896, guid: eecba8bacd40c6d44a0f26f9ead97b08, type: 3}
-  healStationPrefab: {fileID: 2767562332682079375, guid: c526cc79c9200bc4c8851ea8886bd976, type: 3}
-  shopStationPrefab: {fileID: 1093928034212126860, guid: 8b795f5129d428344a94c032060bfa9e, type: 3}
-  upgradeStationPrefab: {fileID: 4791528569421838511, guid: 47627ba72b23cd7498bcd1afb60de23a, type: 3}
-  mergeStationPrefab: {fileID: 106242591161022991, guid: fa2d894cb67834243979d6236231c48c, type: 3}
-  portalPrefab: {fileID: 8261454306142249107, guid: 323db3c7dad372342aed4732f194c622, type: 3}
-  portalFinalPrefab: {fileID: 2217644600164415563, guid: ffaead280080565408dde90a744f411c, type: 3}
-  normalEnemyPrefabs:
-  - {fileID: 4095530523079436333, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
-  - {fileID: 1157175084331872940, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
-  - {fileID: 8370733333136472846, guid: 79fb2ac4a6080584db5cc99f39449607, type: 3}
-  - {fileID: 3306226684668820766, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
-  bossPrefabs:
-  - {fileID: 998253066982403686, guid: 2903b8f1bd8b1e64693773095af86e48, type: 3}
-  - {fileID: 2371149561134109772, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
-  - {fileID: 7665104473517315308, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
-  - {fileID: 764309370615633331, guid: 0a732bcad8eab62418a4d1e10c25585e, type: 3}
-  lootPrefab: {fileID: 7487802019810916615, guid: 99d47f9338280df4ca3e55aeb52a23d2, type: 3}
-  corridorMat: {fileID: 2100000, guid: bc13fd34aabd1de4a8587dbfd164dc30, type: 2}
-  wallMat: {fileID: 2100000, guid: 9cc3a09839bd23045a23680971b8c414, type: 2}
-  boundaryMaterial: {fileID: 2100000, guid: b59bfbcef27325640a17d8406da59c7a, type: 2}
-  matrixSize: 200
-  minRoomSize: 3
-  maxRoomSize: 15
-  minBattleRooms: 3
-  maxBattleRooms: 3
-  branchChance: 1
-  maxPlacementAttempts: 20
-  corridorWidth: 1
-  exitStubLength: 1
-  wallHeight: 10
-  wallThickness: 0.01
-  floorThickness: 0
-  triggerHeight: 1
-  navMeshSurface: {fileID: 393293303}
---- !u!4 &393293302
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 393293300}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 33.62365, y: 0, z: 9.07386}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &393293303
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 393293300}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7a5ac11cc976e418e8d13136b07e1f52, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshSurface
-  m_SerializedVersion: 0
-  m_AgentTypeID: 0
-  m_CollectObjects: 0
-  m_Size: {x: 10, y: 10, z: 10}
-  m_Center: {x: 0, y: 2, z: 0}
-  m_LayerMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_UseGeometry: 0
-  m_DefaultArea: 0
-  m_GenerateLinks: 0
-  m_IgnoreNavMeshAgent: 1
-  m_IgnoreNavMeshObstacle: 1
-  m_OverrideTileSize: 0
-  m_TileSize: 256
-  m_OverrideVoxelSize: 0
-  m_VoxelSize: 0.016666668
-  m_MinRegionArea: 2
-  m_NavMeshData: {fileID: 0}
-  m_BuildHeightMesh: 0
+  m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 205665525}
+  - {fileID: 807351103}
   - {fileID: 393293302}

@@ -67,6 +67,15 @@ public abstract class HealthBase : MonoBehaviour
         currentHP = maxHP;
     }
 
+    public void Heal(float amount)
+    {
+        if (isDead) return;
+        float actual = Mathf.Min(amount, maxHP - currentHP);
+        currentHP += actual;
+        if (actual > 0f)
+            DamageNumberSpawner.Instance?.SpawnHealNumber(transform.position, actual);
+    }
+
     public virtual void TakeDamage(float damage, bool isCrit = false)
     {
         if (isDead) return;
