@@ -90,18 +90,18 @@ MonoBehaviour:
     aoePulseRadius: 1.8
     aoePulseInterval: 1
   gridSizePerLevel:
-  - {x: 2, y: 4}
-  - {x: 2, y: 4}
   - {x: 3, y: 4}
   - {x: 3, y: 4}
   - {x: 3, y: 4}
-  - {x: 3, y: 4}
-  - {x: 3, y: 5}
-  - {x: 3, y: 5}
-  - {x: 3, y: 5}
+  - {x: 4, y: 4}
+  - {x: 4, y: 4}
+  - {x: 4, y: 4}
+  - {x: 4, y: 5}
   - {x: 4, y: 5}
   - {x: 4, y: 5}
   - {x: 4, y: 6}
   - {x: 4, y: 6}
   - {x: 4, y: 6}
+  - {x: 5, y: 6}
+  - {x: 5, y: 6}
   - {x: 5, y: 6}
