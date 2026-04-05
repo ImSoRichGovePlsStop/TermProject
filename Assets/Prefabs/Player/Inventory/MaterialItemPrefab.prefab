@@ -103,6 +103,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MaterialItemUI
   WeaponGridUI: {fileID: 0}
   BagGridUI: {fileID: 0}
+  EnvGridUI: {fileID: 0}
+  InputGridUI: {fileID: 0}
+  InventoryUI: {fileID: 0}
   dragAlpha: 0.6
   borderSize: 4
-  InventoryPanelRt: {fileID: 0}

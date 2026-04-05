@@ -87,10 +87,11 @@ public class ModuleData : ScriptableObject
         var rotated = new List<Vector2Int>(cells.Count);
         foreach (var c in cells)
         {
-            Vector2Int r = rotation switch {
-                1 => new Vector2Int( c.y, -c.x),
-                2 => new Vector2Int(-c.x, -c.y), 
-                3 => new Vector2Int(-c.y,  c.x), 
+            Vector2Int r = rotation switch
+            {
+                1 => new Vector2Int(c.y, -c.x),
+                2 => new Vector2Int(-c.x, -c.y),
+                3 => new Vector2Int(-c.y, c.x),
                 _ => c
             };
             rotated.Add(r);
@@ -112,10 +113,11 @@ public class ModuleData : ScriptableObject
         var rotatedBuff = new List<Vector2Int>(buffCells.Count);
         foreach (var c in buffCells)
         {
-            rotatedBuff.Add(rotation switch {
-                1 => new Vector2Int( c.y, -c.x),
+            rotatedBuff.Add(rotation switch
+            {
+                1 => new Vector2Int(c.y, -c.x),
                 2 => new Vector2Int(-c.x, -c.y),
-                3 => new Vector2Int(-c.y,  c.x),
+                3 => new Vector2Int(-c.y, c.x),
                 _ => c
             });
         }
@@ -124,10 +126,11 @@ public class ModuleData : ScriptableObject
         int minX = int.MaxValue, minY = int.MaxValue;
         foreach (var c in shapeCells)
         {
-            Vector2Int r = rotation switch {
-                1 => new Vector2Int( c.y, -c.x),
+            Vector2Int r = rotation switch
+            {
+                1 => new Vector2Int(c.y, -c.x),
                 2 => new Vector2Int(-c.x, -c.y),
-                3 => new Vector2Int(-c.y,  c.x),
+                3 => new Vector2Int(-c.y, c.x),
                 _ => c
             };
             if (r.x < minX) minX = r.x;
@@ -185,6 +188,18 @@ public class ModuleData : ScriptableObject
         }
 
         return new Vector2Int(rotatedPoint.x - minX, rotatedPoint.y - minY);
+    }
+
+    public Vector2Int RotateCell(Vector2Int cell, int fromRotation, int toRotation)
+    {
+        int steps = ((toRotation - fromRotation) + 4) % 4;
+        Vector2Int result = cell;
+        for (int i = 0; i < steps; i++)
+        {
+            int rot = (fromRotation + i) % 4;
+            result = RotateSinglePoint(result, 1, GetShapeCells(rot));
+        }
+        return result;
     }
 
 #if UNITY_EDITOR

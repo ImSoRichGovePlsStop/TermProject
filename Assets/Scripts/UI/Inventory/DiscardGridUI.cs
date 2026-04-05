@@ -37,7 +37,7 @@ public class DiscardGridUI : MonoBehaviour
         Instance = this;
 
         _discardGrid = new GridData(discardCols, discardRows, isWeaponGrid: false);
-        gridUI.Init(_discardGrid, 64f, 2f);
+        gridUI.Init(_discardGrid, 63f, 2f);
 
         rootPanel?.SetActive(false);
     }

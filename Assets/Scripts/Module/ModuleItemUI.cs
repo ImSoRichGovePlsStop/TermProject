@@ -1,8 +1,9 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(CanvasGroup))]
 [RequireComponent(typeof(Image))]
@@ -13,6 +14,9 @@ public class ModuleItemUI : MonoBehaviour,
     public ModuleInstance Instance { get; private set; }
 
     public static bool IsDragging;
+    public static ModuleInstance DraggingInstance;
+    public static System.Collections.Generic.HashSet<Vector2Int> DraggingCells = new();
+    public static GridData DraggingGrid;
 
     [HideInInspector] public GridUI WeaponGridUI;
     [HideInInspector] public GridUI BagGridUI;
@@ -75,7 +79,7 @@ public class ModuleItemUI : MonoBehaviour,
     private void RebuildVisual(int rotation)
     {
         for (int i = _rt.childCount - 1; i >= 0; i--)
-            Destroy(_rt.GetChild(i).gameObject);
+            DestroyImmediate(_rt.GetChild(i).gameObject);
 
         float cs = WeaponGridUI.CellSize;
         float sp = WeaponGridUI.CellSpacing;
@@ -83,41 +87,202 @@ public class ModuleItemUI : MonoBehaviour,
         var bound = Instance.Data.GetBoundingSize(rotation);
         _rt.sizeDelta = new Vector2(bound.x * (cs + sp) - sp, bound.y * (cs + sp) - sp);
 
-        BuildVisualCells(Instance.Data.GetShapeCells(rotation));
+        BuildBorders(Instance.Data.GetShapeCells(rotation), rotation, bound, cs, sp);
+
+        if (Instance.Data.icon != null)
+            BuildIconOverlay(rotation, bound, cs, sp);
+
+        BuildVisualCells(Instance.Data.GetShapeCells(rotation), bound, rotation);
     }
 
-    private void BuildVisualCells(System.Collections.Generic.List<Vector2Int> shapeCells)
+    private void BuildIconOverlay(int rotation, Vector2Int bound, float cs, float sp)
+    {
+        var iconGo = new GameObject("IconOverlay", typeof(RectTransform), typeof(RawImage));
+        var iconRt = iconGo.GetComponent<RectTransform>();
+        iconRt.SetParent(_rt, false);
+        iconRt.pivot = new Vector2(0.5f, 0.5f);
+        iconRt.anchorMin = new Vector2(0f, 0f);
+        iconRt.anchorMax = new Vector2(1f, 1f);
+        iconRt.offsetMin = Vector2.zero;
+        iconRt.offsetMax = Vector2.zero;
+
+        var origBound = Instance.Data.GetBoundingSize(0);
+        float origW = origBound.x * (cs + sp) - sp;
+        float origH = origBound.y * (cs + sp) - sp;
+        float curW = bound.x * (cs + sp) - sp;
+        float curH = bound.y * (cs + sp) - sp;
+
+        var raw = iconGo.GetComponent<RawImage>();
+        raw.texture = Instance.Data.icon.texture;
+        raw.color = Color.white;
+        raw.raycastTarget = false;  // cells underneath handle raycasts
+
+        // Rotate UV rect: rotation=1 CW90 means sample rotated portion of texture
+        switch (rotation)
+        {
+            case 0: raw.uvRect = new Rect(0, 0, 1, 1); break;
+            case 1:
+                raw.uvRect = new Rect(0, 0, 1, 1);
+                iconRt.localRotation = Quaternion.Euler(0, 0, 90); break;
+            case 2:
+                raw.uvRect = new Rect(0, 0, 1, 1);
+                iconRt.localRotation = Quaternion.Euler(0, 0, 180); break;
+            case 3:
+                raw.uvRect = new Rect(0, 0, 1, 1);
+                iconRt.localRotation = Quaternion.Euler(0, 0, -90); break;
+        }
+
+        // Fix scale distortion caused by non-square bounding boxes after rotation
+        if (rotation == 1 || rotation == 3)
+        {
+            float scaleX = curH / curW;
+            float scaleY = curW / curH;
+            iconRt.localScale = new Vector3(scaleX, scaleY, 1f);
+        }
+
+        // Place after all border children (borders are built first in BuildVisualCells)
+        // border count = shapeCells.Count, so insert after them
+        int borderCount = Instance.Data.GetShapeCells(rotation).Count;
+        iconGo.transform.SetSiblingIndex(borderCount);
+    }
+
+    private static Dictionary<(Texture2D, Rarity, int), Texture2D> _outlineCache = new();
+
+    private void BuildBorders(System.Collections.Generic.List<Vector2Int> shapeCells, int rotation, Vector2Int bound, float cs, float sp)
+    {
+        if (Instance.Data.icon != null)
+        {
+            var borderGo = new GameObject("BorderGlow", typeof(RectTransform), typeof(RawImage));
+            var borderRt = borderGo.GetComponent<RectTransform>();
+            borderRt.SetParent(_rt, false);
+            borderRt.pivot = new Vector2(0.5f, 0.5f);
+            borderRt.anchorMin = new Vector2(0f, 0f);
+            borderRt.anchorMax = new Vector2(1f, 1f);
+            borderRt.offsetMin = Vector2.zero;
+            borderRt.offsetMax = Vector2.zero;
+
+            switch (rotation)
+            {
+                case 1: borderRt.localRotation = Quaternion.Euler(0, 0, 90); break;
+                case 2: borderRt.localRotation = Quaternion.Euler(0, 0, 180); break;
+                case 3: borderRt.localRotation = Quaternion.Euler(0, 0, -90); break;
+            }
+
+            if (rotation == 1 || rotation == 3)
+            {
+                float curW = bound.x * (cs + sp) - sp;
+                float curH = bound.y * (cs + sp) - sp;
+                borderRt.localScale = new Vector3(curH / curW, curW / curH, 1f);
+            }
+
+            var raw = borderGo.GetComponent<RawImage>();
+            var tex = Instance.Data.icon.texture;
+            // Use pixels-per-cell ratio for consistent thickness across different texture sizes
+            float pixelsPerUnit = tex.width / (WeaponGridUI.CellSize * bound.x);
+            int thickness = Mathf.Max(1, Mathf.RoundToInt(borderSize * pixelsPerUnit));
+
+            var cacheKey = (tex, Instance.Rarity, thickness);
+            if (!_outlineCache.TryGetValue(cacheKey, out var outlineTex))
+            {
+                outlineTex = CreateOutlineTexture(tex, RarityColor(Instance.Rarity), thickness);
+                _outlineCache[cacheKey] = outlineTex;
+            }
+
+            raw.texture = outlineTex;
+            raw.color = Color.white;
+            raw.uvRect = new Rect(0, 0, 1, 1);
+            raw.raycastTarget = false;
+        }
+        else
+        {
+            // No icon — draw solid border per cell
+            Color borderColor = RarityColor(Instance.Rarity);
+            foreach (var cell in shapeCells)
+            {
+                var borderGo = new GameObject($"border_{cell.x}_{cell.y}", typeof(RectTransform), typeof(Image));
+                var borderRt = borderGo.GetComponent<RectTransform>();
+                borderRt.SetParent(_rt, false);
+                borderRt.pivot = new Vector2(0f, 1f);
+                borderRt.anchorMin = new Vector2(0f, 1f);
+                borderRt.anchorMax = new Vector2(0f, 1f);
+
+                bool bHasRight = shapeCells.Contains(new Vector2Int(cell.x + 1, cell.y));
+                bool bHasLeft = shapeCells.Contains(new Vector2Int(cell.x - 1, cell.y));
+                bool bHasBottom = shapeCells.Contains(new Vector2Int(cell.x, cell.y + 1));
+                bool bHasTop = shapeCells.Contains(new Vector2Int(cell.x, cell.y - 1));
+
+                float bExtraRight = bHasRight ? borderSize + sp : 0f;
+                float bExtraLeft = bHasLeft ? borderSize + sp : 0f;
+                float bExtraBottom = bHasBottom ? borderSize + sp : 0f;
+                float bExtraTop = bHasTop ? borderSize + sp : 0f;
+
+                borderRt.sizeDelta = new Vector2(cs + bExtraLeft + bExtraRight, cs + bExtraTop + bExtraBottom);
+                borderRt.anchoredPosition = new Vector2(cell.x * (cs + sp) - bExtraLeft, -cell.y * (cs + sp) + bExtraTop);
+
+                var borderImg = borderGo.GetComponent<Image>();
+                borderImg.color = borderColor;
+                borderImg.raycastTarget = false;
+            }
+        }
+    }
+
+    private Texture2D CreateOutlineTexture(Texture2D source, Color tint, int thickness)
+    {
+        const int maxSize = 256;
+        Texture2D workSrc = source;
+        if (source.width > maxSize || source.height > maxSize)
+        {
+            float scale = Mathf.Min((float)maxSize / source.width, (float)maxSize / source.height);
+            int newW = Mathf.Max(1, Mathf.RoundToInt(source.width * scale));
+            int newH = Mathf.Max(1, Mathf.RoundToInt(source.height * scale));
+            var rt = RenderTexture.GetTemporary(newW, newH, 0, RenderTextureFormat.ARGB32);
+            Graphics.Blit(source, rt);
+            var prev = RenderTexture.active;
+            RenderTexture.active = rt;
+            workSrc = new Texture2D(newW, newH, TextureFormat.RGBA32, false);
+            workSrc.ReadPixels(new Rect(0, 0, newW, newH), 0, 0);
+            workSrc.Apply();
+            RenderTexture.active = prev;
+            RenderTexture.ReleaseTemporary(rt);
+            thickness = Mathf.Max(1, Mathf.RoundToInt(thickness * scale));
+        }
+
+        int w = workSrc.width;
+        int h = workSrc.height;
+        Color[] src = workSrc.GetPixels();
+        Color[] dst = new Color[w * h];
+
+        for (int y = 0; y < h; y++)
+        {
+            for (int x = 0; x < w; x++)
+            {
+                if (src[y * w + x].a > 0.01f) continue;
+                bool nearOpaque = false;
+                for (int dy = -thickness; dy <= thickness && !nearOpaque; dy++)
+                {
+                    for (int dx = -thickness; dx <= thickness && !nearOpaque; dx++)
+                    {
+                        if (dx * dx + dy * dy > thickness * thickness) continue;
+                        int nx = x + dx, ny = y + dy;
+                        if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
+                        if (src[ny * w + nx].a > 0.01f) nearOpaque = true;
+                    }
+                }
+                if (nearOpaque)
+                    dst[y * w + x] = new Color(tint.r, tint.g, tint.b, 1f);
+            }
+        }
+
+        var result = new Texture2D(w, h, TextureFormat.RGBA32, false);
+        result.SetPixels(dst);
+        result.Apply();
+        return result;
+    }
+
+    private void BuildVisualCells(System.Collections.Generic.List<Vector2Int> shapeCells, Vector2Int bound, int rotation)
     {
         float cs = WeaponGridUI.CellSize;
         float sp = WeaponGridUI.CellSpacing;
-        Color borderColor = RarityColor(Instance.Rarity);
-
-        foreach (var cell in shapeCells)
-        {
-            var borderGo = new GameObject($"border_{cell.x}_{cell.y}", typeof(RectTransform), typeof(Image));
-            var borderRt = borderGo.GetComponent<RectTransform>();
-            borderRt.SetParent(_rt, false);
-            borderRt.pivot = new Vector2(0f, 1f);
-            borderRt.anchorMin = new Vector2(0f, 1f);
-            borderRt.anchorMax = new Vector2(0f, 1f);
-
-            bool bHasRight = shapeCells.Contains(new Vector2Int(cell.x + 1, cell.y));
-            bool bHasLeft = shapeCells.Contains(new Vector2Int(cell.x - 1, cell.y));
-            bool bHasBottom = shapeCells.Contains(new Vector2Int(cell.x, cell.y + 1));
-            bool bHasTop = shapeCells.Contains(new Vector2Int(cell.x, cell.y - 1));
-
-            float bExtraRight = bHasRight ? borderSize + sp : 0f;
-            float bExtraLeft = bHasLeft ? borderSize + sp : 0f;
-            float bExtraBottom = bHasBottom ? borderSize + sp : 0f;
-            float bExtraTop = bHasTop ? borderSize + sp : 0f;
-
-            borderRt.sizeDelta = new Vector2(cs + bExtraLeft + bExtraRight, cs + bExtraTop + bExtraBottom);
-            borderRt.anchoredPosition = new Vector2(cell.x * (cs + sp) - bExtraLeft, -cell.y * (cs + sp) + bExtraTop);
-
-            var borderImg = borderGo.GetComponent<Image>();
-            borderImg.color = borderColor;
-            borderImg.raycastTarget = false;
-        }
 
         Vector2Int topRightCell = shapeCells[0];
         foreach (var c in shapeCells)
@@ -126,7 +291,7 @@ public class ModuleItemUI : MonoBehaviour,
 
         foreach (var cell in shapeCells)
         {
-            var go = new GameObject($"cell_{cell.x}_{cell.y}", typeof(RectTransform), typeof(Image));
+            var go = new GameObject($"cell_{cell.x}_{cell.y}", typeof(RectTransform));
             var cellRt = go.GetComponent<RectTransform>();
             cellRt.SetParent(_rt, false);
             cellRt.pivot = new Vector2(0f, 1f);
@@ -146,21 +311,34 @@ public class ModuleItemUI : MonoBehaviour,
             cellRt.sizeDelta = new Vector2(cs - borderSize * 2f + extraLeft + extraRight, cs - borderSize * 2f + extraTop + extraBottom);
             cellRt.anchoredPosition = new Vector2(cell.x * (cs + sp) + borderSize - extraLeft, -cell.y * (cs + sp) - borderSize + extraTop);
 
-            var cellImg = go.GetComponent<Image>();
-            if (Instance.Data.icon != null) cellImg.sprite = Instance.Data.icon;
-            cellImg.color = Instance.Data.moduleColor;
-            cellImg.raycastTarget = true;
+            if (Instance.Data.icon != null)
+            {
+                // Icon is rendered by BuildIconOverlay as a single rotated overlay
+                // Each cell still needs a raycast target
+                var cellImg = go.AddComponent<Image>();
+                cellImg.color = Color.clear;
+                cellImg.raycastTarget = true;
+            }
+            else
+            {
+                var cellImg = go.AddComponent<Image>();
+                cellImg.color = Instance.Data.moduleColor;
+                cellImg.raycastTarget = true;
+            }
 
             if (cell == topRightCell && Instance.Level > 0)
             {
                 var textGo = new GameObject("LevelText", typeof(RectTransform), typeof(TextMeshProUGUI));
                 var textRt = textGo.GetComponent<RectTransform>();
-                textRt.SetParent(cellRt, false);
+                textRt.SetParent(_rt, false);
                 textRt.anchorMin = new Vector2(0f, 1f);
-                textRt.anchorMax = new Vector2(1f, 1f);
+                textRt.anchorMax = new Vector2(0f, 1f);
                 textRt.pivot = new Vector2(1f, 1f);
-                textRt.anchoredPosition = new Vector2(-2f, -2f);
-                textRt.sizeDelta = new Vector2(0f, 20f);
+                float cellRight = (cell.x + 1) * (cs + sp) - sp;
+                float cellTop = -cell.y * (cs + sp);
+                textRt.anchoredPosition = new Vector2(cellRight - 2f, cellTop - 2f);
+                textRt.sizeDelta = new Vector2(cs, 20f);
+                textGo.transform.SetAsLastSibling();
 
                 var tmp = textGo.GetComponent<TextMeshProUGUI>();
                 tmp.text = $"+{Instance.Level}";
@@ -238,6 +416,9 @@ public class ModuleItemUI : MonoBehaviour,
         _cg.blocksRaycasts = false;
 
         ModuleItemUI.IsDragging = true;
+        ModuleItemUI.DraggingInstance = Instance;
+        ModuleItemUI.DraggingCells = new System.Collections.Generic.HashSet<Vector2Int>(Instance.GetAbsoluteCells());
+        ModuleItemUI.DraggingGrid = Instance.CurrentGrid;
         if (!UIManager.IsRightPanelOpen) DiscardGridUI.Instance?.ShowForDrag();
     }
 
@@ -254,8 +435,10 @@ public class ModuleItemUI : MonoBehaviour,
         _cg.alpha = 1f;
         _cg.blocksRaycasts = true;
         ModuleItemUI.IsDragging = false;
+        ModuleItemUI.DraggingInstance = null;
+        ModuleItemUI.DraggingCells.Clear();
+        ModuleItemUI.DraggingGrid = null;
         ClearHighlights();
-
         GridUI targetGrid = null;
         Vector2Int pivot = Vector2Int.zero;
         Vector2 sampleScreen = GetClickedCellCenterScreen();
