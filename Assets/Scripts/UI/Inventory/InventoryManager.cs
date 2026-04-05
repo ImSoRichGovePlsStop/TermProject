@@ -113,4 +113,15 @@ public class InventoryManager : MonoBehaviour
             if (!IsWithinWeaponUnlocked(cell)) return false;
         return WeaponGrid.CanPlace(inst, pivot, rotation);
     }
+    public void DeleteModule(ModuleInstance inst)
+    {
+        WeaponGrid.Remove(inst);
+        BagGrid.Remove(inst);
+
+        if (inst.UIElement is MonoBehaviour ui)
+            Destroy(ui.gameObject);
+
+        OnWeaponGridChanged?.Invoke();
+        OnBagGridChanged?.Invoke();
+    }
 }

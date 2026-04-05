@@ -9,13 +9,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7a50529070796bb45b4bf4d1ab8b45d5, type: 3}
-  m_Name: AtkSpd (4)
-  m_EditorClassIdentifier: Assembly-CSharp::AttackSpeedModule
+  m_Script: {fileID: 11500000, guid: 2ecf532c71ceca84f9326ef37c8e8359, type: 3}
+  m_Name: CheatDeath (4)
+  m_EditorClassIdentifier: Assembly-CSharp::CheatDeathModule
   baseStatPerRarity:
   - 0
   - 0
   - 0.25
   - 0.5
-  - 0.75
-  levelMultiplier: 0.4
+  - 1
+  invincibilityPerRarity:
+  - 0
+  - 0
+  - 3
+  - 4.5
+  - 6
+  levelMultiplier: 0.1

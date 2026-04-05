@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CritDmgMod
   baseStatPerRarity:
   - 0
-  - 0.12
-  - 0.15
-  - 0.21
-  - 0.33
-  levelMultiplier: 0.33
+  - 0.6
+  - 0.9
+  - 1.2
+  - 1.5
+  levelMultiplier: 0.2
