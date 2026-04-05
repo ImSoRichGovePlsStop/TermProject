@@ -1,4 +1,4 @@
-﻿using TMPro;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -11,6 +11,8 @@ public class ModuleItemUI : MonoBehaviour,
     IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     public ModuleInstance Instance { get; private set; }
+
+    public static bool IsDragging;
 
     [HideInInspector] public GridUI WeaponGridUI;
     [HideInInspector] public GridUI BagGridUI;
@@ -47,12 +49,12 @@ public class ModuleItemUI : MonoBehaviour,
         _ => Color.white
     };
 
-    public void Init(ModuleInstance instance, GridUI weaponGridUI, GridUI bagGridUI, GridUI envGridUI = null)
+    public void Init(ModuleInstance instance, GridUI envGridUI = null)
     {
         Instance = instance;
         instance.UIElement = this;
-        WeaponGridUI = weaponGridUI;
-        BagGridUI = bagGridUI;
+        WeaponGridUI = InventoryUI.StaticWeaponGridUI;
+        BagGridUI = InventoryUI.StaticBagGridUI;
         EnvGridUI = envGridUI;
 
         _rt = GetComponent<RectTransform>();
@@ -67,7 +69,6 @@ public class ModuleItemUI : MonoBehaviour,
         img.raycastTarget = false;
 
         RebuildVisual(Instance.Rotation);
-
         _cg.alpha = 0f;
     }
 
@@ -80,8 +81,7 @@ public class ModuleItemUI : MonoBehaviour,
         float sp = WeaponGridUI.CellSpacing;
 
         var bound = Instance.Data.GetBoundingSize(rotation);
-        _rt.sizeDelta = new Vector2(bound.x * (cs + sp) - sp,
-                                    bound.y * (cs + sp) - sp);
+        _rt.sizeDelta = new Vector2(bound.x * (cs + sp) - sp, bound.y * (cs + sp) - sp);
 
         BuildVisualCells(Instance.Data.GetShapeCells(rotation));
     }
@@ -94,8 +94,7 @@ public class ModuleItemUI : MonoBehaviour,
 
         foreach (var cell in shapeCells)
         {
-            var borderGo = new GameObject($"border_{cell.x}_{cell.y}",
-                                          typeof(RectTransform), typeof(Image));
+            var borderGo = new GameObject($"border_{cell.x}_{cell.y}", typeof(RectTransform), typeof(Image));
             var borderRt = borderGo.GetComponent<RectTransform>();
             borderRt.SetParent(_rt, false);
             borderRt.pivot = new Vector2(0f, 1f);
@@ -112,13 +111,8 @@ public class ModuleItemUI : MonoBehaviour,
             float bExtraBottom = bHasBottom ? borderSize + sp : 0f;
             float bExtraTop = bHasTop ? borderSize + sp : 0f;
 
-            borderRt.sizeDelta = new Vector2(
-                cs + bExtraLeft + bExtraRight,
-                cs + bExtraTop + bExtraBottom);
-
-            borderRt.anchoredPosition = new Vector2(
-                 cell.x * (cs + sp) - bExtraLeft,
-                -cell.y * (cs + sp) + bExtraTop);
+            borderRt.sizeDelta = new Vector2(cs + bExtraLeft + bExtraRight, cs + bExtraTop + bExtraBottom);
+            borderRt.anchoredPosition = new Vector2(cell.x * (cs + sp) - bExtraLeft, -cell.y * (cs + sp) + bExtraTop);
 
             var borderImg = borderGo.GetComponent<Image>();
             borderImg.color = borderColor;
@@ -132,8 +126,7 @@ public class ModuleItemUI : MonoBehaviour,
 
         foreach (var cell in shapeCells)
         {
-            var go = new GameObject($"cell_{cell.x}_{cell.y}",
-                                        typeof(RectTransform), typeof(Image));
+            var go = new GameObject($"cell_{cell.x}_{cell.y}", typeof(RectTransform), typeof(Image));
             var cellRt = go.GetComponent<RectTransform>();
             cellRt.SetParent(_rt, false);
             cellRt.pivot = new Vector2(0f, 1f);
@@ -150,13 +143,8 @@ public class ModuleItemUI : MonoBehaviour,
             float extraBottom = hasBottom ? borderSize + sp : 0f;
             float extraTop = hasTop ? borderSize + sp : 0f;
 
-            cellRt.sizeDelta = new Vector2(
-                cs - borderSize * 2f + extraLeft + extraRight,
-                cs - borderSize * 2f + extraTop + extraBottom);
-
-            cellRt.anchoredPosition = new Vector2(
-                 cell.x * (cs + sp) + borderSize - extraLeft,
-                -cell.y * (cs + sp) - borderSize + extraTop);
+            cellRt.sizeDelta = new Vector2(cs - borderSize * 2f + extraLeft + extraRight, cs - borderSize * 2f + extraTop + extraBottom);
+            cellRt.anchoredPosition = new Vector2(cell.x * (cs + sp) + borderSize - extraLeft, -cell.y * (cs + sp) - borderSize + extraTop);
 
             var cellImg = go.GetComponent<Image>();
             if (Instance.Data.icon != null) cellImg.sprite = Instance.Data.icon;
@@ -165,8 +153,7 @@ public class ModuleItemUI : MonoBehaviour,
 
             if (cell == topRightCell && Instance.Level > 0)
             {
-                var textGo = new GameObject("LevelText",
-                                            typeof(RectTransform), typeof(TextMeshProUGUI));
+                var textGo = new GameObject("LevelText", typeof(RectTransform), typeof(TextMeshProUGUI));
                 var textRt = textGo.GetComponent<RectTransform>();
                 textRt.SetParent(cellRt, false);
                 textRt.anchorMin = new Vector2(0f, 1f);
@@ -193,39 +180,27 @@ public class ModuleItemUI : MonoBehaviour,
 
     private void Update()
     {
-        if (_isDragging && Keyboard.current != null && Keyboard.current[Key.R].wasPressedThisFrame)
-        {
-            var currentShape = Instance.Data.GetShapeCells(_dragRotation);
+        if (!_isDragging || Keyboard.current == null || !Keyboard.current[Key.R].wasPressedThisFrame) return;
 
-            _clickedCell = ModuleData.RotateSinglePoint(_clickedCell, 1, currentShape);
+        var currentShape = Instance.Data.GetShapeCells(_dragRotation);
+        _clickedCell = ModuleData.RotateSinglePoint(_clickedCell, 1, currentShape);
+        _dragRotation = (_dragRotation + 1) % 4;
+        RebuildVisual(_dragRotation);
 
-            _dragRotation = (_dragRotation + 1) % 4;
-            RebuildVisual(_dragRotation);
+        float cs = WeaponGridUI.CellSize;
+        float sp = WeaponGridUI.CellSpacing;
+        _dragOffset = new Vector2((_clickedCell.x + 0.5f) * (cs + sp), -(_clickedCell.y + 0.5f) * (cs + sp));
 
-            float cs = WeaponGridUI.CellSize;
-            float sp = WeaponGridUI.CellSpacing;
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(_canvasRt, Mouse.current.position.ReadValue(), UICam(), out var local))
+            _rt.anchoredPosition = local - _dragOffset;
 
-            Vector2 newCellCenterOffset = new Vector2(
-                (_clickedCell.x + 0.5f) * (cs + sp),
-               -(_clickedCell.y + 0.5f) * (cs + sp)
-            );
-            _dragOffset = newCellCenterOffset;
-
-            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                _canvasRt, Mouse.current.position.ReadValue(), UICam(), out var local))
-            {
-                _rt.anchoredPosition = local - _dragOffset;
-            }
-
-            UpdateHighlightInternal();
-        }
+        UpdateHighlightInternal();
     }
 
     public void SnapToCell(GridUI gridUI, Vector2Int cell)
     {
         var gridRt = gridUI.GetComponent<RectTransform>();
         _rt.SetParent(gridRt, worldPositionStays: false);
-
         Vector3 worldPos = gridUI.GetCellWorldTopLeft(cell);
         Vector3 localPos = gridRt.InverseTransformPoint(worldPos);
         _rt.anchoredPosition = new Vector2(localPos.x, localPos.y);
@@ -236,7 +211,7 @@ public class ModuleItemUI : MonoBehaviour,
         var mgr = InventoryManager.Instance;
         if (Instance.CurrentGrid == mgr.WeaponGrid)
             _originGrid = WeaponGridUI;
-        else if (EnvGridUI != null && Instance.CurrentGrid == mgr.EnvGrid)
+        else if (EnvGridUI != null && Instance.CurrentGrid == EnvGridUI.Data)
             _originGrid = EnvGridUI;
         else if (InputGridUI != null && Instance.CurrentGrid == InputGridUI.Data)
             _originGrid = InputGridUI;
@@ -254,28 +229,22 @@ public class ModuleItemUI : MonoBehaviour,
 
         float cs = WeaponGridUI.CellSize;
         float sp = WeaponGridUI.CellSpacing;
+        _dragOffset = new Vector2((_clickedCell.x + 0.5f) * (cs + sp), -(_clickedCell.y + 0.5f) * (cs + sp));
 
-        _dragOffset = new Vector2(
-            (_clickedCell.x + 0.5f) * (cs + sp),
-           -(_clickedCell.y + 0.5f) * (cs + sp)
-        );
-
-        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            _canvasRt, e.position, UICam(), out var mouseLocal))
-        {
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(_canvasRt, e.position, UICam(), out var mouseLocal))
             _rt.anchoredPosition = mouseLocal - _dragOffset;
-        }
 
         _cg.alpha = dragAlpha;
         _cg.blocksRaycasts = false;
+
+        ModuleItemUI.IsDragging = true;
+        if (!UIManager.IsRightPanelOpen) DiscardGridUI.Instance?.ShowForDrag();
     }
 
     public void OnDrag(PointerEventData e)
     {
-        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            _canvasRt, e.position, UICam(), out var local))
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(_canvasRt, e.position, UICam(), out var local))
             _rt.anchoredPosition = local - _dragOffset;
-
         UpdateHighlight(e);
     }
 
@@ -284,13 +253,18 @@ public class ModuleItemUI : MonoBehaviour,
         _isDragging = false;
         _cg.alpha = 1f;
         _cg.blocksRaycasts = true;
+        ModuleItemUI.IsDragging = false;
         ClearHighlights();
 
         GridUI targetGrid = null;
         Vector2Int pivot = Vector2Int.zero;
         Vector2 sampleScreen = GetClickedCellCenterScreen();
 
-        foreach (var g in new[] { WeaponGridUI, BagGridUI, EnvGridUI, InputGridUI })
+        GridUI[] gridsToScan = MergeUI.IsMergeOpen
+            ? new[] { InputGridUI, BagGridUI, WeaponGridUI, EnvGridUI, DiscardGridUI.Instance?.GridUI }
+            : new[] { WeaponGridUI, BagGridUI, EnvGridUI, InputGridUI, DiscardGridUI.Instance?.GridUI };
+
+        foreach (var g in gridsToScan)
         {
             if (g == null) continue;
             if (g.ScreenToCell(sampleScreen, UICam(), out var hoveredCell))
@@ -310,7 +284,16 @@ public class ModuleItemUI : MonoBehaviour,
             prevGrid?.Remove(Instance);
             Instance.SetRotation(_dragRotation);
 
-            if (targetGrid.Data.TryPlace(Instance, pivot))
+            bool weaponBlocked = targetGrid == WeaponGridUI
+                && targetGrid.Data == InventoryManager.Instance.WeaponGrid
+                && !InventoryManager.Instance.CanPlaceInWeaponGrid(Instance, pivot, _dragRotation);
+
+            if (weaponBlocked)
+            {
+                Instance.SetRotation(_originRotation);
+                prevGrid?.TryPlace(Instance, prevPos);
+            }
+            else if (targetGrid.Data.TryPlace(Instance, pivot))
             {
                 moved = true;
             }
@@ -357,10 +340,8 @@ public class ModuleItemUI : MonoBehaviour,
             RebuildVisual(_dragRotation);
         }
 
-        var snapGrid = moved ? targetGrid : _originGrid;
-        var snapCell = moved ? Instance.GridPosition : _originCell;
-
-        SnapToCell(snapGrid, snapCell);
+        SnapToCell(moved ? targetGrid : _originGrid, moved ? Instance.GridPosition : _originCell);
+        DiscardGridUI.Instance?.OnDragEnded();
     }
 
     public void OnPointerEnter(PointerEventData e)
@@ -378,10 +359,8 @@ public class ModuleItemUI : MonoBehaviour,
 
     public void OnPointerExit(PointerEventData e)
     {
-        if (ShopTooltipUI != null)
-            ShopTooltipUI.Hide();
-        else
-            ModuleTooltipUI.Instance.Hide();
+        if (ShopTooltipUI != null) ShopTooltipUI.Hide();
+        else ModuleTooltipUI.Instance.Hide();
     }
 
     public void SetAllowSell(bool allow) => allowSell = allow;
@@ -401,13 +380,20 @@ public class ModuleItemUI : MonoBehaviour,
         ClearHighlights();
         Vector2 sampleScreen = GetClickedCellCenterScreen();
 
-        foreach (var g in new[] { WeaponGridUI, BagGridUI, EnvGridUI, InputGridUI })
+        GridUI[] gridsToHighlight = MergeUI.IsMergeOpen
+            ? new[] { InputGridUI, BagGridUI, WeaponGridUI, EnvGridUI, DiscardGridUI.Instance?.GridUI }
+            : new[] { WeaponGridUI, BagGridUI, EnvGridUI, InputGridUI, DiscardGridUI.Instance?.GridUI };
+
+        foreach (var g in gridsToHighlight)
         {
             if (g == null) continue;
             if (g.ScreenToCell(sampleScreen, UICam(), out var hoveredCell))
             {
                 var pivot = hoveredCell - _clickedCell;
-                g.HighlightCells(Instance.Data, pivot, g.Data.CanPlace(Instance, pivot, _dragRotation), _dragRotation);
+                bool canPlace = (g == WeaponGridUI && g.Data == InventoryManager.Instance.WeaponGrid)
+                    ? InventoryManager.Instance.CanPlaceInWeaponGrid(Instance, pivot, _dragRotation)
+                    : g.Data.CanPlace(Instance, pivot, _dragRotation);
+                g.HighlightCells(Instance.Data, pivot, canPlace, _dragRotation);
                 return;
             }
         }
@@ -419,34 +405,25 @@ public class ModuleItemUI : MonoBehaviour,
         BagGridUI?.ClearHighlights();
         EnvGridUI?.ClearHighlights();
         InputGridUI?.ClearHighlights();
+        DiscardGridUI.Instance?.GridUI.ClearHighlights();
     }
 
     private Vector2Int GetClickedLocalCell(PointerEventData e)
     {
         float cs = WeaponGridUI.CellSize;
         float sp = WeaponGridUI.CellSpacing;
-
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            _rt, e.position, UICam(), out var localPoint);
-
-        int col = Mathf.FloorToInt(localPoint.x / (cs + sp));
-        int row = Mathf.FloorToInt(-localPoint.y / (cs + sp));
-        return new Vector2Int(Mathf.Max(0, col), Mathf.Max(0, row));
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(_rt, e.position, UICam(), out var localPoint);
+        return new Vector2Int(Mathf.Max(0, Mathf.FloorToInt(localPoint.x / (cs + sp))),
+                              Mathf.Max(0, Mathf.FloorToInt(-localPoint.y / (cs + sp))));
     }
 
     private Vector2 GetClickedCellCenterScreen()
     {
         float cs = WeaponGridUI.CellSize;
         float sp = WeaponGridUI.CellSpacing;
-
-        Vector2 cellCenterLocal = new Vector2(
-             (_clickedCell.x + 0.5f) * (cs + sp),
-            -(_clickedCell.y + 0.5f) * (cs + sp));
-
-        Vector3 worldCenter = _rt.TransformPoint(cellCenterLocal);
-        return RectTransformUtility.WorldToScreenPoint(UICam(), worldCenter);
+        Vector2 cellCenterLocal = new Vector2((_clickedCell.x + 0.5f) * (cs + sp), -(_clickedCell.y + 0.5f) * (cs + sp));
+        return RectTransformUtility.WorldToScreenPoint(UICam(), _rt.TransformPoint(cellCenterLocal));
     }
 
-    private Camera UICam() =>
-        _canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : _canvas.worldCamera;
+    private Camera UICam() => _canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : _canvas.worldCamera;
 }

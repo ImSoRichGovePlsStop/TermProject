@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -25,6 +24,8 @@ public class MergeUI : MonoBehaviour
     private Canvas _canvas;
     private InventoryUI _inventoryUI;
 
+    public static bool IsMergeOpen { get; private set; }
+
     private void Awake()
     {
         _canvas = GetComponentInParent<Canvas>();
@@ -33,10 +34,8 @@ public class MergeUI : MonoBehaviour
 
     private void Start()
     {
-        var mgr = InventoryManager.Instance;
-        var layout = GetComponentInParent<InventoryLayout>();
-        float cellSize = layout != null ? layout.CellSize : 64f;
-        float cellSpacing = layout != null ? layout.CellSpacing : 2f;
+        float cellSize = 63f;
+        float cellSpacing = 2f;
 
         _inputGrid = new GridData(5, 5, isWeaponGrid: false);
         _outputGrid = new GridData(5, 5, isWeaponGrid: false);
@@ -51,6 +50,7 @@ public class MergeUI : MonoBehaviour
 
     private void OnDisable()
     {
+        IsMergeOpen = false;
         if (!_initialized) return;
 
         ReturnInputToBag();
@@ -67,7 +67,6 @@ public class MergeUI : MonoBehaviour
         }
 
         _currentStation = null;
-
         SetBagItemRefsForInventory();
         ModuleTooltipUI.Instance?.Hide();
         bagGridUI.ClearHighlights();
@@ -76,12 +75,10 @@ public class MergeUI : MonoBehaviour
 
     public void Open(MergeStation station)
     {
+        IsMergeOpen = true;
         _currentStation = station;
         SetBagItemRefsForMerge();
-
-        if (_currentStation.HasOutput)
-            SpawnOutputUI(_currentStation.CachedOutput);
-
+        if (_currentStation.HasOutput) SpawnOutputUI(_currentStation.CachedOutput);
         RefreshInputInteractable();
     }
 
@@ -99,7 +96,7 @@ public class MergeUI : MonoBehaviour
             {
                 var ui = inst.UIElement as MaterialItemUI;
                 if (ui == null) continue;
-                ui.WeaponGridUI = bagGridUI;
+                ui.WeaponGridUI = InventoryUI.StaticWeaponGridUI;
                 ui.BagGridUI = bagGridUI;
                 ui.EnvGridUI = null;
                 ui.InputGridUI = inputGridUI;
@@ -108,7 +105,7 @@ public class MergeUI : MonoBehaviour
             {
                 var ui = inst.UIElement as ModuleItemUI;
                 if (ui == null) continue;
-                ui.WeaponGridUI = bagGridUI;
+                ui.WeaponGridUI = InventoryUI.StaticWeaponGridUI;
                 ui.BagGridUI = bagGridUI;
                 ui.EnvGridUI = null;
                 ui.InputGridUI = inputGridUI;
@@ -116,6 +113,19 @@ public class MergeUI : MonoBehaviour
                 ui.SellConfirmationUI = null;
                 ui.SetAllowSell(false);
             }
+        }
+
+        foreach (var inst in InventoryManager.Instance.WeaponGrid.GetAllModules())
+        {
+            var ui = inst.UIElement as ModuleItemUI;
+            if (ui == null) continue;
+            ui.WeaponGridUI = InventoryUI.StaticWeaponGridUI;
+            ui.BagGridUI = bagGridUI;
+            ui.EnvGridUI = null;
+            ui.InputGridUI = inputGridUI;
+            ui.ShopTooltipUI = null;
+            ui.SellConfirmationUI = null;
+            ui.SetAllowSell(false);
         }
     }
 
@@ -128,18 +138,18 @@ public class MergeUI : MonoBehaviour
             {
                 var ui = inst.UIElement as MaterialItemUI;
                 if (ui == null) continue;
-                ui.WeaponGridUI = _inventoryUI.WeaponGridUI;
+                ui.WeaponGridUI = InventoryUI.StaticWeaponGridUI;
                 ui.BagGridUI = bagGridUI;
-                ui.EnvGridUI = _inventoryUI.EnvGridUI;
+                ui.EnvGridUI = null;
                 ui.InputGridUI = null;
             }
             else
             {
                 var ui = inst.UIElement as ModuleItemUI;
                 if (ui == null) continue;
-                ui.WeaponGridUI = _inventoryUI.WeaponGridUI;
+                ui.WeaponGridUI = InventoryUI.StaticWeaponGridUI;
                 ui.BagGridUI = bagGridUI;
-                ui.EnvGridUI = _inventoryUI.EnvGridUI;
+                ui.EnvGridUI = null;
                 ui.InputGridUI = null;
                 ui.ShopTooltipUI = null;
                 ui.SellConfirmationUI = null;
@@ -157,30 +167,19 @@ public class MergeUI : MonoBehaviour
         }
 
         var inputModules = new List<ModuleInstance>(_inputGrid.GetAllModules());
-        if (inputModules.Count == 0)
-        {
-            Debug.LogWarning("[MergeUI] No input items!");
-            return;
-        }
+        if (inputModules.Count == 0) { Debug.LogWarning("[MergeUI] No input items!"); return; }
 
         int totalCost = 0;
-        foreach (var inst in inputModules)
-            totalCost += inst.Data.cost[(int)inst.Rarity];
+        foreach (var inst in inputModules) totalCost += inst.Data.cost[(int)inst.Rarity];
 
-        var rolled = Randomizer.Roll(1, 1, totalCost*0.75f, totalCost * 0.2f);
-        if (rolled.Count == 0)
-        {
-            Debug.LogWarning("[MergeUI] Randomizer returned no results!");
-            return;
-        }
+        var rolled = Randomizer.Roll(1, 1, totalCost * 0.75f, totalCost * 0.2f);
+        if (rolled.Count == 0) { Debug.LogWarning("[MergeUI] Randomizer returned no results!"); return; }
 
         foreach (var inst in inputModules)
         {
             _inputGrid.Remove(inst);
-            var moduleUI = inst.UIElement as ModuleItemUI;
-            if (moduleUI != null) Destroy(moduleUI.gameObject);
-            var matUI = inst.UIElement as MaterialItemUI;
-            if (matUI != null) Destroy(matUI.gameObject);
+            if (inst.UIElement is ModuleItemUI modUI) Destroy(modUI.gameObject);
+            if (inst.UIElement is MaterialItemUI matUI) Destroy(matUI.gameObject);
         }
 
         var entry = rolled[0];
@@ -218,7 +217,8 @@ public class MergeUI : MonoBehaviour
 
         var outUI = Instantiate(moduleItemPrefab, outputGridUI.transform);
         outUI.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
-        outUI.Init(inst, bagGridUI, bagGridUI);
+        outUI.Init(inst);
+        outUI.InputGridUI = inputGridUI;
         StartCoroutine(SnapNextFrame(outUI, outputGridUI, inst.GridPosition));
     }
 
@@ -261,9 +261,8 @@ public class MergeUI : MonoBehaviour
                         for (int col = 0; col < grid.Width && !restored; col++)
                             if (grid.TryPlace(inst, new Vector2Int(col, row)))
                                 restored = true;
-
                     if (!restored)
-                        Debug.LogWarning($"[MergeUI] Bag full and couldn't restore {inst.Data.moduleName} — item lost!");
+                        Debug.LogWarning($"[MergeUI] Bag full and couldn't restore {inst.Data.moduleName}");
                 }
                 else
                 {
@@ -277,17 +276,17 @@ public class MergeUI : MonoBehaviour
 
             if (uiElem is MaterialItemUI matUI)
             {
-                matUI.WeaponGridUI = _inventoryUI.WeaponGridUI;
+                matUI.WeaponGridUI = InventoryUI.StaticWeaponGridUI;
                 matUI.BagGridUI = bagGridUI;
-                matUI.EnvGridUI = _inventoryUI.EnvGridUI;
+                matUI.EnvGridUI = null;
                 matUI.InputGridUI = null;
                 matUI.SnapToCell(bagGridUI, inst.GridPosition);
             }
             else if (uiElem is ModuleItemUI modUI)
             {
-                modUI.WeaponGridUI = _inventoryUI.WeaponGridUI;
+                modUI.WeaponGridUI = InventoryUI.StaticWeaponGridUI;
                 modUI.BagGridUI = bagGridUI;
-                modUI.EnvGridUI = _inventoryUI.EnvGridUI;
+                modUI.EnvGridUI = null;
                 modUI.InputGridUI = null;
                 modUI.SnapToCell(bagGridUI, inst.GridPosition);
             }
@@ -305,6 +304,7 @@ public class MergeUI : MonoBehaviour
         ui.SnapToCell(gridUI, cell);
         ui.GetComponent<CanvasGroup>().alpha = 1f;
     }
+
     private IEnumerator SnapNextFrame(MaterialItemUI ui, GridUI gridUI, Vector2Int cell)
     {
         ui.GetComponent<CanvasGroup>().alpha = 0f;

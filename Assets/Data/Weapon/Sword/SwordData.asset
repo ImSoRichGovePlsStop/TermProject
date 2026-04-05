@@ -82,27 +82,26 @@ MonoBehaviour:
     bigRange: 6
     bigLifetime: 5
     bigSpriteScale: 1.8
-    bigColliderRadius: 0.25
     easePower: 2
     slowThreshold: 0.4
     fastClip: {fileID: 0}
     slowClip: {fileID: 0}
     aoePulseDamageScale: 0.3
     aoePulseRadius: 1.8
-    aoePulseRate: 1
+    aoePulseInterval: 1
   gridSizePerLevel:
-  - {x: 4, y: 2}
-  - {x: 4, y: 2}
-  - {x: 4, y: 3}
-  - {x: 4, y: 3}
-  - {x: 4, y: 3}
-  - {x: 4, y: 3}
-  - {x: 5, y: 3}
-  - {x: 5, y: 3}
-  - {x: 5, y: 3}
-  - {x: 5, y: 4}
-  - {x: 5, y: 4}
-  - {x: 6, y: 4}
-  - {x: 6, y: 4}
-  - {x: 6, y: 4}
-  - {x: 6, y: 5}
+  - {x: 2, y: 4}
+  - {x: 2, y: 4}
+  - {x: 3, y: 4}
+  - {x: 3, y: 4}
+  - {x: 3, y: 4}
+  - {x: 3, y: 4}
+  - {x: 3, y: 5}
+  - {x: 3, y: 5}
+  - {x: 3, y: 5}
+  - {x: 4, y: 5}
+  - {x: 4, y: 5}
+  - {x: 4, y: 6}
+  - {x: 4, y: 6}
+  - {x: 4, y: 6}
+  - {x: 5, y: 6}

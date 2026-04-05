@@ -5,43 +5,81 @@ public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance { get; private set; }
 
-    [Header("Bag Grid")]
-    [SerializeField] private int bagCols = 8;
-    [SerializeField] private int bagRows = 8;
+    [Header("Weapon Grid — Max Size")]
+    [SerializeField] private int weaponMaxCols = 5;
+    [SerializeField] private int weaponMaxRows = 7;
 
-    [Header("Env Grid")]
-    [SerializeField] private int envCols = 5;
-    [SerializeField] private int envRows = 8;
+    [Header("Bag Grid — Max Size")]
+    [SerializeField] private int bagMaxCols = 10;
+    [SerializeField] private int bagMaxRows = 6;
+
+    [Header("Bag Grid — Starting Unlocked Size")]
+    [SerializeField] private int bagStartCols = 8;
+    [SerializeField] private int bagStartRows = 5;
 
     public GridData WeaponGrid { get; private set; }
-    public GridData BagGrid    { get; private set; }
-    public GridData EnvGrid    { get; private set; }
+    public GridData BagGrid { get; private set; }
+
+    public int WeaponUnlockedCols { get; private set; } = 1;
+    public int WeaponUnlockedRows { get; private set; } = 1;
+    public int BagUnlockedCols { get; private set; }
+    public int BagUnlockedRows { get; private set; }
 
     public event System.Action<ModuleInstance> OnModuleEquipped;
     public event System.Action<ModuleInstance> OnModuleUnequipped;
+    public event System.Action OnWeaponGridChanged;
+    public event System.Action OnBagGridChanged;
 
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
 
-        WeaponGrid = new GridData(1, 1, isWeaponGrid: true);
-        BagGrid    = new GridData(bagCols,    bagRows,    isWeaponGrid: false);
-        EnvGrid    = new GridData(envCols,    envRows,    isWeaponGrid: false);
+        WeaponGrid = new GridData(weaponMaxCols, weaponMaxRows, isWeaponGrid: true);
+        BagGrid = new GridData(bagMaxCols, bagMaxRows, isWeaponGrid: false);
 
-        WeaponGrid.OnModulePlaced  += inst => OnModuleEquipped?.Invoke(inst);
+        WeaponUnlockedCols = 1;
+        WeaponUnlockedRows = 1;
+        BagUnlockedCols = bagStartCols;
+        BagUnlockedRows = bagStartRows;
+
+        WeaponGrid.OnModulePlaced += inst => OnModuleEquipped?.Invoke(inst);
         WeaponGrid.OnModuleRemoved += inst => OnModuleUnequipped?.Invoke(inst);
+    }
 
-        GetComponent<InventoryLayout>()?.ApplyLayout(1, 1, bagCols, bagRows, envCols, envRows);
+    public void UpgradeWeaponGrid(int newUnlockedCols, int newUnlockedRows)
+    {
+        WeaponUnlockedCols = Mathf.Clamp(newUnlockedCols, 1, weaponMaxCols);
+        WeaponUnlockedRows = Mathf.Clamp(newUnlockedRows, 1, weaponMaxRows);
+
+        var toEvict = new List<ModuleInstance>();
+        foreach (var inst in WeaponGrid.GetAllModules())
+            foreach (var cell in inst.GetAbsoluteCells())
+                if (cell.x >= WeaponUnlockedCols || cell.y >= WeaponUnlockedRows)
+                { toEvict.Add(inst); break; }
+
+        foreach (var inst in toEvict)
+        {
+            WeaponGrid.Remove(inst);
+            TryAddToBag(inst);
+        }
+
+        OnWeaponGridChanged?.Invoke();
+    }
+
+    public void UpgradeBagGrid(int newUnlockedCols, int newUnlockedRows)
+    {
+        BagUnlockedCols = Mathf.Clamp(newUnlockedCols, 1, bagMaxCols);
+        BagUnlockedRows = Mathf.Clamp(newUnlockedRows, 1, bagMaxRows);
+        OnBagGridChanged?.Invoke();
     }
 
     public bool TryMoveModule(ModuleInstance inst, GridData targetGrid, Vector2Int pivot)
     {
         var prevGrid = inst.CurrentGrid;
-        var prevPos  = inst.GridPosition;
+        var prevPos = inst.GridPosition;
 
         prevGrid?.Remove(inst);
-
         if (targetGrid.TryPlace(inst, pivot)) return true;
 
         prevGrid?.TryPlace(inst, prevPos);
@@ -50,25 +88,29 @@ public class InventoryManager : MonoBehaviour
 
     public bool TryAddToBag(ModuleInstance inst)
     {
-        for (int row = 0; row < BagGrid.Height; row++)
-            for (int col = 0; col < BagGrid.Width; col++)
+        for (int row = 0; row < BagUnlockedRows; row++)
+            for (int col = 0; col < BagUnlockedCols; col++)
                 if (BagGrid.TryPlace(inst, new Vector2Int(col, row))) return true;
 
         Debug.LogWarning($"[Inventory] Bag full — {inst.Data.moduleName}");
         return false;
     }
 
-    public void ExpandWeaponGrid(int newCols, int newRows)
+    public bool IsBagFull()
     {
-        var evicted = new List<ModuleInstance>();
-        WeaponGrid.Resize(newCols, newRows, evicted);
-        foreach (var inst in evicted) TryAddToBag(inst);
+        for (int row = 0; row < BagUnlockedRows; row++)
+            for (int col = 0; col < BagUnlockedCols; col++)
+                if (BagGrid.IsCellEmpty(new Vector2Int(col, row))) return false;
+        return true;
+    }
 
-        var layout = GetComponent<InventoryLayout>();
-        var inventoryUI = FindFirstObjectByType<InventoryUI>(FindObjectsInactive.Include);
-        if (layout == null || inventoryUI == null) return;
+    public bool IsWithinWeaponUnlocked(Vector2Int cell)
+        => cell.x < WeaponUnlockedCols && cell.y < WeaponUnlockedRows;
 
-        inventoryUI.WeaponGridUI.Init(WeaponGrid, layout.CellSize, layout.CellSpacing);
-        layout.ApplyLayout(newCols, newRows, BagGrid.Width, BagGrid.Height, EnvGrid.Width, EnvGrid.Height);
+    public bool CanPlaceInWeaponGrid(ModuleInstance inst, Vector2Int pivot, int rotation)
+    {
+        foreach (var cell in WeaponGrid.GetAbsoluteCells(inst.Data, pivot, rotation))
+            if (!IsWithinWeaponUnlocked(cell)) return false;
+        return WeaponGrid.CanPlace(inst, pivot, rotation);
     }
 }

@@ -163,7 +163,7 @@ public class BattleRoom : MonoBehaviour
         if (randomLoot != null)
         {
             int floor = RunManager.Instance?.CurrentFloor ?? 1;
-            int roomsCleared = RunManager.Instance?.TotalEnemyKilled ?? 0;
+            int roomsCleared = RunManager.Instance?.TotalRoomsCleared ?? 0;
             randomLoot.Configure(floor, roomsCleared);
         }
 

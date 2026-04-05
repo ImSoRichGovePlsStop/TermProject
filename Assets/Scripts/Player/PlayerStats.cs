@@ -59,20 +59,20 @@ public class PlayerStats : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool showDebugUI = true;
 
-    private void OnGUI()
-    {
-        if (!showDebugUI) return;
-        GUI.Box(new Rect(10, 10, 300, 280), "Player Stats");
-        GUI.skin.label.fontSize = 16;
-        GUI.Label(new Rect(20, 40, 280, 25), $"HP:  {CurrentHealth:F1} / {MaxHealth:F1}");
-        GUI.Label(new Rect(20, 70, 280, 25), $"SHIELD:  {CurrentShield:F1}");
-        GUI.Label(new Rect(20, 100, 280, 25), $"DMG:  {Damage:F1}");
-        GUI.Label(new Rect(20, 130, 280, 25), $"ASPD:  {AttackSpeed:F2}");
-        GUI.Label(new Rect(20, 160, 280, 25), $"SPD:  {MoveSpeed:F2}");
-        GUI.Label(new Rect(20, 190, 280, 25), $"CRIT:  {CritChance:P0} / {CritDamage:P0}");
-        GUI.Label(new Rect(20, 220, 280, 25), $"EVADE:  {EvadeChance:P0}  INV: {IsInvincible}");
-        GUI.Label(new Rect(20, 250, 280, 25), $"DMG TAKEN:  {DamageTaken:F2}");
-    }
+    //private void OnGUI()
+    //{
+    //    if (!showDebugUI) return;
+    //    GUI.Box(new Rect(10, 10, 300, 280), "Player Stats");
+    //    GUI.skin.label.fontSize = 16;
+    //    GUI.Label(new Rect(20, 40, 280, 25), $"HP:  {CurrentHealth:F1} / {MaxHealth:F1}");
+    //    GUI.Label(new Rect(20, 70, 280, 25), $"SHIELD:  {CurrentShield:F1}");
+    //    GUI.Label(new Rect(20, 100, 280, 25), $"DMG:  {Damage:F1}");
+    //    GUI.Label(new Rect(20, 130, 280, 25), $"ASPD:  {AttackSpeed:F2}");
+    //    GUI.Label(new Rect(20, 160, 280, 25), $"SPD:  {MoveSpeed:F2}");
+    //    GUI.Label(new Rect(20, 190, 280, 25), $"CRIT:  {CritChance:P0} / {CritDamage:P0}");
+    //    GUI.Label(new Rect(20, 220, 280, 25), $"EVADE:  {EvadeChance:P0}  INV: {IsInvincible}");
+    //    GUI.Label(new Rect(20, 250, 280, 25), $"DMG TAKEN:  {DamageTaken:F2}");
+    //}
 
     public void SetDebugUI(bool enabled)
     {

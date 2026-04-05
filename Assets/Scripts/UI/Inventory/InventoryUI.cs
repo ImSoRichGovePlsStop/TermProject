@@ -5,35 +5,104 @@ using UnityEngine.UI;
 
 public class InventoryUI : MonoBehaviour
 {
+    [Header("Tab Buttons")]
+    [SerializeField] private Button inventoryTabButton;
+    [SerializeField] private Button playerStatTabButton;
+    [SerializeField] private Button skillTabButton;
+    [SerializeField] private Button questTabButton;
+    [SerializeField] private Button menuTabButton;
+
+    [Header("Tab Panels")]
+    [SerializeField] private GameObject inventoryPanel;
+    [SerializeField] private GameObject playerStatPanel;
+    [SerializeField] private GameObject skillPanel;
+    [SerializeField] private GameObject questPanel;
+    [SerializeField] private GameObject menuPanel;
+
+    [Header("Tab Active Indicators (optional)")]
+    [SerializeField] private GameObject inventoryTabIndicator;
+    [SerializeField] private GameObject playerStatTabIndicator;
+    [SerializeField] private GameObject skillTabIndicator;
+    [SerializeField] private GameObject questTabIndicator;
+    [SerializeField] private GameObject menuTabIndicator;
+
     [Header("Grid UI")]
     [SerializeField] private GridUI weaponGridUI;
     [SerializeField] private GridUI bagGridUI;
-    [SerializeField] private GridUI envGridUI;
 
     [Header("Prefabs")]
-    [SerializeField] private ModuleItemUI moduleItemPrefab;
+    [SerializeField] private ModuleItemUI   moduleItemPrefab;
     [SerializeField] private MaterialItemUI materialItemPrefab;
 
+    [Header("Grid Settings")]
+    [SerializeField] private float cellSize    = 64f;
+    [SerializeField] private float cellSpacing = 2f;
+
+    public static GridUI StaticWeaponGridUI { get; private set; }
+    public static GridUI StaticBagGridUI    { get; private set; }
+
     public GridUI WeaponGridUI => weaponGridUI;
-    public GridUI BagGridUI => bagGridUI;
-    public GridUI EnvGridUI => envGridUI;
+    public GridUI BagGridUI    => bagGridUI;
+
+    public enum Tab { Inventory, PlayerStat, Skill, Quest, Menu }
+    public Tab CurrentTab { get; private set; } = Tab.Inventory;
 
     private void Awake()
     {
         var mgr = InventoryManager.Instance;
-        if (mgr == null) { return; }
-
-        var layout = GetComponentInParent<InventoryLayout>();
-        float cellSize = layout != null ? layout.CellSize : 64f;
-        float cellSpacing = layout != null ? layout.CellSpacing : 2f;
+        if (mgr == null) { Debug.LogError("[InventoryUI] InventoryManager not found!"); return; }
 
         weaponGridUI.Init(mgr.WeaponGrid, cellSize, cellSpacing);
         bagGridUI.Init(mgr.BagGrid, cellSize, cellSpacing);
-        envGridUI?.Init(mgr.EnvGrid, cellSize, cellSpacing);
-        envGridUI?.gameObject.SetActive(false);
 
-        Debug.Log("[InventoryUI] Initialized.");
+        weaponGridUI.SetWeaponGridState(mgr.WeaponUnlockedCols, mgr.WeaponUnlockedRows);
+
+        StaticWeaponGridUI = weaponGridUI;
+        StaticBagGridUI    = bagGridUI;
+
+        mgr.OnWeaponGridChanged += OnWeaponGridChanged;
+        mgr.OnBagGridChanged    += OnBagGridChanged;
+
+        inventoryTabButton?.onClick.AddListener(() => SwitchTab(Tab.Inventory));
+        playerStatTabButton?.onClick.AddListener(() => SwitchTab(Tab.PlayerStat));
+        skillTabButton?.onClick.AddListener(()      => SwitchTab(Tab.Skill));
+        questTabButton?.onClick.AddListener(()      => SwitchTab(Tab.Quest));
+        menuTabButton?.onClick.AddListener(()       => SwitchTab(Tab.Menu));
+
+        SwitchTab(Tab.Inventory);
     }
+
+    private void OnDestroy()
+    {
+        var mgr = InventoryManager.Instance;
+        if (mgr == null) return;
+        mgr.OnWeaponGridChanged -= OnWeaponGridChanged;
+        mgr.OnBagGridChanged    -= OnBagGridChanged;
+    }
+
+    public void SwitchTab(Tab tab)
+    {
+        CurrentTab = tab;
+        inventoryPanel?.SetActive(tab == Tab.Inventory);
+        playerStatPanel?.SetActive(tab == Tab.PlayerStat);
+        skillPanel?.SetActive(tab == Tab.Skill);
+        questPanel?.SetActive(tab == Tab.Quest);
+        menuPanel?.SetActive(tab == Tab.Menu);
+
+        if (inventoryTabIndicator  != null) inventoryTabIndicator.SetActive(tab == Tab.Inventory);
+        if (playerStatTabIndicator != null) playerStatTabIndicator.SetActive(tab == Tab.PlayerStat);
+        if (skillTabIndicator      != null) skillTabIndicator.SetActive(tab == Tab.Skill);
+        if (questTabIndicator      != null) questTabIndicator.SetActive(tab == Tab.Quest);
+        if (menuTabIndicator       != null) menuTabIndicator.SetActive(tab == Tab.Menu);
+    }
+
+    private void OnWeaponGridChanged()
+    {
+        var mgr = InventoryManager.Instance;
+        weaponGridUI.SetWeaponGridState(mgr.WeaponUnlockedCols, mgr.WeaponUnlockedRows);
+    }
+
+    private void OnBagGridChanged() => bagGridUI.RefreshAll();
 
     public void RestoreBagItemRefs()
     {
@@ -44,83 +113,41 @@ public class InventoryUI : MonoBehaviour
                 var ui = inst.UIElement as MaterialItemUI;
                 if (ui == null) continue;
                 ui.WeaponGridUI = weaponGridUI;
-                ui.BagGridUI = bagGridUI;
-                ui.EnvGridUI = envGridUI;
-                ui.InputGridUI = null;
+                ui.BagGridUI    = bagGridUI;
+                ui.EnvGridUI    = null;
+                ui.InputGridUI  = null;
             }
             else
             {
                 var ui = inst.UIElement as ModuleItemUI;
                 if (ui == null) continue;
-                ui.WeaponGridUI = weaponGridUI;
-                ui.BagGridUI = bagGridUI;
-                ui.EnvGridUI = envGridUI;
-                ui.InputGridUI = null;
-                ui.ShopTooltipUI = null;
+                ui.WeaponGridUI       = weaponGridUI;
+                ui.BagGridUI          = bagGridUI;
+                ui.EnvGridUI          = null;
+                ui.InputGridUI        = null;
+                ui.ShopTooltipUI      = null;
                 ui.SellConfirmationUI = null;
                 ui.SetAllowSell(false);
             }
         }
     }
 
-    public void ClearEnvGrid()
-    {
-        var mgr = InventoryManager.Instance;
-        foreach (var inst in new List<ModuleInstance>(mgr.EnvGrid.GetAllModules()))
-        {
-            if (inst.UIElement != null)
-                Destroy(inst.UIElement.gameObject);
-            mgr.EnvGrid.Remove(inst);
-        }
-    }
-
-    public void SetEnvGridVisible(bool visible)
-    {
-        envGridUI.gameObject.SetActive(visible);
-    }
-
-    public void TakeAllFromEnv()
-    {
-        var mgr = InventoryManager.Instance;
-        var toTake = new List<ModuleInstance>(mgr.EnvGrid.GetAllModules());
-        if (toTake.Count == 0) return;
-
-        foreach (var inst in toTake)
-        {
-            var uiElem = inst.UIElement;
-            mgr.EnvGrid.Remove(inst);
-
-            if (!mgr.TryAddToBag(inst))
-            {
-                bool restored = false;
-                for (int row = 0; row < mgr.EnvGrid.Height && !restored; row++)
-                    for (int col = 0; col < mgr.EnvGrid.Width && !restored; col++)
-                        if (mgr.EnvGrid.TryPlace(inst, new Vector2Int(col, row)))
-                            restored = true;
-                continue;
-            }
-
-            if (uiElem == null) continue;
-            uiElem.transform.SetParent(bagGridUI.transform, false);
-            if (uiElem is MaterialItemUI matUI)
-                StartCoroutine(SnapNextFrame(matUI, bagGridUI, inst.GridPosition));
-            else if (uiElem is ModuleItemUI modUI)
-                StartCoroutine(SnapNextFrame(modUI, bagGridUI, inst.GridPosition));
-        }
-    }
-
     public ModuleItemUI SpawnModule(ModuleData data, Rarity rarity = Rarity.Common, int level = 0)
     {
         var inst = new ModuleInstance(data, rarity, level);
+
         if (!InventoryManager.Instance.TryAddToBag(inst))
         {
-            Debug.LogWarning($"[InventoryUI] Bag full — {data.moduleName}");
+            if (DiscardGridUI.Instance != null)
+                DiscardGridUI.Instance.ShowForOverflow(new List<ModuleInstance> { inst });
+            else
+                Debug.LogWarning($"[InventoryUI] Bag full — {data.moduleName}");
             return null;
         }
 
         var ui = Instantiate(moduleItemPrefab, bagGridUI.transform);
         ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
-        ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
+        ui.Init(inst);
         StartCoroutine(SnapNextFrame(ui, bagGridUI, inst.GridPosition));
         return ui;
     }
@@ -129,25 +156,27 @@ public class InventoryUI : MonoBehaviour
     {
         foreach (var existing in InventoryManager.Instance.BagGrid.GetAllModules())
         {
-            if (existing is MaterialInstance existingMat
-                && existingMat.MaterialData == data
-                && existingMat.StackCount < existingMat.MaxStack)
+            if (existing is MaterialInstance mat && mat.MaterialData == data && mat.StackCount < mat.MaxStack)
             {
-                existingMat.AddStack();
-                return existingMat.UIElement as MaterialItemUI;
+                mat.AddStack();
+                return mat.UIElement as MaterialItemUI;
             }
         }
 
         var inst = new MaterialInstance(data);
+
         if (!InventoryManager.Instance.TryAddToBag(inst))
         {
-            Debug.LogWarning($"[InventoryUI] Bag full — {data.moduleName}");
+            if (DiscardGridUI.Instance != null)
+                DiscardGridUI.Instance.ShowForOverflow(new List<ModuleInstance> { inst });
+            else
+                Debug.LogWarning($"[InventoryUI] Bag full — {data.moduleName}");
             return null;
         }
 
         var ui = Instantiate(materialItemPrefab, bagGridUI.transform);
         ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
-        ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
+        ui.Init(inst);
         ui.InventoryUI = this;
         StartCoroutine(SnapNextFrame(ui, bagGridUI, inst.GridPosition));
         return ui;
@@ -156,111 +185,38 @@ public class InventoryUI : MonoBehaviour
     public MaterialItemUI SpawnSplitMaterial(MaterialData data, GridUI targetGridUI)
     {
         var inst = new MaterialInstance(data);
-        var mgr = InventoryManager.Instance;
 
-        bool placed;
-        if (targetGridUI == envGridUI)
+        if (!InventoryManager.Instance.TryAddToBag(inst))
         {
-            placed = false;
-            for (int row = 0; row < mgr.EnvGrid.Height && !placed; row++)
-                for (int col = 0; col < mgr.EnvGrid.Width && !placed; col++)
-                    if (mgr.EnvGrid.TryPlace(inst, new Vector2Int(col, row)))
-                        placed = true;
-        }
-        else
-        {
-            placed = mgr.TryAddToBag(inst);
-        }
-
-        if (!placed)
-        {
-            Debug.LogWarning($"[InventoryUI] Grid full — cannot split {data.moduleName}");
+            Debug.LogWarning($"[InventoryUI] Cannot split — bag full");
             return null;
         }
 
         var ui = Instantiate(materialItemPrefab, targetGridUI.transform);
         ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
-        ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
+        ui.Init(inst);
         ui.InventoryUI = this;
         StartCoroutine(SnapNextFrame(ui, targetGridUI, inst.GridPosition));
         return ui;
     }
 
-    public MaterialItemUI SpawnExistingMaterialToEnv(MaterialInstance inst)
+    private IEnumerator SnapNextFrame(MaterialItemUI ui, GridUI grid, Vector2Int cell)
     {
-        var mgr = InventoryManager.Instance;
-        bool placed = false;
-        for (int row = 0; row < mgr.EnvGrid.Height && !placed; row++)
-            for (int col = 0; col < mgr.EnvGrid.Width && !placed; col++)
-                if (mgr.EnvGrid.TryPlace(inst, new Vector2Int(col, row)))
-                    placed = true;
-
-        if (!placed) return null;
-
-        var ui = Instantiate(materialItemPrefab, envGridUI.transform);
-        ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
-        ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
-        ui.InventoryUI = this;
-        StartCoroutine(SnapNextFrame(ui, envGridUI, inst.GridPosition));
-        return ui;
-    }
-
-    public ModuleItemUI SpawnExistingModuleToEnv(ModuleInstance inst)
-    {
-        var mgr = InventoryManager.Instance;
-        bool placed = false;
-        for (int row = 0; row < mgr.EnvGrid.Height && !placed; row++)
-            for (int col = 0; col < mgr.EnvGrid.Width && !placed; col++)
-                if (mgr.EnvGrid.TryPlace(inst, new Vector2Int(col, row)))
-                    placed = true;
-
-        if (!placed) return null;
-
-        var ui = Instantiate(moduleItemPrefab, envGridUI.transform);
-        ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
-        ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
-        StartCoroutine(SnapNextFrame(ui, envGridUI, inst.GridPosition));
-        return ui;
-    }
-
-    public ModuleItemUI SpawnModuleToEnv(ModuleData data, Rarity rarity = Rarity.Common, int level = 0)
-    {
-        var inst = new ModuleInstance(data, rarity, level);
-        var mgr = InventoryManager.Instance;
-        bool placed = false;
-        for (int row = 0; row < mgr.EnvGrid.Height && !placed; row++)
-            for (int col = 0; col < mgr.EnvGrid.Width && !placed; col++)
-                if (mgr.EnvGrid.TryPlace(inst, new Vector2Int(col, row)))
-                    placed = true;
-
-        if (!placed)
-        {
-            Debug.LogWarning($"[InventoryUI] EnvGrid full — {data.moduleName}");
-            return null;
-        }
-
-        var ui = Instantiate(moduleItemPrefab, envGridUI.transform);
-        ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
-        ui.Init(inst, weaponGridUI, bagGridUI, envGridUI);
-        StartCoroutine(SnapNextFrame(ui, envGridUI, inst.GridPosition));
-        return ui;
-    }
-
-    private IEnumerator SnapNextFrame(MaterialItemUI ui, GridUI gridUI, Vector2Int cell)
-    {
-        ui.GetComponent<CanvasGroup>().alpha = 0f;
+        var cg = ui.GetComponent<CanvasGroup>();
+        if (cg != null) cg.alpha = 0f;
         yield return null;
         Canvas.ForceUpdateCanvases();
-        ui.SnapToCell(gridUI, cell);
-        ui.GetComponent<CanvasGroup>().alpha = 1f;
+        ui.SnapToCell(grid, cell);
+        if (cg != null) cg.alpha = 1f;
     }
 
-    private IEnumerator SnapNextFrame(ModuleItemUI ui, GridUI gridUI, Vector2Int cell)
+    private IEnumerator SnapNextFrame(ModuleItemUI ui, GridUI grid, Vector2Int cell)
     {
-        ui.GetComponent<CanvasGroup>().alpha = 0f;
+        var cg = ui.GetComponent<CanvasGroup>();
+        if (cg != null) cg.alpha = 0f;
         yield return null;
         Canvas.ForceUpdateCanvases();
-        ui.SnapToCell(gridUI, cell);
-        ui.GetComponent<CanvasGroup>().alpha = 1f;
+        ui.SnapToCell(grid, cell);
+        if (cg != null) cg.alpha = 1f;
     }
 }
