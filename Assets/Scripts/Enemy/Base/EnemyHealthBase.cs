@@ -31,5 +31,6 @@ public class EnemyHealthBase : HealthBase
     {
         controller?.OnDeath();
         context?.NotifyEnemyKilled((HealthBase)this);
+        GetComponent<MaterialDropHandler>()?.TriggerDrop();
     }
 }

@@ -43,15 +43,6 @@ public class ModuleItemUI : MonoBehaviour,
     [HideInInspector] public ShopTooltipUI ShopTooltipUI;
     [HideInInspector] public SellConfirmationUI SellConfirmationUI;
 
-    private static Color RarityColor(Rarity r) => r switch
-    {
-        Rarity.Common => new Color(0.75f, 0.75f, 0.75f),
-        Rarity.Uncommon => new Color(0.30f, 0.80f, 0.30f),
-        Rarity.Rare => new Color(0.20f, 0.50f, 1.00f),
-        Rarity.Epic => new Color(0.65f, 0.25f, 0.90f),
-        Rarity.GOD => new Color(1.00f, 0.75f, 0.10f),
-        _ => Color.white
-    };
 
     public void Init(ModuleInstance instance, GridUI envGridUI = null)
     {
@@ -146,7 +137,7 @@ public class ModuleItemUI : MonoBehaviour,
         iconGo.transform.SetSiblingIndex(borderCount);
     }
 
-    private static Dictionary<(Texture2D, Rarity, int), Texture2D> _outlineCache = new();
+
 
     private void BuildBorders(System.Collections.Generic.List<Vector2Int> shapeCells, int rotation, Vector2Int bound, float cs, float sp)
     {
@@ -181,12 +172,7 @@ public class ModuleItemUI : MonoBehaviour,
             float pixelsPerUnit = tex.width / (WeaponGridUI.CellSize * bound.x);
             int thickness = Mathf.Max(1, Mathf.RoundToInt(borderSize * pixelsPerUnit));
 
-            var cacheKey = (tex, Instance.Rarity, thickness);
-            if (!_outlineCache.TryGetValue(cacheKey, out var outlineTex))
-            {
-                outlineTex = CreateOutlineTexture(tex, RarityColor(Instance.Rarity), thickness);
-                _outlineCache[cacheKey] = outlineTex;
-            }
+            var outlineTex = SpriteOutlineUtility.GetOrCreate(tex, SpriteOutlineUtility.RarityColor(Instance.Rarity), thickness);
 
             raw.texture = outlineTex;
             raw.color = Color.white;
@@ -195,8 +181,7 @@ public class ModuleItemUI : MonoBehaviour,
         }
         else
         {
-            // No icon — draw solid border per cell
-            Color borderColor = RarityColor(Instance.Rarity);
+            Color borderColor = SpriteOutlineUtility.RarityColor(Instance.Rarity);
             foreach (var cell in shapeCells)
             {
                 var borderGo = new GameObject($"border_{cell.x}_{cell.y}", typeof(RectTransform), typeof(Image));
@@ -226,58 +211,6 @@ public class ModuleItemUI : MonoBehaviour,
         }
     }
 
-    private Texture2D CreateOutlineTexture(Texture2D source, Color tint, int thickness)
-    {
-        const int maxSize = 256;
-        Texture2D workSrc = source;
-        if (source.width > maxSize || source.height > maxSize)
-        {
-            float scale = Mathf.Min((float)maxSize / source.width, (float)maxSize / source.height);
-            int newW = Mathf.Max(1, Mathf.RoundToInt(source.width * scale));
-            int newH = Mathf.Max(1, Mathf.RoundToInt(source.height * scale));
-            var rt = RenderTexture.GetTemporary(newW, newH, 0, RenderTextureFormat.ARGB32);
-            Graphics.Blit(source, rt);
-            var prev = RenderTexture.active;
-            RenderTexture.active = rt;
-            workSrc = new Texture2D(newW, newH, TextureFormat.RGBA32, false);
-            workSrc.ReadPixels(new Rect(0, 0, newW, newH), 0, 0);
-            workSrc.Apply();
-            RenderTexture.active = prev;
-            RenderTexture.ReleaseTemporary(rt);
-            thickness = Mathf.Max(1, Mathf.RoundToInt(thickness * scale));
-        }
-
-        int w = workSrc.width;
-        int h = workSrc.height;
-        Color[] src = workSrc.GetPixels();
-        Color[] dst = new Color[w * h];
-
-        for (int y = 0; y < h; y++)
-        {
-            for (int x = 0; x < w; x++)
-            {
-                if (src[y * w + x].a > 0.01f) continue;
-                bool nearOpaque = false;
-                for (int dy = -thickness; dy <= thickness && !nearOpaque; dy++)
-                {
-                    for (int dx = -thickness; dx <= thickness && !nearOpaque; dx++)
-                    {
-                        if (dx * dx + dy * dy > thickness * thickness) continue;
-                        int nx = x + dx, ny = y + dy;
-                        if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
-                        if (src[ny * w + nx].a > 0.01f) nearOpaque = true;
-                    }
-                }
-                if (nearOpaque)
-                    dst[y * w + x] = new Color(tint.r, tint.g, tint.b, 1f);
-            }
-        }
-
-        var result = new Texture2D(w, h, TextureFormat.RGBA32, false);
-        result.SetPixels(dst);
-        result.Apply();
-        return result;
-    }
 
     private void BuildVisualCells(System.Collections.Generic.List<Vector2Int> shapeCells, Vector2Int bound, int rotation)
     {

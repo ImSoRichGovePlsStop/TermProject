@@ -34,6 +34,14 @@ public class UIManager : MonoBehaviour
     private float holdTime = 0f;
     private float holdDuration = 1f;
 
+    public static UIManager Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+    }
+
     private void Start()
     {
         playerStats = FindFirstObjectByType<PlayerStats>();

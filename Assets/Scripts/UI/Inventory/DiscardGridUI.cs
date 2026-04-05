@@ -9,15 +9,15 @@ public class DiscardGridUI : MonoBehaviour
 
     [Header("Grid")]
     [SerializeField] private GridUI gridUI;
-    [SerializeField] private int    discardCols = 4;
-    [SerializeField] private int    discardRows = 2;
+    [SerializeField] private int discardCols = 4;
+    [SerializeField] private int discardRows = 2;
 
     [Header("Prefabs")]
-    [SerializeField] private ModuleItemUI   moduleItemPrefab;
+    [SerializeField] private ModuleItemUI moduleItemPrefab;
     [SerializeField] private MaterialItemUI materialItemPrefab;
 
     [Header("UI References")]
-    [SerializeField] private GameObject      rootPanel;
+    [SerializeField] private GameObject rootPanel;
     [SerializeField] private TextMeshProUGUI titleText;
     [SerializeField] private TextMeshProUGUI subtitleText;
 
@@ -25,10 +25,10 @@ public class DiscardGridUI : MonoBehaviour
     [SerializeField] private InventoryUI inventoryUI;
 
     private GridData _discardGrid;
-    private bool     _isDragMode;
+    private bool _isDragMode;
 
-    public bool     IsVisible   => rootPanel != null && rootPanel.activeSelf;
-    public GridUI   GridUI      => gridUI;
+    public bool IsVisible => rootPanel != null && rootPanel.activeSelf;
+    public GridUI GridUI => gridUI;
     public GridData DiscardGrid => _discardGrid;
 
     private void Awake()
@@ -53,6 +53,10 @@ public class DiscardGridUI : MonoBehaviour
     {
         _isDragMode = false;
         SetTitle("Bag Full", "Manage before closing inventory");
+
+        if (!UIManager.Instance.IsInventoryOpen)
+            UIManager.Instance.ToggleInventory();
+
         rootPanel?.SetActive(true);
 
         foreach (var inst in overflowItems)
@@ -117,7 +121,7 @@ public class DiscardGridUI : MonoBehaviour
 
     private void SetTitle(string title, string subtitle)
     {
-        if (titleText    != null) titleText.text    = title;
+        if (titleText != null) titleText.text = title;
         if (subtitleText != null) subtitleText.text = subtitle;
     }
 
