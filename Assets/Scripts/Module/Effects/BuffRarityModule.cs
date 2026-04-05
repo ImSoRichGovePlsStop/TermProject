@@ -24,4 +24,11 @@ public class BuffRarityModule : ModuleEffect
         float stat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
         return $"Buffs adjacent module to {rarity}";
     }
+
+    public override string[] BoldKeywords => new[] { "adjacent" };
+
+    public override (string, float, float, bool) GetStatLine(Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats = null)
+    {
+        return ($"{rarity} Buff", -1f, -1f, false);
+    }
 }

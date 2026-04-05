@@ -469,7 +469,7 @@ public class ModuleItemUI : MonoBehaviour,
         }
         else
         {
-            ModuleTooltipUI.Instance.Show(Instance, WeaponGridUI, BagGridUI, EnvGridUI);
+            ModuleTooltipUI.Instance.Show(Instance, WeaponGridUI, BagGridUI, EnvGridUI, DiscardGridUI.Instance, InputGridUI);
         }
     }
 

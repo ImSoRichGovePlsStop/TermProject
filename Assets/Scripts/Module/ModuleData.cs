@@ -11,6 +11,8 @@ public class ModuleShapeRow
 public class ModuleData : ScriptableObject
 {
     public string moduleName = "New Module";
+    [TextArea(2, 5)]
+    public string description = "";
     public Sprite icon;
     public ModuleEffect moduleEffect;
     public Color moduleColor = Color.white;
@@ -18,6 +20,8 @@ public class ModuleData : ScriptableObject
 
     [Header("Module Buff")]
     public bool isBuffAdjacent;
+    [TextArea(1, 3)]
+    public string buffDescription = "";
     [SerializeField] private ModuleShapeRow[] buffGrid = DefaultShape();
 
     [Header("Shape (5×5 — tick cells to form the shape)")]

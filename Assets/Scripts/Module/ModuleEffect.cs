@@ -53,7 +53,14 @@ public abstract class ModuleEffect : ScriptableObject
 
     public abstract string GetDescription(Rarity rarity, int level, ModuleRuntimeState state);
 
-    public virtual string GetLevelText( int level, ModuleRuntimeState state)
+    public virtual string[] BoldKeywords => System.Array.Empty<string>();
+
+    public virtual (string label, float baseStat, float effectiveStat, bool isPercent) GetStatLine(Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats = null)
+    {
+        return (null, 0f, 0f, false);
+    }
+
+    public virtual string GetLevelText(int level, ModuleRuntimeState state)
     {
         if (state.buffedLevel != 0 && state.buffedLevel != level)
             return $"<s>Lv.{level}</s> Lv.{state.buffedLevel}";

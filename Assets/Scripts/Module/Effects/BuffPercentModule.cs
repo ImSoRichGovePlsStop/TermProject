@@ -24,4 +24,13 @@ public class BuffPercentModule : ModuleEffect
         float stat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
         return $"Buffs adjacent modules: +{stat * 100f:F0}%";
     }
+
+    public override string[] BoldKeywords => new[] { "adjacent" };
+
+    public override (string, float, float, bool) GetStatLine(Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats = null)
+    {
+        float stat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        // after = -1 = sentinel: show desc only, no value column
+        return ("Buff Adjacent", stat, -1f, true);
+    }
 }

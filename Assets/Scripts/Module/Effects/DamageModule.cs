@@ -112,6 +112,8 @@ public class DamageModule : ModuleEffect
         stats.AddMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
     }
 
+    public override string[] BoldKeywords => new[] { "damage", "Damage" };
+
     public override string GetDescription(Rarity rarity, int level, ModuleRuntimeState state)
     {
         float baseStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
@@ -119,6 +121,27 @@ public class DamageModule : ModuleEffect
         if (effective != baseStat & state.isActive)
             return $"<s>+{baseStat * 100f:F0}%</s> +{effective * 100f:F0}% Damage";
         return $"+{baseStat * 100f:F0}% Damage";
+    }
+
+    public override (string, float, float, bool) GetStatLine(Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats = null)
+    {
+        float moduleStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        float effective = GetEffectiveStat(state);
+        float current = playerStats != null ? playerStats.MultiplierModifier.damage : 0f;
+
+        float before, after;
+        if (state.isActive)
+        {
+            before = current - effective;
+            after = current;
+        }
+        else
+        {
+            before = current;
+            after = current + moduleStat;
+        }
+
+        return ("Damage", before, after, true);
     }
 
 }

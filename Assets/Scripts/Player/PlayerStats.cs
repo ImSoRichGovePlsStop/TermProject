@@ -119,6 +119,9 @@ public class PlayerStats : MonoBehaviour
     private void Debug_Shield()
         => GainShield(20, 3);
 
+    public StatModifier FlatModifier => flatModifier;
+    public StatModifier MultiplierModifier => multiplierModifier;
+
     public float MaxHealth =>
         (weaponHealth + flatModifier.health) * (1 + multiplierModifier.health);
     public float Damage =>

@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: Atk_1
   m_EditorClassIdentifier: Assembly-CSharp::ModuleData
   moduleName: Strength
+  description: Increase player damage
   icon: {fileID: 0}
   moduleEffect: {fileID: 11400000, guid: 94033e4052409bf4fb70becf5a90842d, type: 2}
   moduleColor: {r: 1, g: 0.2028302, b: 0.2028302, a: 1}
   cost: 19000000320000004b0000006400000096000000
   isBuffAdjacent: 0
+  buffDescription: 
   buffGrid:
   - cells: 0000000000
   - cells: 0000000000
