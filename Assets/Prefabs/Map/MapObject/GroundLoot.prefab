@@ -104,6 +104,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e6d50285b3671548a01de664f2a07da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BillboardSprite
+  isBillboard: 1
 --- !u!1 &7487802019810916615
 GameObject:
   m_ObjectHideFlags: 0
@@ -168,14 +169,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 7487802019810916615}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5fa232b32c07ca94eaa1206750fdefe4, type: 3}
+  m_Script: {fileID: 11500000, guid: 60eadd734bdac1641bca560e35b8f616, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RandomLoot
-  minLootCount: 4
-  maxLootCount: 4
+  optionCount: 3
   allowDuplicates: 0
   meanCost: 10
-  sd: 20
+  sd: 10
   debugLog: 0
-  inventoryUI: {fileID: 0}
-  uiManager: {fileID: 0}

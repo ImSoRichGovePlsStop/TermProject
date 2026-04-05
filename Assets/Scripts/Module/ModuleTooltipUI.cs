@@ -14,18 +14,17 @@ public class ModuleTooltipUI : MonoBehaviour
     private GridUI currentBuffGridUI;
     private GridUI weaponGridUIRef;
     private GridUI bagGridUIRef;
-    private GridUI envGridUIRef;
 
     private static Color RarityColor(Rarity r)
     {
         switch (r)
         {
-            case Rarity.Common: return new Color(0.75f, 0.75f, 0.75f);
+            case Rarity.Common:   return new Color(0.75f, 0.75f, 0.75f);
             case Rarity.Uncommon: return new Color(0.30f, 0.80f, 0.30f);
-            case Rarity.Rare: return new Color(0.20f, 0.50f, 1.00f);
-            case Rarity.Epic: return new Color(0.65f, 0.25f, 0.90f);
-            case Rarity.GOD: return new Color(1.00f, 0.75f, 0.10f);
-            default: return Color.white;
+            case Rarity.Rare:     return new Color(0.20f, 0.50f, 1.00f);
+            case Rarity.Epic:     return new Color(0.65f, 0.25f, 0.90f);
+            case Rarity.GOD:      return new Color(1.00f, 0.75f, 0.10f);
+            default:              return Color.white;
         }
     }
 
@@ -33,38 +32,33 @@ public class ModuleTooltipUI : MonoBehaviour
     {
         Instance = this;
 
-        // Style NameText
-        nameText.fontSize = 22f;
+        nameText.fontSize  = 22f;
         nameText.fontStyle = FontStyles.Bold;
 
-        // Style RarityLevelText
         rarityLevelText.fontSize = 14f;
-        rarityLevelText.color = new Color(0.7f, 0.7f, 0.7f);
+        rarityLevelText.color    = new Color(0.7f, 0.7f, 0.7f);
 
-        // Create divider
         var dividerGo = new GameObject("Divider", typeof(RectTransform), typeof(Image));
         dividerGo.transform.SetParent(transform, false);
         dividerGo.transform.SetSiblingIndex(rarityLevelText.transform.GetSiblingIndex() + 1);
 
-        var dividerRt = dividerGo.GetComponent<RectTransform>();
+        var dividerRt      = dividerGo.GetComponent<RectTransform>();
         dividerRt.sizeDelta = new Vector2(0f, 1f);
 
-        var dividerImg = dividerGo.GetComponent<Image>();
-        dividerImg.color = new Color(0.5f, 0.5f, 0.5f, 1f);
-        dividerImg.raycastTarget = false;
+        var dividerImg            = dividerGo.GetComponent<Image>();
+        dividerImg.color          = new Color(0.5f, 0.5f, 0.5f, 1f);
+        dividerImg.raycastTarget  = false;
 
-        var dividerLayout = dividerGo.AddComponent<LayoutElement>();
-        dividerLayout.minHeight = 1f;
+        var dividerLayout            = dividerGo.AddComponent<LayoutElement>();
+        dividerLayout.minHeight      = 1f;
         dividerLayout.preferredHeight = 1f;
-        dividerLayout.flexibleWidth = 1f;
+        dividerLayout.flexibleWidth  = 1f;
 
-        // Style DescriptionText
         descriptionText.fontSize = 15f;
-        descriptionText.color = Color.white;
+        descriptionText.color    = Color.white;
 
-        // Style CostText
         costText.fontSize = 15f;
-        costText.color = Color.yellow;
+        costText.color    = Color.yellow;
 
         Hide();
     }
@@ -72,25 +66,20 @@ public class ModuleTooltipUI : MonoBehaviour
     public void Show(ModuleInstance inst, GridUI weaponGridUI, GridUI bagGridUI, GridUI envGridUI = null)
     {
         weaponGridUIRef = weaponGridUI;
-        bagGridUIRef = bagGridUI;
-        envGridUIRef = envGridUI;
+        bagGridUIRef    = bagGridUI;
 
-        nameText.text = inst.Data.moduleName;
-        nameText.color = RarityColor(inst.Rarity);
-        rarityLevelText.text = $"{inst.Data.moduleEffect.GetRarityText(inst.Rarity, inst.RuntimeState)} {inst.Data.moduleEffect.GetLevelText(inst.Level, inst.RuntimeState)}" ;
+        nameText.text        = inst.Data.moduleName;
+        nameText.color       = RarityColor(inst.Rarity);
+        rarityLevelText.text = $"{inst.Data.moduleEffect.GetRarityText(inst.Rarity, inst.RuntimeState)} {inst.Data.moduleEffect.GetLevelText(inst.Level, inst.RuntimeState)}";
         descriptionText.text = inst.Data.moduleEffect != null
             ? inst.Data.moduleEffect.GetDescription(inst.Rarity, inst.Level, inst.RuntimeState)
             : "";
         costText.text = $"Cost : {(int)inst.GetCostAtLevel()}";
         gameObject.SetActive(true);
 
-        // Highlight buff cells
         if (inst.Data.isBuffAdjacent && inst.CurrentGrid != null)
         {
-            GridUI grid;
-            if (inst.CurrentGrid == weaponGridUI?.Data)       grid = weaponGridUI;
-            else if (envGridUI != null && inst.CurrentGrid == envGridUI.Data) grid = envGridUI;
-            else                                               grid = bagGridUI;
+            GridUI grid = inst.CurrentGrid == weaponGridUI?.Data ? weaponGridUI : bagGridUI;
             currentBuffGridUI = grid;
             grid?.HighlightBuffCells(inst, inst.Data.moduleColor);
         }
@@ -98,13 +87,10 @@ public class ModuleTooltipUI : MonoBehaviour
 
     public void Show(MaterialInstance inst)
     {
-        nameText.text  = inst.MaterialData.moduleName;
-        nameText.color = RarityColor(inst.Rarity);
+        nameText.text        = inst.MaterialData.moduleName;
+        nameText.color       = RarityColor(inst.Rarity);
         rarityLevelText.text = $"{inst.Rarity}  {inst.StackCount}/{inst.MaxStack}";
-        descriptionText.text = inst.Cost > 0
-            ? $"Total cost: {inst.Cost * inst.StackCount}g"
-            : "";
-
+        descriptionText.text = inst.Cost > 0 ? $"Total cost: {inst.Cost * inst.StackCount}g" : "";
         gameObject.SetActive(true);
     }
 

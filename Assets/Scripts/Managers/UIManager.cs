@@ -1,22 +1,21 @@
-ï»¿using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class UIManager : MonoBehaviour
 {
+    [SerializeField] private GameObject hud;
+    [SerializeField] private InventoryUI inventoryUI;
+
     private GameObject inventoryPanel;
-    private GameObject bagGrid;
     private PassiveScreenUI passiveScreenUI;
     private ShopUI _activeShopUI;
     private MergeUI _activeMergeUI;
     private GamblerScreenUI gamblerScreenUI;
-    private GameObject gameOverScreen;
     private UpgradeStationUI _upgradeStationUI;
-    private bool _upgradeOpen = false;
+    private LootRewardUI _lootRewardUI;
     private HubStorageUI _storageUI;
     private PlayerStats playerStats;
-
-    [SerializeField] private GameObject hud;
+    private bool _upgradeOpen;
 
     public bool isInBattle { get; set; }
     public bool IsInventoryOpen { get; private set; }
@@ -34,129 +33,138 @@ public class UIManager : MonoBehaviour
     private float holdTime = 0f;
     private float holdDuration = 1f;
 
-    [SerializeField] private InventoryUI inventoryUI;
-
     private void Start()
     {
         playerStats = FindFirstObjectByType<PlayerStats>();
-        if (playerStats != null)
-            playerStats.OnPlayerDeath += OnPlayerDeath;
+        if (playerStats != null) playerStats.OnPlayerDeath += OnPlayerDeath;
 
         inventoryPanel = GameObject.FindWithTag("InventoryPanel");
-        bagGrid = GameObject.FindWithTag("BagGrid");
-        inventoryUI = FindFirstObjectByType<InventoryUI>(FindObjectsInactive.Include);
+        inventoryUI = inventoryUI != null ? inventoryUI : FindFirstObjectByType<InventoryUI>(FindObjectsInactive.Include);
         passiveScreenUI = FindFirstObjectByType<PassiveScreenUI>(FindObjectsInactive.Include);
         gamblerScreenUI = FindFirstObjectByType<GamblerScreenUI>(FindObjectsInactive.Include);
         _upgradeStationUI = FindFirstObjectByType<UpgradeStationUI>(FindObjectsInactive.Include);
+        _lootRewardUI = FindFirstObjectByType<LootRewardUI>(FindObjectsInactive.Include);
 
         var shopUI = FindFirstObjectByType<ShopUI>(FindObjectsInactive.Include);
         var mergeUI = FindFirstObjectByType<MergeUI>(FindObjectsInactive.Include);
         var sellUI = FindFirstObjectByType<SellConfirmationUI>(FindObjectsInactive.Include);
         _storageUI = FindFirstObjectByType<HubStorageUI>(FindObjectsInactive.Include);
 
-        if (inventoryPanel != null) inventoryPanel.SetActive(true);
-        if (bagGrid != null) bagGrid.SetActive(true);
-        if (shopUI != null) shopUI.gameObject.SetActive(true);
-        if (mergeUI != null) mergeUI.gameObject.SetActive(true);
-        if (_upgradeStationUI != null) _upgradeStationUI.gameObject.SetActive(true);
-        if (sellUI != null) sellUI.gameObject.SetActive(true);
+
+
+        // Force Awake on all panels, then hide
+        SetActive(inventoryPanel, true);
+        SetActive(shopUI?.gameObject, true);
+        SetActive(mergeUI?.gameObject, true);
+        SetActive(_upgradeStationUI?.gameObject, true);
+        SetActive(_lootRewardUI?.gameObject, true);
+        SetActive(sellUI?.gameObject, true);
 
         Canvas.ForceUpdateCanvases();
 
-        if (inventoryPanel != null) inventoryPanel.SetActive(false);
-        if (bagGrid != null) bagGrid.SetActive(false);
-        if (shopUI != null) shopUI.gameObject.SetActive(false);
-        if (mergeUI != null) mergeUI.gameObject.SetActive(false);
-        if (_upgradeStationUI != null) _upgradeStationUI.gameObject.SetActive(false);
-        if (sellUI != null) sellUI.gameObject.SetActive(false);
+        SetActive(inventoryPanel, false);
+        SetActive(shopUI?.gameObject, false);
+        SetActive(mergeUI?.gameObject, false);
+        SetActive(_upgradeStationUI?.gameObject, false);
+        SetActive(_lootRewardUI?.gameObject, false);
+        SetActive(sellUI?.gameObject, false);
+
+
     }
+
+    private static void SetActive(GameObject go, bool active) { if (go != null) go.SetActive(active); }
 
     private void Update()
     {
-        if (!isInBattle)
+        if (isInBattle) return;
+
+        var kb = Keyboard.current;
+        if (kb == null) return;
+
+        if (kb[Key.Tab].wasPressedThisFrame)
         {
-            if (Keyboard.current[Key.Tab].wasPressedThisFrame)
-            {
-                if (IsCardPhaseOpen)
-                    return;
-                else if (IsGamblerOpen)
-                    CloseGambler();
-                else if (IsStorageOpen)
-                    CloseStorage();
-                else if (!IsPassiveOpen)
-                    ToggleInventory();
-                else
-                    ClosePassive();
-            }
+            Debug.Log($"[UIManager] Tab pressed — IsInventoryOpen={IsInventoryOpen} inventoryPanel={inventoryPanel?.name ?? "NULL"}");
 
-            if (Keyboard.current[Key.Escape].wasPressedThisFrame)
-            {
-                if (IsCardPhaseOpen)
-                    return;
-                else if (IsPassiveOpen)
-                    ClosePassive();
-                else if (IsGamblerOpen)
-                    CloseGambler();
-                else if (IsStorageOpen)
-                    CloseStorage();
-                else if (_upgradeOpen)
-                { }
-                else if (IsMergeOpen)
-                    CloseMerge();
-                else if (IsShopOpen)
-                    CloseShop();
-                else if (IsInventoryOpen)
-                    ToggleInventory();
-            }
+            if (IsCardPhaseOpen) return;
+            if (IsGamblerOpen) CloseGambler();
+            else if (IsStorageOpen) CloseStorage();
+            else if (!IsPassiveOpen) ToggleInventory();
+            else ClosePassive();
+        }
 
-            if (Keyboard.current[Key.F].wasPressedThisFrame && IsInventoryOpen)
-            {
-                inventoryUI.TakeAllFromEnv();
-            }
+        if (kb[Key.Escape].wasPressedThisFrame)
+        {
+            if (IsCardPhaseOpen) return;
+            if (IsPassiveOpen) ClosePassive();
+            else if (IsGamblerOpen) CloseGambler();
+            else if (IsStorageOpen) CloseStorage();
+            else if (_upgradeOpen) { }
+            else if (IsMergeOpen) CloseMerge();
+            else if (IsShopOpen) CloseShop();
+            else if (IsInventoryOpen) ToggleInventory();
+        }
 
-            if (IsPassiveOpen)
+        if (IsInventoryOpen && inventoryUI != null)
+        {
+            if (kb[Key.Digit1].wasPressedThisFrame) inventoryUI.SwitchTab(InventoryUI.Tab.Inventory);
+            if (kb[Key.Digit2].wasPressedThisFrame) inventoryUI.SwitchTab(InventoryUI.Tab.PlayerStat);
+            if (kb[Key.Digit3].wasPressedThisFrame) inventoryUI.SwitchTab(InventoryUI.Tab.Skill);
+            if (kb[Key.Digit4].wasPressedThisFrame) inventoryUI.SwitchTab(InventoryUI.Tab.Quest);
+            if (kb[Key.Digit5].wasPressedThisFrame) inventoryUI.SwitchTab(InventoryUI.Tab.Menu);
+        }
+
+        if (IsPassiveOpen)
+        {
+            if (kb[Key.R].isPressed)
             {
-                if (Keyboard.current[Key.R].isPressed)
-                {
-                    holdTime += Time.deltaTime;
-                    if (holdTime >= holdDuration)
-                    {
-                        passiveScreenUI.OnResetHeld();
-                        holdTime = 0f;
-                    }
-                }
-                else
-                {
-                    holdTime = 0f;
-                }
+                holdTime += Time.deltaTime;
+                if (holdTime >= holdDuration) { passiveScreenUI.OnResetHeld(); holdTime = 0f; }
             }
+            else holdTime = 0f;
         }
     }
 
     public void ToggleInventory()
     {
-        if (inventoryPanel == null) return;
+        if (inventoryPanel == null)
+        {
+            Debug.LogError("[UIManager] ToggleInventory called but inventoryPanel is null — is the InventoryPanel tag set?");
+            return;
+        }
 
         if (IsShopOpen) CloseShop();
         if (IsMergeOpen) CloseMerge();
 
-        IsInventoryOpen = !IsInventoryOpen;
-        inventoryPanel.SetActive(IsInventoryOpen);
-
-        if (!IsInventoryOpen)
+        if (IsInventoryOpen)
         {
-            ModuleTooltipUI.Instance?.Hide();
-            inventoryUI?.ClearEnvGrid();
-            inventoryUI?.SetEnvGridVisible(false);
-            inventoryUI?.RestoreBagItemRefs();
+            if (ModuleItemUI.IsDragging) return;
+            Debug.Log("[UIManager] Closing inventory.");
+            CloseInventoryImmediate();
         }
+        else
+        {
+            Debug.Log("[UIManager] Opening inventory.");
+            IsInventoryOpen = true;
+            inventoryPanel.SetActive(true);
+            inventoryUI?.SwitchTab(InventoryUI.Tab.Inventory);
+            UpdatePanelVisibility();
+        }
+    }
+
+    private void CloseInventoryImmediate()
+    {
+        IsInventoryOpen = false;
+        inventoryPanel.SetActive(false);
+
+        ModuleTooltipUI.Instance?.Hide();
+        inventoryUI?.RestoreBagItemRefs();
+        DiscardGridUI.Instance?.ForceHide();
 
         UpdatePanelVisibility();
     }
 
     public void OpenShop(ShopUI shop)
     {
-        if (IsInventoryOpen) ToggleInventory();
         if (IsMergeOpen) CloseMerge();
 
         _activeShopUI = shop;
@@ -177,7 +185,6 @@ public class UIManager : MonoBehaviour
 
     public void OpenMerge(MergeUI mergeUI, MergeStation station)
     {
-        if (IsInventoryOpen) ToggleInventory();
         if (IsShopOpen) CloseShop();
 
         _activeMergeUI = mergeUI;
@@ -197,18 +204,40 @@ public class UIManager : MonoBehaviour
 
     public void OpenUpgrade(UpgradeStation station)
     {
-        if (IsInventoryOpen) ToggleInventory();
         if (IsShopOpen) CloseShop();
         if (IsMergeOpen) CloseMerge();
 
         if (_upgradeStationUI == null)
             _upgradeStationUI = FindFirstObjectByType<UpgradeStationUI>(FindObjectsInactive.Include);
-
         if (_upgradeStationUI == null) { Debug.LogError("[UIManager] UpgradeStationUI not found!"); return; }
 
         _upgradeOpen = true;
         _upgradeStationUI.gameObject.SetActive(true);
         _upgradeStationUI.Open(station);
+        UpdatePanelVisibility();
+    }
+
+    public void CloseUpgrade()
+    {
+        if (_upgradeStationUI != null) _upgradeStationUI.gameObject.SetActive(false);
+        _upgradeOpen = false;
+        UpdatePanelVisibility();
+    }
+
+    public void OpenRewardLoot(RandomLoot station, System.Collections.Generic.List<TestModuleEntry> rolled)
+    {
+        if (_lootRewardUI == null)
+            _lootRewardUI = FindFirstObjectByType<LootRewardUI>(FindObjectsInactive.Include);
+        if (_lootRewardUI == null) { Debug.LogError("[UIManager] LootRewardUI not found!"); return; }
+
+        _lootRewardUI.gameObject.SetActive(true);
+        _lootRewardUI.Open(station, rolled);
+        UpdatePanelVisibility();
+    }
+
+    public void CloseRewardLoot()
+    {
+        if (_lootRewardUI != null) _lootRewardUI.gameObject.SetActive(false);
         UpdatePanelVisibility();
     }
 
@@ -226,23 +255,14 @@ public class UIManager : MonoBehaviour
         UpdatePanelVisibility();
     }
 
-    public void CloseUpgrade()
-    {
-        if (_upgradeStationUI != null)
-            _upgradeStationUI.gameObject.SetActive(false);
-        _upgradeOpen = false;
-        UpdatePanelVisibility();
-    }
-
     public void OpenGambler(GenericTreeConfig config, object owner, GamblerStation station)
     {
-        if (IsInventoryOpen) ToggleInventory();
         if (IsShopOpen) CloseShop();
         if (IsMergeOpen) CloseMerge();
+        if (IsInventoryOpen) CloseInventoryImmediate();
 
         if (gamblerScreenUI == null)
             gamblerScreenUI = FindFirstObjectByType<GamblerScreenUI>(FindObjectsInactive.Include);
-
         if (gamblerScreenUI == null) { Debug.LogError("[UIManager] GamblerScreenUI not found!"); return; }
 
         gamblerScreenUI.Open(config, owner, station);
@@ -251,20 +271,18 @@ public class UIManager : MonoBehaviour
 
     public void CloseGambler()
     {
-        if (gamblerScreenUI != null && gamblerScreenUI.IsOpen)
-            gamblerScreenUI.Close();
+        if (gamblerScreenUI != null && gamblerScreenUI.IsOpen) gamblerScreenUI.Close();
         UpdatePanelVisibility();
     }
 
     public void OpenPassive(WeaponPassiveData data, WeaponData weaponData = null)
     {
-        if (IsInventoryOpen) ToggleInventory();
         if (IsShopOpen) CloseShop();
         if (IsMergeOpen) CloseMerge();
+        if (IsInventoryOpen) CloseInventoryImmediate();
 
         if (passiveScreenUI == null)
             passiveScreenUI = FindFirstObjectByType<PassiveScreenUI>(FindObjectsInactive.Include);
-
         if (passiveScreenUI == null) { Debug.LogWarning("[UIManager] PassiveScreenUI not found!"); return; }
 
         passiveScreenUI.Open(data, weaponData);
@@ -273,31 +291,30 @@ public class UIManager : MonoBehaviour
 
     public void ClosePassive()
     {
-        if (passiveScreenUI != null && passiveScreenUI.IsOpen)
-            passiveScreenUI.Close();
+        if (passiveScreenUI != null && passiveScreenUI.IsOpen) passiveScreenUI.Close();
         UpdatePanelVisibility();
     }
 
     private void UpdatePanelVisibility()
     {
-        bool showBagGrid = IsInventoryOpen || IsShopOpen || IsMergeOpen;
-        if (bagGrid != null) bagGrid.SetActive(showBagGrid);
+        bool anyRightPanelOpen = IsShopOpen || IsMergeOpen || _upgradeOpen;
 
-        bool shouldHideHUD =
-            IsInventoryOpen ||
-            IsShopOpen ||
-            IsMergeOpen ||
-            _upgradeOpen ||
-            IsPassiveOpen ||
-            IsGamblerOpen ||
-            IsStorageOpen;
+        if (anyRightPanelOpen && !IsInventoryOpen && inventoryPanel != null)
+        {
+            IsInventoryOpen = true;
+            inventoryPanel.SetActive(true);
+        }
 
-        if (hud != null) hud.SetActive(!shouldHideHUD);
+        bool hideHUD = IsInventoryOpen || IsShopOpen || IsMergeOpen || _upgradeOpen
+                    || IsPassiveOpen || IsGamblerOpen || IsStorageOpen;
+
+        if (hud != null) hud.SetActive(!hideHUD);
     }
 
     private void OnPlayerDeath()
     {
         var panel = FindFirstObjectByType<EndGameUI>(FindObjectsInactive.Include);
+        Debug.Log($"[UIManager] OnPlayerDeath — EndGameUI found: {(panel != null ? panel.name : "NULL")}");
         panel?.Show(isWin: false);
     }
 }

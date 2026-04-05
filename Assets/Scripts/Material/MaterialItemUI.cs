@@ -45,12 +45,12 @@ public class MaterialItemUI : MonoBehaviour,
         _ => Color.white
     };
 
-    public void Init(MaterialInstance instance, GridUI weaponGridUI, GridUI bagGridUI, GridUI envGridUI = null)
+    public void Init(MaterialInstance instance, GridUI envGridUI = null)
     {
         Instance = instance;
         instance.UIElement = this;
-        WeaponGridUI = weaponGridUI;
-        BagGridUI = bagGridUI;
+        WeaponGridUI = InventoryUI.StaticWeaponGridUI;
+        BagGridUI = InventoryUI.StaticBagGridUI;
         EnvGridUI = envGridUI;
 
         _rt = GetComponent<RectTransform>();
@@ -65,10 +65,8 @@ public class MaterialItemUI : MonoBehaviour,
         img.raycastTarget = false;
 
         RebuildVisual(Instance.Rotation);
-
         RefreshStackText();
         instance.OnStackChanged += RefreshStackText;
-
         _cg.alpha = 0f;
     }
 
@@ -82,8 +80,7 @@ public class MaterialItemUI : MonoBehaviour,
         float sp = BagGridUI.CellSpacing;
 
         var bound = Instance.Data.GetBoundingSize(rotation);
-        _rt.sizeDelta = new Vector2(bound.x * (cs + sp) - sp,
-                                    bound.y * (cs + sp) - sp);
+        _rt.sizeDelta = new Vector2(bound.x * (cs + sp) - sp, bound.y * (cs + sp) - sp);
 
         BuildVisualCells(Instance.Data.GetShapeCells(rotation));
     }
@@ -96,8 +93,7 @@ public class MaterialItemUI : MonoBehaviour,
 
         foreach (var cell in shapeCells)
         {
-            var borderGo = new GameObject($"border_{cell.x}_{cell.y}",
-                                          typeof(RectTransform), typeof(Image));
+            var borderGo = new GameObject($"border_{cell.x}_{cell.y}", typeof(RectTransform), typeof(Image));
             var borderRt = borderGo.GetComponent<RectTransform>();
             borderRt.SetParent(_rt, false);
             borderRt.pivot = new Vector2(0f, 1f);
@@ -114,10 +110,8 @@ public class MaterialItemUI : MonoBehaviour,
             float bExtraBottom = bHasBottom ? borderSize + sp : 0f;
             float bExtraTop = bHasTop ? borderSize + sp : 0f;
 
-            borderRt.sizeDelta = new Vector2(cs + bExtraLeft + bExtraRight,
-                                             cs + bExtraTop + bExtraBottom);
-            borderRt.anchoredPosition = new Vector2(cell.x * (cs + sp) - bExtraLeft,
-                                                    -cell.y * (cs + sp) + bExtraTop);
+            borderRt.sizeDelta = new Vector2(cs + bExtraLeft + bExtraRight, cs + bExtraTop + bExtraBottom);
+            borderRt.anchoredPosition = new Vector2(cell.x * (cs + sp) - bExtraLeft, -cell.y * (cs + sp) + bExtraTop);
 
             borderGo.GetComponent<Image>().color = borderColor;
             borderGo.GetComponent<Image>().raycastTarget = false;
@@ -130,8 +124,7 @@ public class MaterialItemUI : MonoBehaviour,
 
         foreach (var cell in shapeCells)
         {
-            var go = new GameObject($"cell_{cell.x}_{cell.y}",
-                                        typeof(RectTransform), typeof(Image));
+            var go = new GameObject($"cell_{cell.x}_{cell.y}", typeof(RectTransform), typeof(Image));
             var cellRt = go.GetComponent<RectTransform>();
             cellRt.SetParent(_rt, false);
             cellRt.pivot = new Vector2(0f, 1f);
@@ -148,10 +141,8 @@ public class MaterialItemUI : MonoBehaviour,
             float extraBottom = hasBottom ? borderSize + sp : 0f;
             float extraTop = hasTop ? borderSize + sp : 0f;
 
-            cellRt.sizeDelta = new Vector2(cs - borderSize * 2f + extraLeft + extraRight,
-                                           cs - borderSize * 2f + extraTop + extraBottom);
-            cellRt.anchoredPosition = new Vector2(cell.x * (cs + sp) + borderSize - extraLeft,
-                                                  -cell.y * (cs + sp) - borderSize + extraTop);
+            cellRt.sizeDelta = new Vector2(cs - borderSize * 2f + extraLeft + extraRight, cs - borderSize * 2f + extraTop + extraBottom);
+            cellRt.anchoredPosition = new Vector2(cell.x * (cs + sp) + borderSize - extraLeft, -cell.y * (cs + sp) - borderSize + extraTop);
 
             var cellImg = go.GetComponent<Image>();
             if (Instance.Data.icon != null) cellImg.sprite = Instance.Data.icon;
@@ -160,8 +151,7 @@ public class MaterialItemUI : MonoBehaviour,
 
             if (cell == topRightCell)
             {
-                var stackGo = new GameObject("StackText",
-                                             typeof(RectTransform), typeof(TextMeshProUGUI));
+                var stackGo = new GameObject("StackText", typeof(RectTransform), typeof(TextMeshProUGUI));
                 var stackRt = stackGo.GetComponent<RectTransform>();
                 stackRt.SetParent(cellRt, false);
                 stackRt.anchorMin = new Vector2(0f, 1f);
@@ -181,27 +171,22 @@ public class MaterialItemUI : MonoBehaviour,
 
     private void Update()
     {
-        if (_isDragging && Keyboard.current != null && Keyboard.current[Key.R].wasPressedThisFrame)
-        {
-            var currentShape = Instance.Data.GetShapeCells(_dragRotation);
-            _clickedCell = ModuleData.RotateSinglePoint(_clickedCell, 1, currentShape);
-            _dragRotation = (_dragRotation + 1) % 4;
-            RebuildVisual(_dragRotation);
-            RefreshStackText();
+        if (!_isDragging || Keyboard.current == null || !Keyboard.current[Key.R].wasPressedThisFrame) return;
 
-            float cs = BagGridUI.CellSize;
-            float sp = BagGridUI.CellSpacing;
+        var currentShape = Instance.Data.GetShapeCells(_dragRotation);
+        _clickedCell = ModuleData.RotateSinglePoint(_clickedCell, 1, currentShape);
+        _dragRotation = (_dragRotation + 1) % 4;
+        RebuildVisual(_dragRotation);
+        RefreshStackText();
 
-            _dragOffset = new Vector2(
-                (_clickedCell.x + 0.5f) * (cs + sp),
-               -(_clickedCell.y + 0.5f) * (cs + sp));
+        float cs = BagGridUI.CellSize;
+        float sp = BagGridUI.CellSpacing;
+        _dragOffset = new Vector2((_clickedCell.x + 0.5f) * (cs + sp), -(_clickedCell.y + 0.5f) * (cs + sp));
 
-            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                _canvasRt, Mouse.current.position.ReadValue(), UICam(), out var local))
-                _rt.anchoredPosition = local - _dragOffset;
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(_canvasRt, Mouse.current.position.ReadValue(), UICam(), out var local))
+            _rt.anchoredPosition = local - _dragOffset;
 
-            UpdateHighlightAtScreenPos(Mouse.current.position.ReadValue());
-        }
+        UpdateHighlightAtScreenPos(Mouse.current.position.ReadValue());
     }
 
     private void RefreshStackText()
@@ -221,12 +206,12 @@ public class MaterialItemUI : MonoBehaviour,
 
     public void OnBeginDrag(PointerEventData e)
     {
-        var mgr = InventoryManager.Instance;
-
         if (InputGridUI != null && Instance.CurrentGrid == InputGridUI.Data)
             _originGrid = InputGridUI;
+        else if (EnvGridUI != null && Instance.CurrentGrid == EnvGridUI.Data)
+            _originGrid = EnvGridUI;
         else
-            _originGrid = Instance.CurrentGrid == mgr.EnvGrid ? EnvGridUI : BagGridUI;
+            _originGrid = BagGridUI;
 
         _originCell = Instance.GridPosition;
         _originRotation = Instance.Rotation;
@@ -240,23 +225,21 @@ public class MaterialItemUI : MonoBehaviour,
 
         float cs = BagGridUI.CellSize;
         float sp = BagGridUI.CellSpacing;
+        _dragOffset = new Vector2((_clickedCell.x + 0.5f) * (cs + sp), -(_clickedCell.y + 0.5f) * (cs + sp));
 
-        _dragOffset = new Vector2(
-            (_clickedCell.x + 0.5f) * (cs + sp),
-           -(_clickedCell.y + 0.5f) * (cs + sp));
-
-        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            _canvasRt, e.position, UICam(), out var mouseLocal))
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(_canvasRt, e.position, UICam(), out var mouseLocal))
             _rt.anchoredPosition = mouseLocal - _dragOffset;
 
         _cg.alpha = dragAlpha;
         _cg.blocksRaycasts = false;
+
+        ModuleItemUI.IsDragging = true;
+        DiscardGridUI.Instance?.ShowForDrag();
     }
 
     public void OnDrag(PointerEventData e)
     {
-        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            _canvasRt, e.position, UICam(), out var local))
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(_canvasRt, e.position, UICam(), out var local))
             _rt.anchoredPosition = local - _dragOffset;
 
         _lastPointerScreenPos = e.position;
@@ -268,9 +251,12 @@ public class MaterialItemUI : MonoBehaviour,
         _isDragging = false;
         _cg.alpha = 1f;
         _cg.blocksRaycasts = true;
+        ModuleItemUI.IsDragging = false;
         ClearHighlights();
 
-        foreach (var g in new[] { BagGridUI, EnvGridUI, InputGridUI })
+        var gridsToCheck = new[] { BagGridUI, EnvGridUI, InputGridUI, DiscardGridUI.Instance?.GridUI };
+
+        foreach (var g in gridsToCheck)
         {
             if (g == null) continue;
             if (!g.ScreenToCell(e.position, UICam(), out var hoveredCell)) continue;
@@ -284,6 +270,7 @@ public class MaterialItemUI : MonoBehaviour,
                 if (toAdd >= Instance.StackCount)
                 {
                     _originGrid.Data.Remove(Instance);
+                    DiscardGridUI.Instance?.OnDragEnded();
                     Destroy(gameObject);
                 }
                 else
@@ -294,6 +281,7 @@ public class MaterialItemUI : MonoBehaviour,
                     RefreshStackText();
                     SnapToCell(_originGrid, _originCell);
                 }
+                DiscardGridUI.Instance?.OnDragEnded();
                 return;
             }
 
@@ -326,6 +314,7 @@ public class MaterialItemUI : MonoBehaviour,
                             blockerModUI.SnapToCell(_originGrid, prevPos);
                         else if (blocker.UIElement is MaterialItemUI blockerMatUI)
                             blockerMatUI.SnapToCell(_originGrid, prevPos);
+                        DiscardGridUI.Instance?.OnDragEnded();
                         return;
                     }
                     else
@@ -342,6 +331,7 @@ public class MaterialItemUI : MonoBehaviour,
                 RefreshStackText();
                 SnapToCell(_originGrid, _originCell);
             }
+            DiscardGridUI.Instance?.OnDragEnded();
             return;
         }
 
@@ -349,6 +339,7 @@ public class MaterialItemUI : MonoBehaviour,
         RebuildVisual(_dragRotation);
         RefreshStackText();
         SnapToCell(_originGrid, _originCell);
+        DiscardGridUI.Instance?.OnDragEnded();
     }
 
     public void OnPointerClick(PointerEventData e)
@@ -357,12 +348,9 @@ public class MaterialItemUI : MonoBehaviour,
         if (Instance.StackCount <= 1) return;
         if (InventoryUI == null) return;
 
-        var targetGrid = Instance.CurrentGrid == InventoryManager.Instance.EnvGrid ? EnvGridUI : BagGridUI;
-
         Instance.RemoveStack();
-        var ui = InventoryUI.SpawnSplitMaterial(Instance.MaterialData, targetGrid);
-        if (ui == null)
-            Instance.AddStack();
+        var ui = InventoryUI.SpawnSplitMaterial(Instance.MaterialData, BagGridUI);
+        if (ui == null) Instance.AddStack();
     }
 
     public void OnPointerEnter(PointerEventData e) => ModuleTooltipUI.Instance.Show(Instance);
@@ -384,7 +372,7 @@ public class MaterialItemUI : MonoBehaviour,
             return;
         }
 
-        foreach (var g in new[] { BagGridUI, EnvGridUI, InputGridUI })
+        foreach (var g in new[] { BagGridUI, EnvGridUI, InputGridUI, DiscardGridUI.Instance?.GridUI })
         {
             if (g == null) continue;
             if (!g.ScreenToCell(screenPos, UICam(), out var hoveredCell)) continue;
@@ -407,21 +395,17 @@ public class MaterialItemUI : MonoBehaviour,
         BagGridUI?.ClearHighlights();
         EnvGridUI?.ClearHighlights();
         InputGridUI?.ClearHighlights();
+        DiscardGridUI.Instance?.GridUI.ClearHighlights();
     }
 
     private Vector2Int GetClickedLocalCell(PointerEventData e)
     {
         float cs = BagGridUI.CellSize;
         float sp = BagGridUI.CellSpacing;
-
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            _rt, e.position, UICam(), out var localPoint);
-
-        int col = Mathf.FloorToInt(localPoint.x / (cs + sp));
-        int row = Mathf.FloorToInt(-localPoint.y / (cs + sp));
-        return new Vector2Int(Mathf.Max(0, col), Mathf.Max(0, row));
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(_rt, e.position, UICam(), out var localPoint);
+        return new Vector2Int(Mathf.Max(0, Mathf.FloorToInt(localPoint.x / (cs + sp))),
+                              Mathf.Max(0, Mathf.FloorToInt(-localPoint.y / (cs + sp))));
     }
 
-    private Camera UICam() =>
-        _canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : _canvas.worldCamera;
+    private Camera UICam() => _canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : _canvas.worldCamera;
 }

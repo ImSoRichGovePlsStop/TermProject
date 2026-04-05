@@ -4,18 +4,18 @@ public class WeaponEquip : MonoBehaviour
 {
     [SerializeField] private WeaponData startingWeapon;
 
-    private WeaponData currentWeapon;
-    private PlayerStats stats;
-    private AttackHitbox hitbox;
+    private WeaponData           currentWeapon;
+    private PlayerStats          stats;
+    private AttackHitbox         hitbox;
     private WeaponPassiveManager passiveManager;
-    private Animator anim;
+    private Animator             anim;
 
     void Awake()
     {
-        stats = GetComponent<PlayerStats>();
-        hitbox = GetComponentInChildren<AttackHitbox>();
+        stats          = GetComponent<PlayerStats>();
+        hitbox         = GetComponentInChildren<AttackHitbox>();
         passiveManager = FindFirstObjectByType<WeaponPassiveManager>();
-        anim = GetComponentInChildren<Animator>();
+        anim           = GetComponentInChildren<Animator>();
     }
 
     void Start()
@@ -35,9 +35,7 @@ public class WeaponEquip : MonoBehaviour
 
         int level = WeaponLevelManager.Instance?.GetLevel(weapon) ?? 1;
         Vector2Int gridSize = weapon.GetGridSize(level);
-        InventoryManager.Instance?.ExpandWeaponGrid(gridSize.x, gridSize.y);
-
-        Debug.Log($"Equipped {weapon.weaponName}");
+        InventoryManager.Instance?.UpgradeWeaponGrid(gridSize.x, gridSize.y);
     }
 
     public void Unequip()
@@ -45,7 +43,6 @@ public class WeaponEquip : MonoBehaviour
         currentWeapon = null;
         stats.ApplyWeapon(null);
         passiveManager?.OnWeaponEquipped(null);
-        Debug.Log("Unequipped weapon");
     }
 
     public WeaponData GetCurrentWeapon() => currentWeapon;
