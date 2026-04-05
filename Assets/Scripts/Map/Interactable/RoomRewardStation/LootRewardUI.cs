@@ -4,11 +4,11 @@ using UnityEngine;
 public class LootRewardUI : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private Transform    optionContainer;
+    [SerializeField] private Transform optionContainer;
     [SerializeField] private LootOptionUI optionPrefab;
 
     private List<ModuleInstance> _rolledOptions = new List<ModuleInstance>();
-    private RandomLoot           _currentStation;
+    private RandomLoot _currentStation;
 
     public void Open(RandomLoot station, List<TestModuleEntry> rolled)
     {
@@ -30,18 +30,8 @@ public class LootRewardUI : MonoBehaviour
 
     public void OnOptionSelected(ModuleInstance chosen)
     {
-        var mgr = InventoryManager.Instance;
-
-        if (!mgr.TryAddToBag(chosen))
-        {
-            if (DiscardGridUI.Instance != null)
-                DiscardGridUI.Instance.ShowForOverflow(new List<ModuleInstance> { chosen });
-        }
-        else
-        {
-            var inventoryUI = FindFirstObjectByType<InventoryUI>(FindObjectsInactive.Include);
-            inventoryUI?.SpawnModule(chosen.Data, chosen.Rarity, chosen.Level);
-        }
+        var inventoryUI = FindFirstObjectByType<InventoryUI>(FindObjectsInactive.Include);
+        inventoryUI?.SpawnModule(chosen.Data, chosen.Rarity, chosen.Level);
 
         if (_currentStation != null)
             Object.Destroy(_currentStation.gameObject);
