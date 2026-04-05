@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L5B_InfectiousStrike
+  m_Name: L4_RapidSpawn
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Infectious Strike
-  description: Each hit from primary attack has 8% chance to spawn a Mini Summoner
-    of a random unlocked type at hit location. Mini Summoners have 50% reduced stats
+  nodeName: Rapid Spawn
+  description: "Spawn interval for all types: \u22121 second"
   cost: 3
   parents:
+  - {fileID: 11400000, guid: f63ef53b58c8b5445a81fd91b5d80f25, type: 2}
   - {fileID: 11400000, guid: 9d535adf646a7fa4487692ba4f3e4404, type: 2}
   requireAllParents: 0
-  layer: 5
-  branch: 2
+  layer: 4
+  branch: 0
   overrideCost: 0

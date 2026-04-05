@@ -23,6 +23,7 @@ public class WarlockAOEWarning : MonoBehaviour
     private float warningDuration;
     private LayerMask targetLayers;
     private Renderer visualRenderer;
+    private HealthBase attacker;
 
     private void LateUpdate()
     {
@@ -32,12 +33,13 @@ public class WarlockAOEWarning : MonoBehaviour
         transform.position = pos;
     }
 
-    public void Initialize(float dmg, float radius, float duration, LayerMask layers)
+    public void Initialize(float dmg, float radius, float duration, LayerMask layers, HealthBase attacker = null)
     {
         damage = dmg;
         aoeRadius = radius;
         warningDuration = duration;
         targetLayers = layers;
+        this.attacker = attacker;
 
         if (visualScale != null)
             visualRenderer = visualScale.GetComponent<Renderer>();
@@ -87,7 +89,7 @@ public class WarlockAOEWarning : MonoBehaviour
         foreach (var hit in hits)
         {
             var ps = hit.GetComponent<PlayerStats>() ?? hit.GetComponentInParent<PlayerStats>();
-            if (ps != null && !ps.IsDead) { ps.TakeDamage(damage); continue; }
+            if (ps != null && !ps.IsDead) { ps.TakeDamage(damage, attacker); continue; }
 
             var hb = hit.GetComponentInParent<HealthBase>();
             if (hb != null && !hb.IsDead) hb.TakeDamage(damage);

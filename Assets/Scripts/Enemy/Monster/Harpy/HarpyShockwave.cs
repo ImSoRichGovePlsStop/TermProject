@@ -11,6 +11,7 @@ public class HarpyShockwave : MonoBehaviour
 
     private float damage = 10f;
     private float currentRadius;
+    private HealthBase attacker;
     private readonly HashSet<GameObject> alreadyHit = new HashSet<GameObject>();
     private ShockwaveVFX vfx;
 
@@ -19,9 +20,10 @@ public class HarpyShockwave : MonoBehaviour
         currentRadius = startRadius;
     }
 
-    public void Init(float damage)
+    public void Init(float damage, HealthBase attacker = null)
     {
         this.damage = damage;
+        this.attacker = attacker;
         vfx = GetComponent<ShockwaveVFX>();
     }
 
@@ -49,7 +51,7 @@ public class HarpyShockwave : MonoBehaviour
             alreadyHit.Add(col.gameObject);
 
             var ps = col.GetComponent<PlayerStats>() ?? col.GetComponentInParent<PlayerStats>();
-            if (ps != null && !ps.IsDead) { ps.TakeDamage(damage); continue; }
+            if (ps != null && !ps.IsDead) { ps.TakeDamage(damage, attacker); continue; }
 
             var hb = col.GetComponent<HealthBase>() ?? col.GetComponentInParent<HealthBase>();
             if (hb != null && !hb.IsDead) hb.TakeDamage(damage);

@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: L4_LightningRod
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Lightning Rod
-  description: Enemies with Zapper attached take +30% damage from all summoners.
-    Brawler and Bomber automatically prioritize attacking enemies with Zapper
+  description: Enemies with a Zapper attached deal 30% less damage and are automatically
+    prioritized for attack by Brawlers and Bombers.
   cost: 2
   parents:
   - {fileID: 11400000, guid: 995e27dae6510614d8a6290b9c56ea9b, type: 2}

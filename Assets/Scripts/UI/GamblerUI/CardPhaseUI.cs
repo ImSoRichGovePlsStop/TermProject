@@ -470,7 +470,7 @@ public class CardPhaseUI : MonoBehaviour
         else
         {
             float damage = stats.MaxHealth * betHpPercent;
-            stats.TakeDamage(damage);
+            stats.TakeDamage(damage, null);
             Debug.Log($"[DevilsBet] Lose! TakeDamage {damage} ({betHpPercent * 100f}% MaxHP)");
         }
     }

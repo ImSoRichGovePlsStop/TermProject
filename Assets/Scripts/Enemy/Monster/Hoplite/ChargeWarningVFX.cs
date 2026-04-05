@@ -5,9 +5,21 @@ public class ChargeWarningVFX : MonoBehaviour
     [SerializeField] private float blinkSpeed = 4f;
     private Material mat;
 
+    private float chargeWidth;
+    private float chargeLength;
+    private bool dynamicScale = false;
+    private System.Func<float> getLengthFunc;
+
     private void Awake()
     {
         mat = GetComponentInChildren<Renderer>().material;
+    }
+
+    public void SetDynamicScale(float width, System.Func<float> lengthFunc)
+    {
+        chargeWidth = width;
+        getLengthFunc = lengthFunc;
+        dynamicScale = true;
     }
 
     private void Update()
@@ -16,5 +28,11 @@ public class ChargeWarningVFX : MonoBehaviour
         Color c = mat.color;
         c.a = alpha;
         mat.color = c;
+
+        if (dynamicScale && getLengthFunc != null)
+        {
+            float length = getLengthFunc();
+            transform.localScale = new Vector3(chargeWidth, transform.localScale.y, length);
+        }
     }
 }

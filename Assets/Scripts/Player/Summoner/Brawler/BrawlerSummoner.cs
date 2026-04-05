@@ -17,10 +17,9 @@ public class BrawlerSummoner : SummonerBase
     [SerializeField] private float attackAngle = 120f;
     [SerializeField] private float attackCooldown = 0.5f;
     [SerializeField] private float damageScale = 0.25f;
-    [SerializeField] private Animator animator;
 
-    [Header("Search")]
-    [SerializeField] private float searchRadius = 10f;
+    [Header("References")]
+    [SerializeField] private Animator animator;
 
     [Header("Wander")]
     [SerializeField] private WanderBehavior wander;
@@ -28,6 +27,23 @@ public class BrawlerSummoner : SummonerBase
     [Header("Player Scaling")]
     [SerializeField] private float hpScale = 0.1f;
     [SerializeField] private float speedScale = 0.1f;
+
+    [Header("Mini Tier")]
+    [SerializeField] private StatScale miniStatScale = new StatScale { hp = 0.4f, damage = 0.4f, moveSpeed = 0.7f };
+    [SerializeField] private float miniAttackRangeMult = 0.7f;
+    [SerializeField] private float miniAttackAngleMult = 0.8f;
+    [SerializeField] private float miniAttackCooldownMult = 1.3f;
+    [SerializeField] private float miniSizeMult = 0.5f;
+
+    [Header("Elite Tier")]
+    [SerializeField] private StatScale eliteStatScale = new StatScale { hp = 3f, damage = 2f, moveSpeed = 1.2f };
+    [SerializeField] private float eliteAttackRangeMult = 1.5f;
+    [SerializeField] private float eliteAttackAngleMult = 1.2f;
+    [SerializeField] private float eliteAttackCooldownMult = 0.7f;
+    [SerializeField] private float eliteSizeMult = 1.5f;
+
+    [Header("Elite Tier VFX")]
+    [SerializeField] private GameObject auraPrefab;
 
     private HealthBase currentTarget;
     private BrawlerState currentState = BrawlerState.Wander;
@@ -38,15 +54,45 @@ public class BrawlerSummoner : SummonerBase
 
     private LayerMask _enemyMask;
 
+    [System.NonSerialized] public float damageScaleBonus = 0f;
+
     protected override void ApplyPlayerScaling()
     {
         if (playerStats == null) return;
         stats.AddFlatModifier(new EntityStatModifier
         {
-            maxHP = playerStats.MaxHealth * hpScale,
-            moveSpeed = playerStats.MoveSpeed * speedScale
+            maxHP = playerStats.MaxHealth * (hpScale + hpScaleBonus),
+            moveSpeed = playerStats.MoveSpeed * (speedScale + speedScaleBonus),
+            damage = playerStats.Damage * (damageScale + damageScaleBonus)
         });
+
+        switch (tier)
+        {
+            case SummonerTier.Mini:
+                stats.SetStatScale(miniStatScale);
+                attackRange *= miniAttackRangeMult;
+                attackAngle *= miniAttackAngleMult;
+                attackCooldown *= miniAttackCooldownMult;
+                transform.localScale *= miniSizeMult;
+                break;
+            case SummonerTier.Elite:
+                stats.SetStatScale(eliteStatScale);
+                attackRange *= eliteAttackRangeMult;
+                attackAngle *= eliteAttackAngleMult;
+                attackCooldown *= eliteAttackCooldownMult;
+                transform.localScale *= eliteSizeMult;
+                break;
+        }
+
         health.SetMaxHP(stats.MaxHP);
+
+        if (tier == SummonerTier.Elite && auraPrefab != null)
+        {
+            var auraObj = Instantiate(auraPrefab, transform.position, Quaternion.identity);
+            var aura = auraObj.GetComponent<EliteBrawlerAura>();
+            if (aura != null)
+                aura.Init(stats, playerStats, GetComponent<HealthBase>());
+        }
     }
 
     protected override void Awake()
@@ -71,8 +117,24 @@ public class BrawlerSummoner : SummonerBase
         TickState();
     }
 
+    [System.NonSerialized] public bool lightningRod = false;
+
     private void UpdateTarget()
     {
+        if (lightningRod)
+        {
+            HealthBase nearest = null;
+            float nearestDist = Mathf.Infinity;
+            var candidates = CombatUtility.FindAround<HealthBase>(transform.position, searchRadius, _enemyMask);
+            foreach (var h in candidates)
+            {
+                if (h == null || h.IsDead) continue;
+                if (!ZapperSummoner.attachedEnemies.Contains(h)) continue;
+                float dist = Vector3.Distance(transform.position, h.transform.position);
+                if (dist < nearestDist) { nearestDist = dist; nearest = h; }
+            }
+            if (nearest != null) { currentTarget = nearest; return; }
+        }
         currentTarget = CombatUtility.FindNearest<HealthBase>(transform.position, searchRadius, _enemyMask);
     }
 
@@ -108,7 +170,7 @@ public class BrawlerSummoner : SummonerBase
         }
 
         if (prevState == BrawlerState.Wander && currentState != BrawlerState.Wander)
-            wander.Reset(movement);
+            wander.Reset(movement, stats);
     }
 
     private void TickState()
@@ -128,7 +190,7 @@ public class BrawlerSummoner : SummonerBase
                 break;
 
             case BrawlerState.Wander:
-                wander.Tick(transform, playerStats?.transform, movement);
+                wander.Tick(transform, playerStats?.transform, movement, stats);
                 break;
         }
     }
@@ -136,9 +198,10 @@ public class BrawlerSummoner : SummonerBase
     private bool TryAttack()
     {
         if (isAttacking) return true;
-        if (Time.time < lastAttackTime + attackCooldown) return false;
+        if (Time.time < lastAttackTime + attackCooldown / stats.AttackSpeed) return false;
 
         isAttacking = true;
+        animator.speed = stats.AttackSpeed;
         animator.SetTrigger("Attack");
         return true;
     }
@@ -148,7 +211,7 @@ public class BrawlerSummoner : SummonerBase
     {
         if (currentTarget == null || currentTarget.IsDead) return;
 
-        float damage = stats.Damage + (playerStats != null ? playerStats.Damage * damageScale : 0f);
+        float damage = stats.Damage;
 
         Vector3 attackDir = currentTarget.transform.position - transform.position;
         attackDir.y = 0f;
@@ -178,6 +241,7 @@ public class BrawlerSummoner : SummonerBase
     {
         isAttacking = false;
         lastAttackTime = Time.time;
+        animator.speed = 1f;
     }
 
     private void OnDrawGizmosSelected()

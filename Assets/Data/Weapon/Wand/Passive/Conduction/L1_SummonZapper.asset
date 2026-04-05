@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: L1_SummonZapper
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Summon Zapper
-  description: Totem begins spawning Zapper summoners every 4s
+  description: Totem begins spawning Zapper summoners every 2s
   cost: 4
   parents: []
   requireAllParents: 0

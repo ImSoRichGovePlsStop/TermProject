@@ -64,7 +64,7 @@ public class MinotaurController : EnemyBase
         }
 
         if (prevState == MinotaurState.Wander && currentState != MinotaurState.Wander)
-            wander.Reset(movement);
+            wander.Reset(movement, stats);
     }
 
     protected override void TickState()
@@ -72,7 +72,7 @@ public class MinotaurController : EnemyBase
         switch (currentState)
         {
             case MinotaurState.Wander:
-                wander.Tick(transform, transform, movement);
+                wander.Tick(transform, transform, movement, stats);
                 break;
 
             case MinotaurState.Chase:
@@ -125,7 +125,7 @@ public class MinotaurController : EnemyBase
         float elapsed = 0f;
         while (elapsed < dashDuration)
         {
-            transform.position += dashDir * dashSpeed * Time.deltaTime;
+            transform.position += dashDir * dashSpeed * stats.MoveSpeedRatio * Time.deltaTime;
             elapsed += Time.deltaTime;
             yield return null;
         }

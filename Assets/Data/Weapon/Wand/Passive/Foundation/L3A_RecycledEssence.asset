@@ -10,16 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
-  m_Name: L6_ChainReaction
+  m_Name: L3A_RecycledEssence
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Chain Reaction
-  description: When attached enemy dies, Zapper immediately jumps to nearest unattached
-    enemy and resets attach timer
-  cost: 4
+  nodeName: Recycled Essence
+  description: Primary attacks build up stacks. At max stacks, reset stacks and reduce
+    Totem's remaining cooldown by 3s
+  cost: 2
   parents:
-  - {fileID: 11400000, guid: b59ce865452aefb4e9aab6c426c8c0ca, type: 2}
-  - {fileID: 11400000, guid: 115b2b0d40f230d4aa97d02de654d189, type: 2}
+  - {fileID: 11400000, guid: 6cc3240ab693b5f429fc93ed620a1f69, type: 2}
   requireAllParents: 0
-  layer: 6
-  branch: 0
+  layer: 3
+  branch: 1
   overrideCost: 0

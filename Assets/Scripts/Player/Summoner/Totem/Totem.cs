@@ -22,18 +22,21 @@ public class Totem : HealthBase
     private float zapperTimer;
     private float bomberTimer;
 
-    private bool canSpawnZapper = true;
-    private bool canSpawnBomber = true;
+    private bool canSpawnZapper = false;
+    private bool canSpawnBomber = false;
 
     private PlayerStats playerStats;
     private PlayerCombatContext context;
+
+    public float hpScaleBonus = 0f;
+    public float startHpPercent = 1f;
 
     public void Init(PlayerStats playerStats, PlayerCombatContext context)
     {
         this.playerStats = playerStats;
         this.context = context;
 
-        currentHP = maxHP;
+        currentHP = (maxHP + playerStats.MaxHealth * hpScaleBonus) * startHpPercent;
 
         brawlerTimer = brawlerInterval;
         zapperTimer = zapperInterval;
@@ -46,10 +49,56 @@ public class Totem : HealthBase
         canSpawnBomber = canBomber;
     }
 
+    private float _auraSpeedMult = 1f;
+    public float auraSpeedMult
+    {
+        get => _auraSpeedMult;
+        set
+        {
+            float oldBrawler = brawlerInterval * _auraSpeedMult;
+            float oldZapper = zapperInterval * _auraSpeedMult;
+            float oldBomber = bomberInterval * _auraSpeedMult;
+
+            _auraSpeedMult = value;
+
+            float newBrawler = brawlerInterval * _auraSpeedMult;
+            float newZapper = zapperInterval * _auraSpeedMult;
+            float newBomber = bomberInterval * _auraSpeedMult;
+
+            if (oldBrawler > 0f) brawlerTimer = (brawlerTimer / oldBrawler) * newBrawler;
+            if (oldZapper > 0f) zapperTimer = (zapperTimer / oldZapper) * newZapper;
+            if (oldBomber > 0f) bomberTimer = (bomberTimer / oldBomber) * newBomber;
+        }
+    }
+
+    public void ReduceSpawnIntervals(float amount)
+    {
+        brawlerInterval = Mathf.Max(0.5f, brawlerInterval - amount);
+        zapperInterval = Mathf.Max(0.5f, zapperInterval - amount);
+        bomberInterval = Mathf.Max(0.5f, bomberInterval - amount);
+    }
+
+    [ContextMenu("Debug: Force Spawn Elite Brawler")]
+    private void Debug_SpawnEliteBrawler()
+    {
+        SpawnSummoner(brawlerPrefab, SummonerTier.Elite);
+    }
+
+    [ContextMenu("Debug: Force Spawn Elite Zapper")]
+    private void Debug_SpawnEliteZapper()
+    {
+        SpawnSummoner(zapperPrefab, SummonerTier.Elite);
+    }
+
+    [ContextMenu("Debug: Force Spawn Elite Bomber")]
+    private void Debug_SpawnEliteBomber()
+    {
+        SpawnSummoner(bomberPrefab, SummonerTier.Elite);
+    }
+
     public void AddHP(float amount)
     {
-        if (isDead) return;
-        currentHP = Mathf.Min(currentHP + amount, maxHP);
+        Heal(amount);
     }
 
     protected override void Update()
@@ -73,14 +122,26 @@ public class Totem : HealthBase
         timer -= Time.deltaTime;
         if (timer <= 0f)
         {
-            timer = interval;
+            timer = interval * auraSpeedMult;
             SpawnSummoner(prefab);
         }
     }
 
-    private void SpawnSummoner(GameObject prefab)
+    public float eliteBrawlerChance = 0f;
+    public float eliteZapperChance = 0f;
+    public float eliteBomberChance = 0f;
+
+    private void SpawnSummoner(GameObject prefab, SummonerTier tier = SummonerTier.Normal)
     {
         if (playerStats == null) return;
+
+        SummonerTier spawnTier = tier;
+        if (prefab == brawlerPrefab && eliteBrawlerChance > 0f && Random.value < eliteBrawlerChance)
+            spawnTier = SummonerTier.Elite;
+        else if (prefab == zapperPrefab && eliteZapperChance > 0f && Random.value < eliteZapperChance)
+            spawnTier = SummonerTier.Elite;
+        else if (prefab == bomberPrefab && eliteBomberChance > 0f && Random.value < eliteBomberChance)
+            spawnTier = SummonerTier.Elite;
 
         Vector2 randomCircle = Random.insideUnitCircle * spawnRadius;
         Vector3 spawnPos = transform.position + new Vector3(randomCircle.x, 0f, randomCircle.y);
@@ -88,7 +149,7 @@ public class Totem : HealthBase
         GameObject obj = Instantiate(prefab, spawnPos, Quaternion.identity);
         var summoner = obj.GetComponent<SummonerBase>();
         if (summoner != null)
-            summoner.Init(playerStats);
+            summoner.Init(playerStats, spawnTier);
     }
 
     protected override void OnDamageTaken(float damage, bool isCrit) { }

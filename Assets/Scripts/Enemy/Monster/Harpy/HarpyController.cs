@@ -35,13 +35,13 @@ public class HarpyController : EnemyBase
         if (!HasTarget)
         {
             if (currentState != HarpyState.Wander)
-                wander.Reset(movement);
+                wander.Reset(movement, stats);
             currentState = HarpyState.Wander;
             return;
         }
 
         if (currentState == HarpyState.Wander)
-            wander.Reset(movement);
+            wander.Reset(movement, stats);
 
         float dist = Vector3.Distance(transform.position, TargetPosition);
         currentState = dist <= attackRange ? HarpyState.Attack : HarpyState.Chase;
@@ -52,7 +52,7 @@ public class HarpyController : EnemyBase
         switch (currentState)
         {
             case HarpyState.Wander:
-                wander.Tick(transform, transform, movement);
+                wander.Tick(transform, transform, movement, stats);
                 break;
 
             case HarpyState.Chase:
@@ -106,7 +106,7 @@ public class HarpyController : EnemyBase
 
         while (elapsed < attackDashDuration)
         {
-            transform.position += dashDir * attackDashSpeed * Time.deltaTime;
+            transform.position += dashDir * attackDashSpeed * stats.MoveSpeedRatio * Time.deltaTime;
             elapsed += Time.deltaTime;
 
             Collider[] hits = Physics.OverlapSphere(transform.position, attackDashHitRadius, hitMask);
@@ -116,7 +116,7 @@ public class HarpyController : EnemyBase
                 alreadyHit.Add(col.gameObject);
 
                 var ps = col.GetComponent<PlayerStats>() ?? col.GetComponentInParent<PlayerStats>();
-                if (ps != null && !ps.IsDead) { ps.TakeDamage(stats.Damage * attackDamageScale); continue; }
+                if (ps != null && !ps.IsDead) { ps.TakeDamage(stats.Damage * attackDamageScale, health); continue; }
 
                 var hb = col.GetComponent<HealthBase>() ?? col.GetComponentInParent<HealthBase>();
                 if (hb != null && !hb.IsDead) hb.TakeDamage(stats.Damage * attackDamageScale);

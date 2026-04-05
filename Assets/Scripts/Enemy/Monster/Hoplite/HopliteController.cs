@@ -36,13 +36,13 @@ public class HopliteController : EnemyBase
         if (!HasTarget)
         {
             if (currentState != HopliteState.Wander)
-                wander.Reset(movement);
+                wander.Reset(movement, stats);
             currentState = HopliteState.Wander;
             return;
         }
 
         if (currentState == HopliteState.Wander)
-            wander.Reset(movement);
+            wander.Reset(movement, stats);
 
         float dist = Vector3.Distance(transform.position, TargetPosition);
         currentState = dist <= attackRange ? HopliteState.Attack : HopliteState.Chase;
@@ -53,7 +53,7 @@ public class HopliteController : EnemyBase
         switch (currentState)
         {
             case HopliteState.Wander:
-                wander.Tick(transform, transform, movement);
+                wander.Tick(transform, transform, movement, stats);
                 break;
 
             case HopliteState.Chase:
@@ -107,7 +107,7 @@ public class HopliteController : EnemyBase
 
         while (elapsed < attackDashDuration)
         {
-            transform.position += dashDir * attackDashSpeed * Time.deltaTime;
+            transform.position += dashDir * attackDashSpeed * stats.MoveSpeedRatio * Time.deltaTime;
             elapsed += Time.deltaTime;
 
             Collider[] hits = Physics.OverlapSphere(transform.position, attackDashHitRadius, hitMask);
@@ -117,7 +117,7 @@ public class HopliteController : EnemyBase
                 alreadyHit.Add(col.gameObject);
 
                 var ps = col.GetComponent<PlayerStats>() ?? col.GetComponentInParent<PlayerStats>();
-                if (ps != null && !ps.IsDead) { ps.TakeDamage(stats.Damage * attackDamageScale); continue; }
+                if (ps != null && !ps.IsDead) { ps.TakeDamage(stats.Damage * attackDamageScale, health); continue; }
 
                 var hb = col.GetComponent<HealthBase>() ?? col.GetComponentInParent<HealthBase>();
                 if (hb != null && !hb.IsDead) hb.TakeDamage(stats.Damage * attackDamageScale);

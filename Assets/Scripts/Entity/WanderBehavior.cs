@@ -22,9 +22,12 @@ public class WanderBehavior
     private float idleTimer;
     private bool isIdling;
 
+    private EntityStatModifier wanderModifier = new EntityStatModifier();
+    private bool wanderModifierApplied = false;
+
     public bool IsIdling => isIdling;
 
-    public void Tick(Transform self, Transform anchor, MovementBase movement)
+    public void Tick(Transform self, Transform anchor, MovementBase movement, EntityStats stats)
     {
         if (!spawnPointSet)
         {
@@ -39,7 +42,7 @@ public class WanderBehavior
         {
             isIdling = false;
             wanderTarget = Vector3.zero;
-            movement.ResetSpeedMultiplier();
+            RemoveWanderModifier(stats);
             movement.MoveToTarget(center);
             return;
         }
@@ -70,15 +73,31 @@ public class WanderBehavior
             return;
         }
 
-        movement.SetSpeedMultiplier(wanderSpeedMultiplier);
+        ApplyWanderModifier(stats);
         movement.MoveToTarget(wanderTarget);
     }
 
-    public void Reset(MovementBase movement)
+    public void Reset(MovementBase movement, EntityStats stats)
     {
         isIdling = false;
         wanderTarget = Vector3.zero;
-        movement.ResetSpeedMultiplier();
+        RemoveWanderModifier(stats);
+    }
+
+    private void ApplyWanderModifier(EntityStats stats)
+    {
+        if (wanderModifierApplied || stats == null) return;
+        wanderModifier.moveSpeed = wanderSpeedMultiplier - 1f;
+        stats.AddMultiplierModifier(wanderModifier);
+        wanderModifierApplied = true;
+    }
+
+    private void RemoveWanderModifier(EntityStats stats)
+    {
+        if (!wanderModifierApplied || stats == null) return;
+        stats.RemoveMultiplierModifier(wanderModifier);
+        wanderModifier.moveSpeed = 0f;
+        wanderModifierApplied = false;
     }
 
     private Vector3 GetCenter(Transform self, Transform anchor)
