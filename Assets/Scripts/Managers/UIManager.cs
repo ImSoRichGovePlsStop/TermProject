@@ -230,6 +230,7 @@ public class UIManager : MonoBehaviour
         if (_lootRewardUI == null) { Debug.LogError("[UIManager] LootRewardUI not found!"); return; }
 
         _lootRewardUI.gameObject.SetActive(true);
+        DiscardGridUI.Instance?.ForceHide();
         _lootRewardUI.Open(station, rolled);
         UpdatePanelVisibility();
     }
@@ -296,7 +297,7 @@ public class UIManager : MonoBehaviour
 
     private void UpdatePanelVisibility()
     {
-        bool anyRightPanelOpen = IsShopOpen || IsMergeOpen || _upgradeOpen;
+        bool anyRightPanelOpen = IsShopOpen || IsMergeOpen || _upgradeOpen || (_lootRewardUI != null && _lootRewardUI.gameObject.activeSelf);
         IsRightPanelOpen = anyRightPanelOpen;
 
         if (anyRightPanelOpen && !IsInventoryOpen && inventoryPanel != null)
