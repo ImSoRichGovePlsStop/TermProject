@@ -161,7 +161,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -0, z: 0}
-  m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 4540696558674151100}
@@ -348,16 +348,16 @@ MonoBehaviour:
   miniArcPulseRadiusMult: 0.6
   miniInstantKillThresholdMult: 0.5
   eliteStatScale:
-    hp: 3
+    hp: 1.5
     damage: 2
     moveSpeed: 1.2
   eliteAttachRangeMult: 1.5
   eliteAttachDurationMult: 1.5
   eliteDamageAmpMult: 2
   eliteChainPercentMult: 2
-  eliteSizeMult: 1.4
+  eliteSizeMult: 2.5
   eliteLightningRodPenaltyMult: 2
   eliteArcPulseDamageMult: 4
   eliteArcPulseRadiusMult: 1.5
   eliteArcPulseTargets: 4
-  eliteInstantKillThresholdMult: 1.5
+  eliteInstantKillThresholdMult: 1

@@ -1,8 +1,9 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(CanvasGroup))]
 [RequireComponent(typeof(Image))]
@@ -35,15 +36,6 @@ public class MaterialItemUI : MonoBehaviour,
     private bool _isDragging;
     private Vector2 _lastPointerScreenPos;
 
-    private static Color RarityColor(Rarity r) => r switch
-    {
-        Rarity.Common => new Color(0.75f, 0.75f, 0.75f),
-        Rarity.Uncommon => new Color(0.30f, 0.80f, 0.30f),
-        Rarity.Rare => new Color(0.20f, 0.50f, 1.00f),
-        Rarity.Epic => new Color(0.65f, 0.25f, 0.90f),
-        Rarity.GOD => new Color(1.00f, 0.75f, 0.10f),
-        _ => Color.white
-    };
 
     public void Init(MaterialInstance instance, GridUI envGridUI = null)
     {
@@ -74,7 +66,7 @@ public class MaterialItemUI : MonoBehaviour,
     {
         _stackText = null;
         for (int i = _rt.childCount - 1; i >= 0; i--)
-            Destroy(_rt.GetChild(i).gameObject);
+            DestroyImmediate(_rt.GetChild(i).gameObject);
 
         float cs = BagGridUI.CellSize;
         float sp = BagGridUI.CellSpacing;
@@ -82,49 +74,136 @@ public class MaterialItemUI : MonoBehaviour,
         var bound = Instance.Data.GetBoundingSize(rotation);
         _rt.sizeDelta = new Vector2(bound.x * (cs + sp) - sp, bound.y * (cs + sp) - sp);
 
-        BuildVisualCells(Instance.Data.GetShapeCells(rotation));
+        BuildBorders(Instance.Data.GetShapeCells(rotation), rotation, bound, cs, sp);
+
+        if (Instance.Data.icon != null)
+            BuildIconOverlay(rotation, bound, cs, sp);
+
+        BuildVisualCells(Instance.Data.GetShapeCells(rotation), bound, rotation);
     }
 
-    private void BuildVisualCells(System.Collections.Generic.List<Vector2Int> shapeCells)
+    private void BuildIconOverlay(int rotation, Vector2Int bound, float cs, float sp)
+    {
+        var iconGo = new GameObject("IconOverlay", typeof(RectTransform), typeof(RawImage));
+        var iconRt = iconGo.GetComponent<RectTransform>();
+        iconRt.SetParent(_rt, false);
+        iconRt.pivot = new Vector2(0.5f, 0.5f);
+        iconRt.anchorMin = new Vector2(0f, 0f);
+        iconRt.anchorMax = new Vector2(1f, 1f);
+        iconRt.offsetMin = Vector2.zero;
+        iconRt.offsetMax = Vector2.zero;
+
+        var raw = iconGo.GetComponent<RawImage>();
+        raw.texture = Instance.Data.icon.texture;
+        raw.color = Color.white;
+        raw.raycastTarget = false;
+        raw.uvRect = new Rect(0, 0, 1, 1);
+
+        switch (rotation)
+        {
+            case 1: iconRt.localRotation = Quaternion.Euler(0, 0, 90); break;
+            case 2: iconRt.localRotation = Quaternion.Euler(0, 0, 180); break;
+            case 3: iconRt.localRotation = Quaternion.Euler(0, 0, -90); break;
+        }
+
+        if (rotation == 1 || rotation == 3)
+        {
+            float curW = bound.x * (cs + sp) - sp;
+            float curH = bound.y * (cs + sp) - sp;
+            iconRt.localScale = new Vector3(curH / curW, curW / curH, 1f);
+        }
+
+        int borderCount = Instance.Data.GetShapeCells(rotation).Count;
+        iconGo.transform.SetSiblingIndex(borderCount);
+    }
+
+
+
+    private void BuildBorders(System.Collections.Generic.List<Vector2Int> shapeCells, int rotation, Vector2Int bound, float cs, float sp)
+    {
+        if (Instance.Data.icon != null)
+        {
+            var borderGo = new GameObject("BorderGlow", typeof(RectTransform), typeof(RawImage));
+            var borderRt = borderGo.GetComponent<RectTransform>();
+            borderRt.SetParent(_rt, false);
+            borderRt.pivot = new Vector2(0.5f, 0.5f);
+            borderRt.anchorMin = new Vector2(0f, 0f);
+            borderRt.anchorMax = new Vector2(1f, 1f);
+            borderRt.offsetMin = Vector2.zero;
+            borderRt.offsetMax = Vector2.zero;
+
+            switch (rotation)
+            {
+                case 1: borderRt.localRotation = Quaternion.Euler(0, 0, 90); break;
+                case 2: borderRt.localRotation = Quaternion.Euler(0, 0, 180); break;
+                case 3: borderRt.localRotation = Quaternion.Euler(0, 0, -90); break;
+            }
+
+            if (rotation == 1 || rotation == 3)
+            {
+                float curW = bound.x * (cs + sp) - sp;
+                float curH = bound.y * (cs + sp) - sp;
+                borderRt.localScale = new Vector3(curH / curW, curW / curH, 1f);
+            }
+
+            var raw = borderGo.GetComponent<RawImage>();
+            var tex = Instance.Data.icon.texture;
+            float pixelsPerUnit = tex.width / (BagGridUI.CellSize * bound.x);
+            int thickness = Mathf.Max(1, Mathf.RoundToInt(borderSize * pixelsPerUnit));
+
+            var outlineTex = SpriteOutlineUtility.GetOrCreate(tex, SpriteOutlineUtility.RarityColor(Instance.Rarity), thickness);
+
+            raw.texture = outlineTex;
+            raw.color = Color.white;
+            raw.uvRect = new Rect(0, 0, 1, 1);
+            raw.raycastTarget = false;
+        }
+        else
+        {
+            Color borderColor = SpriteOutlineUtility.RarityColor(Instance.Rarity);
+            foreach (var cell in shapeCells)
+            {
+                var borderGo = new GameObject($"border_{cell.x}_{cell.y}", typeof(RectTransform), typeof(Image));
+                var borderRt = borderGo.GetComponent<RectTransform>();
+                borderRt.SetParent(_rt, false);
+                borderRt.pivot = new Vector2(0f, 1f);
+                borderRt.anchorMin = new Vector2(0f, 1f);
+                borderRt.anchorMax = new Vector2(0f, 1f);
+
+                bool bHasRight = shapeCells.Contains(new Vector2Int(cell.x + 1, cell.y));
+                bool bHasLeft = shapeCells.Contains(new Vector2Int(cell.x - 1, cell.y));
+                bool bHasBottom = shapeCells.Contains(new Vector2Int(cell.x, cell.y + 1));
+                bool bHasTop = shapeCells.Contains(new Vector2Int(cell.x, cell.y - 1));
+
+                float bExtraRight = bHasRight ? borderSize + sp : 0f;
+                float bExtraLeft = bHasLeft ? borderSize + sp : 0f;
+                float bExtraBottom = bHasBottom ? borderSize + sp : 0f;
+                float bExtraTop = bHasTop ? borderSize + sp : 0f;
+
+                borderRt.sizeDelta = new Vector2(cs + bExtraLeft + bExtraRight, cs + bExtraTop + bExtraBottom);
+                borderRt.anchoredPosition = new Vector2(cell.x * (cs + sp) - bExtraLeft, -cell.y * (cs + sp) + bExtraTop);
+
+                var borderImg = borderGo.GetComponent<Image>();
+                borderImg.color = borderColor;
+                borderImg.raycastTarget = false;
+            }
+        }
+    }
+
+
+    private void BuildVisualCells(System.Collections.Generic.List<Vector2Int> shapeCells, Vector2Int bound, int rotation)
     {
         float cs = BagGridUI.CellSize;
         float sp = BagGridUI.CellSpacing;
-        Color borderColor = RarityColor(Instance.Rarity);
 
-        foreach (var cell in shapeCells)
-        {
-            var borderGo = new GameObject($"border_{cell.x}_{cell.y}", typeof(RectTransform), typeof(Image));
-            var borderRt = borderGo.GetComponent<RectTransform>();
-            borderRt.SetParent(_rt, false);
-            borderRt.pivot = new Vector2(0f, 1f);
-            borderRt.anchorMin = new Vector2(0f, 1f);
-            borderRt.anchorMax = new Vector2(0f, 1f);
-
-            bool bHasRight = shapeCells.Contains(new Vector2Int(cell.x + 1, cell.y));
-            bool bHasLeft = shapeCells.Contains(new Vector2Int(cell.x - 1, cell.y));
-            bool bHasBottom = shapeCells.Contains(new Vector2Int(cell.x, cell.y + 1));
-            bool bHasTop = shapeCells.Contains(new Vector2Int(cell.x, cell.y - 1));
-
-            float bExtraRight = bHasRight ? borderSize + sp : 0f;
-            float bExtraLeft = bHasLeft ? borderSize + sp : 0f;
-            float bExtraBottom = bHasBottom ? borderSize + sp : 0f;
-            float bExtraTop = bHasTop ? borderSize + sp : 0f;
-
-            borderRt.sizeDelta = new Vector2(cs + bExtraLeft + bExtraRight, cs + bExtraTop + bExtraBottom);
-            borderRt.anchoredPosition = new Vector2(cell.x * (cs + sp) - bExtraLeft, -cell.y * (cs + sp) + bExtraTop);
-
-            borderGo.GetComponent<Image>().color = borderColor;
-            borderGo.GetComponent<Image>().raycastTarget = false;
-        }
-
-        Vector2Int topRightCell = shapeCells[0];
+        Vector2Int bottomRightCell = shapeCells[0];
         foreach (var c in shapeCells)
-            if (c.y < topRightCell.y || (c.y == topRightCell.y && c.x > topRightCell.x))
-                topRightCell = c;
+            if (c.y > bottomRightCell.y || (c.y == bottomRightCell.y && c.x > bottomRightCell.x))
+                bottomRightCell = c;
 
         foreach (var cell in shapeCells)
         {
-            var go = new GameObject($"cell_{cell.x}_{cell.y}", typeof(RectTransform), typeof(Image));
+            var go = new GameObject($"cell_{cell.x}_{cell.y}", typeof(RectTransform));
             var cellRt = go.GetComponent<RectTransform>();
             cellRt.SetParent(_rt, false);
             cellRt.pivot = new Vector2(0f, 1f);
@@ -144,27 +223,56 @@ public class MaterialItemUI : MonoBehaviour,
             cellRt.sizeDelta = new Vector2(cs - borderSize * 2f + extraLeft + extraRight, cs - borderSize * 2f + extraTop + extraBottom);
             cellRt.anchoredPosition = new Vector2(cell.x * (cs + sp) + borderSize - extraLeft, -cell.y * (cs + sp) - borderSize + extraTop);
 
-            var cellImg = go.GetComponent<Image>();
-            if (Instance.Data.icon != null) cellImg.sprite = Instance.Data.icon;
-            cellImg.color = Instance.MaterialData.moduleColor;
-            cellImg.raycastTarget = true;
+            if (Instance.Data.icon != null)
+            {
+                var cellImg = go.AddComponent<Image>();
+                cellImg.color = Color.clear;
+                cellImg.raycastTarget = true;
+            }
+            else
+            {
+                var cellImg = go.AddComponent<Image>();
+                cellImg.color = Instance.MaterialData.moduleColor;
+                cellImg.raycastTarget = true;
+            }
 
-            if (cell == topRightCell)
+            if (cell == bottomRightCell)
             {
                 var stackGo = new GameObject("StackText", typeof(RectTransform), typeof(TextMeshProUGUI));
                 var stackRt = stackGo.GetComponent<RectTransform>();
-                stackRt.SetParent(cellRt, false);
+                stackRt.SetParent(_rt, false);
                 stackRt.anchorMin = new Vector2(0f, 1f);
-                stackRt.anchorMax = new Vector2(1f, 1f);
-                stackRt.pivot = new Vector2(1f, 1f);
-                stackRt.anchoredPosition = new Vector2(-2f, -2f);
-                stackRt.sizeDelta = new Vector2(0f, 20f);
+                stackRt.anchorMax = new Vector2(0f, 1f);
+                stackRt.pivot = new Vector2(1f, 0f);
+                float cellRight = (cell.x + 1) * (cs + sp) - sp;
+                float cellBottom = -(cell.y + 1) * (cs + sp) + sp;
+                stackRt.anchoredPosition = new Vector2(cellRight - 2f, cellBottom + 2f);
+                stackRt.sizeDelta = new Vector2(cs, 20f);
+                stackGo.transform.SetAsLastSibling();
 
                 _stackText = stackGo.GetComponent<TextMeshProUGUI>();
                 _stackText.fontSize = 24f;
                 _stackText.color = Color.white;
-                _stackText.alignment = TextAlignmentOptions.TopRight;
+                _stackText.alignment = TextAlignmentOptions.BottomRight;
                 _stackText.raycastTarget = false;
+
+                var shadowGo = new GameObject("StackTextShadow", typeof(RectTransform), typeof(TextMeshProUGUI));
+                var shadowRt = shadowGo.GetComponent<RectTransform>();
+                shadowRt.SetParent(_rt, false);
+                shadowRt.anchorMin = stackRt.anchorMin;
+                shadowRt.anchorMax = stackRt.anchorMax;
+                shadowRt.pivot = stackRt.pivot;
+                shadowRt.anchoredPosition = stackRt.anchoredPosition + new Vector2(1.5f, -1.5f);
+                shadowRt.sizeDelta = stackRt.sizeDelta;
+                shadowGo.transform.SetSiblingIndex(stackGo.transform.GetSiblingIndex());
+
+                var shadowTmp = shadowGo.GetComponent<TextMeshProUGUI>();
+                shadowTmp.fontSize = _stackText.fontSize;
+                shadowTmp.color = new Color(0f, 0f, 0f, 0.8f);
+                shadowTmp.alignment = _stackText.alignment;
+                shadowTmp.raycastTarget = false;
+                shadowTmp.text = _stackText.text;
+                Instance.OnStackChanged += () => shadowTmp.text = _stackText.text;
             }
         }
     }
@@ -192,7 +300,7 @@ public class MaterialItemUI : MonoBehaviour,
     private void RefreshStackText()
     {
         if (_stackText == null) return;
-        _stackText.text = Instance.MaxStack > 1 ? $"x{Instance.StackCount}" : "";
+        _stackText.text = (Instance.MaxStack > 1 && Instance.StackCount > 1) ? Instance.StackCount.ToString() : "";
     }
 
     public void SnapToCell(GridUI gridUI, Vector2Int cell)
@@ -234,6 +342,9 @@ public class MaterialItemUI : MonoBehaviour,
         _cg.blocksRaycasts = false;
 
         ModuleItemUI.IsDragging = true;
+        ModuleItemUI.DraggingInstance = Instance;
+        ModuleItemUI.DraggingCells = new System.Collections.Generic.HashSet<Vector2Int>(Instance.GetAbsoluteCells());
+        ModuleItemUI.DraggingGrid = Instance.CurrentGrid;
         if (!UIManager.IsRightPanelOpen) DiscardGridUI.Instance?.ShowForDrag();
     }
 
@@ -252,6 +363,9 @@ public class MaterialItemUI : MonoBehaviour,
         _cg.alpha = 1f;
         _cg.blocksRaycasts = true;
         ModuleItemUI.IsDragging = false;
+        ModuleItemUI.DraggingInstance = null;
+        ModuleItemUI.DraggingCells.Clear();
+        ModuleItemUI.DraggingGrid = null;
         ClearHighlights();
 
         var gridsToCheck = MergeUI.IsMergeOpen
