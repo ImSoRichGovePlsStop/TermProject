@@ -19,6 +19,7 @@ public class UIManager : MonoBehaviour
 
     public bool isInBattle { get; set; }
     public bool IsInventoryOpen { get; private set; }
+    public static bool IsRightPanelOpen { get; private set; }
     public bool IsPassiveOpen => passiveScreenUI != null && passiveScreenUI.IsOpen;
     public bool IsGamblerOpen => gamblerScreenUI != null && gamblerScreenUI.IsOpen;
     public bool IsCardPhaseOpen => gamblerScreenUI != null && gamblerScreenUI.IsCardPhaseOpen;
@@ -51,7 +52,6 @@ public class UIManager : MonoBehaviour
         _storageUI = FindFirstObjectByType<HubStorageUI>(FindObjectsInactive.Include);
 
 
-
         // Force Awake on all panels, then hide
         SetActive(inventoryPanel, true);
         SetActive(shopUI?.gameObject, true);
@@ -69,7 +69,6 @@ public class UIManager : MonoBehaviour
         SetActive(_lootRewardUI?.gameObject, false);
         SetActive(sellUI?.gameObject, false);
 
-
     }
 
     private static void SetActive(GameObject go, bool active) { if (go != null) go.SetActive(active); }
@@ -83,7 +82,6 @@ public class UIManager : MonoBehaviour
 
         if (kb[Key.Tab].wasPressedThisFrame)
         {
-            Debug.Log($"[UIManager] Tab pressed — IsInventoryOpen={IsInventoryOpen} inventoryPanel={inventoryPanel?.name ?? "NULL"}");
 
             if (IsCardPhaseOpen) return;
             if (IsGamblerOpen) CloseGambler();
@@ -98,9 +96,9 @@ public class UIManager : MonoBehaviour
             if (IsPassiveOpen) ClosePassive();
             else if (IsGamblerOpen) CloseGambler();
             else if (IsStorageOpen) CloseStorage();
-            else if (_upgradeOpen) { }
-            else if (IsMergeOpen) CloseMerge();
-            else if (IsShopOpen) CloseShop();
+            else if (_upgradeOpen) { CloseUpgrade(); CloseInventoryImmediate(); }
+            else if (IsMergeOpen) { CloseMerge(); CloseInventoryImmediate(); }
+            else if (IsShopOpen) { CloseShop(); CloseInventoryImmediate(); }
             else if (IsInventoryOpen) ToggleInventory();
         }
 
@@ -138,12 +136,10 @@ public class UIManager : MonoBehaviour
         if (IsInventoryOpen)
         {
             if (ModuleItemUI.IsDragging) return;
-            Debug.Log("[UIManager] Closing inventory.");
             CloseInventoryImmediate();
         }
         else
         {
-            Debug.Log("[UIManager] Opening inventory.");
             IsInventoryOpen = true;
             inventoryPanel.SetActive(true);
             inventoryUI?.SwitchTab(InventoryUI.Tab.Inventory);
@@ -166,6 +162,7 @@ public class UIManager : MonoBehaviour
     public void OpenShop(ShopUI shop)
     {
         if (IsMergeOpen) CloseMerge();
+        DiscardGridUI.Instance?.ForceHide();
 
         _activeShopUI = shop;
         shop.gameObject.SetActive(true);
@@ -186,6 +183,7 @@ public class UIManager : MonoBehaviour
     public void OpenMerge(MergeUI mergeUI, MergeStation station)
     {
         if (IsShopOpen) CloseShop();
+        DiscardGridUI.Instance?.ForceHide();
 
         _activeMergeUI = mergeUI;
         mergeUI.gameObject.SetActive(true);
@@ -212,6 +210,7 @@ public class UIManager : MonoBehaviour
         if (_upgradeStationUI == null) { Debug.LogError("[UIManager] UpgradeStationUI not found!"); return; }
 
         _upgradeOpen = true;
+        DiscardGridUI.Instance?.ForceHide();
         _upgradeStationUI.gameObject.SetActive(true);
         _upgradeStationUI.Open(station);
         UpdatePanelVisibility();
@@ -298,11 +297,13 @@ public class UIManager : MonoBehaviour
     private void UpdatePanelVisibility()
     {
         bool anyRightPanelOpen = IsShopOpen || IsMergeOpen || _upgradeOpen;
+        IsRightPanelOpen = anyRightPanelOpen;
 
         if (anyRightPanelOpen && !IsInventoryOpen && inventoryPanel != null)
         {
             IsInventoryOpen = true;
             inventoryPanel.SetActive(true);
+            inventoryUI?.SwitchTab(InventoryUI.Tab.Inventory);
         }
 
         bool hideHUD = IsInventoryOpen || IsShopOpen || IsMergeOpen || _upgradeOpen
@@ -314,7 +315,6 @@ public class UIManager : MonoBehaviour
     private void OnPlayerDeath()
     {
         var panel = FindFirstObjectByType<EndGameUI>(FindObjectsInactive.Include);
-        Debug.Log($"[UIManager] OnPlayerDeath — EndGameUI found: {(panel != null ? panel.name : "NULL")}");
         panel?.Show(isWin: false);
     }
 }

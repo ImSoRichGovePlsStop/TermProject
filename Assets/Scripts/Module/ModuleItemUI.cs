@@ -238,7 +238,7 @@ public class ModuleItemUI : MonoBehaviour,
         _cg.blocksRaycasts = false;
 
         ModuleItemUI.IsDragging = true;
-        DiscardGridUI.Instance?.ShowForDrag();
+        if (!UIManager.IsRightPanelOpen) DiscardGridUI.Instance?.ShowForDrag();
     }
 
     public void OnDrag(PointerEventData e)
@@ -260,7 +260,11 @@ public class ModuleItemUI : MonoBehaviour,
         Vector2Int pivot = Vector2Int.zero;
         Vector2 sampleScreen = GetClickedCellCenterScreen();
 
-        foreach (var g in new[] { WeaponGridUI, BagGridUI, EnvGridUI, InputGridUI, DiscardGridUI.Instance?.GridUI })
+        GridUI[] gridsToScan = MergeUI.IsMergeOpen
+            ? new[] { InputGridUI, BagGridUI, WeaponGridUI, EnvGridUI, DiscardGridUI.Instance?.GridUI }
+            : new[] { WeaponGridUI, BagGridUI, EnvGridUI, InputGridUI, DiscardGridUI.Instance?.GridUI };
+
+        foreach (var g in gridsToScan)
         {
             if (g == null) continue;
             if (g.ScreenToCell(sampleScreen, UICam(), out var hoveredCell))
@@ -376,7 +380,11 @@ public class ModuleItemUI : MonoBehaviour,
         ClearHighlights();
         Vector2 sampleScreen = GetClickedCellCenterScreen();
 
-        foreach (var g in new[] { WeaponGridUI, BagGridUI, EnvGridUI, InputGridUI, DiscardGridUI.Instance?.GridUI })
+        GridUI[] gridsToHighlight = MergeUI.IsMergeOpen
+            ? new[] { InputGridUI, BagGridUI, WeaponGridUI, EnvGridUI, DiscardGridUI.Instance?.GridUI }
+            : new[] { WeaponGridUI, BagGridUI, EnvGridUI, InputGridUI, DiscardGridUI.Instance?.GridUI };
+
+        foreach (var g in gridsToHighlight)
         {
             if (g == null) continue;
             if (g.ScreenToCell(sampleScreen, UICam(), out var hoveredCell))

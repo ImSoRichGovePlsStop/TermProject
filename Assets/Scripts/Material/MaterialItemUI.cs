@@ -234,7 +234,7 @@ public class MaterialItemUI : MonoBehaviour,
         _cg.blocksRaycasts = false;
 
         ModuleItemUI.IsDragging = true;
-        DiscardGridUI.Instance?.ShowForDrag();
+        if (!UIManager.IsRightPanelOpen) DiscardGridUI.Instance?.ShowForDrag();
     }
 
     public void OnDrag(PointerEventData e)
@@ -254,7 +254,9 @@ public class MaterialItemUI : MonoBehaviour,
         ModuleItemUI.IsDragging = false;
         ClearHighlights();
 
-        var gridsToCheck = new[] { BagGridUI, EnvGridUI, InputGridUI, DiscardGridUI.Instance?.GridUI };
+        var gridsToCheck = MergeUI.IsMergeOpen
+            ? new[] { InputGridUI, BagGridUI, EnvGridUI, DiscardGridUI.Instance?.GridUI }
+            : new[] { BagGridUI, EnvGridUI, InputGridUI, DiscardGridUI.Instance?.GridUI };
 
         foreach (var g in gridsToCheck)
         {
@@ -372,7 +374,11 @@ public class MaterialItemUI : MonoBehaviour,
             return;
         }
 
-        foreach (var g in new[] { BagGridUI, EnvGridUI, InputGridUI, DiscardGridUI.Instance?.GridUI })
+        GridUI[] gridsToHighlight = MergeUI.IsMergeOpen
+            ? new[] { InputGridUI, BagGridUI, EnvGridUI, DiscardGridUI.Instance?.GridUI }
+            : new[] { BagGridUI, EnvGridUI, InputGridUI, DiscardGridUI.Instance?.GridUI };
+
+        foreach (var g in gridsToHighlight)
         {
             if (g == null) continue;
             if (!g.ScreenToCell(screenPos, UICam(), out var hoveredCell)) continue;

@@ -24,6 +24,8 @@ public class MergeUI : MonoBehaviour
     private Canvas _canvas;
     private InventoryUI _inventoryUI;
 
+    public static bool IsMergeOpen { get; private set; }
+
     private void Awake()
     {
         _canvas = GetComponentInParent<Canvas>();
@@ -32,7 +34,7 @@ public class MergeUI : MonoBehaviour
 
     private void Start()
     {
-        float cellSize = 64f;
+        float cellSize = 63f;
         float cellSpacing = 2f;
 
         _inputGrid = new GridData(5, 5, isWeaponGrid: false);
@@ -48,6 +50,7 @@ public class MergeUI : MonoBehaviour
 
     private void OnDisable()
     {
+        IsMergeOpen = false;
         if (!_initialized) return;
 
         ReturnInputToBag();
@@ -72,6 +75,7 @@ public class MergeUI : MonoBehaviour
 
     public void Open(MergeStation station)
     {
+        IsMergeOpen = true;
         _currentStation = station;
         SetBagItemRefsForMerge();
         if (_currentStation.HasOutput) SpawnOutputUI(_currentStation.CachedOutput);
