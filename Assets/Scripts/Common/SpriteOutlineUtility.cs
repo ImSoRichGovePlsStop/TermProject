@@ -71,8 +71,6 @@ public static class SpriteOutlineUtility
             }
         }
 
-        Debug.Log($"[SpriteOutline] tex={source.name} size={w}x{h} thickness={scaledThickness} tint={tint} outlinePixels={outlinePixels}");
-
         var result = new Texture2D(w, h, TextureFormat.RGBA32, false);
         result.SetPixels(dst);
         result.Apply();

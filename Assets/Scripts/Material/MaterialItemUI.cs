@@ -196,10 +196,10 @@ public class MaterialItemUI : MonoBehaviour,
         float cs = BagGridUI.CellSize;
         float sp = BagGridUI.CellSpacing;
 
-        Vector2Int topRightCell = shapeCells[0];
+        Vector2Int bottomRightCell = shapeCells[0];
         foreach (var c in shapeCells)
-            if (c.y < topRightCell.y || (c.y == topRightCell.y && c.x > topRightCell.x))
-                topRightCell = c;
+            if (c.y > bottomRightCell.y || (c.y == bottomRightCell.y && c.x > bottomRightCell.x))
+                bottomRightCell = c;
 
         foreach (var cell in shapeCells)
         {
@@ -225,7 +225,6 @@ public class MaterialItemUI : MonoBehaviour,
 
             if (Instance.Data.icon != null)
             {
-                // Icon is rendered by BuildIconOverlay as a single rotated overlay
                 var cellImg = go.AddComponent<Image>();
                 cellImg.color = Color.clear;
                 cellImg.raycastTarget = true;
@@ -237,25 +236,43 @@ public class MaterialItemUI : MonoBehaviour,
                 cellImg.raycastTarget = true;
             }
 
-            if (cell == topRightCell)
+            if (cell == bottomRightCell)
             {
                 var stackGo = new GameObject("StackText", typeof(RectTransform), typeof(TextMeshProUGUI));
                 var stackRt = stackGo.GetComponent<RectTransform>();
                 stackRt.SetParent(_rt, false);
                 stackRt.anchorMin = new Vector2(0f, 1f);
                 stackRt.anchorMax = new Vector2(0f, 1f);
-                stackRt.pivot = new Vector2(1f, 1f);
+                stackRt.pivot = new Vector2(1f, 0f);
                 float cellRight = (cell.x + 1) * (cs + sp) - sp;
-                float cellTop = -cell.y * (cs + sp);
-                stackRt.anchoredPosition = new Vector2(cellRight - 2f, cellTop - 2f);
+                float cellBottom = -(cell.y + 1) * (cs + sp) + sp;
+                stackRt.anchoredPosition = new Vector2(cellRight - 2f, cellBottom + 2f);
                 stackRt.sizeDelta = new Vector2(cs, 20f);
                 stackGo.transform.SetAsLastSibling();
 
                 _stackText = stackGo.GetComponent<TextMeshProUGUI>();
                 _stackText.fontSize = 24f;
                 _stackText.color = Color.white;
-                _stackText.alignment = TextAlignmentOptions.TopRight;
+                _stackText.alignment = TextAlignmentOptions.BottomRight;
                 _stackText.raycastTarget = false;
+
+                var shadowGo = new GameObject("StackTextShadow", typeof(RectTransform), typeof(TextMeshProUGUI));
+                var shadowRt = shadowGo.GetComponent<RectTransform>();
+                shadowRt.SetParent(_rt, false);
+                shadowRt.anchorMin = stackRt.anchorMin;
+                shadowRt.anchorMax = stackRt.anchorMax;
+                shadowRt.pivot = stackRt.pivot;
+                shadowRt.anchoredPosition = stackRt.anchoredPosition + new Vector2(1.5f, -1.5f);
+                shadowRt.sizeDelta = stackRt.sizeDelta;
+                shadowGo.transform.SetSiblingIndex(stackGo.transform.GetSiblingIndex());
+
+                var shadowTmp = shadowGo.GetComponent<TextMeshProUGUI>();
+                shadowTmp.fontSize = _stackText.fontSize;
+                shadowTmp.color = new Color(0f, 0f, 0f, 0.8f);
+                shadowTmp.alignment = _stackText.alignment;
+                shadowTmp.raycastTarget = false;
+                shadowTmp.text = _stackText.text;
+                Instance.OnStackChanged += () => shadowTmp.text = _stackText.text;
             }
         }
     }
@@ -283,7 +300,7 @@ public class MaterialItemUI : MonoBehaviour,
     private void RefreshStackText()
     {
         if (_stackText == null) return;
-        _stackText.text = Instance.MaxStack > 1 ? $"x{Instance.StackCount}" : "";
+        _stackText.text = (Instance.MaxStack > 1 && Instance.StackCount > 1) ? Instance.StackCount.ToString() : "";
     }
 
     public void SnapToCell(GridUI gridUI, Vector2Int cell)
