@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4b7eed258015d6e43af3e1877b980b72, type: 3}
-  m_Name: HP_3_L
+  m_Name: MoveSpeed_3
   m_EditorClassIdentifier: Assembly-CSharp::ModuleData
-  moduleName: Vitality
+  moduleName: Move speed
   icon: {fileID: 0}
-  moduleEffect: {fileID: 11400000, guid: dec7bd05e937596439e1b2349ab46d13, type: 2}
-  moduleColor: {r: 0, g: 1, b: 0, a: 1}
-  cost: 3200000064000000c80000002c01000090010000
+  moduleEffect: {fileID: 11400000, guid: 8c61b04306ef88847923a44cf3aec887, type: 2}
+  moduleColor: {r: 1, g: 1, b: 1, a: 1}
+  cost: 000000002c01000090010000f401000058020000
   isBuffAdjacent: 0
   buffGrid:
   - cells: 0000000000

@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4b7eed258015d6e43af3e1877b980b72, type: 3}
-  m_Name: CritDmg_4
+  m_Name: CheatDeath_4
   m_EditorClassIdentifier: Assembly-CSharp::ModuleData
-  moduleName: Focus
+  moduleName: CheatDeath
   icon: {fileID: 0}
-  moduleEffect: {fileID: 11400000, guid: b9dfbb9772fb80f41a399c8972cc16ef, type: 2}
-  moduleColor: {r: 0.6784314, g: 0.46666667, b: 0.14509805, a: 1}
-  cost: 00000000000000002c01000090010000f4010000
+  moduleEffect: {fileID: 11400000, guid: a2dc0104960493648aba8f2ef8acdc4e, type: 2}
+  moduleColor: {r: 1, g: 1, b: 1, a: 1}
+  cost: 0000000000000000c8000000f401000020030000
   isBuffAdjacent: 0
   buffGrid:
   - cells: 0000000000
@@ -25,8 +25,8 @@ MonoBehaviour:
   - cells: 0000000000
   - cells: 0000000000
   shapeGrid:
-  - cells: 0100000000
-  - cells: 0101010000
+  - cells: 0101000000
+  - cells: 0001010000
   - cells: 0000000000
   - cells: 0000000000
   - cells: 0000000000

@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: Heath (2)
   m_EditorClassIdentifier: Assembly-CSharp::HpModule
   baseStatPerRarity:
-  - 25
-  - 50
-  - 100
+  - 30
+  - 60
+  - 90
+  - 120
   - 150
-  - 200
-  levelMultiplier: 0.1
+  levelMultiplier: 0.2
   moduleColor: {r: 0, g: 1, b: 0, a: 1}
