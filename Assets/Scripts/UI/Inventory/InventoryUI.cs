@@ -31,18 +31,18 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private GridUI bagGridUI;
 
     [Header("Prefabs")]
-    [SerializeField] private ModuleItemUI   moduleItemPrefab;
+    [SerializeField] private ModuleItemUI moduleItemPrefab;
     [SerializeField] private MaterialItemUI materialItemPrefab;
 
     [Header("Grid Settings")]
-    [SerializeField] private float cellSize    = 64f;
+    [SerializeField] private float cellSize = 63f;
     [SerializeField] private float cellSpacing = 2f;
 
     public static GridUI StaticWeaponGridUI { get; private set; }
-    public static GridUI StaticBagGridUI    { get; private set; }
+    public static GridUI StaticBagGridUI { get; private set; }
 
     public GridUI WeaponGridUI => weaponGridUI;
-    public GridUI BagGridUI    => bagGridUI;
+    public GridUI BagGridUI => bagGridUI;
 
     public enum Tab { Inventory, PlayerStat, Skill, Quest, Menu }
     public Tab CurrentTab { get; private set; } = Tab.Inventory;
@@ -58,16 +58,16 @@ public class InventoryUI : MonoBehaviour
         weaponGridUI.SetWeaponGridState(mgr.WeaponUnlockedCols, mgr.WeaponUnlockedRows);
 
         StaticWeaponGridUI = weaponGridUI;
-        StaticBagGridUI    = bagGridUI;
+        StaticBagGridUI = bagGridUI;
 
         mgr.OnWeaponGridChanged += OnWeaponGridChanged;
-        mgr.OnBagGridChanged    += OnBagGridChanged;
+        mgr.OnBagGridChanged += OnBagGridChanged;
 
         inventoryTabButton?.onClick.AddListener(() => SwitchTab(Tab.Inventory));
         playerStatTabButton?.onClick.AddListener(() => SwitchTab(Tab.PlayerStat));
-        skillTabButton?.onClick.AddListener(()      => SwitchTab(Tab.Skill));
-        questTabButton?.onClick.AddListener(()      => SwitchTab(Tab.Quest));
-        menuTabButton?.onClick.AddListener(()       => SwitchTab(Tab.Menu));
+        skillTabButton?.onClick.AddListener(() => SwitchTab(Tab.Skill));
+        questTabButton?.onClick.AddListener(() => SwitchTab(Tab.Quest));
+        menuTabButton?.onClick.AddListener(() => SwitchTab(Tab.Menu));
 
         SwitchTab(Tab.Inventory);
     }
@@ -77,7 +77,7 @@ public class InventoryUI : MonoBehaviour
         var mgr = InventoryManager.Instance;
         if (mgr == null) return;
         mgr.OnWeaponGridChanged -= OnWeaponGridChanged;
-        mgr.OnBagGridChanged    -= OnBagGridChanged;
+        mgr.OnBagGridChanged -= OnBagGridChanged;
     }
 
     public void SwitchTab(Tab tab)
@@ -89,11 +89,11 @@ public class InventoryUI : MonoBehaviour
         questPanel?.SetActive(tab == Tab.Quest);
         menuPanel?.SetActive(tab == Tab.Menu);
 
-        if (inventoryTabIndicator  != null) inventoryTabIndicator.SetActive(tab == Tab.Inventory);
+        if (inventoryTabIndicator != null) inventoryTabIndicator.SetActive(tab == Tab.Inventory);
         if (playerStatTabIndicator != null) playerStatTabIndicator.SetActive(tab == Tab.PlayerStat);
-        if (skillTabIndicator      != null) skillTabIndicator.SetActive(tab == Tab.Skill);
-        if (questTabIndicator      != null) questTabIndicator.SetActive(tab == Tab.Quest);
-        if (menuTabIndicator       != null) menuTabIndicator.SetActive(tab == Tab.Menu);
+        if (skillTabIndicator != null) skillTabIndicator.SetActive(tab == Tab.Skill);
+        if (questTabIndicator != null) questTabIndicator.SetActive(tab == Tab.Quest);
+        if (menuTabIndicator != null) menuTabIndicator.SetActive(tab == Tab.Menu);
     }
 
     private void OnWeaponGridChanged()
@@ -113,23 +113,41 @@ public class InventoryUI : MonoBehaviour
                 var ui = inst.UIElement as MaterialItemUI;
                 if (ui == null) continue;
                 ui.WeaponGridUI = weaponGridUI;
-                ui.BagGridUI    = bagGridUI;
-                ui.EnvGridUI    = null;
-                ui.InputGridUI  = null;
+                ui.BagGridUI = bagGridUI;
+                ui.EnvGridUI = null;
+                ui.InputGridUI = null;
             }
             else
             {
                 var ui = inst.UIElement as ModuleItemUI;
                 if (ui == null) continue;
-                ui.WeaponGridUI       = weaponGridUI;
-                ui.BagGridUI          = bagGridUI;
-                ui.EnvGridUI          = null;
-                ui.InputGridUI        = null;
-                ui.ShopTooltipUI      = null;
+                ui.WeaponGridUI = weaponGridUI;
+                ui.BagGridUI = bagGridUI;
+                ui.EnvGridUI = null;
+                ui.InputGridUI = null;
+                ui.ShopTooltipUI = null;
                 ui.SellConfirmationUI = null;
                 ui.SetAllowSell(false);
             }
         }
+    }
+
+    public ModuleItemUI SpawnExistingModule(ModuleInstance inst)
+    {
+        if (!InventoryManager.Instance.TryAddToBag(inst))
+        {
+            if (DiscardGridUI.Instance != null)
+                DiscardGridUI.Instance.ShowForOverflow(new List<ModuleInstance> { inst });
+            else
+                Debug.LogWarning($"[InventoryUI] Bag full — {inst.Data.moduleName}");
+            return null;
+        }
+
+        var ui = Instantiate(moduleItemPrefab, bagGridUI.transform);
+        ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+        ui.Init(inst);
+        StartCoroutine(SnapNextFrame(ui, bagGridUI, inst.GridPosition));
+        return ui;
     }
 
     public ModuleItemUI SpawnModule(ModuleData data, Rarity rarity = Rarity.Common, int level = 0)
