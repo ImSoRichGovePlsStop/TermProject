@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class WeaponLevelManager : MonoBehaviour
@@ -8,20 +8,18 @@ public class WeaponLevelManager : MonoBehaviour
     private static readonly int[] pointsPerLevel = { 0, 0, 1, 1, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 5 };
 
     private Dictionary<WeaponData, int> weaponLevels = new Dictionary<WeaponData, int>();
-
-    private WeaponPassiveManager passiveManager;
+    private WeaponPassiveManager        passiveManager;
 
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-        Instance = this;
+        Instance       = this;
         passiveManager = FindFirstObjectByType<WeaponPassiveManager>();
     }
 
     public int GetLevel(WeaponData weapon)
     {
-        if (!weaponLevels.ContainsKey(weapon))
-            weaponLevels[weapon] = 1;
+        if (!weaponLevels.ContainsKey(weapon)) weaponLevels[weapon] = 1;
         return weaponLevels[weapon];
     }
 
@@ -38,7 +36,7 @@ public class WeaponLevelManager : MonoBehaviour
         passiveManager?.AddPoints(weapon.passiveData, points);
 
         Vector2Int gridSize = weapon.GetGridSize(newLevel);
-        InventoryManager.Instance?.ExpandWeaponGrid(gridSize.x, gridSize.y);
+        InventoryManager.Instance?.UpgradeWeaponGrid(gridSize.x, gridSize.y);
 
         return true;
     }

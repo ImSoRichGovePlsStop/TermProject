@@ -3618,6 +3618,30 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7822850154273800781, guid: 4fa3b75d014f39f4a86924ee396d47ab, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7822850154273800781, guid: 4fa3b75d014f39f4a86924ee396d47ab, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7822850154273800781, guid: 4fa3b75d014f39f4a86924ee396d47ab, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7822850154273800781, guid: 4fa3b75d014f39f4a86924ee396d47ab, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7822850154273800781, guid: 4fa3b75d014f39f4a86924ee396d47ab, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7822850154273800781, guid: 4fa3b75d014f39f4a86924ee396d47ab, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8049791091501493503, guid: 4fa3b75d014f39f4a86924ee396d47ab, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -3648,6 +3672,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8054686060251788970, guid: 4fa3b75d014f39f4a86924ee396d47ab, type: 3}
       propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8054686060251788970, guid: 4fa3b75d014f39f4a86924ee396d47ab, type: 3}
+      propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8054686060251788970, guid: 4fa3b75d014f39f4a86924ee396d47ab, type: 3}
@@ -3923,13 +3951,17 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5780838054109600222, guid: ca9e32ba68539234193b62eab97442a3, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7840334951158796773, guid: ca9e32ba68539234193b62eab97442a3, type: 3}
       propertyPath: m_Name
       value: StorageSystem
       objectReference: {fileID: 0}
     - target: {fileID: 8258616458247968008, guid: ca9e32ba68539234193b62eab97442a3, type: 3}
       propertyPath: m_Size
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8258616458247968008, guid: ca9e32ba68539234193b62eab97442a3, type: 3}
       propertyPath: m_Value
@@ -4489,17 +4521,6 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 7391241484814586548, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
   m_PrefabInstance: {fileID: 8950692978690956373}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2644927437663314249 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6378104958825151772, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
-  m_PrefabInstance: {fileID: 8950692978690956373}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7e9fb0b1bc59a5546b3ae9be0dc50785, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GridUI
 --- !u!224 &3073679999562023804 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6237723510180618025, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}
@@ -4551,10 +4572,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7892f3a541a87434b88afa99a3fd6544, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InventoryManager
-  bagCols: 8
-  bagRows: 8
-  envCols: 5
-  envRows: 8
+  weaponMaxCols: 7
+  weaponMaxRows: 5
+  bagMaxCols: 8
+  bagMaxRows: 8
+  bagStartCols: 8
+  bagStartRows: 5
 --- !u!114 &7151258701695423803
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4567,11 +4590,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b1886347f80bae4295c8378ee70039e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InventoryUI
+  inventoryTabButton: {fileID: 0}
+  playerStatTabButton: {fileID: 0}
+  skillTabButton: {fileID: 0}
+  questTabButton: {fileID: 0}
+  menuTabButton: {fileID: 0}
+  inventoryPanel: {fileID: 0}
+  playerStatPanel: {fileID: 0}
+  skillPanel: {fileID: 0}
+  questPanel: {fileID: 0}
+  menuPanel: {fileID: 0}
+  inventoryTabIndicator: {fileID: 0}
+  playerStatTabIndicator: {fileID: 0}
+  skillTabIndicator: {fileID: 0}
+  questTabIndicator: {fileID: 0}
+  menuTabIndicator: {fileID: 0}
   weaponGridUI: {fileID: 769532141137461649}
   bagGridUI: {fileID: 7705385518307021179}
-  envGridUI: {fileID: 2644927437663314249}
   moduleItemPrefab: {fileID: 2996288814634159331, guid: 2e667019bf23b8743b2e3414548beeeb, type: 3}
   materialItemPrefab: {fileID: 8151539626362182282, guid: f9a8e3b4fa5f32e49ad4294a914dc9ef, type: 3}
+  cellSize: 64
+  cellSpacing: 2
 --- !u!114 &7705385518307021179 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1646127900905442606, guid: c3f0dc4ca6c8f294aa46b62735a10481, type: 3}

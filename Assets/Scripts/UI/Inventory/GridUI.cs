@@ -6,13 +6,16 @@ public class GridUI : MonoBehaviour
 {
     [SerializeField] public GridCellUI cellPrefab;
 
-    public float CellSize    { get; private set; }
-    public float CellSpacing { get; private set; }
-    public GridData Data { get; private set; }
+    public float    CellSize    { get; private set; }
+    public float    CellSpacing { get; private set; }
+    public GridData Data        { get; private set; }
 
-    private GridCellUI[,]   _cells;
-    private GridLayoutGroup _layout;
+    private GridCellUI[,]    _cells;
+    private GridLayoutGroup  _layout;
     private List<GameObject> _buffHighlights = new List<GameObject>();
+
+    private int _unlockedCols = int.MaxValue;
+    private int _unlockedRows = int.MaxValue;
 
     public void Init(GridData data, float cellSize, float cellSpacing)
     {
@@ -30,8 +33,10 @@ public class GridUI : MonoBehaviour
         _layout.childAlignment  = TextAnchor.UpperLeft;
 
         var rt = GetComponent<RectTransform>();
-        rt.sizeDelta = new Vector2(data.Width  * (CellSize + CellSpacing) - CellSpacing,
-                                   data.Height * (CellSize + CellSpacing) - CellSpacing);
+        rt.sizeDelta = new Vector2(
+            data.Width  * (CellSize + CellSpacing) - CellSpacing,
+            data.Height * (CellSize + CellSpacing) - CellSpacing);
+
         BuildCells();
 
         data.OnModulePlaced  += _ => RefreshAll();
@@ -51,6 +56,13 @@ public class GridUI : MonoBehaviour
                 cell.Init(new Vector2Int(col, row), this);
                 _cells[col, row] = cell;
             }
+    }
+
+    public void SetWeaponGridState(int unlockedCols, int unlockedRows)
+    {
+        _unlockedCols = unlockedCols;
+        _unlockedRows = unlockedRows;
+        RefreshAll();
     }
 
     public Vector3 GetCellWorldTopLeft(Vector2Int coord)
@@ -90,7 +102,7 @@ public class GridUI : MonoBehaviour
     {
         ClearBuffHighlights();
         Color buffColor = new Color(color.r, color.g, color.b, 0.3f);
-        var canvas = GetComponentInParent<Canvas>();
+        var canvas   = GetComponentInParent<Canvas>();
         var canvasRt = canvas.GetComponent<RectTransform>();
 
         foreach (var cell in inst.GetAbsoluteBuffCells())
@@ -102,22 +114,20 @@ public class GridUI : MonoBehaviour
             overlayGo.transform.SetAsLastSibling();
 
             var overlayRt = overlayGo.GetComponent<RectTransform>();
-            overlayRt.pivot = new Vector2(0f, 1f);
-            overlayRt.anchorMin = new Vector2(0f, 0f);
-            overlayRt.anchorMax = new Vector2(0f, 0f);
-            overlayRt.sizeDelta = new Vector2(CellSize, CellSize);
+            overlayRt.pivot      = new Vector2(0f, 1f);
+            overlayRt.anchorMin  = new Vector2(0f, 0f);
+            overlayRt.anchorMax  = new Vector2(0f, 0f);
+            overlayRt.sizeDelta  = new Vector2(CellSize, CellSize);
 
             Vector3 worldPos = GetCellWorldTopLeft(cell);
             Vector3 localPos = canvasRt.InverseTransformPoint(worldPos);
             overlayRt.anchoredPosition = new Vector2(
-                localPos.x + canvasRt.rect.width * 0.5f,
-                localPos.y + canvasRt.rect.height * 0.5f
-            );
+                localPos.x + canvasRt.rect.width  * 0.5f,
+                localPos.y + canvasRt.rect.height * 0.5f);
 
             var overlayImg = overlayGo.GetComponent<Image>();
-            overlayImg.color = buffColor;
+            overlayImg.color         = buffColor;
             overlayImg.raycastTarget = false;
-
             _buffHighlights.Add(overlayGo);
         }
     }
@@ -134,8 +144,15 @@ public class GridUI : MonoBehaviour
     public void RefreshAll()
     {
         if (_cells == null) return;
+        bool isWeapon = Data != null && Data.IsWeaponGrid;
+
         for (int col = 0; col < Data.Width; col++)
             for (int row = 0; row < Data.Height; row++)
-                _cells[col, row].Refresh(Data);
+            {
+                if (isWeapon)
+                    _cells[col, row].RefreshWeapon(Data, _unlockedCols, _unlockedRows);
+                else
+                    _cells[col, row].Refresh(Data);
+            }
     }
 }
