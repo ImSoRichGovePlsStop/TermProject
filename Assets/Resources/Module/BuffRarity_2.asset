@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: BuffRarity_2
   m_EditorClassIdentifier: Assembly-CSharp::ModuleData
   moduleName: More Rare
+  description: Boosts the rarity of adjacent modules
   icon: {fileID: 0}
   moduleEffect: {fileID: 11400000, guid: bdcb15601d0324847ab7504d84a577ec, type: 2}
   moduleColor: {r: 0.33333334, g: 0.5529412, b: 0.8980392, a: 1}
   cost: 0000000000000000fa0000002c01000090010000
   isBuffAdjacent: 1
+  buffDescription: 
   buffGrid:
   - cells: 0100000100
   - cells: 0000000000

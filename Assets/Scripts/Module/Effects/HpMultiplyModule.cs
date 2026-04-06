@@ -57,7 +57,7 @@ public class HpMultiplyModule : ModuleEffect
     public override void OnRarityBuffReceived(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
     {
         state.baseRarity[(int)newRarity]++;
-        if (state.buffRarity > newRarity) return;
+        if (state.buffRarity > newRarity | oldRarity > newRarity) return;
         state.buffRarity = newRarity;
 
         stats.RemoveMultiplierModifier(new StatModifier { health = GetEffectiveStat(state) });
@@ -116,8 +116,36 @@ public class HpMultiplyModule : ModuleEffect
     {
         float baseStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
         float effective = GetEffectiveStat(state);
-        if (effective != baseStat & state.isActive)
-            return $"<s>+{baseStat * 100f:F0}%</s> +{effective* 100f:F0}% HP";
+        if (effective != baseStat && state.isActive)
+            return $"<s>+{baseStat * 100f:F0}%</s> +{effective * 100f:F0}% HP";
         return $"+{baseStat * 100f:F0}% HP";
+    }
+
+    public override (float unbuffed, float buffed) GetBaseModuleStat(Rarity rarity, int level, ModuleRuntimeState state)
+        => BuildBaseModuleStat(baseStatPerRarity, levelMultiplier, rarity, level, state);
+
+    public override (string leftLabel, float before, float after, string format) GetStatPreview(
+        Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats)
+    {
+        float moduleStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        float effective = GetEffectiveStat(state);
+        string leftLabel = BuildLeftLabel(moduleStat, effective, state, "Max Health", true);
+
+        if (playerStats == null) return (leftLabel, -1f, -1f, "F0");
+
+        float baseHp = playerStats.BaseHealth;
+        float multHp = playerStats.MultiplierModifier.health;
+        float before, after;
+        if (state.isActive)
+        {
+            before = baseHp * (1f + multHp - effective);
+            after = playerStats.MaxHealth;
+        }
+        else
+        {
+            before = playerStats.MaxHealth;
+            after = baseHp * (1f + multHp + moduleStat);
+        }
+        return (leftLabel, before, after, "F0");
     }
 }

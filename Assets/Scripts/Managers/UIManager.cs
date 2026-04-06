@@ -3,6 +3,14 @@ using UnityEngine.InputSystem;
 
 public class UIManager : MonoBehaviour
 {
+    public static UIManager Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+    }
+
     [SerializeField] private GameObject hud;
     [SerializeField] private InventoryUI inventoryUI;
 
@@ -33,14 +41,6 @@ public class UIManager : MonoBehaviour
 
     private float holdTime = 0f;
     private float holdDuration = 1f;
-
-    public static UIManager Instance { get; private set; }
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-        Instance = this;
-    }
 
     private void Start()
     {
@@ -88,7 +88,7 @@ public class UIManager : MonoBehaviour
         var kb = Keyboard.current;
         if (kb == null) return;
 
-        if (kb[Key.Tab].wasPressedThisFrame)
+        if (kb[Key.I].wasPressedThisFrame)
         {
 
             if (IsCardPhaseOpen) return;

@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: Helmet
   m_EditorClassIdentifier: Assembly-CSharp::MaterialData
   moduleName: Helmet
-  icon: {fileID: 21300000, guid: fb8dc115bfb168f4f9facf344fc56616, type: 3}
+  description: 
+  icon: {fileID: 21300000, guid: a6deca3d32dd9c244a28b2174a466224, type: 3}
   moduleEffect: {fileID: 0}
   moduleColor: {r: 0.335849, g: 0, b: 0, a: 1}
   cost: 28000000
   isBuffAdjacent: 0
+  buffDescription: 
   buffGrid:
   - cells: 0000000000
   - cells: 0000000000
@@ -32,3 +34,7 @@ MonoBehaviour:
   - cells: 0000000000
   rarity: 1
   maxStack: 3
+  materialDescription: "A gleaming helm stripped from a high-ranking Hoplite. Its
+    polished surface reflects a hero\u2019s pride and the blinding light of the sun."
+  obtainSources:
+  - Elite Hoplite

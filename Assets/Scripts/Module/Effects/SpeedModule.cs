@@ -56,7 +56,7 @@ public class SpeedModule : ModuleEffect
     public override void OnRarityBuffReceived(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
     {
         state.baseRarity[(int)newRarity]++;
-        if (state.buffRarity > newRarity) return;
+        if (state.buffRarity > newRarity | oldRarity > newRarity) return;
         state.buffRarity = newRarity;
 
         stats.RemoveMultiplierModifier(new StatModifier { moveSpeed = GetEffectiveStat(state) });
@@ -116,9 +116,36 @@ public class SpeedModule : ModuleEffect
     {
         float baseStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
         float effective = GetEffectiveStat(state);
-        if (effective != baseStat & state.isActive)
+        if (effective != baseStat && state.isActive)
             return $"<s>+{baseStat * 100f:F0}%</s> +{effective * 100f:F0}% move speed";
         return $"+{baseStat * 100f:F0}% move speed";
     }
 
+    public override (float unbuffed, float buffed) GetBaseModuleStat(Rarity rarity, int level, ModuleRuntimeState state)
+        => BuildBaseModuleStat(baseStatPerRarity, levelMultiplier, rarity, level, state);
+
+    public override (string leftLabel, float before, float after, string format) GetStatPreview(
+        Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats)
+    {
+        float moduleStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        float effective = GetEffectiveStat(state);
+        string leftLabel = BuildLeftLabel(moduleStat, effective, state, "Move Speed", true);
+
+        if (playerStats == null) return (leftLabel, -1f, -1f, "F1");
+
+        float baseMv = playerStats.BaseMoveSpeed;
+        float multMv = playerStats.MultiplierModifier.moveSpeed;
+        float before, after;
+        if (state.isActive)
+        {
+            before = baseMv * (1f + multMv - effective);
+            after = playerStats.MoveSpeed;
+        }
+        else
+        {
+            before = playerStats.MoveSpeed;
+            after = baseMv * (1f + multMv + moduleStat);
+        }
+        return (leftLabel, before, after, "F1");
+    }
 }

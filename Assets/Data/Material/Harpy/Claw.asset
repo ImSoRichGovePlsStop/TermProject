@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: Claw
   m_EditorClassIdentifier: Assembly-CSharp::MaterialData
   moduleName: Claw
-  icon: {fileID: 21300000, guid: fa099042a21d5824586d3e6f90ba3131, type: 3}
+  description: 
+  icon: {fileID: 21300000, guid: 22f59fa5f70b4434caea092a09394c24, type: 3}
   moduleEffect: {fileID: 0}
   moduleColor: {r: 0.335849, g: 0, b: 0, a: 1}
   cost: 1e000000
   isBuffAdjacent: 0
+  buffDescription: 
   buffGrid:
   - cells: 0000000000
   - cells: 0000000000
@@ -32,3 +34,8 @@ MonoBehaviour:
   - cells: 0000000000
   rarity: 1
   maxStack: 3
+  materialDescription: "A jagged remnant of a sky-stalker\u2019s fury. Its tip is
+    unnaturally sharp, honed by years of diving from the clouds."
+  obtainSources:
+  - Harpy
+  - Elite Harpy

@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: BuffLevel_2
   m_EditorClassIdentifier: Assembly-CSharp::ModuleData
   moduleName: More Level
+  description: Boosts the level of adjacent modules
   icon: {fileID: 0}
   moduleEffect: {fileID: 11400000, guid: 9f324e50916bd924da6e48282f89187c, type: 2}
   moduleColor: {r: 0.33397114, g: 0.55124897, b: 0.8962264, a: 1}
   cost: 00000000c8000000fa0000002c01000090010000
   isBuffAdjacent: 1
+  buffDescription: 
   buffGrid:
   - cells: 0100000100
   - cells: 0000000000

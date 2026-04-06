@@ -1,10 +1,10 @@
- using UnityEngine;
+using UnityEngine;
 
 [CreateAssetMenu(menuName = "Module Effect/AttackSpeed")]
-public class AttackSpeedModule: ModuleEffect
+public class AttackSpeedModule : ModuleEffect
 {
     [Header("Stat per Rarity (Uncommon -> Legendary)")]
-    public float[] baseStatPerRarity = { 0f, 0f, 0f, 0f ,0f};
+    public float[] baseStatPerRarity = { 0f, 0f, 0f, 0f, 0f };
     public float levelMultiplier;
 
     protected override void OnEquip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state)
@@ -57,7 +57,7 @@ public class AttackSpeedModule: ModuleEffect
     public override void OnRarityBuffReceived(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
     {
         state.baseRarity[(int)newRarity]++;
-        if (state.buffRarity > newRarity) return;
+        if (state.buffRarity > newRarity | oldRarity > newRarity) return;
         state.buffRarity = newRarity;
 
         stats.RemoveFlatModifier(new StatModifier { attackSpeed = GetEffectiveStat(state) });
@@ -118,9 +118,35 @@ public class AttackSpeedModule: ModuleEffect
     {
         float baseStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
         float effective = GetEffectiveStat(state);
-        if (effective != baseStat & state.isActive)
+        if (effective != baseStat && state.isActive)
             return $"<s>+{baseStat * 100f:F0}%</s> +{effective * 100f:F0}% Attack Speed";
         return $"+{baseStat * 100f:F0}% Attack speed";
     }
 
+    public override (float unbuffed, float buffed) GetBaseModuleStat(Rarity rarity, int level, ModuleRuntimeState state)
+        => BuildBaseModuleStat(baseStatPerRarity, levelMultiplier, rarity, level, state);
+
+    public override (string leftLabel, float before, float after, string format) GetStatPreview(
+        Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats)
+    {
+        float moduleStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        float effective = GetEffectiveStat(state);
+        string leftLabel = BuildLeftLabel(moduleStat, effective, state, "Attack Speed", true);
+
+        if (playerStats == null) return (leftLabel, -1f, -1f, "F0%");
+
+        float before, after;
+        if (state.isActive)
+        {
+            before = playerStats.AttackSpeed - effective;
+            after = playerStats.AttackSpeed;
+        }
+        else
+        {
+            before = playerStats.AttackSpeed;
+            after = playerStats.AttackSpeed + moduleStat;
+        }
+        // Convert to display percent (multiply by 100)
+        return (leftLabel, before * 100f, after * 100f, "F0%");
+    }
 }

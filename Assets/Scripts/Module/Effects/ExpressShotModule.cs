@@ -122,7 +122,7 @@ public class ExpressShot : ModuleEffect
         state.baseRarity[(int)newRarity]++;
 
         if (!_stateMap.TryGetValue(state, out var data)) return;
-        if (state.buffRarity > newRarity) return;
+        if (state.buffRarity > newRarity | oldRarity > newRarity) return;
         state.buffRarity = newRarity;
         if (data.BuffReady)
             stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
@@ -197,24 +197,27 @@ public class ExpressShot : ModuleEffect
         data.CooldownCoroutine = null;
     }
 
-    public override string GetDescription(Rarity rarity, int level, ModuleRuntimeState state)
+    public override string GetDescription(Rarity rarity, int level, ModuleRuntimeState state) => null;
+
+    public override string PassiveDescription => $"Every {cooldown}s, your next attack deals bonus damage";
+    public override PassiveLayout GetPassiveLayout() => PassiveLayout.Single;
+
+    public override PassiveEntry[] GetPassiveEntries(Rarity rarity, int level, ModuleRuntimeState state)
     {
-        float baseBonusPct = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
-        float effectiveBonusPct = GetEffectiveStat(state);
+        float baseStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        float effective = state.isActive ? GetEffectiveStat(state) : baseStat;
+        bool isBuffed = state.isActive && effective != baseStat;
 
-        bool bonusChanged = effectiveBonusPct > baseBonusPct;
-
-        if (state.isActive && bonusChanged)
+        return new PassiveEntry[]
         {
-            return
-                $"Next shot deals +<s>{baseBonusPct * 100f:F0}%</s> {effectiveBonusPct * 100f:F0}% bonus damage\n" +
-                $"Cooldown ({cooldown}s)";
-        }
-        else
-        {
-            return
-                $"Next shot deals +{baseBonusPct * 100f:F0}% bonus damage\n" +
-                $"Cooldown ({cooldown}s)";
-        }
+            new PassiveEntry
+            {
+                value         = $"+{effective * 100f:F0}%",
+                label         = "Bonus Damage",
+                sublabel      = "Conditional",
+                isBuffed      = isBuffed,
+                unbuffedValue = $"+{baseStat * 100f:F0}%"
+            }
+        };
     }
 }

@@ -56,7 +56,7 @@ public class CritDmgMod : ModuleEffect
     public override void OnRarityBuffReceived(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
     {
         state.baseRarity[(int)newRarity]++;
-        if (state.buffRarity > newRarity) return;
+        if (state.buffRarity > newRarity | oldRarity > newRarity) return;
         state.buffRarity = newRarity;
 
         stats.RemoveFlatModifier(new StatModifier { critDamage = GetEffectiveStat(state) });
@@ -115,8 +115,34 @@ public class CritDmgMod : ModuleEffect
     {
         float baseStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
         float effective = GetEffectiveStat(state);
-        if (effective != baseStat & state.isActive)
+        if (effective != baseStat && state.isActive)
             return $"<s>+{baseStat * 100f:F0}%</s> +{effective * 100f:F0}% Critical Damage";
         return $"+{baseStat * 100f:F0}% Critical Damage";
+    }
+
+    public override (float unbuffed, float buffed) GetBaseModuleStat(Rarity rarity, int level, ModuleRuntimeState state)
+        => BuildBaseModuleStat(baseStatPerRarity, levelMultiplier, rarity, level, state);
+
+    public override (string leftLabel, float before, float after, string format) GetStatPreview(
+        Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats)
+    {
+        float moduleStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        float effective = GetEffectiveStat(state);
+        string leftLabel = BuildLeftLabel(moduleStat, effective, state, "Crit Damage", true);
+
+        if (playerStats == null) return (leftLabel, -1f, -1f, "F0%");
+
+        float before, after;
+        if (state.isActive)
+        {
+            before = playerStats.CritDamage - effective;
+            after = playerStats.CritDamage;
+        }
+        else
+        {
+            before = playerStats.CritDamage;
+            after = playerStats.CritDamage + moduleStat;
+        }
+        return (leftLabel, before * 100f, after * 100f, "F0%");
     }
 }

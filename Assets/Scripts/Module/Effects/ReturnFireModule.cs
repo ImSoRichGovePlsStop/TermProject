@@ -21,11 +21,11 @@ public class ReturnFireModule : ModuleEffect
         var ctx = stats.GetComponent<PlayerCombatContext>();
 
         Action handler = () =>
-        {   
+        {
             if (ctx.LastAttacker == null || ctx.LastAttacker.IsDead) return;
 
             float returnDamage = stats.Damage * GetEffectiveStat(state);
-            
+
             ctx.LastAttacker.TakeDamage(returnDamage);
         };
 
@@ -70,7 +70,7 @@ public class ReturnFireModule : ModuleEffect
         state.baseRarity[(int)newRarity]++;
 
         if (!_stateMap.ContainsKey(state)) return;
-        if (state.buffRarity > newRarity) return;
+        if (state.buffRarity > newRarity | oldRarity > newRarity) return;
 
         state.buffRarity = newRarity;
         int effectiveLevel = state.buffedLevel > level ? state.buffedLevel : level;
@@ -100,17 +100,27 @@ public class ReturnFireModule : ModuleEffect
         state.totalBuffPercent -= percent;
     }
 
-    public override string GetDescription(Rarity rarity, int level, ModuleRuntimeState state)
+    public override string GetDescription(Rarity rarity, int level, ModuleRuntimeState state) => null;
+
+    public override string PassiveDescription => "Reflect a portion of your damage back to any attacker";
+    public override PassiveLayout GetPassiveLayout() => PassiveLayout.Single;
+
+    public override PassiveEntry[] GetPassiveEntries(Rarity rarity, int level, ModuleRuntimeState state)
     {
-        float basePct = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
-        float effectivePct = GetEffectiveStat(state);
-        bool boosted = state.isActive && effectivePct > basePct;
+        float baseStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        float effective = state.isActive ? GetEffectiveStat(state) : baseStat;
+        bool isBuffed = state.isActive && effective != baseStat;
 
-        if (boosted)
+        return new PassiveEntry[]
         {
-            return $"Return <s>{basePct * 100f:F0}%</s> {effectivePct * 100f:F0}% of your damage to any attacker";
-        }
-
-        return $"Return {basePct * 100f:F0}% of your damage to any attacker";
+            new PassiveEntry
+            {
+                value         = $"{effective * 100f:F0}%",
+                label         = "Return Damage",
+                sublabel      = "Conditional",
+                isBuffed      = isBuffed,
+                unbuffedValue = $"{baseStat * 100f:F0}%"
+            }
+        };
     }
 }
