@@ -53,7 +53,14 @@ public class BattleRoom : MonoBehaviour
         int killed = before - _activeEnemies.Count;
 
         for (int i = 0; i < killed; i++)
+        {
             RunManager.Instance?.OnEnemyKilled();
+            int baseCoins = Random.Range(10, 25);
+            int bonusCoins = ((RunManager.Instance?.CurrentFloor ?? 1) - 1) * 7;
+            Object.FindFirstObjectByType<CurrencyManager>()?.AddCoins(baseCoins + bonusCoins);
+
+        }
+
 
         if (_activeEnemies.Count == 0)
             StartCoroutine(OnWaveCleared());
@@ -108,7 +115,17 @@ public class BattleRoom : MonoBehaviour
             var prefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
             Vector2 circle = Random.insideUnitCircle.normalized * Random.Range(1f, spawnRadius);
             Vector3 pos = transform.position + new Vector3(circle.x, 0.5f, circle.y);
-            _activeEnemies.Add(Instantiate(prefab, pos, Quaternion.identity));
+            GameObject currentEnemy = Instantiate(prefab, pos, Quaternion.identity);
+            if ( currentEnemy.TryGetComponent<EntityStats>(out EntityStats entityStats)){
+                PlayerStats playerStats = FindFirstObjectByType<PlayerStats>();
+                StatScale scale = new StatScale();
+                scale.moveSpeed = Random.Range(0.9f, 1.1f);
+                scale.hp = 1f + (RunManager.Instance?.TotalRoomsCleared??0)*0.1f + (playerStats.BaseDamage) / (playerStats.Damage) * 0.15f;
+                scale.damage = 1f + (RunManager.Instance?.TotalBossKilled ?? 0) * 0.3f + (playerStats.MaxHealth) / (playerStats.BaseHealth) * 0.15f;
+                entityStats.SetStatScale(scale);
+            }
+            
+            _activeEnemies.Add(currentEnemy);
         }
     }
 
@@ -146,9 +163,7 @@ public class BattleRoom : MonoBehaviour
             randomLoot.Configure(floor, roomsCleared);
         }
 
-        int baseCoins = Random.Range(25, 75);
-        int bonusCoins = ((RunManager.Instance?.CurrentFloor ?? 1) - 1) * 25;
-        Object.FindFirstObjectByType<CurrencyManager>()?.AddCoins(baseCoins + bonusCoins);
+
 
         RunManager.Instance?.OnRoomCleared();
     }
