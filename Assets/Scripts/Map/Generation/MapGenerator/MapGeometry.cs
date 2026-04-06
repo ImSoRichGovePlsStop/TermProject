@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Unity.AI.Navigation;
 using UnityEngine;
 using UnityEngine.ProBuilder;
 using UnityEngine.ProBuilder.MeshOperations;
@@ -104,13 +103,11 @@ public class MapGeometry : MonoBehaviour
     public Material corridorMat;
     public Material wallMat;
 
-    [Header("Navigation")]
-    public NavMeshSurface navMeshSurface;
-
     public IReadOnlyList<MapNode> Nodes => _nodes;
     public IReadOnlyList<MapEdge> Edges => _edges;
     public byte[,] Matrix => _matrix;
     public int MatrixSize => matrixSize;
+
 
     public event Action<IReadOnlyList<MapNode>> OnMapReady;
 
@@ -149,11 +146,6 @@ public class MapGeometry : MonoBehaviour
 
         FindFirstObjectByType<MinimapManager>()
             ?.BuildMinimapFromMatrix(_matrix, matrixSize, ToLegacyRoomNodes());
-
-        if (navMeshSurface != null)
-            navMeshSurface.BuildNavMesh();
-        else
-            Debug.LogWarning("[MapGeometry] NavMeshSurface not assigned.");
 
         OnMapReady?.Invoke(_nodes);
     }
