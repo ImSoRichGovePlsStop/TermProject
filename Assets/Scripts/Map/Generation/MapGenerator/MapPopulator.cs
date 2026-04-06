@@ -103,10 +103,9 @@ public class MapPopulator : MonoBehaviour
         room.node = ToLegacy(node);
         room.lootPrefab = lootPrefab;
         room.boundaryMaterial = boundaryMaterial;
-        room.enemyCount = ScaleEnemyCount();
-        room.enemyPrefabs = FloorWeightedEnemyPool();
+        room.enemyPrefabs = normalEnemyPrefabs;
         room.SetRoomSize(vol);
-
+        room.enemyCount = ScaleEnemyCount(vol);
         AddTrigger(obj, vol);
         return obj;
     }
@@ -165,11 +164,18 @@ public class MapPopulator : MonoBehaviour
         var r = o.AddComponent<MergeRoom>(); r.node = ToLegacy(n); r.mergeStationPrefab = mergeStationPrefab; r.Init(p);
     }
 
-   
 
-    int ScaleEnemyCount() => Random.Range(1, 4) + (RunManager.Instance?.CurrentFloor ?? 1);
 
-    GameObject PickBoss()
+    int ScaleEnemyCount(Vector3 vol)
+    {
+        float scale = (((vol.x * vol.z) / 60f)-1)*0.7f + 1f;
+
+
+        
+        return (int)((Random.Range(3, 8) + (RunManager.Instance?.CurrentFloor ?? 1)) * scale + 2);
+    }
+
+        GameObject PickBoss()
     {
         if (bossPrefabs == null || bossPrefabs.Length == 0) return null;
         int idx = Mathf.Clamp((RunManager.Instance?.CurrentFloor ?? 1) - 1, 0, bossPrefabs.Length - 1);
