@@ -395,14 +395,14 @@ public class MapGeometry : MonoBehaviour
             var straight = TryStraight(a, b, preferTravelX);
             if (straight != null)
             {
-                Debug.Log($"[MapGeometry] {a.Type}↔{b.Type} — STRAIGHT ({(preferTravelX ? "X-axis" : "Z-axis")})  overlapX={overlapX:F2} overlapZ={overlapZ:F2}");
+                
                 return straight;
             }
 
             straight = TryStraight(a, b, !preferTravelX);
             if (straight != null)
             {
-                Debug.Log($"[MapGeometry] {a.Type}↔{b.Type} — STRAIGHT ({(!preferTravelX ? "X-axis" : "Z-axis")} fallback)  overlapX={overlapX:F2} overlapZ={overlapZ:F2}");
+                
                 return straight;
             }
         }
@@ -410,18 +410,18 @@ public class MapGeometry : MonoBehaviour
         var lShape = TryLShape(a, b);
         if (lShape != null)
         {
-            Debug.Log($"[MapGeometry] {a.Type}↔{b.Type} — L-SHAPE  overlapX={overlapX:F2} overlapZ={overlapZ:F2}");
+            
             return lShape;
         }
 
         var szShape = TrySZShape(a, b);
         if (szShape != null)
         {
-            Debug.Log($"[MapGeometry] {a.Type}↔{b.Type} — S/Z-SHAPE  overlapX={overlapX:F2} overlapZ={overlapZ:F2}");
+            
             return szShape;
         }
 
-        Debug.LogWarning($"[MapGeometry] {a.Type}↔{b.Type} — WAYPOINT FALLBACK  overlapX={overlapX:F2} overlapZ={overlapZ:F2}");
+        
         return WaypointFallback(a, b);
     }
 
