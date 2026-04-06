@@ -85,7 +85,7 @@ public class CheatDeathModule : ModuleEffect
     {
         state.baseRarity[(int)newRarity]++;
         if (!_stateMap.TryGetValue(state, out _)) return;
-        if (state.buffRarity > newRarity) return;
+        if (state.buffRarity > newRarity | oldRarity > newRarity) return;
 
         state.buffRarity = newRarity;
         int effectiveLevel = state.buffedLevel > level ? state.buffedLevel : level;
