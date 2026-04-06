@@ -214,6 +214,7 @@ MonoBehaviour:
   - {fileID: 2371149561134109772, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
   lootPrefab: {fileID: 7487802019810916615, guid: 99d47f9338280df4ca3e55aeb52a23d2, type: 3}
   boundaryMaterial: {fileID: 2100000, guid: b59bfbcef27325640a17d8406da59c7a, type: 2}
+  navMeshSurface: {fileID: 393293303}
   triggerHeight: 3
 --- !u!114 &393293305
 MonoBehaviour:
@@ -261,7 +262,6 @@ MonoBehaviour:
   floorThickness: -50
   corridorMat: {fileID: 2100000, guid: bc13fd34aabd1de4a8587dbfd164dc30, type: 2}
   wallMat: {fileID: 2100000, guid: 9cc3a09839bd23045a23680971b8c414, type: 2}
-  navMeshSurface: {fileID: 393293303}
 --- !u!1 &807351100
 GameObject:
   m_ObjectHideFlags: 0
