@@ -34,7 +34,7 @@ public class CheatDeathModule : ModuleEffect
 
         state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
         state.dmgTaken = GetFinalStat(invincibilityPerRarity, levelMultiplier, rarity, level);
-                
+
         var data = new StateData();
         data.DamageHandler = _ =>
         {
@@ -115,29 +115,40 @@ public class CheatDeathModule : ModuleEffect
         state.totalBuffPercent -= percent;
     }
 
-    public override string GetDescription(Rarity rarity, int level, ModuleRuntimeState state)
+    public override string GetDescription(Rarity rarity, int level, ModuleRuntimeState state) => null;
+
+    public override string PassiveDescription => "Survive a fatal blow once, then this module is consumed";
+    public override PassiveLayout GetPassiveLayout() => PassiveLayout.TwoEqual;
+
+    public override PassiveEntry[] GetPassiveEntries(Rarity rarity, int level, ModuleRuntimeState state)
     {
-        float baseHealPct = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
-        float baseInvincSec = GetFinalStat(invincibilityPerRarity, levelMultiplier, rarity, level);
-        float effectiveHeal = GetEffectiveStat(state);
-        float effectiveInvinc = state.dmgTaken;
+        float baseHeal = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        float effectiveHeal = state.isActive ? GetEffectiveStat(state) : baseHeal;
+        bool healBuffed = state.isActive && effectiveHeal != baseHeal;
 
-        bool healChanged = state.isActive && effectiveHeal != baseHealPct;
-        bool invincChanged = state.isActive && effectiveInvinc != baseInvincSec;
+        float baseInvinc = GetFinalStat(invincibilityPerRarity, levelMultiplier, rarity, level);
+        float effectiveInvinc = state.isActive ? state.dmgTaken : baseInvinc;
+        bool invincBuffed = state.isActive && effectiveInvinc != baseInvinc;
 
-        string healLine = healChanged
-            ? $"Heal <s>{baseHealPct * 100f:F0}%</s> {effectiveHeal * 100f:F0}% of max HP"
-            : $"Heal {baseHealPct * 100f:F0}% of max HP";
-
-        string invincLine = invincChanged
-            ? $"Invincible for <s>{baseInvincSec:F1}s</s> {effectiveInvinc:F1}s"
-            : $"Invincible for {baseInvincSec:F1}s";
-
-        return
-            $"Prevent one fatal hit\n" +
-            $"{healLine} upon lethal damage\n" +
-            $"{invincLine}\n" +
-            $"Consumed on trigger";
+        return new PassiveEntry[]
+        {
+            new PassiveEntry
+            {
+                value         = $"{effectiveHeal * 100f:F0}%",
+                label         = "Heal HP",
+                sublabel      = null,
+                isBuffed      = healBuffed,
+                unbuffedValue = $"{baseHeal * 100f:F0}%"
+            },
+            new PassiveEntry
+            {
+                value         = $"{effectiveInvinc:F1}s",
+                label         = "Invincibility",
+                sublabel      = null,
+                isBuffed      = invincBuffed,
+                unbuffedValue = $"{baseInvinc:F1}s"
+            }
+        };
     }
 
 

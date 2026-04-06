@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: Atk_3
   m_EditorClassIdentifier: Assembly-CSharp::ModuleData
   moduleName: Strength
+  description: 
   icon: {fileID: 0}
   moduleEffect: {fileID: 11400000, guid: 1039e766be7ea5e489c04e8a120135e6, type: 2}
   moduleColor: {r: 0.8679245, g: 0.099045314, b: 0.06959773, a: 1}
   cost: c80000002c01000090010000f401000058020000
   isBuffAdjacent: 0
+  buffDescription: 
   buffGrid:
   - cells: 0000000000
   - cells: 0000000000

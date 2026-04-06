@@ -53,7 +53,70 @@ public abstract class ModuleEffect : ScriptableObject
 
     public abstract string GetDescription(Rarity rarity, int level, ModuleRuntimeState state);
 
-    public virtual string GetLevelText( int level, ModuleRuntimeState state)
+    public virtual string[] BoldKeywords => System.Array.Empty<string>();
+
+    public virtual (float unbuffed, float buffed) GetBaseModuleStat(Rarity rarity, int level, ModuleRuntimeState state)
+    {
+        return (-1f, -1f);
+    }
+
+    protected (float unbuffed, float buffed) BuildBaseModuleStat(float[] baseStatPerRarity, float levelMultiplier, Rarity rarity, int level, ModuleRuntimeState state)
+    {
+        bool hasRarityBuff = state.buffRarity != 0 && state.buffRarity != rarity
+                             && System.Array.Exists(state.baseRarity, v => v > 0);
+        Rarity effectiveRarity = hasRarityBuff ? state.buffRarity : rarity;
+        int effectiveLevel = state.buffedLevel > 0 ? state.buffedLevel : level;
+        float unbuffed = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        float buffed = GetFinalStat(baseStatPerRarity, levelMultiplier, effectiveRarity, effectiveLevel)
+                       * (1f + state.totalBuffPercent);
+        return (unbuffed, buffed);
+    }
+    public virtual (string label, float baseStat, float effectiveStat, bool isPercent) GetStatLine(Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats = null)
+    {
+        return (null, 0f, 0f, false);
+    }
+
+    // Returns "+50% Damage" or buffed version "+60% Damage" depending on state
+    protected string BuildLeftLabel(float moduleStat, float effective, ModuleRuntimeState state, string statName, bool isPercent)
+    {
+        bool isBuffed = state.isActive && effective != moduleStat;
+        float displayStat = isBuffed ? effective : moduleStat;
+        return isPercent
+            ? $"+{displayStat * 100f:F0}% {statName}"
+            : $"+{displayStat:F0} {statName}";
+    }
+
+    // Returns unbuffed label string for strikethrough display
+    protected string BuildUnbuffedLabel(float moduleStat, string statName, bool isPercent)
+    {
+        return isPercent
+            ? $"+{moduleStat * 100f:F0}% {statName}"
+            : $"+{moduleStat:F0} {statName}";
+    }
+
+    // Returns: leftLabel (e.g. "+50% Damage"), playerStatBefore, playerStatAfter, formatString (e.g. "F1", "F0", "F0%")
+    public virtual (string leftLabel, float before, float after, string format) GetStatPreview(
+        Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats)
+    {
+        return (null, -1f, -1f, "F1");
+    }
+
+    public enum PassiveLayout { None, Single, TwoEqual, TwoNarrowWide }
+
+    public struct PassiveEntry
+    {
+        public string value;
+        public string label;
+        public string sublabel;
+        public bool isBuffed;
+        public string unbuffedValue;
+    }
+
+    public virtual string PassiveDescription => null;
+    public virtual PassiveLayout GetPassiveLayout() => PassiveLayout.None;
+    public virtual PassiveEntry[] GetPassiveEntries(Rarity rarity, int level, ModuleRuntimeState state) => null;
+
+    public virtual string GetLevelText(int level, ModuleRuntimeState state)
     {
         if (state.buffedLevel != 0 && state.buffedLevel != level)
             return $"<s>Lv.{level}</s> Lv.{state.buffedLevel}";

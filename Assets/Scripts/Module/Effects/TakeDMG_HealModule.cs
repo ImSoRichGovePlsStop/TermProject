@@ -187,36 +187,64 @@ public class TakeDMG_HealModule : ModuleEffect
     }
 
     public override string GetDescription(Rarity rarity, int level, ModuleRuntimeState state)
+        => $"Take more damage, but recover a portion of it over {cooldown}s";
+
+    public override string PassiveDescription => $"Recover a portion of damage taken over {cooldown}s";
+    public override PassiveLayout GetPassiveLayout() => PassiveLayout.Single;
+
+    public override (float unbuffed, float buffed) GetBaseModuleStat(Rarity rarity, int level, ModuleRuntimeState state)
     {
-        float basedamageTakenPct = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
-        float basehealPct = GetFinalStat(healStatPerRarity, levelMultiplier, rarity, level);
+        float unbuffed = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        bool hasRarityBuff = state.buffRarity != 0 && state.buffRarity != rarity
+                             && System.Array.Exists(state.baseRarity, v => v > 0);
+        Rarity effectiveRarity = hasRarityBuff ? state.buffRarity : rarity;
+        int effectiveLevel = state.buffedLevel > 0 ? state.buffedLevel : level;
+        float buffed = GetFinalStat(baseStatPerRarity, levelMultiplier, effectiveRarity, effectiveLevel);
+        return (unbuffed, buffed);
+    }
 
-        float effectivedamageTakenPct = state.dmgTaken;
-        float effectivehealPct = GetEffectiveStat(state);
+    public override (string leftLabel, float before, float after, string format) GetStatPreview(
+        Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats)
+    {
+        float moduleStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        float effective = state.isActive ? state.dmgTaken : moduleStat;
+        bool isBuffed = state.isActive && effective != moduleStat;
+        string leftLabel = isBuffed
+            ? $"+{effective * 100f:F0}% Damage Taken"
+            : $"+{moduleStat * 100f:F0}% Damage Taken";
 
-        bool dmgChanged = effectivedamageTakenPct != basedamageTakenPct;
-        bool healChanged = effectivehealPct != basehealPct;
+        if (playerStats == null) return (leftLabel, -1f, -1f, "F0%");
 
-        if (state.isActive && dmgChanged && healChanged)
+        float before, after;
+        if (state.isActive)
         {
-            return
-                $"+<s>{basedamageTakenPct * 100f:F0}%</s> {effectivedamageTakenPct * 100f:F0}% damage taken\n" +
-                $"Heal overtime <s>{basehealPct * 100f:F0}%</s> {effectivehealPct * 100f:F0}% of taken damage\n" +
-                $"Cooldown ({cooldown}s)";
-        }
-        else if (state.isActive && healChanged && !dmgChanged)
-        {
-            return
-                $"+{basedamageTakenPct * 100f:F0}% damage taken\n" +
-                $"Heal overtime <s>{basehealPct * 100f:F0}%</s> {effectivehealPct * 100f:F0}% of taken damage\n" +
-                $"Cooldown ({cooldown}s)";
+            before = (playerStats.DamageTaken - effective) * 100f;
+            after = playerStats.DamageTaken * 100f;
         }
         else
         {
-            return
-                $"+{basedamageTakenPct * 100f:F0}% damage taken\n" +
-                $"Heal overtime {basehealPct * 100f:F0}% of taken damage\n" +
-                $"Cooldown ({cooldown}s)";
+            before = playerStats.DamageTaken * 100f;
+            after = (playerStats.DamageTaken + moduleStat) * 100f;
         }
+        return (leftLabel, before, after, "F0%");
+    }
+
+    public override PassiveEntry[] GetPassiveEntries(Rarity rarity, int level, ModuleRuntimeState state)
+    {
+        float baseHeal = GetFinalStat(healStatPerRarity, levelMultiplier, rarity, level);
+        float effectiveHeal = state.isActive ? GetEffectiveStat(state) : baseHeal;
+        bool healBuffed = state.isActive && effectiveHeal != baseHeal;
+
+        return new PassiveEntry[]
+        {
+            new PassiveEntry
+            {
+                value         = $"{effectiveHeal * 100f:F0}%",
+                label         = "Heal of Damage",
+                sublabel      = "Conditional",
+                isBuffed      = healBuffed,
+                unbuffedValue = $"{baseHeal * 100f:F0}%"
+            }
+        };
     }
 }
