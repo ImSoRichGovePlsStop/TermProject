@@ -103,7 +103,7 @@ public class MapPopulator : MonoBehaviour
         room.node = ToLegacy(node);
         room.lootPrefab = lootPrefab;
         room.boundaryMaterial = boundaryMaterial;
-        room.enemyPrefabs = FloorWeightedEnemyPool();
+        room.enemyPrefabs = normalEnemyPrefabs;
         room.SetRoomSize(vol);
         room.enemyCount = ScaleEnemyCount(vol);
         AddTrigger(obj, vol);
