@@ -70,7 +70,7 @@ public class ReturnFireModule : ModuleEffect
         state.baseRarity[(int)newRarity]++;
 
         if (!_stateMap.ContainsKey(state)) return;
-        if (state.buffRarity > newRarity) return;
+        if (state.buffRarity > newRarity | oldRarity > newRarity) return;
 
         state.buffRarity = newRarity;
         int effectiveLevel = state.buffedLevel > level ? state.buffedLevel : level;

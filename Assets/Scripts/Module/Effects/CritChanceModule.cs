@@ -56,7 +56,7 @@ public class CritChanceModule : ModuleEffect
     public override void OnRarityBuffReceived(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
     {
         state.baseRarity[(int)newRarity]++;
-        if (state.buffRarity > newRarity) return;
+        if (state.buffRarity > newRarity | oldRarity > newRarity) return;
         state.buffRarity = newRarity;
 
         stats.RemoveFlatModifier(new StatModifier { critChance = GetEffectiveStat(state) });

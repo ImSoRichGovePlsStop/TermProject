@@ -122,7 +122,7 @@ public class ExpressShot : ModuleEffect
         state.baseRarity[(int)newRarity]++;
 
         if (!_stateMap.TryGetValue(state, out var data)) return;
-        if (state.buffRarity > newRarity) return;
+        if (state.buffRarity > newRarity | oldRarity > newRarity) return;
         state.buffRarity = newRarity;
         if (data.BuffReady)
             stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });

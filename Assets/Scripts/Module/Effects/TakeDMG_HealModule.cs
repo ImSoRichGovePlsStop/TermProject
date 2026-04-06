@@ -70,6 +70,8 @@ public class TakeDMG_HealModule : ModuleEffect
         if (!_stateMap.TryGetValue(state, out var data)) return;
         if (state.buffedLevel == 0) state.buffedLevel = baselevel;
         state.buffedLevel += levelBonus;
+
+        stats.RemoveMultiplierModifier(new StatModifier { damageTaken = state.dmgTaken - 1 });
         if (state.buffRarity > rarity)
         {
             state.dmgTaken = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
@@ -90,6 +92,7 @@ public class TakeDMG_HealModule : ModuleEffect
         state.buffedLevel -= levelBonus;
         if (!_stateMap.TryGetValue(state, out var data)) return;
         if (!state.isActive) return;
+
         stats.RemoveMultiplierModifier(new StatModifier { damageTaken = state.dmgTaken - 1 });
         if (state.buffRarity > rarity)
         {
@@ -110,8 +113,10 @@ public class TakeDMG_HealModule : ModuleEffect
         state.baseRarity[(int)newRarity]++;
 
         if (!_stateMap.TryGetValue(state, out var data)) return;
-        if (state.buffRarity > newRarity) return;
+        if (state.buffRarity > newRarity | oldRarity > newRarity) return;
         state.buffRarity = newRarity;
+
+        stats.RemoveMultiplierModifier(new StatModifier { damageTaken = state.dmgTaken - 1 });
         if (state.buffedLevel > level)
         {
             state.dmgTaken = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
