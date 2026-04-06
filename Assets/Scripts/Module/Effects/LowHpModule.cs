@@ -165,20 +165,40 @@ public class LowHpModule : ModuleEffect
             stats.AddMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
     }
 
-    public override string GetDescription(Rarity rarity, int level, ModuleRuntimeState state)
+    public override string GetDescription(Rarity rarity, int level, ModuleRuntimeState state) => null;
+
+    public override string PassiveDescription => "When you are low on health, you deal increased damage";
+    public override PassiveLayout GetPassiveLayout() => PassiveLayout.TwoEqual;
+
+    public override PassiveEntry[] GetPassiveEntries(Rarity rarity, int level, ModuleRuntimeState state)
     {
-        float baseStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
-        float effective = GetEffectiveStat(state);
         int index = Mathf.Clamp((int)rarity, 0, baseThresholdPerRarity.Length - 1);
-        float baseThreshold = baseThresholdPerRarity[index] * 100f;
-        float effectiveThreshold = state.currentThreshold * 100f;
+        float baseThreshold = baseThresholdPerRarity[index];
+        float effectiveThreshold = state.isActive ? state.currentThreshold : baseThreshold;
+        bool thresholdBuffed = state.isActive && effectiveThreshold != baseThreshold;
 
-        if (baseThreshold == effectiveThreshold && effective != baseStat && state.isActive)
-            return $"When below {baseThreshold:F0}% HP:\n<s>+{baseStat * 100f:F0}</s> +{effective * 100f:F0}% Damage";
+        float baseDmg = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        float effectiveDmg = state.isActive ? GetEffectiveStat(state) : baseDmg;
+        bool dmgBuffed = state.isActive && effectiveDmg != baseDmg;
 
-        if (baseThreshold != effectiveThreshold && effective != baseStat && state.isActive)
-            return $"When below <s>{baseThreshold:F0}%</s> {effectiveThreshold:F0}% HP:\n<s>+{baseStat * 100f:F0}</s> +{effective * 100f:F0}% Damage";
-
-        return $"When below {baseThreshold:F0}% HP: +{baseStat * 100f:F0}% Damage";
+        return new PassiveEntry[]
+        {
+            new PassiveEntry
+            {
+                value         = $"{effectiveThreshold * 100f:F0}%",
+                label         = "Threshold",
+                sublabel      = null,
+                isBuffed      = thresholdBuffed,
+                unbuffedValue = $"{baseThreshold * 100f:F0}%"
+            },
+            new PassiveEntry
+            {
+                value         = $"+{effectiveDmg * 100f:F0}%",
+                label         = "Damage",
+                sublabel      = "Conditional",
+                isBuffed      = dmgBuffed,
+                unbuffedValue = $"+{baseDmg * 100f:F0}%"
+            }
+        };
     }
 }

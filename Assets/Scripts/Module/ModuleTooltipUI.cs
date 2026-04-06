@@ -22,6 +22,13 @@ public class ModuleTooltipUI : MonoBehaviour
     private readonly List<(TextMeshProUGUI desc, TextMeshProUGUI value)> statRows
         = new List<(TextMeshProUGUI, TextMeshProUGUI)>();
 
+    private GameObject passiveContainer;
+    private readonly List<(TextMeshProUGUI value, TextMeshProUGUI label, TextMeshProUGUI sublabel)> passiveBoxes
+        = new List<(TextMeshProUGUI, TextMeshProUGUI, TextMeshProUGUI)>();
+    private List<(string normal, string expanded)> passiveBoxTexts
+        = new List<(string, string)>();
+    private GameObject statDivider;
+
     private GameObject detailPanel;
     private TextMeshProUGUI seeDetailsLabel;
     private GameObject buffGridContainer;
@@ -67,7 +74,7 @@ public class ModuleTooltipUI : MonoBehaviour
         bg.raycastTarget = false;
 
         var le = gameObject.AddComponent<LayoutElement>();
-        le.preferredWidth = 500f;
+        le.preferredWidth = 600f;
         le.flexibleWidth = 0f;
 
         var fitter = gameObject.AddComponent<ContentSizeFitter>();
@@ -92,11 +99,24 @@ public class ModuleTooltipUI : MonoBehaviour
         rarityText = CreateTMP(subRow, 22f, FontStyles.Normal, new Color(0.6f, 0.6f, 0.6f), TextAlignmentOptions.Left, flexibleWidth: 1f);
         costText = CreateTMP(subRow, 22f, FontStyles.Normal, Color.yellow, TextAlignmentOptions.Right, preferredWidth: 90f);
 
-        CreateDivider(gameObject);
+        statDivider = CreateDivider(gameObject);
 
-        var statSection = CreateSection("StatSection", new Color(0.05f, 0.05f, 0.05f, 1f), 20, 20, 14, 14);
+        var statSection = CreateSection("StatSection", new Color(0.05f, 0.05f, 0.05f, 1f), 20, 20, 16, 14);
         statContainer = statSection;
-        statSection.GetComponent<VerticalLayoutGroup>().spacing = 4;
+        statSection.GetComponent<VerticalLayoutGroup>().spacing = 12;
+
+        // Passive section (hidden by default)
+        passiveContainer = new GameObject("PassiveContainer", typeof(RectTransform));
+        passiveContainer.transform.SetParent(transform, false);
+        var passiveVlg = passiveContainer.AddComponent<VerticalLayoutGroup>();
+        passiveVlg.padding = new RectOffset(0, 0, 0, 0);
+        passiveVlg.spacing = 0;
+        passiveVlg.childControlWidth = true;
+        passiveVlg.childControlHeight = true;
+        passiveVlg.childForceExpandWidth = true;
+        passiveVlg.childForceExpandHeight = false;
+        passiveContainer.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        passiveContainer.SetActive(false);
     }
 
     private GameObject CreateSection(string name, Color bgColor, int padLeft, int padRight, int padTop, int padBot)
@@ -218,6 +238,11 @@ public class ModuleTooltipUI : MonoBehaviour
                 levelText.text = isTabExpanded ? levelTextExpanded : levelTextNormal;
             if (rarityTextNormal != null)
                 rarityText.text = isTabExpanded ? rarityTextExpanded : rarityTextNormal;
+            for (int i = 0; i < passiveBoxes.Count && i < passiveBoxTexts.Count; i++)
+            {
+                var (normal, expanded) = passiveBoxTexts[i];
+                passiveBoxes[i].value.text = isTabExpanded ? expanded : normal;
+            }
         }
     }
 
@@ -244,7 +269,7 @@ public class ModuleTooltipUI : MonoBehaviour
         {
             int displayBase = inst.Level;
             int displayBuffed = hasLevelBuff ? state.buffedLevel : inst.Level;
-            levelTextNormal = hasLevelBuff ? $"Lv.{displayBuffed} <color=#88FF88>\u25B2</color>" : $"Lv.{displayBase}";
+            levelTextNormal = hasLevelBuff ? $"Lv.{displayBuffed}<color=#88FF88>\u25B2</color>" : $"Lv.{displayBase}";
             levelTextExpanded = hasLevelBuff ? $"<color=#666666><s>Lv.{displayBase}</s></color> Lv.{displayBuffed}" : $"Lv.{displayBase}";
         }
         else
@@ -275,6 +300,7 @@ public class ModuleTooltipUI : MonoBehaviour
         costText.text = $"$ {(int)inst.GetCostAtLevel()}";
 
         PopulateStats(inst);
+        PopulatePassive(inst);
 
         bool isBuff = inst.Data.isBuffAdjacent;
         detailPanel.SetActive(isBuff);
@@ -316,6 +342,7 @@ public class ModuleTooltipUI : MonoBehaviour
         costText.text = inst.Cost > 0 ? $"$ {inst.Cost * inst.StackCount}" : "";
 
         ClearStatRows();
+        ClearPassive();
         detailPanel.SetActive(false);
         gameObject.SetActive(true);
     }
@@ -343,60 +370,69 @@ public class ModuleTooltipUI : MonoBehaviour
         statDescRef = null;
 
         var effect = inst.Data.moduleEffect;
-        if (effect == null) return;
+        bool hasContent = false;
 
-        // Description with bold keywords
-        if (!string.IsNullOrEmpty(inst.Data.description))
+        if (effect != null)
         {
-            string desc = inst.Data.description;
-            if (effect.BoldKeywords != null)
-                foreach (var kw in effect.BoldKeywords)
-                    desc = desc.Replace(kw, $"<b>{kw}</b>");
-            AddDescRow().text = desc;
+            // Description with bold keywords
+            if (!string.IsNullOrEmpty(inst.Data.description))
+            {
+                string desc = inst.Data.description;
+                if (effect.BoldKeywords != null)
+                    foreach (var kw in effect.BoldKeywords)
+                        desc = desc.Replace(kw, $"<b>{kw}</b>");
+                AddDescRow().text = desc;
+                hasContent = true;
+            }
+
+            var (leftLabel, before, after, format) = effect.GetStatPreview(inst.Rarity, inst.Level, inst.RuntimeState, playerStats);
+            if (leftLabel != null)
+            {
+                hasContent = true;
+                var row = AddStatRow();
+                statDescRef = row.desc;
+
+                // Build left side
+                var (unbuffedStat, buffedStat) = effect.GetBaseModuleStat(inst.Rarity, inst.Level, inst.RuntimeState);
+                bool hasAnyBuff = inst.RuntimeState.isActive && unbuffedStat >= 0f && buffedStat != unbuffedStat;
+                if (hasAnyBuff)
+                {
+                    var (unbuffedLabel, _, _, _) = effect.GetStatPreview(inst.Rarity, inst.Level, new ModuleRuntimeState(), playerStats);
+                    int spaceIdx = unbuffedLabel.IndexOf(' ');
+                    string unbuffedNum = spaceIdx >= 0 ? unbuffedLabel.Substring(0, spaceIdx) : unbuffedLabel;
+                    string buffedNum = spaceIdx >= 0 ? leftLabel.Substring(0, leftLabel.IndexOf(' ')) : leftLabel;
+                    string statName = spaceIdx >= 0 ? leftLabel.Substring(leftLabel.IndexOf(' ') + 1) : "";
+                    string arrow = buffedStat > unbuffedStat
+                        ? "<color=#88FF88>\u25B2</color>"
+                        : "<color=#FF4444>\u25BC</color>";
+                    statDescNormal = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> {buffedNum} {arrow} {statName}";
+                    statDescExpanded = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> <color=#666666><s>{unbuffedNum}</s></color> {buffedNum} {statName}";
+                    row.desc.text = statDescNormal;
+                }
+                else
+                {
+                    row.desc.text = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> {leftLabel}";
+                }
+
+                // Right side — only show if values are valid
+                if (before >= 0f && after >= 0f)
+                {
+                    bool isPercentFormat = format.EndsWith("%");
+                    string fmt = format.Replace("%", "");
+                    string beforeStr = isPercentFormat ? $"{before.ToString(fmt)}%" : before.ToString(fmt);
+                    string afterStr = isPercentFormat ? $"{after.ToString(fmt)}%" : after.ToString(fmt);
+                    row.value.text = $"<color=#888888>{beforeStr} <voffset=0.05em>\u2192</voffset></color> {afterStr}";
+                }
+                else
+                {
+                    row.value.text = "";
+                }
+            }
         }
 
-        var (leftLabel, before, after, format) = effect.GetTooltipStats(inst.Rarity, inst.Level, inst.RuntimeState, playerStats);
-        if (leftLabel == null) return;
-
-        var row = AddStatRow();
-        statDescRef = row.desc;
-
-        // Build left side (with buff indicator if needed)
-        var (unbuffedStat, buffedStat) = effect.GetBaseModuleStat(inst.Rarity, inst.Level, inst.RuntimeState);
-        bool hasAnyBuff = inst.RuntimeState.isActive && unbuffedStat >= 0f && buffedStat != unbuffedStat;
-        if (hasAnyBuff)
-        {
-            var (unbuffedLabel, _, _, _) = effect.GetTooltipStats(inst.Rarity, inst.Level, new ModuleRuntimeState(), playerStats);
-            // strip the stat label from unbuffedLabel to get just the number part e.g. "+50%" from "+50% Damage"
-            int spaceIdx = unbuffedLabel.IndexOf(' ');
-            string unbuffedNum = spaceIdx >= 0 ? unbuffedLabel.Substring(0, spaceIdx) : unbuffedLabel;
-            string buffedNum = spaceIdx >= 0 ? leftLabel.Substring(0, leftLabel.IndexOf(' ')) : leftLabel;
-            string statName = spaceIdx >= 0 ? leftLabel.Substring(leftLabel.IndexOf(' ') + 1) : "";
-            string arrow = buffedStat > unbuffedStat
-                ? "<color=#88FF88>\u25B2</color>"
-                : "<color=#FF4444>\u25BC</color>";
-            statDescNormal = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> {leftLabel} {arrow}";
-            statDescExpanded = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> <color=#666666><s>{unbuffedNum}</s></color> {buffedNum} {statName}";
-            row.desc.text = statDescNormal;
-        }
-        else
-        {
-            row.desc.text = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> {leftLabel}";
-        }
-
-        // Build right side
-        if (before < 0f || after < 0f)
-        {
-            row.value.text = "";
-        }
-        else
-        {
-            bool isPercentFormat = format.EndsWith("%");
-            string fmt = format.Replace("%", "");
-            string beforeStr = isPercentFormat ? $"{before.ToString(fmt)}%" : before.ToString(fmt);
-            string afterStr = isPercentFormat ? $"{after.ToString(fmt)}%" : after.ToString(fmt);
-            row.value.text = $"<color=#888888>{beforeStr} \U0001F862</color> {afterStr}";
-        }
+        // Show/hide stat section and its divider
+        statContainer.SetActive(hasContent);
+        statDivider.SetActive(hasContent);
     }
 
     private void BuildBuffGrid(ModuleInstance inst)
@@ -546,7 +582,7 @@ public class ModuleTooltipUI : MonoBehaviour
     {
         var rowGo = CreateHorizontalRow("StatRow", 8f, statContainer);
         var hl = rowGo.GetComponent<HorizontalLayoutGroup>();
-        hl.childControlHeight = false;
+        hl.childControlHeight = true;
         var desc = CreateTMP(rowGo, 24f, FontStyles.Normal, new Color(0.85f, 0.85f, 0.85f), TextAlignmentOptions.Left, flexibleWidth: 1f);
         var val = CreateTMP(rowGo, 24f, FontStyles.Normal, new Color(1f, 0.9f, 0.4f), TextAlignmentOptions.Right, preferredWidth: 140f);
         val.richText = true;
@@ -560,6 +596,187 @@ public class ModuleTooltipUI : MonoBehaviour
         foreach (Transform child in statContainer.transform)
             Destroy(child.gameObject);
         statRows.Clear();
+    }
+
+    private void ClearPassive()
+    {
+        foreach (Transform child in passiveContainer.transform)
+            Destroy(child.gameObject);
+        passiveBoxes.Clear();
+        passiveBoxTexts.Clear();
+        passiveContainer.SetActive(false);
+    }
+
+    private void PopulatePassive(ModuleInstance inst)
+    {
+        ClearPassive();
+
+        var effect = inst.Data.moduleEffect;
+        if (effect == null) return;
+
+        var layout = effect.GetPassiveLayout();
+        if (layout == ModuleEffect.PassiveLayout.None) return;
+
+        var entries = effect.GetPassiveEntries(inst.Rarity, inst.Level, inst.RuntimeState);
+        if (entries == null || entries.Length == 0) return;
+
+        passiveContainer.SetActive(true);
+
+        // Divider
+        CreateDivider(passiveContainer);
+
+        // "Passive" label — own bg color
+        var passiveLabelSection = new GameObject("PassiveLabelSection", typeof(RectTransform));
+        passiveLabelSection.transform.SetParent(passiveContainer.transform, false);
+        var plsImg = passiveLabelSection.AddComponent<Image>();
+        plsImg.color = new Color(0.1f, 0.1f, 0.18f, 1f);
+        plsImg.raycastTarget = false;
+        var plsVlg = passiveLabelSection.AddComponent<VerticalLayoutGroup>();
+        plsVlg.padding = new RectOffset(20, 20, 8, 8);
+        plsVlg.childControlWidth = true;
+        plsVlg.childControlHeight = true;
+        plsVlg.childForceExpandWidth = true;
+        plsVlg.childForceExpandHeight = false;
+        passiveLabelSection.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        var passiveLabelGo = new GameObject("PassiveLabel", typeof(RectTransform));
+        passiveLabelGo.transform.SetParent(passiveLabelSection.transform, false);
+        var passiveLabelTmp = passiveLabelGo.AddComponent<TextMeshProUGUI>();
+        passiveLabelTmp.text = "Passive";
+        passiveLabelTmp.fontSize = 20f;
+        passiveLabelTmp.fontStyle = FontStyles.Italic;
+        passiveLabelTmp.color = new Color(0.7f, 0.7f, 1f);
+        passiveLabelTmp.alignment = TextAlignmentOptions.Left;
+        passiveLabelTmp.raycastTarget = false;
+
+        // Passive description + boxes — same bg
+        var bodySection = new GameObject("PassiveBodySection", typeof(RectTransform));
+        bodySection.transform.SetParent(passiveContainer.transform, false);
+        var bodyImg = bodySection.AddComponent<Image>();
+        bodyImg.color = new Color(0.07f, 0.07f, 0.1f, 1f);
+        bodyImg.raycastTarget = false;
+        var bodyVlg = bodySection.AddComponent<VerticalLayoutGroup>();
+        bodyVlg.padding = new RectOffset(20, 20, 10, 12);
+        bodyVlg.spacing = 10;
+        bodyVlg.childControlWidth = true;
+        bodyVlg.childControlHeight = true;
+        bodyVlg.childForceExpandWidth = true;
+        bodyVlg.childForceExpandHeight = false;
+        bodySection.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        // Passive description
+        string passiveDesc = effect.PassiveDescription;
+        if (!string.IsNullOrEmpty(passiveDesc))
+        {
+            var descGo = new GameObject("PassiveDesc", typeof(RectTransform));
+            descGo.transform.SetParent(bodySection.transform, false);
+            var descTmp = descGo.AddComponent<TextMeshProUGUI>();
+            descTmp.text = passiveDesc;
+            descTmp.fontSize = 20f;
+            descTmp.fontStyle = FontStyles.Normal;
+            descTmp.color = new Color(0.75f, 0.75f, 0.75f);
+            descTmp.alignment = TextAlignmentOptions.Left;
+            descTmp.raycastTarget = false;
+            descTmp.textWrappingMode = TextWrappingModes.Normal;
+            descGo.AddComponent<LayoutElement>().flexibleWidth = 1f;
+        }
+
+        // Box row
+        var boxSection = new GameObject("BoxSection", typeof(RectTransform));
+        boxSection.transform.SetParent(bodySection.transform, false);
+        var boxHlg = boxSection.AddComponent<HorizontalLayoutGroup>();
+        boxHlg.padding = new RectOffset(0, 0, 0, 0);
+        boxHlg.spacing = 8;
+        boxHlg.childControlWidth = true;
+        boxHlg.childControlHeight = true;
+        boxHlg.childForceExpandWidth = true;  // maintain ratio regardless of content
+        boxHlg.childForceExpandHeight = true;  // equal height
+        boxSection.AddComponent<LayoutElement>().flexibleWidth = 1f;
+        boxSection.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        float[] weights = layout switch
+        {
+            ModuleEffect.PassiveLayout.Single => new[] { 1f },
+            ModuleEffect.PassiveLayout.TwoEqual => new[] { 1f, 1f },
+            ModuleEffect.PassiveLayout.TwoNarrowWide => new[] { 0.5f, 1f },
+            _ => new[] { 1f }
+        };
+
+        for (int i = 0; i < entries.Length && i < weights.Length; i++)
+        {
+            var entry = entries[i];
+            var (valueTmp, labelTmp, sublabelTmp) = CreatePassiveBox(boxSection, weights[i]);
+
+            // Build value text (normal / expanded)
+            string arrow = entry.isBuffed ? "<color=#88FF88>\u25B2</color>" : "";
+            string normalText = $"{entry.value}{arrow}";
+            string expandedText = entry.isBuffed
+                ? $"<color=#666666><s>{entry.unbuffedValue}</s></color> {entry.value}"
+                : entry.value;
+
+            valueTmp.text = normalText;
+            labelTmp.text = entry.label;
+            sublabelTmp.text = entry.sublabel ?? "";
+            sublabelTmp.gameObject.SetActive(!string.IsNullOrEmpty(entry.sublabel));
+
+            passiveBoxes.Add((valueTmp, labelTmp, sublabelTmp));
+            passiveBoxTexts.Add((normalText, expandedText));
+        }
+    }
+
+    private (TextMeshProUGUI value, TextMeshProUGUI label, TextMeshProUGUI sublabel) CreatePassiveBox(GameObject parent, float flexWeight)
+    {
+        var box = new GameObject("PassiveBox", typeof(RectTransform));
+        box.transform.SetParent(parent.transform, false);
+
+        var boxImg = box.AddComponent<Image>();
+        boxImg.color = new Color(0.12f, 0.12f, 0.15f, 1f);
+        boxImg.raycastTarget = false;
+
+        var le = box.AddComponent<LayoutElement>();
+        le.preferredWidth = 0f;
+        le.flexibleWidth = flexWeight;
+
+        var vlg = box.AddComponent<VerticalLayoutGroup>();
+        vlg.padding = new RectOffset(10, 10, 10, 10);
+        vlg.spacing = 2;
+        vlg.childControlWidth = true;
+        vlg.childControlHeight = true;
+        vlg.childForceExpandWidth = true;
+        vlg.childForceExpandHeight = false;
+        vlg.childAlignment = TextAnchor.MiddleCenter;
+        // No ContentSizeFitter — height controlled by parent's childForceExpandHeight
+
+        var valueGo = new GameObject("Value", typeof(RectTransform));
+        valueGo.transform.SetParent(box.transform, false);
+        var valueTmp = valueGo.AddComponent<TextMeshProUGUI>();
+        valueTmp.fontSize = 26f;
+        valueTmp.fontStyle = FontStyles.Bold;
+        valueTmp.color = Color.white;
+        valueTmp.alignment = TextAlignmentOptions.Center;
+        valueTmp.raycastTarget = false;
+        valueTmp.richText = true;
+        valueTmp.overflowMode = TextOverflowModes.Ellipsis;
+
+        var labelGo = new GameObject("Label", typeof(RectTransform));
+        labelGo.transform.SetParent(box.transform, false);
+        var labelTmp = labelGo.AddComponent<TextMeshProUGUI>();
+        labelTmp.fontSize = 18f;
+        labelTmp.fontStyle = FontStyles.Normal;
+        labelTmp.color = new Color(0.7f, 0.7f, 0.7f);
+        labelTmp.alignment = TextAlignmentOptions.Center;
+        labelTmp.raycastTarget = false;
+
+        var sublabelGo = new GameObject("Sublabel", typeof(RectTransform));
+        sublabelGo.transform.SetParent(box.transform, false);
+        var sublabelTmp = sublabelGo.AddComponent<TextMeshProUGUI>();
+        sublabelTmp.fontSize = 16f;
+        sublabelTmp.fontStyle = FontStyles.Italic;
+        sublabelTmp.color = new Color(0.5f, 0.5f, 0.5f);
+        sublabelTmp.alignment = TextAlignmentOptions.Center;
+        sublabelTmp.raycastTarget = false;
+
+        return (valueTmp, labelTmp, sublabelTmp);
     }
 
     private GameObject CreateHorizontalRow(string name, float spacing, GameObject parent = null)
@@ -578,7 +795,7 @@ public class ModuleTooltipUI : MonoBehaviour
         return go;
     }
 
-    private void CreateDivider(GameObject parent)
+    private GameObject CreateDivider(GameObject parent)
     {
         var go = new GameObject("Divider", typeof(RectTransform), typeof(Image));
         go.transform.SetParent(parent.transform, false);
@@ -591,6 +808,8 @@ public class ModuleTooltipUI : MonoBehaviour
         le.minHeight = 2f;
         le.preferredHeight = 2f;
         le.flexibleWidth = 1f;
+
+        return go;
     }
 
     private TextMeshProUGUI CreateTMP(GameObject parent, float fontSize, FontStyles style,

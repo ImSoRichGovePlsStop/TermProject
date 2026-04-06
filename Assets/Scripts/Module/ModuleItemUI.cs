@@ -37,6 +37,7 @@ public class ModuleItemUI : MonoBehaviour,
     private Vector2Int _clickedCell;
     private int _dragRotation;
     private bool _isDragging;
+    public static bool AnyDragging { get; private set; }
 
     [SerializeField] private bool allowSell = false;
 
@@ -333,6 +334,8 @@ public class ModuleItemUI : MonoBehaviour,
         _originRotation = Instance.Rotation;
         _dragRotation = Instance.Rotation;
         _isDragging = true;
+        AnyDragging = true;
+        ModuleTooltipUI.Instance?.Hide();
         _clickedCell = GetClickedLocalCell(e);
 
         _rt.SetParent(_canvas.transform, worldPositionStays: true);
@@ -365,6 +368,7 @@ public class ModuleItemUI : MonoBehaviour,
     public void OnEndDrag(PointerEventData e)
     {
         _isDragging = false;
+        AnyDragging = false;
         _cg.alpha = 1f;
         _cg.blocksRaycasts = true;
         ModuleItemUI.IsDragging = false;
@@ -462,6 +466,8 @@ public class ModuleItemUI : MonoBehaviour,
 
     public void OnPointerEnter(PointerEventData e)
     {
+        if (AnyDragging) return;
+
         if (ShopTooltipUI != null)
         {
             int price = Instance.Data.cost[(int)Instance.Rarity];
@@ -475,6 +481,7 @@ public class ModuleItemUI : MonoBehaviour,
 
     public void OnPointerExit(PointerEventData e)
     {
+        if (AnyDragging) return;
         if (ShopTooltipUI != null) ShopTooltipUI.Hide();
         else ModuleTooltipUI.Instance.Hide();
     }

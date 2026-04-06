@@ -95,11 +95,26 @@ public abstract class ModuleEffect : ScriptableObject
     }
 
     // Returns: leftLabel (e.g. "+50% Damage"), playerStatBefore, playerStatAfter, formatString (e.g. "F1", "F0", "F0%")
-    public virtual (string leftLabel, float before, float after, string format) GetTooltipStats(
+    public virtual (string leftLabel, float before, float after, string format) GetStatPreview(
         Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats)
     {
         return (null, -1f, -1f, "F1");
     }
+
+    public enum PassiveLayout { None, Single, TwoEqual, TwoNarrowWide }
+
+    public struct PassiveEntry
+    {
+        public string value;
+        public string label;
+        public string sublabel;
+        public bool isBuffed;
+        public string unbuffedValue;
+    }
+
+    public virtual string PassiveDescription => null;
+    public virtual PassiveLayout GetPassiveLayout() => PassiveLayout.None;
+    public virtual PassiveEntry[] GetPassiveEntries(Rarity rarity, int level, ModuleRuntimeState state) => null;
 
     public virtual string GetLevelText(int level, ModuleRuntimeState state)
     {

@@ -124,7 +124,7 @@ public class SpeedModule : ModuleEffect
     public override (float unbuffed, float buffed) GetBaseModuleStat(Rarity rarity, int level, ModuleRuntimeState state)
         => BuildBaseModuleStat(baseStatPerRarity, levelMultiplier, rarity, level, state);
 
-    public override (string leftLabel, float before, float after, string format) GetTooltipStats(
+    public override (string leftLabel, float before, float after, string format) GetStatPreview(
         Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats)
     {
         float moduleStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
