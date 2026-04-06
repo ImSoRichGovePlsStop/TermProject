@@ -240,10 +240,12 @@ public class ModuleTooltipUI : MonoBehaviour
         nameText.text = inst.Data.moduleName;
         nameText.color = RarityColor(inst.Rarity);
         bool hasLevelBuff = state.buffedLevel != 0 && state.buffedLevel != inst.Level;
-        if (inst.Level > 0)
+        if (inst.Level > 0 || hasLevelBuff)
         {
-            levelTextNormal = hasLevelBuff ? $"Lv.{state.buffedLevel} <color=#88FF88>\u25B2</color>" : $"Lv.{inst.Level}";
-            levelTextExpanded = hasLevelBuff ? $"<color=#666666><s>Lv.{inst.Level}</s></color> Lv.{state.buffedLevel}" : $"Lv.{inst.Level}";
+            int displayBase = inst.Level;
+            int displayBuffed = hasLevelBuff ? state.buffedLevel : inst.Level;
+            levelTextNormal = hasLevelBuff ? $"Lv.{displayBuffed} <color=#88FF88>\u25B2</color>" : $"Lv.{displayBase}";
+            levelTextExpanded = hasLevelBuff ? $"<color=#666666><s>Lv.{displayBase}</s></color> Lv.{displayBuffed}" : $"Lv.{displayBase}";
         }
         else
         {
@@ -251,7 +253,7 @@ public class ModuleTooltipUI : MonoBehaviour
             levelTextExpanded = "";
         }
         levelText.text = levelTextNormal;
-        // Rarity buff indicator — check baseRarity array to confirm buff is still active
+        // Rarity buff indicator ? check baseRarity array to confirm buff is still active
         bool hasRarityBuff = effect != null
             && state.buffRarity != 0
             && state.buffRarity != inst.Rarity
@@ -363,7 +365,7 @@ public class ModuleTooltipUI : MonoBehaviour
         {
             if (before < 0f)
             {
-                // label only — no numeric value at all
+                // label only ? no numeric value at all
                 row.desc.text = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> {label}";
                 row.value.text = "";
             }
@@ -382,18 +384,19 @@ public class ModuleTooltipUI : MonoBehaviour
             string beforeStr = isPercent ? $"{before * 100f:F0}%" : $"{before:F0}";
             string afterStr = isPercent ? $"{after * 100f:F0}%" : $"{after:F0}";
 
-            // Check if buffed — totalBuffPercent > 0 or buffedLevel != 0
-            bool hasBuff = inst.RuntimeState.isActive
-                && inst.RuntimeState.totalBuffPercent != 0f;
+            // Check if buffed ? totalBuffPercent > 0 or buffedLevel != 0
 
-            if (hasBuff)
+            var (unbuffedStat, buffedStat) = effect.GetBaseModuleStat(inst.Rarity, inst.Level, inst.RuntimeState);
+            bool hasAnyBuff = inst.RuntimeState.isActive && unbuffedStat >= 0f && buffedStat != unbuffedStat;
+            if (hasAnyBuff)
             {
-                // base = stat without buff
-                float baseMod = after - before - (moduleStat * inst.RuntimeState.totalBuffPercent);
-                string baseModStr = isPercent ? $"+{(moduleStat / (1f + inst.RuntimeState.totalBuffPercent)) * 100f:F0}%" : $"+{(moduleStat / (1f + inst.RuntimeState.totalBuffPercent)):F0}";
-                statDescNormal = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> {moduleStr} <color=#88FF88>\u25B2</color> {label}";
-                statDescExpanded = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> <color=#666666><s>{baseModStr}</s></color> {moduleStr} {label}";
-                row.desc.text = statDescNormal;  // already has prefix
+                string unbuffedStr = isPercent ? $"+{unbuffedStat * 100f:F0}%" : $"+{unbuffedStat:F0}";
+                string arrow = buffedStat > unbuffedStat
+                    ? "<color=#88FF88>\u25B2</color>"
+                    : "<color=#FF4444>\u25BC</color>";
+                statDescNormal = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> {moduleStr} {arrow} {label}";
+                statDescExpanded = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> <color=#666666><s>{unbuffedStr}</s></color> {moduleStr} {label}";
+                row.desc.text = statDescNormal;
             }
             else
             {

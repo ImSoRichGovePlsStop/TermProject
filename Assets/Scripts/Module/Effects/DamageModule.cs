@@ -112,6 +112,17 @@ public class DamageModule : ModuleEffect
         stats.AddMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
     }
 
+    public override (float unbuffed, float buffed) GetBaseModuleStat(Rarity rarity, int level, ModuleRuntimeState state)
+    {
+        bool hasRarityBuff = state.buffRarity != 0 && state.buffRarity != rarity
+                             && System.Array.Exists(state.baseRarity, v => v > 0);
+        Rarity effectiveRarity = hasRarityBuff ? state.buffRarity : rarity;
+        int effectiveLevel = state.buffedLevel > 0 ? state.buffedLevel : level;
+        float unbuffed = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        float buffed = GetFinalStat(baseStatPerRarity, levelMultiplier, effectiveRarity, effectiveLevel)
+                         * (1f + state.totalBuffPercent);
+        return (unbuffed, buffed);
+    }
     public override string[] BoldKeywords => new[] { "damage", "Damage" };
 
     public override string GetDescription(Rarity rarity, int level, ModuleRuntimeState state)

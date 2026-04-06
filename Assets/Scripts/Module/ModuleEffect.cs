@@ -55,6 +55,10 @@ public abstract class ModuleEffect : ScriptableObject
 
     public virtual string[] BoldKeywords => System.Array.Empty<string>();
 
+    public virtual (float unbuffed, float buffed) GetBaseModuleStat(Rarity rarity, int level, ModuleRuntimeState state)
+    {
+        return (-1f, -1f);
+    }
     public virtual (string label, float baseStat, float effectiveStat, bool isPercent) GetStatLine(Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats = null)
     {
         return (null, 0f, 0f, false);
