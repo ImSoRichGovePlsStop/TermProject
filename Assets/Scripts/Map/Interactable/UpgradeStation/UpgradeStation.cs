@@ -1,21 +1,40 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class UpgradeStation : MonoBehaviour, IInteractable
 {
-    private UIManager _uiManager;
+    protected UIManager _uiManager;
 
 
-    public string GetPromptText() => "[ E ]  Upgrade Your Modules";
+    public virtual string GetPromptText() => "[ E ]  Upgrade Your Modules";
 
     private void Start()
     {
         _uiManager = FindFirstObjectByType<UIManager>();
     }
 
-    public void Interact(PlayerController playerController)
+    public virtual void Interact(PlayerController playerController)
     {
-        if (_uiManager == null) { Debug.LogError("[UpgradeStation] UIManager not found!"); return; }
-        _uiManager.OpenUpgrade(this);
+        var mgr = InventoryManager.Instance;
+        var candidates = new List<ModuleInstance>();
+
+        foreach (var inst in mgr.WeaponGrid.GetAllModules())
+        {
+            candidates.Add(inst);
+        }
+
+        foreach (var inst in mgr.BagGrid.GetAllModules())
+        {
+            if (inst is MaterialInstance) continue;
+            candidates.Add(inst);
+        }
+
+        if (candidates.Count > 0)
+        {
+            if (_uiManager == null) { Debug.LogError("[UpgradeStation] UIManager not found!"); return; }
+            _uiManager.OpenUpgrade(this);
+            Destroy(gameObject);
+        }
 
     }
 }
