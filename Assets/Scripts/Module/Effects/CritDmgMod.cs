@@ -115,8 +115,31 @@ public class CritDmgMod : ModuleEffect
     {
         float baseStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
         float effective = GetEffectiveStat(state);
-        if (effective != baseStat & state.isActive)
+        if (effective != baseStat && state.isActive)
             return $"<s>+{baseStat * 100f:F0}%</s> +{effective * 100f:F0}% Critical Damage";
         return $"+{baseStat * 100f:F0}% Critical Damage";
+    }
+
+    public override (string leftLabel, float before, float after, string format) GetTooltipStats(
+        Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats)
+    {
+        float moduleStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        float effective = GetEffectiveStat(state);
+        string leftLabel = $"+{moduleStat * 100f:F0}% Crit Damage";
+
+        if (playerStats == null) return (leftLabel, -1f, -1f, "F0%");
+
+        float before, after;
+        if (state.isActive)
+        {
+            before = playerStats.CritDamage - effective;
+            after = playerStats.CritDamage;
+        }
+        else
+        {
+            before = playerStats.CritDamage;
+            after = playerStats.CritDamage + moduleStat;
+        }
+        return (leftLabel, before * 100f, after * 100f, "F0%");
     }
 }

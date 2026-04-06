@@ -115,8 +115,31 @@ public class CritChanceModule : ModuleEffect
     {
         float baseStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
         float effective = GetEffectiveStat(state);
-        if (effective != baseStat & state.isActive)
+        if (effective != baseStat && state.isActive)
             return $"<s>+{baseStat * 100f:F0}%</s> +{effective * 100f:F0}% Crit Chance";
         return $"+{baseStat * 100f:F0}% Crit Chance";
+    }
+
+    public override (string leftLabel, float before, float after, string format) GetTooltipStats(
+        Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats)
+    {
+        float moduleStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        float effective = GetEffectiveStat(state);
+        string leftLabel = $"+{moduleStat * 100f:F0}% Crit Chance";
+
+        if (playerStats == null) return (leftLabel, -1f, -1f, "F0%");
+
+        float before, after;
+        if (state.isActive)
+        {
+            before = playerStats.CritChance - effective;
+            after = playerStats.CritChance;
+        }
+        else
+        {
+            before = playerStats.CritChance;
+            after = playerStats.CritChance + moduleStat;
+        }
+        return (leftLabel, before * 100f, after * 100f, "F0%");
     }
 }

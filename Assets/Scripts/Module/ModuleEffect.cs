@@ -59,9 +59,12 @@ public abstract class ModuleEffect : ScriptableObject
     {
         return (-1f, -1f);
     }
-    public virtual (string label, float baseStat, float effectiveStat, bool isPercent) GetStatLine(Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats = null)
+
+    // Returns: leftLabel (e.g. "+50% Damage"), playerStatBefore, playerStatAfter, formatString (e.g. "F1", "F0", "F0%")
+    public virtual (string leftLabel, float before, float after, string format) GetTooltipStats(
+        Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats)
     {
-        return (null, 0f, 0f, false);
+        return (null, -1f, -1f, "F1");
     }
 
     public virtual string GetLevelText(int level, ModuleRuntimeState state)

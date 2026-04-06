@@ -1,10 +1,10 @@
- using UnityEngine;
+using UnityEngine;
 
 [CreateAssetMenu(menuName = "Module Effect/AttackSpeed")]
-public class AttackSpeedModule: ModuleEffect
+public class AttackSpeedModule : ModuleEffect
 {
     [Header("Stat per Rarity (Uncommon -> Legendary)")]
-    public float[] baseStatPerRarity = { 0f, 0f, 0f, 0f ,0f};
+    public float[] baseStatPerRarity = { 0f, 0f, 0f, 0f, 0f };
     public float levelMultiplier;
 
     protected override void OnEquip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state)
@@ -118,9 +118,31 @@ public class AttackSpeedModule: ModuleEffect
     {
         float baseStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
         float effective = GetEffectiveStat(state);
-        if (effective != baseStat & state.isActive)
+        if (effective != baseStat && state.isActive)
             return $"<s>+{baseStat * 100f:F0}%</s> +{effective * 100f:F0}% Attack Speed";
         return $"+{baseStat * 100f:F0}% Attack speed";
     }
 
+    public override (string leftLabel, float before, float after, string format) GetTooltipStats(
+        Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats)
+    {
+        float moduleStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        float effective = GetEffectiveStat(state);
+        string leftLabel = $"+{moduleStat * 100f:F0}% Attack Speed";
+
+        if (playerStats == null) return (leftLabel, -1f, -1f, "F0%");
+
+        float before, after;
+        if (state.isActive)
+        {
+            before = playerStats.AttackSpeed - effective;
+            after = playerStats.AttackSpeed;
+        }
+        else
+        {
+            before = playerStats.AttackSpeed;
+            after = playerStats.AttackSpeed + moduleStat;
+        }
+        return (leftLabel, before * 100f, after * 100f, "F0%");
+    }
 }

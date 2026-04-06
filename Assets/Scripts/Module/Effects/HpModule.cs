@@ -117,9 +117,34 @@ public class HpModule : ModuleEffect
     {
         float baseStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
         float effective = GetEffectiveStat(state);
-        if (effective!= baseStat&state.isActive)
+        if (effective != baseStat && state.isActive)
             return $"<s>+{baseStat:F0}</s> +{effective:F0} HP";
         return $"+{baseStat:F0} HP";
+    }
+
+    public override (string leftLabel, float before, float after, string format) GetTooltipStats(
+        Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats)
+    {
+        float moduleStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        float effective = GetEffectiveStat(state);
+        string leftLabel = $"+{moduleStat:F0} Max Health";
+
+        if (playerStats == null) return (leftLabel, -1f, -1f, "F0");
+
+        float baseHp = playerStats.BaseHealth;
+        float multHp = playerStats.MultiplierModifier.health;
+        float before, after;
+        if (state.isActive)
+        {
+            before = (baseHp - effective) * (1f + multHp);
+            after = playerStats.MaxHealth;
+        }
+        else
+        {
+            before = playerStats.MaxHealth;
+            after = (baseHp + moduleStat) * (1f + multHp);
+        }
+        return (leftLabel, before, after, "F0");
     }
 
 }

@@ -355,55 +355,47 @@ public class ModuleTooltipUI : MonoBehaviour
             AddDescRow().text = desc;
         }
 
-        var (label, before, after, isPercent) = effect.GetStatLine(inst.Rarity, inst.Level, inst.RuntimeState, playerStats);
-        if (label == null) return;
+        var (leftLabel, before, after, format) = effect.GetTooltipStats(inst.Rarity, inst.Level, inst.RuntimeState, playerStats);
+        if (leftLabel == null) return;
 
         var row = AddStatRow();
         statDescRef = row.desc;
 
-        if (after < 0f)
+        // Build left side (with buff indicator if needed)
+        var (unbuffedStat, buffedStat) = effect.GetBaseModuleStat(inst.Rarity, inst.Level, inst.RuntimeState);
+        bool hasAnyBuff = inst.RuntimeState.isActive && unbuffedStat >= 0f && buffedStat != unbuffedStat;
+        if (hasAnyBuff)
         {
-            if (before < 0f)
-            {
-                // label only ? no numeric value at all
-                row.desc.text = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> {label}";
-                row.value.text = "";
-            }
-            else
-            {
-                // sentinel: show stat but no value column
-                string statStr = isPercent ? $"+{before * 100f:F0}%" : $"+{before:F0}";
-                row.desc.text = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> {statStr} {label}";
-                row.value.text = "";
-            }
+            var (unbuffedLabel, _, _, _) = effect.GetTooltipStats(inst.Rarity, inst.Level, new ModuleRuntimeState(), playerStats);
+            // strip the stat label from unbuffedLabel to get just the number part e.g. "+50%" from "+50% Damage"
+            int spaceIdx = unbuffedLabel.IndexOf(' ');
+            string unbuffedNum = spaceIdx >= 0 ? unbuffedLabel.Substring(0, spaceIdx) : unbuffedLabel;
+            string buffedNum = spaceIdx >= 0 ? leftLabel.Substring(0, leftLabel.IndexOf(' ')) : leftLabel;
+            string statName = spaceIdx >= 0 ? leftLabel.Substring(leftLabel.IndexOf(' ') + 1) : "";
+            string arrow = buffedStat > unbuffedStat
+                ? "<color=#88FF88>\u25B2</color>"
+                : "<color=#FF4444>\u25BC</color>";
+            statDescNormal = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> {leftLabel} {arrow}";
+            statDescExpanded = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> <color=#666666><s>{unbuffedNum}</s></color> {buffedNum} {statName}";
+            row.desc.text = statDescNormal;
         }
         else
         {
-            float moduleStat = after - before;
-            string moduleStr = isPercent ? $"+{moduleStat * 100f:F0}%" : $"+{moduleStat:F0}";
-            string beforeStr = isPercent ? $"{before * 100f:F0}%" : $"{before:F0}";
-            string afterStr = isPercent ? $"{after * 100f:F0}%" : $"{after:F0}";
+            row.desc.text = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> {leftLabel}";
+        }
 
-            // Check if buffed ? totalBuffPercent > 0 or buffedLevel != 0
-
-            var (unbuffedStat, buffedStat) = effect.GetBaseModuleStat(inst.Rarity, inst.Level, inst.RuntimeState);
-            bool hasAnyBuff = inst.RuntimeState.isActive && unbuffedStat >= 0f && buffedStat != unbuffedStat;
-            if (hasAnyBuff)
-            {
-                string unbuffedStr = isPercent ? $"+{unbuffedStat * 100f:F0}%" : $"+{unbuffedStat:F0}";
-                string arrow = buffedStat > unbuffedStat
-                    ? "<color=#88FF88>\u25B2</color>"
-                    : "<color=#FF4444>\u25BC</color>";
-                statDescNormal = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> {moduleStr} {arrow} {label}";
-                statDescExpanded = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> <color=#666666><s>{unbuffedStr}</s></color> {moduleStr} {label}";
-                row.desc.text = statDescNormal;
-            }
-            else
-            {
-                row.desc.text = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> {moduleStr} {label}";
-            }
-
-            row.value.text = $"{beforeStr} \U0001F862 {afterStr}";
+        // Build right side
+        if (before < 0f || after < 0f)
+        {
+            row.value.text = "";
+        }
+        else
+        {
+            bool isPercentFormat = format.EndsWith("%");
+            string fmt = format.Replace("%", "");
+            string beforeStr = isPercentFormat ? $"{before.ToString(fmt)}%" : before.ToString(fmt);
+            string afterStr = isPercentFormat ? $"{after.ToString(fmt)}%" : after.ToString(fmt);
+            row.value.text = $"<color=#888888>{beforeStr} \U0001F862</color> {afterStr}";
         }
     }
 
@@ -557,6 +549,7 @@ public class ModuleTooltipUI : MonoBehaviour
         hl.childControlHeight = false;
         var desc = CreateTMP(rowGo, 24f, FontStyles.Normal, new Color(0.85f, 0.85f, 0.85f), TextAlignmentOptions.Left, flexibleWidth: 1f);
         var val = CreateTMP(rowGo, 24f, FontStyles.Normal, new Color(1f, 0.9f, 0.4f), TextAlignmentOptions.Right, preferredWidth: 140f);
+        val.richText = true;
         statRows.Add((desc, val));
         return (desc, val);
     }

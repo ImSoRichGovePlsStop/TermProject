@@ -27,9 +27,10 @@ public class BuffLevelModule : ModuleEffect
 
     public override string[] BoldKeywords => new[] { "adjacent" };
 
-    public override (string, float, float, bool) GetStatLine(Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats = null)
+    public override (string leftLabel, float before, float after, string format) GetTooltipStats(
+        Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats)
     {
         float stat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
-        return ("Level Buff", stat, -1f, false);
+        return ($"+{stat:F0} Level Buff Adjacent", -1f, -1f, "F0");
     }
 }

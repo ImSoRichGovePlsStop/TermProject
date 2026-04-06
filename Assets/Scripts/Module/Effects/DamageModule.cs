@@ -123,7 +123,33 @@ public class DamageModule : ModuleEffect
                          * (1f + state.totalBuffPercent);
         return (unbuffed, buffed);
     }
-    public override string[] BoldKeywords => new[] { "damage", "Damage" };
+    public override (string leftLabel, float before, float after, string format) GetTooltipStats(
+        Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats)
+    {
+        float moduleStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        float effective = GetEffectiveStat(state);
+        bool isBuffed = state.isActive && effective != moduleStat;
+        string leftLabel = isBuffed
+            ? $"+{effective * 100f:F0}% Damage"
+            : $"+{moduleStat * 100f:F0}% Damage";
+
+        if (playerStats == null) return (leftLabel, -1f, -1f, "F1");
+
+        float baseDmg = playerStats.BaseDamage;
+        float multDmg = playerStats.MultiplierModifier.damage;
+        float before, after;
+        if (state.isActive)
+        {
+            before = baseDmg * (1f + multDmg - effective);
+            after = playerStats.Damage;
+        }
+        else
+        {
+            before = playerStats.Damage;
+            after = baseDmg * (1f + multDmg + moduleStat);
+        }
+        return (leftLabel, before, after, "F1");
+    }
 
     public override string GetDescription(Rarity rarity, int level, ModuleRuntimeState state)
     {
@@ -132,27 +158,6 @@ public class DamageModule : ModuleEffect
         if (effective != baseStat & state.isActive)
             return $"<s>+{baseStat * 100f:F0}%</s> +{effective * 100f:F0}% Damage";
         return $"+{baseStat * 100f:F0}% Damage";
-    }
-
-    public override (string, float, float, bool) GetStatLine(Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats = null)
-    {
-        float moduleStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
-        float effective = GetEffectiveStat(state);
-        float current = playerStats != null ? playerStats.MultiplierModifier.damage : 0f;
-
-        float before, after;
-        if (state.isActive)
-        {
-            before = current - effective;
-            after = current;
-        }
-        else
-        {
-            before = current;
-            after = current + moduleStat;
-        }
-
-        return ("Damage", before, after, true);
     }
 
 }

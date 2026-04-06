@@ -116,9 +116,33 @@ public class SpeedModule : ModuleEffect
     {
         float baseStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
         float effective = GetEffectiveStat(state);
-        if (effective != baseStat & state.isActive)
+        if (effective != baseStat && state.isActive)
             return $"<s>+{baseStat * 100f:F0}%</s> +{effective * 100f:F0}% move speed";
         return $"+{baseStat * 100f:F0}% move speed";
     }
 
+    public override (string leftLabel, float before, float after, string format) GetTooltipStats(
+        Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats)
+    {
+        float moduleStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        float effective = GetEffectiveStat(state);
+        string leftLabel = $"+{moduleStat * 100f:F0}% Move Speed";
+
+        if (playerStats == null) return (leftLabel, -1f, -1f, "F1");
+
+        float baseMv = playerStats.BaseMoveSpeed;
+        float multMv = playerStats.MultiplierModifier.moveSpeed;
+        float before, after;
+        if (state.isActive)
+        {
+            before = baseMv * (1f + multMv - effective);
+            after = playerStats.MoveSpeed;
+        }
+        else
+        {
+            before = playerStats.MoveSpeed;
+            after = baseMv * (1f + multMv + moduleStat);
+        }
+        return (leftLabel, before, after, "F1");
+    }
 }

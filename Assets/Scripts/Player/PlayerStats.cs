@@ -122,6 +122,13 @@ public class PlayerStats : MonoBehaviour
     public StatModifier FlatModifier => flatModifier;
     public StatModifier MultiplierModifier => multiplierModifier;
 
+    public float BaseDamage => weaponDamage + flatModifier.damage;
+    public float BaseHealth => weaponHealth + flatModifier.health;
+    public float BaseAttackSpeed => weaponAttackSpeed + flatModifier.attackSpeed;
+    public float BaseMoveSpeed => weaponMoveSpeed + flatModifier.moveSpeed;
+    public float BaseCritChance => weaponCritChance + flatModifier.critChance;
+    public float BaseCritDamage => weaponCritDamage + flatModifier.critDamage;
+
     public float MaxHealth =>
         (weaponHealth + flatModifier.health) * (1 + multiplierModifier.health);
     public float Damage =>
