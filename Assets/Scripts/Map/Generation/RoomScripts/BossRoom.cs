@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.ProBuilder;
 using UnityEngine.ProBuilder.MeshOperations;
+using static UnityEditor.PlayerSettings;
 
 public class BossRoom : MonoBehaviour
 {
@@ -85,7 +86,7 @@ public class BossRoom : MonoBehaviour
         Instantiate(selectedPortal, portalPos, Quaternion.identity);
 
         CurrencyManager wallet = Object.FindFirstObjectByType<CurrencyManager>();
-        wallet.AddCoins(300);
+        wallet.AddCoins(Random.Range(100,300));
 
         RunManager.Instance?.OnBossKilled();
     }
@@ -93,8 +94,19 @@ public class BossRoom : MonoBehaviour
     private void SpawnBoss()
     {
         if (bossPrefab == null) { Debug.LogWarning("[BossRoom] Boss prefab missing!"); return; }
-        var boss = Instantiate(bossPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
-        spawnedEnemies.Add(boss);
+
+        GameObject currentEnemy = Instantiate(bossPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
+        if (currentEnemy.TryGetComponent<EntityStats>(out EntityStats entityStats))
+        {
+            PlayerStats playerStats = FindFirstObjectByType<PlayerStats>();
+            StatScale scale = new StatScale();
+            scale.moveSpeed = Random.Range(0.9f, 1.1f);
+            scale.hp = 1f + (RunManager.Instance?.TotalBossKilled ?? 0) * 1.1f + (playerStats.BaseDamage) / (playerStats.Damage) * 0.05f - (RunManager.Instance?.TotalEnemyKilled??0)*0.001f;
+            scale.damage = 1f + (RunManager.Instance?.TotalBossKilled ?? 0) * 0.3f + (playerStats.MaxHealth) / (playerStats.BaseHealth) * 0.05f;
+            entityStats.SetStatScale(scale);
+        }
+
+        spawnedEnemies.Add(currentEnemy);
     }
 
     private void CreateInvisibleWalls()
