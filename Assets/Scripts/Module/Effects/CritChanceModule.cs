@@ -120,12 +120,15 @@ public class CritChanceModule : ModuleEffect
         return $"+{baseStat * 100f:F0}% Crit Chance";
     }
 
+    public override (float unbuffed, float buffed) GetBaseModuleStat(Rarity rarity, int level, ModuleRuntimeState state)
+        => BuildBaseModuleStat(baseStatPerRarity, levelMultiplier, rarity, level, state);
+
     public override (string leftLabel, float before, float after, string format) GetTooltipStats(
         Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats)
     {
         float moduleStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
         float effective = GetEffectiveStat(state);
-        string leftLabel = $"+{moduleStat * 100f:F0}% Crit Chance";
+        string leftLabel = BuildLeftLabel(moduleStat, effective, state, "Crit Chance", true);
 
         if (playerStats == null) return (leftLabel, -1f, -1f, "F0%");
 

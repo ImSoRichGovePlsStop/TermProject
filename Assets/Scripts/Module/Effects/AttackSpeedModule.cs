@@ -123,12 +123,15 @@ public class AttackSpeedModule : ModuleEffect
         return $"+{baseStat * 100f:F0}% Attack speed";
     }
 
+    public override (float unbuffed, float buffed) GetBaseModuleStat(Rarity rarity, int level, ModuleRuntimeState state)
+        => BuildBaseModuleStat(baseStatPerRarity, levelMultiplier, rarity, level, state);
+
     public override (string leftLabel, float before, float after, string format) GetTooltipStats(
         Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats)
     {
         float moduleStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
         float effective = GetEffectiveStat(state);
-        string leftLabel = $"+{moduleStat * 100f:F0}% Attack Speed";
+        string leftLabel = BuildLeftLabel(moduleStat, effective, state, "Attack Speed", true);
 
         if (playerStats == null) return (leftLabel, -1f, -1f, "F0%");
 
@@ -143,6 +146,7 @@ public class AttackSpeedModule : ModuleEffect
             before = playerStats.AttackSpeed;
             after = playerStats.AttackSpeed + moduleStat;
         }
+        // Convert to display percent (multiply by 100)
         return (leftLabel, before * 100f, after * 100f, "F0%");
     }
 }

@@ -122,12 +122,15 @@ public class HpModule : ModuleEffect
         return $"+{baseStat:F0} HP";
     }
 
+    public override (float unbuffed, float buffed) GetBaseModuleStat(Rarity rarity, int level, ModuleRuntimeState state)
+        => BuildBaseModuleStat(baseStatPerRarity, levelMultiplier, rarity, level, state);
+
     public override (string leftLabel, float before, float after, string format) GetTooltipStats(
         Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats)
     {
         float moduleStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
         float effective = GetEffectiveStat(state);
-        string leftLabel = $"+{moduleStat:F0} Max Health";
+        string leftLabel = BuildLeftLabel(moduleStat, effective, state, "Max Health", false);
 
         if (playerStats == null) return (leftLabel, -1f, -1f, "F0");
 

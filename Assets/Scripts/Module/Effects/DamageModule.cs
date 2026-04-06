@@ -113,25 +113,13 @@ public class DamageModule : ModuleEffect
     }
 
     public override (float unbuffed, float buffed) GetBaseModuleStat(Rarity rarity, int level, ModuleRuntimeState state)
-    {
-        bool hasRarityBuff = state.buffRarity != 0 && state.buffRarity != rarity
-                             && System.Array.Exists(state.baseRarity, v => v > 0);
-        Rarity effectiveRarity = hasRarityBuff ? state.buffRarity : rarity;
-        int effectiveLevel = state.buffedLevel > 0 ? state.buffedLevel : level;
-        float unbuffed = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
-        float buffed = GetFinalStat(baseStatPerRarity, levelMultiplier, effectiveRarity, effectiveLevel)
-                         * (1f + state.totalBuffPercent);
-        return (unbuffed, buffed);
-    }
+        => BuildBaseModuleStat(baseStatPerRarity, levelMultiplier, rarity, level, state);
     public override (string leftLabel, float before, float after, string format) GetTooltipStats(
         Rarity rarity, int level, ModuleRuntimeState state, PlayerStats playerStats)
     {
         float moduleStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
         float effective = GetEffectiveStat(state);
-        bool isBuffed = state.isActive && effective != moduleStat;
-        string leftLabel = isBuffed
-            ? $"+{effective * 100f:F0}% Damage"
-            : $"+{moduleStat * 100f:F0}% Damage";
+        string leftLabel = BuildLeftLabel(moduleStat, effective, state, "Damage", true);
 
         if (playerStats == null) return (leftLabel, -1f, -1f, "F1");
 
