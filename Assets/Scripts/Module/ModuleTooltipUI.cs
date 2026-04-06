@@ -12,6 +12,7 @@ public class ModuleTooltipUI : MonoBehaviour
     private RectTransform rt;
     private Canvas rootCanvas;
     private VerticalLayoutGroup mainLayout;
+    private LayoutElement mainPanelLayout;
 
     private TextMeshProUGUI nameText;
     private TextMeshProUGUI levelText;
@@ -28,6 +29,7 @@ public class ModuleTooltipUI : MonoBehaviour
     private List<(string normal, string expanded)> passiveBoxTexts
         = new List<(string, string)>();
     private GameObject statDivider;
+    private GameObject footerContainer;
 
     private GameObject detailPanel;
     private TextMeshProUGUI seeDetailsLabel;
@@ -76,6 +78,7 @@ public class ModuleTooltipUI : MonoBehaviour
         var le = gameObject.AddComponent<LayoutElement>();
         le.preferredWidth = 600f;
         le.flexibleWidth = 0f;
+        mainPanelLayout = le;
 
         var fitter = gameObject.AddComponent<ContentSizeFitter>();
         fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -117,6 +120,23 @@ public class ModuleTooltipUI : MonoBehaviour
         passiveVlg.childForceExpandHeight = false;
         passiveContainer.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         passiveContainer.SetActive(false);
+
+        // Footer section (for obtain sources etc.)
+        footerContainer = new GameObject("FooterContainer", typeof(RectTransform));
+        footerContainer.transform.SetParent(transform, false);
+        var footerImg = footerContainer.AddComponent<Image>();
+        footerImg.color = new Color(0.09f, 0.09f, 0.09f, 1f);
+        footerImg.raycastTarget = false;
+        var footerVlg = footerContainer.AddComponent<VerticalLayoutGroup>();
+        footerVlg.padding = new RectOffset(0, 0, 0, 0);
+        footerVlg.spacing = 0;
+        footerVlg.childControlWidth = true;
+        footerVlg.childControlHeight = true;
+        footerVlg.childForceExpandWidth = true;
+        footerVlg.childForceExpandHeight = false;
+
+        footerContainer.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        footerContainer.SetActive(false);
     }
 
     private GameObject CreateSection(string name, Color bgColor, int padLeft, int padRight, int padTop, int padBot)
@@ -251,6 +271,8 @@ public class ModuleTooltipUI : MonoBehaviour
         currentInst = inst;
         isDetailExpanded = false;
         isTabExpanded = false;
+
+        mainPanelLayout.preferredWidth = 600f;
         statDescNormal = null;
         statDescExpanded = null;
         statDescRef = null;
@@ -278,7 +300,7 @@ public class ModuleTooltipUI : MonoBehaviour
             levelTextExpanded = "";
         }
         levelText.text = levelTextNormal;
-        // Rarity buff indicator ? check baseRarity array to confirm buff is still active
+
         bool hasRarityBuff = effect != null
             && state.buffRarity != 0
             && state.buffRarity != inst.Rarity
@@ -301,6 +323,7 @@ public class ModuleTooltipUI : MonoBehaviour
 
         PopulateStats(inst);
         PopulatePassive(inst);
+        ClearFooter();
 
         bool isBuff = inst.Data.isBuffAdjacent;
         detailPanel.SetActive(isBuff);
@@ -335,16 +358,67 @@ public class ModuleTooltipUI : MonoBehaviour
     public void Show(MaterialInstance inst)
     {
         currentInst = null;
+        isDetailExpanded = false;
+        isTabExpanded = false;
+
+        mainPanelLayout.preferredWidth = 400f;
         nameText.text = inst.MaterialData.moduleName;
         nameText.color = RarityColor(inst.Rarity);
-        levelText.text = "";
-        rarityText.text = $"{inst.Rarity}  {inst.StackCount}/{inst.MaxStack}";
+        levelText.text = $"{inst.StackCount}/{inst.MaxStack}";
+        rarityText.text = inst.Rarity.ToString();
         costText.text = inst.Cost > 0 ? $"$ {inst.Cost * inst.StackCount}" : "";
 
         ClearStatRows();
         ClearPassive();
+        ClearFooter();
+
+        // Description
+        bool hasDesc = !string.IsNullOrEmpty(inst.MaterialData.materialDescription);
+        if (hasDesc)
+            AddDescRow().text = inst.MaterialData.materialDescription;
+
+        statContainer.SetActive(hasDesc);
+        statDivider.SetActive(hasDesc);
+
+        // Obtain sources footer
+        if (inst.MaterialData.obtainSources != null && inst.MaterialData.obtainSources.Length > 0)
+        {
+            footerContainer.SetActive(true);
+            CreateDivider(footerContainer);
+
+            var textWrapper = new GameObject("FooterTextPadding", typeof(RectTransform));
+            textWrapper.transform.SetParent(footerContainer.transform, false);
+
+            var vlg = textWrapper.AddComponent<VerticalLayoutGroup>();
+            vlg.padding = new RectOffset(20, 20, 10, 14);
+            vlg.childControlWidth = true;
+            vlg.childControlHeight = true;
+
+            var sourceTmp = new GameObject("ObtainText", typeof(RectTransform)).AddComponent<TextMeshProUGUI>();
+            sourceTmp.transform.SetParent(textWrapper.transform, false);
+
+            sourceTmp.text = "Obtain from: " + string.Join(", ", inst.MaterialData.obtainSources);
+            sourceTmp.fontSize = 22f;
+            sourceTmp.color = new Color(0.55f, 0.55f, 0.55f);
+            sourceTmp.alignment = TextAlignmentOptions.Left;
+            sourceTmp.raycastTarget = false;
+            sourceTmp.textWrappingMode = TextWrappingModes.Normal;
+
+            textWrapper.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        }
         detailPanel.SetActive(false);
         gameObject.SetActive(true);
+        transform.SetAsLastSibling();
+        StartCoroutine(PositionNextFrameMaterial(inst));
+    }
+
+    private IEnumerator PositionNextFrameMaterial(MaterialInstance inst)
+    {
+        yield return null;
+        Canvas.ForceUpdateCanvases();
+        if (inst.UIElement != null)
+            PositionTooltip(inst);
+        transform.SetAsLastSibling();
     }
 
     public void Hide()
@@ -414,7 +488,7 @@ public class ModuleTooltipUI : MonoBehaviour
                     row.desc.text = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> {leftLabel}";
                 }
 
-                // Right side — only show if values are valid
+                // Right side
                 if (before >= 0f && after >= 0f)
                 {
                     bool isPercentFormat = format.EndsWith("%");
@@ -607,6 +681,13 @@ public class ModuleTooltipUI : MonoBehaviour
         passiveContainer.SetActive(false);
     }
 
+    private void ClearFooter()
+    {
+        foreach (Transform child in footerContainer.transform)
+            Destroy(child.gameObject);
+        footerContainer.SetActive(false);
+    }
+
     private void PopulatePassive(ModuleInstance inst)
     {
         ClearPassive();
@@ -625,7 +706,7 @@ public class ModuleTooltipUI : MonoBehaviour
         // Divider
         CreateDivider(passiveContainer);
 
-        // "Passive" label — own bg color
+        // "Passive" label
         var passiveLabelSection = new GameObject("PassiveLabelSection", typeof(RectTransform));
         passiveLabelSection.transform.SetParent(passiveContainer.transform, false);
         var plsImg = passiveLabelSection.AddComponent<Image>();
@@ -649,7 +730,7 @@ public class ModuleTooltipUI : MonoBehaviour
         passiveLabelTmp.alignment = TextAlignmentOptions.Left;
         passiveLabelTmp.raycastTarget = false;
 
-        // Passive description + boxes — same bg
+        // Passive description + boxes
         var bodySection = new GameObject("PassiveBodySection", typeof(RectTransform));
         bodySection.transform.SetParent(passiveContainer.transform, false);
         var bodyImg = bodySection.AddComponent<Image>();
@@ -745,7 +826,6 @@ public class ModuleTooltipUI : MonoBehaviour
         vlg.childForceExpandWidth = true;
         vlg.childForceExpandHeight = false;
         vlg.childAlignment = TextAnchor.MiddleCenter;
-        // No ContentSizeFitter — height controlled by parent's childForceExpandHeight
 
         var valueGo = new GameObject("Value", typeof(RectTransform));
         valueGo.transform.SetParent(box.transform, false);

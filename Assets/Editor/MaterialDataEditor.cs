@@ -8,7 +8,6 @@ public class MaterialDataEditor : Editor
     {
         serializedObject.Update();
 
-        // Show only relevant fields (hide inherited module-specific ones)
         EditorGUILayout.PropertyField(serializedObject.FindProperty("moduleName"),
                                       new GUIContent("Material Name"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("icon"));
@@ -17,6 +16,13 @@ public class MaterialDataEditor : Editor
         EditorGUILayout.PropertyField(serializedObject.FindProperty("moduleColor"),
                                       new GUIContent("Color"));
         EditorGUILayout.PropertyField(serializedObject.FindProperty("maxStack"));
+
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField("Tooltip", EditorStyles.boldLabel);
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("materialDescription"),
+                                      new GUIContent("Description"));
+        EditorGUILayout.PropertyField(serializedObject.FindProperty("obtainSources"),
+                                      new GUIContent("Obtain Sources"), true);
 
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Shape Grid (5×5)", EditorStyles.boldLabel);
@@ -32,7 +38,6 @@ public class MaterialDataEditor : Editor
         GUI.backgroundColor = Color.white;
         EditorGUILayout.LabelField("Empty", GUILayout.Width(50));
         EditorGUILayout.EndHorizontal();
-
         EditorGUILayout.Space();
 
         // 5x5 grid
@@ -46,9 +51,7 @@ public class MaterialDataEditor : Editor
                     .GetArrayElementAtIndex(row)
                     .FindPropertyRelative("cells")
                     .GetArrayElementAtIndex(col);
-
                 GUI.backgroundColor = cell.boolValue ? Color.cyan : Color.gray;
-
                 if (GUILayout.Button("", GUILayout.Width(20), GUILayout.Height(20)))
                     cell.boolValue = !cell.boolValue;
             }

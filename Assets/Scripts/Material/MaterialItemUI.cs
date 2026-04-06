@@ -36,6 +36,8 @@ public class MaterialItemUI : MonoBehaviour,
     private bool _isDragging;
     private Vector2 _lastPointerScreenPos;
 
+    public static bool AnyDragging => ModuleItemUI.IsDragging || AnyMaterialDragging;
+    public static bool AnyMaterialDragging;
 
     public void Init(MaterialInstance instance, GridUI envGridUI = null)
     {
@@ -314,6 +316,8 @@ public class MaterialItemUI : MonoBehaviour,
 
     public void OnBeginDrag(PointerEventData e)
     {
+        AnyMaterialDragging = true;
+
         if (InputGridUI != null && Instance.CurrentGrid == InputGridUI.Data)
             _originGrid = InputGridUI;
         else if (EnvGridUI != null && Instance.CurrentGrid == EnvGridUI.Data)
@@ -346,6 +350,8 @@ public class MaterialItemUI : MonoBehaviour,
         ModuleItemUI.DraggingCells = new System.Collections.Generic.HashSet<Vector2Int>(Instance.GetAbsoluteCells());
         ModuleItemUI.DraggingGrid = Instance.CurrentGrid;
         if (!UIManager.IsRightPanelOpen) DiscardGridUI.Instance?.ShowForDrag();
+
+        ModuleTooltipUI.Instance.Hide();
     }
 
     public void OnDrag(PointerEventData e)
@@ -359,6 +365,7 @@ public class MaterialItemUI : MonoBehaviour,
 
     public void OnEndDrag(PointerEventData e)
     {
+        AnyMaterialDragging = false;
         _isDragging = false;
         _cg.alpha = 1f;
         _cg.blocksRaycasts = true;
@@ -469,8 +476,16 @@ public class MaterialItemUI : MonoBehaviour,
         if (ui == null) Instance.AddStack();
     }
 
-    public void OnPointerEnter(PointerEventData e) => ModuleTooltipUI.Instance.Show(Instance);
-    public void OnPointerExit(PointerEventData e) => ModuleTooltipUI.Instance.Hide();
+    public void OnPointerEnter(PointerEventData e)
+    {
+        if (AnyDragging) return;
+        ModuleTooltipUI.Instance.Show(Instance);
+    }
+    public void OnPointerExit(PointerEventData e)
+    {
+        if (AnyDragging) return;
+        ModuleTooltipUI.Instance.Hide();
+    }
 
     private void UpdateHighlight(PointerEventData e)
     {

@@ -6,4 +6,10 @@ public class MaterialData : ModuleData
     [Header("Material")]
     public Rarity rarity = Rarity.Common;
     public int maxStack = 3;
+
+    [TextArea(1, 3)]
+    public string materialDescription = "";
+
+    [Header("Obtain Sources")]
+    public string[] obtainSources = { };
 }

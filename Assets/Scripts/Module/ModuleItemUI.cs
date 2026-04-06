@@ -37,7 +37,7 @@ public class ModuleItemUI : MonoBehaviour,
     private Vector2Int _clickedCell;
     private int _dragRotation;
     private bool _isDragging;
-    public static bool AnyDragging { get; private set; }
+    public static bool AnyDragging => IsDragging || MaterialItemUI.AnyMaterialDragging;
 
     [SerializeField] private bool allowSell = false;
 
@@ -334,7 +334,6 @@ public class ModuleItemUI : MonoBehaviour,
         _originRotation = Instance.Rotation;
         _dragRotation = Instance.Rotation;
         _isDragging = true;
-        AnyDragging = true;
         ModuleTooltipUI.Instance?.Hide();
         _clickedCell = GetClickedLocalCell(e);
 
@@ -368,7 +367,6 @@ public class ModuleItemUI : MonoBehaviour,
     public void OnEndDrag(PointerEventData e)
     {
         _isDragging = false;
-        AnyDragging = false;
         _cg.alpha = 1f;
         _cg.blocksRaycasts = true;
         ModuleItemUI.IsDragging = false;
