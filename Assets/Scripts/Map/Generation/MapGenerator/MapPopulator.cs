@@ -2,10 +2,6 @@ using Unity.AI.Navigation;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-// ── MapPopulator ──────────────────────────────────────────────────────────────
-// Listens to MapGeometry.OnMapReady and populates room GameObjects,
-// enemy prefabs, interactables, bosses and portals.
-// Pure content concern — knows nothing about matrix or graph building.
 
 [RequireComponent(typeof(MapGeometry))]
 public class MapPopulator : MonoBehaviour
@@ -36,7 +32,7 @@ public class MapPopulator : MonoBehaviour
     [Header("Trigger")]
     public float triggerHeight = 3f;
 
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
+   
 
     void Awake()
     {
@@ -49,7 +45,7 @@ public class MapPopulator : MonoBehaviour
         if (geo != null) geo.OnMapReady -= PopulateRooms;
     }
 
-    // ── Population ────────────────────────────────────────────────────────────
+
 
     void PopulateRooms(System.Collections.Generic.IReadOnlyList<MapNode> nodes)
     {
@@ -61,8 +57,7 @@ public class MapPopulator : MonoBehaviour
 
     System.Collections.IEnumerator BakeNavMeshNextFrame()
     {
-        // Wait one frame so Unity registers all instantiated GameObjects
-        // (room prefabs, corridor quads, wall quads) before baking.
+
         yield return null;
 
         if (navMeshSurface != null)
@@ -88,7 +83,6 @@ public class MapPopulator : MonoBehaviour
         _ => null
     };
 
-    // ── Room types ────────────────────────────────────────────────────────────
 
     GameObject SpawnSpawnRoom(MapNode node)
     {
@@ -171,7 +165,7 @@ public class MapPopulator : MonoBehaviour
         var r = o.AddComponent<MergeRoom>(); r.node = ToLegacy(n); r.mergeStationPrefab = mergeStationPrefab; r.Init(p);
     }
 
-    // ── Scaling helpers ───────────────────────────────────────────────────────
+   
 
     int ScaleEnemyCount() => Random.Range(1, 4) + (RunManager.Instance?.CurrentFloor ?? 1);
 
@@ -195,7 +189,7 @@ public class MapPopulator : MonoBehaviour
         return pool;
     }
 
-    // ── Shared helpers ────────────────────────────────────────────────────────
+
 
     Vector3 Volume(MapNode n) => new Vector3(n.Width, triggerHeight, n.Depth);
 
@@ -207,8 +201,7 @@ public class MapPopulator : MonoBehaviour
         col.center = new Vector3(0, triggerHeight / 2f, 0);
     }
 
-    // Converts MapNode to the legacy RoomNode still expected by room scripts.
-    // When you update room scripts to accept MapNode directly, remove this.
+
     static RoomNode ToLegacy(MapNode n) => new RoomNode
     {
         Type = n.Type,
