@@ -82,8 +82,6 @@ public class UpgradeStationUI : MonoBehaviour
         if (moduleUI != null)
             moduleUI.RefreshAfterUpgrade();
 
-        if (_currentStation != null)
-            Object.Destroy(_currentStation.gameObject);
 
         var uiManager = FindFirstObjectByType<UIManager>();
         uiManager?.CloseUpgrade();

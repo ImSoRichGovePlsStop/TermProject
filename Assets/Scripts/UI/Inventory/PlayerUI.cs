@@ -38,21 +38,22 @@ public class PlayerUI : MonoBehaviour
         }
     }
 
+    private const string BaseColor  = "#414141";
+    private const string BonusColor = "#329632";
+
+    private static string Bonus(float bonus, string fmt = "F1")
+        => bonus > 0.01f ? $" <color={BonusColor}>+{bonus.ToString(fmt)}</color>" : "";
+
     private void RefreshStats()
     {
         if (playerStats == null) return;
 
-        float hpRatio = playerStats.MaxHealth > 0f
-            ? playerStats.CurrentHealth / playerStats.MaxHealth
-            : 1f;
-        string hpColor = hpRatio > 0.6f ? "#33CC33" : hpRatio > 0.3f ? "#CCAA00" : "#CC2222";
-
-        hp.text      = $"HP<pos=42%><color={hpColor}>{playerStats.CurrentHealth:F0} / {playerStats.MaxHealth:F0}</color>";
-        dmg.text     = $"DMG<pos=42%><color=#CC7000>{playerStats.Damage:F1}</color>";
-        atkSpd.text  = $"ATK SPD<pos=42%><color=#0099CC>{playerStats.AttackSpeed:F2}</color>";
-        movSpd.text  = $"MOV SPD<pos=42%><color=#5AAABB>{playerStats.MoveSpeed:F2}</color>";
-        crit.text    = $"CRIT<pos=42%><color=#CCAA00>{playerStats.CritChance:P0}</color>";
-        critDmg.text = $"CRIT DMG<pos=42%><color=#CC4020>{playerStats.CritDamage:P0}</color>";
-        evade.text   = $"EVADE<pos=42%><color=#66BB66>{playerStats.EvadeChance:P0}</color>";
+        hp.text      = $"HP<pos=42%><color={BaseColor}>{playerStats.BaseHP:F0}</color>{Bonus(playerStats.MaxHealth - playerStats.BaseHP, "F0")}";
+        dmg.text     = $"DMG<pos=42%><color={BaseColor}>{playerStats.BaseDMG:F1}</color>{Bonus(playerStats.Damage - playerStats.BaseDMG)}";
+        atkSpd.text  = $"ATK SPD<pos=42%><color={BaseColor}>{playerStats.BaseATKSPD:F2}</color>{Bonus(playerStats.AttackSpeed - playerStats.BaseATKSPD, "F2")}";
+        movSpd.text  = $"MOV SPD<pos=42%><color={BaseColor}>{playerStats.BaseMOVSPD:F2}</color>{Bonus(playerStats.MoveSpeed - playerStats.BaseMOVSPD, "F2")}";
+        crit.text    = $"CRIT<pos=42%><color={BaseColor}>{playerStats.BaseCrit:P0}</color>{Bonus(playerStats.CritChance - playerStats.BaseCrit, "P0")}";
+        critDmg.text = $"CRIT DMG<pos=42%><color={BaseColor}>{playerStats.BaseCritDMG:P0}</color>{Bonus(playerStats.CritDamage - playerStats.BaseCritDMG, "P0")}";
+        evade.text   = $"EVADE<pos=42%><color={BaseColor}>{playerStats.BaseEvade:P0}</color>{Bonus(playerStats.EvadeChance - playerStats.BaseEvade, "P0")}";
     }
 }

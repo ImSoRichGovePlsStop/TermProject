@@ -46,5 +46,6 @@ public class RandomLoot : MonoBehaviour, IInteractable
         }
 
         uiManager?.OpenRewardLoot(this, rolled);
+        Destroy(gameObject);
     }
 }

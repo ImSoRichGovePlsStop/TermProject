@@ -78,15 +78,18 @@ public class LootOptionUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHa
         foreach (Transform child in shapePreviewRoot)
             Destroy(child.gameObject);
 
-        float sp         = 2f;
-        float borderSize = 2f;
-
         var shapeCells = data.GetShapeCells();
-        var bound      = data.GetBoundingSize();
+        var bound = data.GetBoundingSize();
 
-        float csFromWidth  = (shapePreviewRoot.rect.width  + sp) / bound.x - sp;
-        float csFromHeight = (shapePreviewRoot.rect.height + sp) / bound.y - sp;
-        float cs           = Mathf.Min(csFromWidth, csFromHeight);
+        float sp = 2f;
+        float borderSize = 2f;
+        float scaleFactor = 0.9f;
+
+        float maxExpectedUnits = 4f;
+
+        float unitW = (shapePreviewRoot.rect.width + sp) / maxExpectedUnits - sp;
+        float unitH = (shapePreviewRoot.rect.height + sp) / maxExpectedUnits - sp;
+        float cs = Mathf.Min(unitW, unitH) * scaleFactor;
 
         shapePreviewRoot.sizeDelta = new Vector2(
             bound.x * (cs + sp) - sp,
@@ -99,53 +102,53 @@ public class LootOptionUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHa
             var borderGo = new GameObject($"border_{cell.x}_{cell.y}", typeof(RectTransform), typeof(Image));
             var borderRt = borderGo.GetComponent<RectTransform>();
             borderRt.SetParent(shapePreviewRoot, false);
-            borderRt.pivot     = new Vector2(0f, 1f);
+            borderRt.pivot = new Vector2(0f, 1f);
             borderRt.anchorMin = new Vector2(0f, 1f);
             borderRt.anchorMax = new Vector2(0f, 1f);
 
-            bool bHasRight  = shapeCells.Contains(new Vector2Int(cell.x + 1, cell.y));
-            bool bHasLeft   = shapeCells.Contains(new Vector2Int(cell.x - 1, cell.y));
+            bool bHasRight = shapeCells.Contains(new Vector2Int(cell.x + 1, cell.y));
+            bool bHasLeft = shapeCells.Contains(new Vector2Int(cell.x - 1, cell.y));
             bool bHasBottom = shapeCells.Contains(new Vector2Int(cell.x, cell.y + 1));
-            bool bHasTop    = shapeCells.Contains(new Vector2Int(cell.x, cell.y - 1));
+            bool bHasTop = shapeCells.Contains(new Vector2Int(cell.x, cell.y - 1));
 
-            float bExtraRight  = bHasRight  ? borderSize + sp : 0f;
-            float bExtraLeft   = bHasLeft   ? borderSize + sp : 0f;
+            float bExtraRight = bHasRight ? borderSize + sp : 0f;
+            float bExtraLeft = bHasLeft ? borderSize + sp : 0f;
             float bExtraBottom = bHasBottom ? borderSize + sp : 0f;
-            float bExtraTop    = bHasTop    ? borderSize + sp : 0f;
+            float bExtraTop = bHasTop ? borderSize + sp : 0f;
 
-            borderRt.sizeDelta        = new Vector2(cs + bExtraLeft + bExtraRight, cs + bExtraTop + bExtraBottom);
+            borderRt.sizeDelta = new Vector2(cs + bExtraLeft + bExtraRight, cs + bExtraTop + bExtraBottom);
             borderRt.anchoredPosition = new Vector2(cell.x * (cs + sp) - bExtraLeft, -cell.y * (cs + sp) + bExtraTop);
 
             var borderImg = borderGo.GetComponent<Image>();
-            borderImg.color         = borderColor;
+            borderImg.color = borderColor;
             borderImg.raycastTarget = false;
         }
 
         foreach (var cell in shapeCells)
         {
-            var go     = new GameObject($"cell_{cell.x}_{cell.y}", typeof(RectTransform), typeof(Image));
+            var go = new GameObject($"cell_{cell.x}_{cell.y}", typeof(RectTransform), typeof(Image));
             var cellRt = go.GetComponent<RectTransform>();
             cellRt.SetParent(shapePreviewRoot, false);
-            cellRt.pivot     = new Vector2(0f, 1f);
+            cellRt.pivot = new Vector2(0f, 1f);
             cellRt.anchorMin = new Vector2(0f, 1f);
             cellRt.anchorMax = new Vector2(0f, 1f);
 
-            bool hasRight  = shapeCells.Contains(new Vector2Int(cell.x + 1, cell.y));
-            bool hasLeft   = shapeCells.Contains(new Vector2Int(cell.x - 1, cell.y));
+            bool hasRight = shapeCells.Contains(new Vector2Int(cell.x + 1, cell.y));
+            bool hasLeft = shapeCells.Contains(new Vector2Int(cell.x - 1, cell.y));
             bool hasBottom = shapeCells.Contains(new Vector2Int(cell.x, cell.y + 1));
-            bool hasTop    = shapeCells.Contains(new Vector2Int(cell.x, cell.y - 1));
+            bool hasTop = shapeCells.Contains(new Vector2Int(cell.x, cell.y - 1));
 
-            float extraRight  = hasRight  ? borderSize + sp : 0f;
-            float extraLeft   = hasLeft   ? borderSize + sp : 0f;
+            float extraRight = hasRight ? borderSize + sp : 0f;
+            float extraLeft = hasLeft ? borderSize + sp : 0f;
             float extraBottom = hasBottom ? borderSize + sp : 0f;
-            float extraTop    = hasTop    ? borderSize + sp : 0f;
+            float extraTop = hasTop ? borderSize + sp : 0f;
 
-            cellRt.sizeDelta        = new Vector2(cs - borderSize * 2f + extraLeft + extraRight, cs - borderSize * 2f + extraTop + extraBottom);
+            cellRt.sizeDelta = new Vector2(cs - borderSize * 2f + extraLeft + extraRight, cs - borderSize * 2f + extraTop + extraBottom);
             cellRt.anchoredPosition = new Vector2(cell.x * (cs + sp) + borderSize - extraLeft, -cell.y * (cs + sp) - borderSize + extraTop);
 
             var cellImg = go.GetComponent<Image>();
             if (data.icon != null) cellImg.sprite = data.icon;
-            cellImg.color         = data.moduleColor;
+            cellImg.color = data.moduleColor;
             cellImg.raycastTarget = true;
         }
     }
