@@ -112,7 +112,6 @@ public class MapGeometry : MonoBehaviour
     public byte[,] Matrix => _matrix;
     public int MatrixSize => matrixSize;
 
-    
     public event Action<IReadOnlyList<MapNode>> OnMapReady;
 
     byte[,] _matrix;
@@ -131,11 +130,11 @@ public class MapGeometry : MonoBehaviour
 
         int spawnCorner = PickRandomCorner();
         _spawnNode = PlaceSpawnInCorner(spawnCorner);
-        if (_spawnNode == null) {  return; }
+        if (_spawnNode == null) { Debug.LogError("[MapGeometry] Failed to place Spawn."); return; }
 
         int bossCorner = OppositeCorner(spawnCorner);
         _bossNode = PlaceBossInCorner(bossCorner);
-        if (_bossNode == null) {  return; }
+        if (_bossNode == null) { Debug.LogError("[MapGeometry] Failed to place Boss."); return; }
 
         BuildMainPath();
 
@@ -154,7 +153,7 @@ public class MapGeometry : MonoBehaviour
         if (navMeshSurface != null)
             navMeshSurface.BuildNavMesh();
         else
-         
+            Debug.LogWarning("[MapGeometry] NavMeshSurface not assigned.");
 
         OnMapReady?.Invoke(_nodes);
     }
@@ -177,7 +176,7 @@ public class MapGeometry : MonoBehaviour
 
         if (!FitsInMatrix(ox, oz, bossRoomSize, bossRoomSize))
         {
-            
+            Debug.LogError("[MapGeometry] Boss room does not fit — reduce bossRoomSize or cornerMargin.");
             return null;
         }
 
@@ -212,7 +211,7 @@ public class MapGeometry : MonoBehaviour
             return StampAndCreateNode(RoomType.Spawn, prefab, ox, oz, sx, sz);
         }
 
-       
+        Debug.LogWarning($"[MapGeometry] Could not place Spawn in corner {corner}.");
         return null;
     }
 
@@ -229,7 +228,7 @@ public class MapGeometry : MonoBehaviour
             var hint = ClampToMatrix(Vector2Int.RoundToInt(Vector2.Lerp(spawnC, bossC, t)), maxRoomSize + roomPadding);
 
             var node = TryPlaceNear(RoomType.Battle, battleRoomPrefabs, hint, scatter: 10);
-            if (node == null) {  continue; }
+            if (node == null) { Debug.LogWarning($"[MapGeometry] Main-path battle node {i}/{n} failed."); continue; }
 
             AddEdge(prev, node);
             prev = node;
@@ -404,33 +403,33 @@ public class MapGeometry : MonoBehaviour
             var straight = TryStraight(a, b, preferTravelX);
             if (straight != null)
             {
+                Debug.Log($"[MapGeometry] {a.Type}↔{b.Type} — STRAIGHT ({(preferTravelX ? "X-axis" : "Z-axis")})  overlapX={overlapX:F2} overlapZ={overlapZ:F2}");
                 return straight;
             }
 
             straight = TryStraight(a, b, !preferTravelX);
             if (straight != null)
             {
+                Debug.Log($"[MapGeometry] {a.Type}↔{b.Type} — STRAIGHT ({(!preferTravelX ? "X-axis" : "Z-axis")} fallback)  overlapX={overlapX:F2} overlapZ={overlapZ:F2}");
                 return straight;
             }
-        }
-
-
-
-        var szShape = TrySZShape(a, b);
-        if (szShape != null)
-        {
-
-            return szShape;
         }
 
         var lShape = TryLShape(a, b);
         if (lShape != null)
         {
-
+            Debug.Log($"[MapGeometry] {a.Type}↔{b.Type} — L-SHAPE  overlapX={overlapX:F2} overlapZ={overlapZ:F2}");
             return lShape;
         }
 
+        var szShape = TrySZShape(a, b);
+        if (szShape != null)
+        {
+            Debug.Log($"[MapGeometry] {a.Type}↔{b.Type} — S/Z-SHAPE  overlapX={overlapX:F2} overlapZ={overlapZ:F2}");
+            return szShape;
+        }
 
+        Debug.LogWarning($"[MapGeometry] {a.Type}↔{b.Type} — WAYPOINT FALLBACK  overlapX={overlapX:F2} overlapZ={overlapZ:F2}");
         return WaypointFallback(a, b);
     }
 
@@ -622,6 +621,7 @@ public class MapGeometry : MonoBehaviour
             return new List<List<Vector2Int>> { toWP, fromWP };
         }
 
+        Debug.LogWarning($"[MapGeometry] Waypoint fallback forcing straight: {a.Type}↔{b.Type}");
         return new List<List<Vector2Int>> { Rasterize(exitA.x, exitA.y, exitB.x, exitB.y) };
     }
 
