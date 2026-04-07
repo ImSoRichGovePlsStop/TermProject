@@ -120,7 +120,7 @@ public class BattleRoom : MonoBehaviour
                 PlayerStats playerStats = FindFirstObjectByType<PlayerStats>();
                 StatScale scale = new StatScale();
                 scale.moveSpeed = Random.Range(0.9f, 1.1f);
-                scale.hp = 1f + (RunManager.Instance?.TotalRoomsCleared??0)*0.1f + (playerStats.BaseDamage) / (playerStats.Damage) * 0.15f;
+                scale.hp = 1f + (RunManager.Instance?.TotalRoomsCleared??0)*0.1f + (playerStats.Damage) / (playerStats.BaseDamage) * 0.15f;
                 scale.damage = 1f + (RunManager.Instance?.TotalBossKilled ?? 0) * 0.3f + (playerStats.MaxHealth) / (playerStats.BaseHealth) * 0.15f;
                 entityStats.SetStatScale(scale);
             }
