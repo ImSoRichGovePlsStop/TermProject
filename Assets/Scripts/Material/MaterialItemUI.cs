@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -303,6 +304,44 @@ public class MaterialItemUI : MonoBehaviour,
     {
         if (_stackText == null) return;
         _stackText.text = (Instance.MaxStack > 1 && Instance.StackCount > 1) ? Instance.StackCount.ToString() : "";
+    }
+
+    public void PlaySpawnPulse()
+    {
+        StartCoroutine(SpawnPulseCoroutine());
+    }
+
+    private IEnumerator SpawnPulseCoroutine()
+    {
+        yield return null;
+        var rawImages = GetComponentsInChildren<RawImage>(true);
+        float pulseDuration = 0.8f;
+        int pulseCount = 2;
+        Color brightColor = new Color(1f, 1f, 1f, 1f);
+
+        for (int p = 0; p < pulseCount; p++)
+        {
+            float t = 0f;
+            while (t < pulseDuration)
+            {
+                t += Time.deltaTime;
+                float lerp = t / pulseDuration;
+                for (int i = 0; i < rawImages.Length; i++)
+                    rawImages[i].color = Color.Lerp(Color.white, brightColor, lerp);
+                yield return null;
+            }
+            t = 0f;
+            while (t < pulseDuration)
+            {
+                t += Time.deltaTime;
+                float lerp = t / pulseDuration;
+                for (int i = 0; i < rawImages.Length; i++)
+                    rawImages[i].color = Color.Lerp(brightColor, Color.white, lerp);
+                yield return null;
+            }
+        }
+        for (int i = 0; i < rawImages.Length; i++)
+            rawImages[i].color = Color.white;
     }
 
     public void SnapToCell(GridUI gridUI, Vector2Int cell)

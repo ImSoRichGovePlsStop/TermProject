@@ -420,6 +420,52 @@ public class ModuleTooltipUI : MonoBehaviour
             PositionTooltip(inst);
         transform.SetAsLastSibling();
     }
+    public void ShowAtRect(ModuleInstance inst, RectTransform anchor)
+    {
+        Show(inst);
+        StartCoroutine(PositionAtRectNextFrame(anchor));
+    }
+
+    private IEnumerator PositionAtRectNextFrame(RectTransform anchor)
+    {
+        yield return null;
+        Canvas.ForceUpdateCanvases();
+        PositionTooltipAtRect(anchor);
+        transform.SetAsLastSibling();
+        if (detailPanel != null) detailPanel.transform.SetAsLastSibling();
+    }
+
+    private void PositionTooltipAtRect(RectTransform anchor)
+    {
+        if (rootCanvas == null) return;
+
+        var canvasRt = rootCanvas.GetComponent<RectTransform>();
+        float canvasH = canvasRt.rect.height;
+        Camera cam = rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : rootCanvas.worldCamera;
+
+        Vector3[] corners = new Vector3[4];
+        anchor.GetWorldCorners(corners);
+
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRt,
+            RectTransformUtility.WorldToScreenPoint(cam, (corners[0] + corners[2]) * 0.5f),
+            cam, out Vector2 center);
+
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRt,
+            RectTransformUtility.WorldToScreenPoint(cam, corners[1]),
+            cam, out Vector2 tl);
+
+        float tooltipW = rt.rect.width;
+        float tooltipH = rt.rect.height;
+        float halfH = canvasH * 0.5f;
+        float gap = 9f;
+        float edgeGap = 20f;
+
+        rt.pivot = new Vector2(0f, 1f);
+        float xPos = tl.x - tooltipW - gap;
+        float yPos = center.y + tooltipH * 0.5f;
+        yPos = Mathf.Clamp(yPos, -halfH + tooltipH + edgeGap, halfH - edgeGap);
+        rt.anchoredPosition = new Vector2(xPos, yPos);
+    }
 
     public void Hide()
     {

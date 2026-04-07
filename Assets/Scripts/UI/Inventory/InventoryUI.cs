@@ -97,6 +97,7 @@ public class InventoryUI : MonoBehaviour
             ui.SnapToCell(grid, cell);
             var cg = ui.GetComponent<CanvasGroup>();
             if (cg != null) cg.alpha = 1f;
+            ui.PlaySpawnPulse();
         }
         pendingSnaps.Clear();
     }
@@ -251,6 +252,7 @@ public class InventoryUI : MonoBehaviour
         Canvas.ForceUpdateCanvases();
         ui.SnapToCell(grid, cell);
         if (cg != null) cg.alpha = 1f;
+        ui.PlaySpawnPulse();
     }
 
     private IEnumerator SnapNextFrame(ModuleItemUI ui, GridUI grid, Vector2Int cell)
@@ -261,5 +263,6 @@ public class InventoryUI : MonoBehaviour
         Canvas.ForceUpdateCanvases();
         ui.SnapToCell(grid, cell);
         if (cg != null) cg.alpha = 1f;
+        ui.PlaySpawnPulse();
     }
 }

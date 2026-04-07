@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -282,6 +283,69 @@ public class ModuleItemUI : MonoBehaviour,
                 tmp.raycastTarget = false;
             }
         }
+    }
+
+    public void PlaySpawnPulse()
+    {
+        StartCoroutine(SpawnPulseCoroutine());
+    }
+
+    private IEnumerator SpawnPulseCoroutine()
+    {
+        var rawImages = GetComponentsInChildren<RawImage>(true);
+        var images = GetComponentsInChildren<Image>(true);
+        var rawOriginals = new Color[rawImages.Length];
+        for (int i = 0; i < rawImages.Length; i++)
+            rawOriginals[i] = rawImages[i].color;
+        var imgOriginals = new Color[images.Length];
+        for (int i = 0; i < images.Length; i++)
+            imgOriginals[i] = images[i].color;
+
+        // Set value
+        float pulseDuration = 0.8f;
+        int pulseCount = 2;
+        float pulseStrength = 0.7f;
+        Color pulseColor = Color.white;
+
+        var rawTargets = new Color[rawImages.Length];
+        for (int i = 0; i < rawImages.Length; i++)
+            rawTargets[i] = Color.Lerp(rawOriginals[i], pulseColor, pulseStrength);
+        var imgTargets = new Color[images.Length];
+        for (int i = 0; i < images.Length; i++)
+            imgTargets[i] = Color.Lerp(imgOriginals[i], pulseColor, pulseStrength);
+
+        for (int p = 0; p < pulseCount; p++)
+        {
+            float t = 0f;
+            while (t < pulseDuration)
+            {
+                t += Time.deltaTime;
+                float lerp = t / pulseDuration;
+                for (int i = 0; i < rawImages.Length; i++)
+                    rawImages[i].color = Color.Lerp(rawOriginals[i], rawTargets[i], lerp);
+                for (int i = 0; i < images.Length; i++)
+                    if (images[i].color != Color.clear)
+                        images[i].color = Color.Lerp(imgOriginals[i], imgTargets[i], lerp);
+                yield return null;
+            }
+            t = 0f;
+            while (t < pulseDuration)
+            {
+                t += Time.deltaTime;
+                float lerp = t / pulseDuration;
+                for (int i = 0; i < rawImages.Length; i++)
+                    rawImages[i].color = Color.Lerp(rawTargets[i], rawOriginals[i], lerp);
+                for (int i = 0; i < images.Length; i++)
+                    if (images[i].color != Color.clear)
+                        images[i].color = Color.Lerp(imgTargets[i], imgOriginals[i], lerp);
+                yield return null;
+            }
+        }
+        for (int i = 0; i < rawImages.Length; i++)
+            rawImages[i].color = rawOriginals[i];
+        for (int i = 0; i < images.Length; i++)
+            if (images[i].color != Color.clear)
+                images[i].color = imgOriginals[i];
     }
 
     public void RefreshAfterUpgrade()
