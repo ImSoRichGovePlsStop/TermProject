@@ -235,19 +235,22 @@ MonoBehaviour:
   - {fileID: 4518944767196815896, guid: e6f8d233161363c4aafc075c2c2c5f48, type: 3}
   battleRoomPrefabs:
   - {fileID: 4518944767196815896, guid: eecba8bacd40c6d44a0f26f9ead97b08, type: 3}
-  - {fileID: 4518944767196815896, guid: 10b1124dc2ef15247a1b8f36c0b3be30, type: 3}
+  - {fileID: 4518944767196815896, guid: 91f76bae2321f254987feab07f0edfce, type: 3}
+  - {fileID: 4518944767196815896, guid: 757f395cf458a3443aa97c48a8338968, type: 3}
+  - {fileID: 4518944767196815896, guid: eecba8bacd40c6d44a0f26f9ead97b08, type: 3}
+  - {fileID: 4518944767196815896, guid: 2079e077e6adf5e4289035231cd3d54d, type: 3}
   bossRoomPrefabs:
   - {fileID: 4518944767196815896, guid: 10b1124dc2ef15247a1b8f36c0b3be30, type: 3}
   shopRoomPrefabs:
-  - {fileID: 4518944767196815896, guid: e6f8d233161363c4aafc075c2c2c5f48, type: 3}
+  - {fileID: 4518944767196815896, guid: 757f395cf458a3443aa97c48a8338968, type: 3}
   healRoomPrefabs:
   - {fileID: 4518944767196815896, guid: e6f8d233161363c4aafc075c2c2c5f48, type: 3}
   mergeRoomPrefabs:
   - {fileID: 4518944767196815896, guid: e6f8d233161363c4aafc075c2c2c5f48, type: 3}
   rareLootRoomPrefabs:
   - {fileID: 4518944767196815896, guid: e6f8d233161363c4aafc075c2c2c5f48, type: 3}
-  matrixSize: 80
-  minRoomSize: 5
+  matrixSize: 75
+  minRoomSize: 1
   maxRoomSize: 15
   bossRoomSize: 15
   cornerMargin: 7
