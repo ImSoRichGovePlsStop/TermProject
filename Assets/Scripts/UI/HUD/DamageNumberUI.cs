@@ -51,6 +51,15 @@ public class DamageNumberUI : MonoBehaviour
         StartCoroutine(Animate(actualLifetime));
     }
 
+    public void InitMessage(string message, Color color, float fontSize = 3.5f, float duration = 1.4f)
+    {
+        cam = Camera.main;
+        damageText.text = message;
+        damageText.fontSize = fontSize;
+        damageText.color = color;
+        StartCoroutine(Animate(duration));
+    }
+
     public void InitHeal(float amount)
     {
         cam = Camera.main;
