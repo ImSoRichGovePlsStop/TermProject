@@ -1,8 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.ProBuilder;
 using UnityEngine.ProBuilder.MeshOperations;
+using Random = UnityEngine.Random;
 
 public class BattleRoom : MonoBehaviour
 {
@@ -139,6 +141,7 @@ public class BattleRoom : MonoBehaviour
 
         BuildWaveSizes();
         _currentWave = 0;
+        spawnRadius = math.min(roomSize.x,roomSize.z)/2.2f;
         SpawnWave(0);
 
         var ui = FindFirstObjectByType<UIManager>();

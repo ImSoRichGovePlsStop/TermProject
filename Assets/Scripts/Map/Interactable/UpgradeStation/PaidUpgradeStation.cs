@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class PaidUpgradeStation : UpgradeStation, IInteractable
 {
-    
+
     private int upgradeCost = 50;
 
     public override string GetPromptText() => $"[ E ] Upgrade Modules ({upgradeCost} Gold)";
@@ -11,7 +11,7 @@ public class PaidUpgradeStation : UpgradeStation, IInteractable
     private void Start()
     {
         _uiManager = FindFirstObjectByType<UIManager>();
-        upgradeCost = RunManager.Instance.TotalBossKilled*25 + 50 ;
+        upgradeCost = RunManager.Instance.TotalBossKilled * 25 + 50;
     }
 
     public override void Interact(PlayerController playerController)
@@ -31,15 +31,27 @@ public class PaidUpgradeStation : UpgradeStation, IInteractable
             candidates.Add(inst);
         }
 
-        if (candidates.Count > 0)
+        if (candidates.Count == 0)
         {
-            if (CurrencyManager.Instance.TrySpend(upgradeCost))
-            {
-                if (_uiManager == null) { Debug.LogError("[UpgradeStation] UIManager not found!"); return; }
-                _uiManager.OpenUpgrade(this);
-                upgradeCost = upgradeCost * 2;
-            }
+            DamageNumberSpawner.Instance?.SpawnMessage(
+                transform.position,
+                "Nothing to upgrade!",
+                new Color(1f, 0.6f, 0.2f));
+            return;
         }
+
+        if (!CurrencyManager.Instance.TrySpend(upgradeCost))
+        {
+            DamageNumberSpawner.Instance?.SpawnMessage(
+                transform.position,
+                $"Need {upgradeCost} coins!",
+                new Color(1f, 0.35f, 0.35f));
+            return;
+        }
+
+        if (_uiManager == null) { Debug.LogError("[UpgradeStation] UIManager not found!"); return; }
+        _uiManager.OpenUpgrade(this);
+        upgradeCost = upgradeCost * 2;
 
 
 

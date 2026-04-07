@@ -1,6 +1,12 @@
 ﻿using UnityEngine;
 
-public class CostedHealStation : MonoBehaviour, IInteractable
+/// <summary>
+/// A heal station that charges coins.
+/// Base cost and heal scale with floor.
+/// Heal amount gets a bonus equal to 15% of missing HP — rewarding players
+/// who interact while low on health.
+/// </summary>
+public class PaidHealObject : MonoBehaviour, IInteractable
 {
     [Header("Base Values (Floor 1)")]
     [Tooltip("Coins charged per use on floor 1.")]
@@ -25,7 +31,7 @@ public class CostedHealStation : MonoBehaviour, IInteractable
     [Tooltip("Destroy after one use. If false the station is reusable.")]
     public bool singleUse = false;
 
-    // ── IInteractable ─────────────────────────────────────────────────────────
+
 
     public string GetPromptText()
     {
@@ -33,8 +39,8 @@ public class CostedHealStation : MonoBehaviour, IInteractable
 
         var stats = FindStats();
         string healStr = stats != null
-            ? $"+{ComputeHeal(stats)} HP"   // exact value once we know player hp
-            : $"+{CurrentFlatHeal()}+ HP";  // fallback before stats known
+            ? $"+{ComputeHeal(stats)} HP"   
+            : $"+{CurrentFlatHeal()}+ HP";  
 
         bool canAfford = CurrencyManager.Instance != null &&
                          CurrencyManager.Instance.Coins >= cost;
@@ -53,6 +59,10 @@ public class CostedHealStation : MonoBehaviour, IInteractable
         if (!wallet.TrySpend(cost))
         {
             Debug.Log($"[PaidHeal] Not enough coins — need {cost}, have {wallet.Coins}.");
+            DamageNumberSpawner.Instance?.SpawnMessage(
+                transform.position,
+                "Not enough coins!",
+                new Color(1f, 0.35f, 0.35f));
             return;
         }
 
@@ -68,11 +78,7 @@ public class CostedHealStation : MonoBehaviour, IInteractable
             Destroy(gameObject);
     }
 
-    // ── Heal computation ──────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Total heal = flat floor-scaled amount + (missingHpHealPercent * missing HP).
-    /// </summary>
     int ComputeHeal(PlayerStats stats)
     {
         float missing = stats.MaxHealth - stats.CurrentHealth;
@@ -80,7 +86,6 @@ public class CostedHealStation : MonoBehaviour, IInteractable
         return Mathf.RoundToInt(CurrentFlatHeal() + bonusHeal);
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     int CurrentFloor() => RunManager.Instance?.CurrentFloor ?? 1;
     int CurrentCost() => baseCost + Mathf.Max(0, CurrentFloor() - 1) * costPerFloor;

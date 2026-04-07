@@ -1,16 +1,8 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class UIManager : MonoBehaviour
 {
-    public static UIManager Instance { get; private set; }
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-        Instance = this;
-    }
-
     [SerializeField] private GameObject hud;
     [SerializeField] private InventoryUI inventoryUI;
 
@@ -41,6 +33,14 @@ public class UIManager : MonoBehaviour
 
     private float holdTime = 0f;
     private float holdDuration = 1f;
+
+    public static UIManager Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+    }
 
     private void Start()
     {
@@ -88,7 +88,7 @@ public class UIManager : MonoBehaviour
         var kb = Keyboard.current;
         if (kb == null) return;
 
-        if (kb[Key.I].wasPressedThisFrame)
+        if (kb[Key.Tab].wasPressedThisFrame)
         {
 
             if (IsCardPhaseOpen) return;
@@ -104,7 +104,7 @@ public class UIManager : MonoBehaviour
             if (IsPassiveOpen) ClosePassive();
             else if (IsGamblerOpen) CloseGambler();
             else if (IsStorageOpen) CloseStorage();
-            else if (_upgradeOpen) { CloseUpgrade(); CloseInventoryImmediate(); }
+            else if (_upgradeOpen) return; 
             else if (IsMergeOpen) { CloseMerge(); CloseInventoryImmediate(); }
             else if (IsShopOpen) { CloseShop(); CloseInventoryImmediate(); }
             else if (IsInventoryOpen) ToggleInventory();
@@ -134,7 +134,7 @@ public class UIManager : MonoBehaviour
     {
         if (inventoryPanel == null)
         {
-            Debug.LogError("[UIManager] ToggleInventory called but inventoryPanel is null — is the InventoryPanel tag set?");
+            Debug.LogError("[UIManager] ToggleInventory called but inventoryPanel is null ï¿½ is the InventoryPanel tag set?");
             return;
         }
 
