@@ -102,6 +102,7 @@ GameObject:
   - component: {fileID: 8431220419892394301}
   - component: {fileID: 2355211518693546190}
   - component: {fileID: 3380074157446678072}
+  - component: {fileID: 1580025846536809774}
   m_Layer: 0
   m_Name: StorageStation
   m_TagString: Untagged
@@ -158,3 +159,16 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1580025846536809774
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8844951241645318716}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e6d50285b3671548a01de664f2a07da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BillboardSprite
+  isBillboard: 1

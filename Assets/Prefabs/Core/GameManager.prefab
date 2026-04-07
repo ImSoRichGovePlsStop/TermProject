@@ -3984,7 +3984,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5396811727601230292, guid: 088faad1b73749547a68f37dcc120c66, type: 3}
       propertyPath: testModules.Array.size
-      value: 6
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5396811727601230292, guid: 088faad1b73749547a68f37dcc120c66, type: 3}
       propertyPath: testModules.Array.data[1].data
