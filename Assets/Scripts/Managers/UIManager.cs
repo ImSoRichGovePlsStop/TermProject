@@ -88,7 +88,7 @@ public class UIManager : MonoBehaviour
         var kb = Keyboard.current;
         if (kb == null) return;
 
-        if (kb[Key.Tab].wasPressedThisFrame)
+        if (kb[Key.I].wasPressedThisFrame)
         {
 
             if (IsCardPhaseOpen) return;
