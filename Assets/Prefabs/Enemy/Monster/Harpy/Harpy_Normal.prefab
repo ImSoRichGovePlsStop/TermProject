@@ -157,13 +157,14 @@ GameObject:
   - component: {fileID: 3863606221569686120}
   - component: {fileID: 1060981644925858744}
   - component: {fileID: 905644545104097322}
+  - component: {fileID: 3374102186724316385}
   m_Layer: 8
   m_Name: Harpy_Normal
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2058558544051176065
 Transform:
   m_ObjectHideFlags: 0
@@ -339,3 +340,26 @@ MonoBehaviour:
   attackDashSpeed: 10
   attackDashDuration: 0.1
   attackDashHitRadius: 0.5
+--- !u!114 &3374102186724316385
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4095530523079436333}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d4dd2a12fa25f34e925bf8bd905354b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
+  entries:
+  - material: {fileID: 11400000, guid: f0ca83b97b25b5d49a5f13cfa1e2ee1e, type: 2}
+    weight: 20
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 0}
+    weight: 80
+    minCount: 0
+    maxCount: 0
+  maxDropsPerKill: 1
+  groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}

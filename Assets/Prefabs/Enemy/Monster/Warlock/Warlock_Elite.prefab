@@ -188,13 +188,14 @@ GameObject:
   - component: {fileID: 5644794410267954326}
   - component: {fileID: 6924083166627370347}
   - component: {fileID: 1875878696231198487}
+  - component: {fileID: 2344630096711186991}
   m_Layer: 8
   m_Name: Warlock_Elite
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2871061770565427837
 Transform:
   m_ObjectHideFlags: 0
@@ -403,3 +404,30 @@ MonoBehaviour:
   ultimateCircleCountMax: 7
   ultimateSpawnRadius: 6
   ultimateMinSpawnDistance: 2
+--- !u!114 &2344630096711186991
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7665104473517315308}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d4dd2a12fa25f34e925bf8bd905354b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
+  entries:
+  - material: {fileID: 11400000, guid: 639e11b582cd412439c05b679cae9970, type: 2}
+    weight: 60
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 2d986a1b4e06fd84cbecdbdde14af55f, type: 2}
+    weight: 30
+    minCount: 2
+    maxCount: 4
+  - material: {fileID: 0}
+    weight: 10
+    minCount: 0
+    maxCount: 0
+  maxDropsPerKill: 1
+  groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}

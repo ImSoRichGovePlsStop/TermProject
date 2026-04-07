@@ -135,6 +135,18 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3414316426762644326, guid: 2903b8f1bd8b1e64693773095af86e48, type: 3}
+      propertyPath: entries.Array.data[0].weight
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 3414316426762644326, guid: 2903b8f1bd8b1e64693773095af86e48, type: 3}
+      propertyPath: entries.Array.data[1].weight
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 3414316426762644326, guid: 2903b8f1bd8b1e64693773095af86e48, type: 3}
+      propertyPath: entries.Array.data[2].weight
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 4956095067510546409, guid: 2903b8f1bd8b1e64693773095af86e48, type: 3}
       propertyPath: m_LocalPosition.x
       value: -4.09
@@ -3466,10 +3478,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Harpy_Normal
       objectReference: {fileID: 0}
-    - target: {fileID: 4095530523079436333, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4414,42 +4422,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Harpy_Elite
       objectReference: {fileID: 0}
-    - target: {fileID: 2371149561134109772, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6574624719163675747, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
-      propertyPath: diveSpeed
-      value: 25
-      objectReference: {fileID: 0}
-    - target: {fileID: 6574624719163675747, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
-      propertyPath: airCooldown
-      value: 15
-      objectReference: {fileID: 0}
-    - target: {fileID: 6574624719163675747, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
-      propertyPath: diveHitRadius
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6574624719163675747, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
-      propertyPath: diveWanderSpeed
-      value: 6
-      objectReference: {fileID: 0}
-    - target: {fileID: 6574624719163675747, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
-      propertyPath: diveLockDuration
-      value: 0.1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6574624719163675747, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
-      propertyPath: diveWanderRadius
-      value: 2.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 6574624719163675747, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
-      propertyPath: airCooldownEnraged
-      value: 8
-      objectReference: {fileID: 0}
-    - target: {fileID: 6574624719163675747, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
-      propertyPath: diveMoveToPlayerDuration
-      value: 0.1
-      objectReference: {fileID: 0}
     - target: {fileID: 7519988898106117772, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
       propertyPath: m_LocalPosition.x
       value: -5.27
@@ -5336,10 +5308,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Warlock_Elite
       objectReference: {fileID: 0}
-    - target: {fileID: 7665104473517315308, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5356,10 +5324,6 @@ PrefabInstance:
     - target: {fileID: 1157175084331872940, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
       propertyPath: m_Name
       value: Hoplite_Normal
-      objectReference: {fileID: 0}
-    - target: {fileID: 1157175084331872940, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2215287256965508536, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
       propertyPath: m_LocalPosition.x
@@ -5404,59 +5368,8 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1157175084331872940, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 5122898614284527300}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
---- !u!1 &5122898614284527299 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1157175084331872940, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
-  m_PrefabInstance: {fileID: 5122898614284527298}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &5122898614284527300
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5122898614284527299}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9d4dd2a12fa25f34e925bf8bd905354b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
-  entries:
-  - material: {fileID: 11400000, guid: 3ebaea6ce79161b41a27ab479dae5444, type: 2}
-    weight: 1
-    minCount: 1
-    maxCount: 1
-  - material: {fileID: 11400000, guid: f0ca83b97b25b5d49a5f13cfa1e2ee1e, type: 2}
-    weight: 1
-    minCount: 1
-    maxCount: 1
-  - material: {fileID: 11400000, guid: 1943ab224046af546b92465f6b40ef50, type: 2}
-    weight: 1
-    minCount: 1
-    maxCount: 1
-  - material: {fileID: 11400000, guid: d1691728feead1440831ad1c54495f58, type: 2}
-    weight: 1
-    minCount: 1
-    maxCount: 1
-  - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
-    weight: 1
-    minCount: 1
-    maxCount: 1
-  - material: {fileID: 11400000, guid: 2d986a1b4e06fd84cbecdbdde14af55f, type: 2}
-    weight: 3
-    minCount: 1
-    maxCount: 1
-  - material: {fileID: 11400000, guid: 639e11b582cd412439c05b679cae9970, type: 2}
-    weight: 3
-    minCount: 1
-    maxCount: 1
-  maxDropsPerKill: 10
-  groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
 --- !u!1001 &6906156574962185042
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5468,10 +5381,6 @@ PrefabInstance:
     - target: {fileID: 3306226684668820766, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
       propertyPath: m_Name
       value: Warlock
-      objectReference: {fileID: 0}
-    - target: {fileID: 3306226684668820766, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7919638240924375049, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
       propertyPath: m_LocalPosition.x
