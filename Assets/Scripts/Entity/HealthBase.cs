@@ -9,6 +9,7 @@ public abstract class HealthBase : MonoBehaviour
 
     [Header("Flash")]
     [SerializeField] private SpriteRenderer spriteRenderer;
+    [SerializeField] private SpriteRenderer flashSpriteRenderer;
     [SerializeField] private Color flashColor = Color.red;
     [SerializeField] private float flashDuration = 0.1f;
 
@@ -47,10 +48,25 @@ public abstract class HealthBase : MonoBehaviour
         currentHP = maxHP;
 
         if (spriteRenderer == null)
-            spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        {
+            var visual = transform.Find("Visual");
+            if (visual != null)
+                spriteRenderer = visual.GetComponent<SpriteRenderer>();
+        }
+
+        if (flashSpriteRenderer == null)
+        {
+            var overlay = transform.Find("FlashOverlay");
+            if (overlay != null)
+                flashSpriteRenderer = overlay.GetComponent<SpriteRenderer>();
+        }
 
         if (spriteRenderer != null)
+        {
             originalColor = spriteRenderer.color;
+            if (flashSpriteRenderer != null)
+                flashSpriteRenderer.color = new Color(1f, 1f, 1f, 0f);
+        }
     }
 
     protected virtual void Start()
@@ -60,6 +76,16 @@ public abstract class HealthBase : MonoBehaviour
     }
 
     protected virtual void Update() { }
+
+    protected virtual void LateUpdate()
+    {
+        if (flashSpriteRenderer != null && spriteRenderer != null)
+        {
+            flashSpriteRenderer.sprite = spriteRenderer.sprite;
+            flashSpriteRenderer.flipX = spriteRenderer.flipX;
+            flashSpriteRenderer.flipY = spriteRenderer.flipY;
+        }
+    }
 
     public void SetMaxHP(float newMaxHP)
     {
@@ -136,19 +162,67 @@ public abstract class HealthBase : MonoBehaviour
 
     public void TryFlash()
     {
+        TryFlash(flashColor);
+    }
+
+    public void TryFlash(Color color)
+    {
         if (spriteRenderer == null) return;
 
         if (flashCoroutine != null)
             StopCoroutine(flashCoroutine);
 
-        flashCoroutine = StartCoroutine(FlashRoutine());
+        flashCoroutine = StartCoroutine(FlashRoutine(color));
     }
 
-    private IEnumerator FlashRoutine()
+    private IEnumerator FlashRoutine(Color color)
     {
-        spriteRenderer.color = flashColor;
-        yield return new WaitForSeconds(flashDuration);
-        spriteRenderer.color = originalColor;
+        if (flashSpriteRenderer != null)
+        {
+            flashSpriteRenderer.color = new Color(color.r, color.g, color.b, 1f);
+            yield return new WaitForSeconds(flashDuration);
+            flashSpriteRenderer.color = new Color(color.r, color.g, color.b, 0f);
+        }
+        else
+        {
+            spriteRenderer.color = color;
+            yield return new WaitForSeconds(flashDuration);
+            spriteRenderer.color = originalColor;
+        }
         flashCoroutine = null;
+    }
+
+    private Coroutine buildupCoroutine;
+
+    public void StartFlashBuildup(Color color, float buildupDuration, float maxAlpha = 0.4f)
+    {
+        if (flashSpriteRenderer == null) return;
+        if (buildupCoroutine != null) StopCoroutine(buildupCoroutine);
+        buildupCoroutine = StartCoroutine(FlashBuildupRoutine(color, buildupDuration, maxAlpha));
+    }
+
+    private IEnumerator FlashBuildupRoutine(Color color, float buildupDuration, float maxAlpha)
+    {
+        float elapsed = 0f;
+        while (elapsed < buildupDuration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = Mathf.Lerp(0f, maxAlpha, elapsed / buildupDuration);
+            if (flashSpriteRenderer != null)
+                flashSpriteRenderer.color = new Color(color.r, color.g, color.b, alpha);
+            yield return null;
+        }
+        buildupCoroutine = null;
+    }
+
+    public void StopFlashBuildup()
+    {
+        if (buildupCoroutine != null)
+        {
+            StopCoroutine(buildupCoroutine);
+            buildupCoroutine = null;
+        }
+        if (flashSpriteRenderer != null)
+            flashSpriteRenderer.color = new Color(1f, 1f, 1f, 0f);
     }
 }
