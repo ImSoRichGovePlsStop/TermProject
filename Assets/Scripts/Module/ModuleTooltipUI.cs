@@ -420,6 +420,105 @@ public class ModuleTooltipUI : MonoBehaviour
             PositionTooltip(inst);
         transform.SetAsLastSibling();
     }
+    public void ShowAtRect(ModuleInstance inst, RectTransform anchor)
+    {
+        Show(inst);
+        StartCoroutine(PositionAtRectNextFrame(anchor));
+    }
+
+    public void ShowNextLevelAtRect(ModuleInstance inst, RectTransform anchor)
+    {
+        Show(inst);
+
+        int nextLevel = inst.Level + 1;
+        levelTextNormal = $"Lv.{nextLevel}<color=#88FF88>\u25B2</color>";
+        levelTextExpanded = $"<color=#666666><s>Lv.{inst.Level}</s></color> Lv.{nextLevel}";
+        levelText.text = levelTextNormal;
+
+        var effect = inst.Data.moduleEffect;
+        if (effect != null && statDescRef != null)
+        {
+            var emptyState = new ModuleRuntimeState();
+            var (curLabel, curBefore, curAfter, format) = effect.GetStatPreview(inst.Rarity, inst.Level, emptyState, playerStats);
+            var (nextLabel, nextBefore, nextAfter, _) = effect.GetStatPreview(inst.Rarity, nextLevel, emptyState, playerStats);
+
+            if (curLabel != null && nextLabel != null && curLabel != nextLabel)
+            {
+                int spaceIdx = curLabel.IndexOf(' ');
+                string curNum = spaceIdx >= 0 ? curLabel.Substring(0, spaceIdx) : curLabel;
+                string nextNum = spaceIdx >= 0 ? nextLabel.Substring(0, nextLabel.IndexOf(' ')) : nextLabel;
+                string statName = spaceIdx >= 0 ? nextLabel.Substring(nextLabel.IndexOf(' ') + 1) : "";
+
+                statDescNormal = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> {nextNum} <color=#88FF88>\u25B2</color> {statName}";
+                statDescExpanded = $"<size=55%><voffset=0.25em>\u25B6</voffset></size> <color=#666666><s>{curNum}</s></color> {nextNum} {statName}";
+                statDescRef.text = statDescNormal;
+            }
+
+            if (statRows.Count > 0 && nextBefore >= 0f && nextAfter >= 0f)
+            {
+                bool isPercent = format.EndsWith("%");
+                string fmt = format.Replace("%", "");
+                string beforeStr = isPercent ? $"{nextBefore.ToString(fmt)}%" : nextBefore.ToString(fmt);
+                string afterStr = isPercent ? $"{nextAfter.ToString(fmt)}%" : nextAfter.ToString(fmt);
+                statRows[0].value.text = $"<color=#888888>{beforeStr} <voffset=0.05em>\u2192</voffset></color> {afterStr}";
+            }
+        }
+
+        costText.text = $"$ {(int)new ModuleInstance(inst.Data, inst.Rarity, nextLevel).GetCostAtLevel()}";
+
+        PopulatePassiveCompare(inst);
+        StartCoroutine(PositionAtRectNextFrame(anchor));
+    }
+
+    private IEnumerator PositionAtRectNextFrame(RectTransform anchor)
+    {
+        yield return null;
+        Canvas.ForceUpdateCanvases();
+        PositionTooltipAtRect(anchor);
+        transform.SetAsLastSibling();
+        if (detailPanel != null) detailPanel.transform.SetAsLastSibling();
+    }
+
+    private void PositionTooltipAtRect(RectTransform anchor)
+    {
+        if (rootCanvas == null) return;
+
+        var canvasRt = rootCanvas.GetComponent<RectTransform>();
+        float canvasH = canvasRt.rect.height;
+        Camera cam = rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : rootCanvas.worldCamera;
+
+        Vector3[] corners = new Vector3[4];
+        anchor.GetWorldCorners(corners);
+
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRt,
+            RectTransformUtility.WorldToScreenPoint(cam, (corners[0] + corners[2]) * 0.5f),
+            cam, out Vector2 center);
+
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRt,
+            RectTransformUtility.WorldToScreenPoint(cam, corners[1]),
+            cam, out Vector2 tl);
+
+        float tooltipW = rt.rect.width;
+        float tooltipH = rt.rect.height;
+        float halfH = canvasH * 0.5f;
+        float gap = 9f;
+        float edgeGap = 20f;
+
+        rt.pivot = new Vector2(0f, 1f);
+        float xPos = tl.x - tooltipW - gap;
+        float yPos = center.y + tooltipH * 0.5f;
+        yPos = Mathf.Clamp(yPos, -halfH + tooltipH + edgeGap, halfH - edgeGap);
+        rt.anchoredPosition = new Vector2(xPos, yPos);
+
+        if (detailPanel != null && detailPanel.activeSelf)
+        {
+            var detailRt = detailPanel.GetComponent<RectTransform>();
+            detailRt.anchorMin = rt.anchorMin;
+            detailRt.anchorMax = rt.anchorMax;
+            detailRt.pivot = new Vector2(1f, 1f);
+            detailRt.anchoredPosition = new Vector2(xPos - gap, yPos);
+        }
+    }
 
     public void Hide()
     {
@@ -686,6 +785,38 @@ public class ModuleTooltipUI : MonoBehaviour
         foreach (Transform child in footerContainer.transform)
             Destroy(child.gameObject);
         footerContainer.SetActive(false);
+    }
+
+    private void PopulatePassiveCompare(ModuleInstance inst)
+    {
+        var effect = inst.Data.moduleEffect;
+        if (effect == null) return;
+
+        var layout = effect.GetPassiveLayout();
+        if (layout == ModuleEffect.PassiveLayout.None) return;
+
+        var emptyState = new ModuleRuntimeState();
+        var currentEntries = effect.GetPassiveEntries(inst.Rarity, inst.Level, emptyState);
+        var nextEntries = effect.GetPassiveEntries(inst.Rarity, inst.Level + 1, emptyState);
+
+        if (currentEntries == null || nextEntries == null) return;
+
+        for (int i = 0; i < passiveBoxes.Count && i < nextEntries.Length && i < currentEntries.Length; i++)
+        {
+            var cur = currentEntries[i];
+            var next = nextEntries[i];
+
+            bool changed = cur.value != next.value;
+            string normalText = changed
+                ? $"{next.value}<color=#88FF88>\u25B2</color>"
+                : next.value;
+            string expandedText = changed
+                ? $"<color=#666666><s>{cur.value}</s></color> {next.value}"
+                : next.value;
+
+            passiveBoxes[i].value.text = normalText;
+            passiveBoxTexts[i] = (normalText, expandedText);
+        }
     }
 
     private void PopulatePassive(ModuleInstance inst)

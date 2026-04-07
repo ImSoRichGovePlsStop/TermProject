@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -305,6 +306,44 @@ public class MaterialItemUI : MonoBehaviour,
         _stackText.text = (Instance.MaxStack > 1 && Instance.StackCount > 1) ? Instance.StackCount.ToString() : "";
     }
 
+    public void PlaySpawnPulse()
+    {
+        StartCoroutine(SpawnPulseCoroutine());
+    }
+
+    private IEnumerator SpawnPulseCoroutine()
+    {
+        yield return null;
+        var rawImages = GetComponentsInChildren<RawImage>(true);
+        float pulseDuration = 0.2f;
+        int pulseCount = 3;
+        Color brightColor = new Color(1f, 1f, 0.4f, 1f); // yellow-white flash
+
+        for (int p = 0; p < pulseCount; p++)
+        {
+            float t = 0f;
+            while (t < pulseDuration)
+            {
+                t += Time.deltaTime;
+                float lerp = t / pulseDuration;
+                for (int i = 0; i < rawImages.Length; i++)
+                    rawImages[i].color = Color.Lerp(Color.white, brightColor, lerp);
+                yield return null;
+            }
+            t = 0f;
+            while (t < pulseDuration)
+            {
+                t += Time.deltaTime;
+                float lerp = t / pulseDuration;
+                for (int i = 0; i < rawImages.Length; i++)
+                    rawImages[i].color = Color.Lerp(brightColor, Color.white, lerp);
+                yield return null;
+            }
+        }
+        for (int i = 0; i < rawImages.Length; i++)
+            rawImages[i].color = Color.white;
+    }
+
     public void SnapToCell(GridUI gridUI, Vector2Int cell)
     {
         var gridRt = gridUI.GetComponent<RectTransform>();
@@ -376,8 +415,8 @@ public class MaterialItemUI : MonoBehaviour,
         ClearHighlights();
 
         var gridsToCheck = MergeUI.IsMergeOpen
-            ? new[] { InputGridUI, BagGridUI, EnvGridUI, DiscardGridUI.Instance?.GridUI }
-            : new[] { BagGridUI, EnvGridUI, InputGridUI, DiscardGridUI.Instance?.GridUI };
+            ? new[] { InputGridUI, BagGridUI, EnvGridUI, (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible ? DiscardGridUI.Instance.GridUI : null) }
+            : new[] { BagGridUI, EnvGridUI, InputGridUI, (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible ? DiscardGridUI.Instance.GridUI : null) };
 
         foreach (var g in gridsToCheck)
         {
@@ -504,8 +543,8 @@ public class MaterialItemUI : MonoBehaviour,
         }
 
         GridUI[] gridsToHighlight = MergeUI.IsMergeOpen
-            ? new[] { InputGridUI, BagGridUI, EnvGridUI, DiscardGridUI.Instance?.GridUI }
-            : new[] { BagGridUI, EnvGridUI, InputGridUI, DiscardGridUI.Instance?.GridUI };
+            ? new[] { InputGridUI, BagGridUI, EnvGridUI, (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible ? DiscardGridUI.Instance.GridUI : null) }
+            : new[] { BagGridUI, EnvGridUI, InputGridUI, (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible ? DiscardGridUI.Instance.GridUI : null) };
 
         foreach (var g in gridsToHighlight)
         {
@@ -530,7 +569,7 @@ public class MaterialItemUI : MonoBehaviour,
         BagGridUI?.ClearHighlights();
         EnvGridUI?.ClearHighlights();
         InputGridUI?.ClearHighlights();
-        DiscardGridUI.Instance?.GridUI.ClearHighlights();
+        if (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible) DiscardGridUI.Instance.GridUI?.ClearHighlights();
     }
 
     private Vector2Int GetClickedLocalCell(PointerEventData e)
