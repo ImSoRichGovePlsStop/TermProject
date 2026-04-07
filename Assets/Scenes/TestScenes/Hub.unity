@@ -119,6 +119,42 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &120887708 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7907684781983267318, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
+  m_PrefabInstance: {fileID: 594755408}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &120887714
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 120887708}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8426aac43e6583e44aacff4f61bd5c55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerVisual
+  invincibleTint: {r: 0.5019608, g: 0.8, b: 1, a: 1}
+  invincibleWhiteAmount: 1
+  hitFlashColor: {r: 1, g: 0, b: 0, a: 1}
+  flashDuration: 0.1
+--- !u!114 &120887715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 120887708}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e162110b0b5ae654c8a920daf06f30e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DashTrail
+  spawnInterval: 0.03
+  fadeDuration: 0.2
+  trailColor: {r: 0.5, g: 0.8, b: 1, a: 0.6}
 --- !u!1001 &170252333
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2924,7 +2960,13 @@ PrefabInstance:
     - {fileID: 0}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7907684781983267318, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 120887714}
+    - targetCorrespondingSourceObject: {fileID: 7907684781983267318, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 120887715}
   m_SourcePrefab: {fileID: 100100000, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
 --- !u!1001 &623291647
 PrefabInstance:
@@ -5028,7 +5070,15 @@ MonoBehaviour:
     weight: 1
     minCount: 1
     maxCount: 1
-  maxDropsPerKill: 5
+  - material: {fileID: 11400000, guid: 2d986a1b4e06fd84cbecdbdde14af55f, type: 2}
+    weight: 3
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 639e11b582cd412439c05b679cae9970, type: 2}
+    weight: 3
+    minCount: 1
+    maxCount: 1
+  maxDropsPerKill: 10
   groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
 --- !u!1001 &6906156574962185042
 PrefabInstance:

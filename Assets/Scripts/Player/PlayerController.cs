@@ -31,6 +31,7 @@ public class PlayerController : MonoBehaviour
     private float dashTimer = 0f;
     private float dashCooldownTimer = 0f;
     private Vector3 dashDirection;
+    private DashTrail dashTrail;
 
     [Header("Interaction")]
     public float interactRange = 2f;
@@ -48,6 +49,7 @@ public class PlayerController : MonoBehaviour
         wandAttack = GetComponent<WandAttack>();
         interactPrompt = FindFirstObjectByType<InteractPromptUI>(FindObjectsInactive.Include);
         uiManager = FindFirstObjectByType<UIManager>();
+        dashTrail = GetComponentInChildren<DashTrail>();
 
         anim.SetFloat("moveX", 0);
         anim.SetFloat("moveY", -1);
@@ -74,6 +76,7 @@ public class PlayerController : MonoBehaviour
             dashDirection = new Vector3(lastDir.x, 0, lastDir.y).normalized;
 
         isDashing = true;
+        dashTrail?.StartTrail();
         dashTimer = weapon.dashDuration;
         dashCooldownTimer = weapon.dashCooldown;
 
@@ -262,6 +265,7 @@ public class PlayerController : MonoBehaviour
             if (dashTimer <= 0)
             {
                 isDashing = false;
+                dashTrail?.StopTrail();
                 stats.SetInvincible(false);
                 anim.SetBool("isDashing", false);
             }
