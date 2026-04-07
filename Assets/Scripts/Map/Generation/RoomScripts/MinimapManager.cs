@@ -36,7 +36,7 @@ public class MinimapManager : MonoBehaviour
     private int _matrixSize;
     private int _minX, _minZ;   // map bounds offset used for UI positioning
 
-    // ── Called by MapGenerator ────────────────────────────────────────────────
+
 
     public void BuildMinimapFromMatrix(byte[,] matrix, int size, List<RoomNode> rooms)
     {
@@ -60,6 +60,15 @@ public class MinimapManager : MonoBehaviour
                     if (z < _minZ) _minZ = z; if (z > maxZ) maxZ = z;
                 }
 
+        // Matrix center in cell space
+        int matrixCenterX = size / 2;
+        int matrixCenterZ = size / 2;
+
+        // Keep the panel at its designed size — do NOT resize it.
+        // Position every cell so that the matrix center maps to panel (0,0),
+        // which is the panel's center when pivot = (0.5, 0.5).
+        minimapRoot.pivot = new Vector2(0.5f, 0.5f);
+
         for (int x = _minX; x <= maxX; x++)
             for (int z = _minZ; z <= maxZ; z++)
             {
@@ -69,8 +78,8 @@ public class MinimapManager : MonoBehaviour
                 var img = MakeCell($"MC_{x}_{z}", minimapRoot);
                 img.rectTransform.sizeDelta = Vector2.one * cellPixels;
                 img.rectTransform.anchoredPosition = new Vector2(
-                    (x - _minX) * cellPixels,
-                    (z - _minZ) * cellPixels);
+                    (x - matrixCenterX) * cellPixels,
+                    (z - matrixCenterZ) * cellPixels);
 
                 img.color = v == Cell.Corridor ? corridorColor : unvisitedRoom;
                 _cellImages[new Vector2Int(x, z)] = img;
@@ -79,10 +88,8 @@ public class MinimapManager : MonoBehaviour
         foreach (var node in rooms)
             _centerToNode[node.MatrixCenter] = node;
 
-        // Auto-size panel to fit the map
-        minimapRoot.sizeDelta = new Vector2(
-            (maxX - _minX + 1) * cellPixels,
-            (maxZ - _minZ + 1) * cellPixels);
+        // Panel size is left as-is (set in the Inspector).
+        // Cells outside the panel rect are naturally clipped by the panel's mask.
     }
 
     // ── Called by room scripts on player enter ────────────────────────────────

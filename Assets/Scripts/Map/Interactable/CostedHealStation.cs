@@ -1,11 +1,5 @@
 ﻿using UnityEngine;
 
-/// <summary>
-/// A heal station that charges coins.
-/// Base cost and heal scale with floor.
-/// Heal amount gets a bonus equal to 15% of missing HP — rewarding players
-/// who interact while low on health.
-/// </summary>
 public class PaidHealObject : MonoBehaviour, IInteractable
 {
     [Header("Base Values (Floor 1)")]
