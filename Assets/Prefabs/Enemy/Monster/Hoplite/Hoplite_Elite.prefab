@@ -337,6 +337,8 @@ MonoBehaviour:
   movement: {fileID: 0}
   stats: {fileID: 0}
   animator: {fileID: 0}
+  coinDropMin: 50
+  coinDropMax: 80
   attackRange: 1.2
   attackDamageScale: 1
   attackCooldown: 1.2

@@ -367,6 +367,8 @@ MonoBehaviour:
   movement: {fileID: 0}
   stats: {fileID: 0}
   animator: {fileID: 0}
+  coinDropMin: 50
+  coinDropMax: 80
   shootRange: 6
   minRange: 4
   shootCooldown: 2
