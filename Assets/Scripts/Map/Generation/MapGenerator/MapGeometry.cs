@@ -533,12 +533,7 @@ public class MapGeometry : MonoBehaviour
             }
         }
 
-        var lShape = TryLShape(a, b);
-        if (lShape != null)
-        {
 
-            return lShape;
-        }
 
         var szShape = TrySZShape(a, b);
         if (szShape != null)
@@ -547,6 +542,12 @@ public class MapGeometry : MonoBehaviour
             return szShape;
         }
 
+        var lShape = TryLShape(a, b);
+        if (lShape != null)
+        {
+
+            return lShape;
+        }
 
         return WaypointFallback(a, b);
     }
