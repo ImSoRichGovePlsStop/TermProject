@@ -25,6 +25,7 @@ public class MapNode
     public GameObject RoomObject;
 
     [NonSerialized] public List<MapEdge> Edges = new();
+    [NonSerialized] public RoomNode LegacyNode;
 
     public int CenterX => (MinX + MaxX) / 2;
     public int CenterZ => (MinZ + MaxZ) / 2;
@@ -108,7 +109,6 @@ public class MapGeometry : MonoBehaviour
     public byte[,] Matrix => _matrix;
     public int MatrixSize => matrixSize;
 
-
     public event Action<IReadOnlyList<MapNode>> OnMapReady;
 
     byte[,] _matrix;
@@ -145,7 +145,7 @@ public class MapGeometry : MonoBehaviour
         SpawnAllWalls();
 
         FindFirstObjectByType<MinimapManager>()
-            ?.BuildMinimapFromMatrix(_matrix, matrixSize, ToLegacyRoomNodes());
+            ?.BuildMinimapFromMatrix(_matrix, matrixSize, ToLegacyRoomNodes(), _edges);
 
         OnMapReady?.Invoke(_nodes);
     }
@@ -937,9 +937,10 @@ public class MapGeometry : MonoBehaviour
 
     List<RoomNode> ToLegacyRoomNodes()
     {
-        var list = new List<RoomNode>();
+        var nodeMap = new Dictionary<MapNode, RoomNode>();
         foreach (var n in _nodes)
-            list.Add(new RoomNode
+        {
+            var legacy = new RoomNode
             {
                 Type = n.Type,
                 MatrixOrigin = new Vector2Int(n.MinX, n.MinZ),
@@ -948,8 +949,18 @@ public class MapGeometry : MonoBehaviour
                 WorldPosition = n.WorldCenter,
                 ChosenPrefab = n.ChosenPrefab,
                 RoomObject = n.RoomObject,
-            });
-        return list;
+            };
+            nodeMap[n] = legacy;
+            n.LegacyNode = legacy;
+        }
+        foreach (var edge in _edges)
+        {
+            if (!nodeMap.TryGetValue(edge.A, out var la) ||
+                !nodeMap.TryGetValue(edge.B, out var lb)) continue;
+            if (!la.Neighbors.Contains(lb)) la.Neighbors.Add(lb);
+            if (!lb.Neighbors.Contains(la)) lb.Neighbors.Add(la);
+        }
+        return new List<RoomNode>(nodeMap.Values);
     }
 
     void OnDrawGizmos()

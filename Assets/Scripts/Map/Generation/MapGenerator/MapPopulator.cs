@@ -208,14 +208,18 @@ public class MapPopulator : MonoBehaviour
     }
 
 
-    static RoomNode ToLegacy(MapNode n) => new RoomNode
+    static RoomNode ToLegacy(MapNode n)
     {
-        Type = n.Type,
-        MatrixOrigin = new Vector2Int(n.MinX, n.MinZ),
-        MatrixCenter = new Vector2Int(n.CenterX, n.CenterZ),
-        Size = new Vector2Int(n.Width, n.Depth),
-        WorldPosition = n.WorldCenter,
-        ChosenPrefab = n.ChosenPrefab,
-        RoomObject = n.RoomObject,
-    };
+        if (n.LegacyNode != null) return n.LegacyNode;
+        return new RoomNode
+        {
+            Type = n.Type,
+            MatrixOrigin = new Vector2Int(n.MinX, n.MinZ),
+            MatrixCenter = new Vector2Int(n.CenterX, n.CenterZ),
+            Size = new Vector2Int(n.Width, n.Depth),
+            WorldPosition = n.WorldCenter,
+            ChosenPrefab = n.ChosenPrefab,
+            RoomObject = n.RoomObject,
+        };
+    }
 }
