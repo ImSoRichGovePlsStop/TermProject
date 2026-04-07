@@ -157,6 +157,7 @@ GameObject:
   - component: {fileID: 3136113640065723832}
   - component: {fileID: 5806527871803175979}
   - component: {fileID: 5732453335519450507}
+  - component: {fileID: 2878338833426155221}
   m_Layer: 8
   m_Name: Warlock
   m_TagString: Enemy
@@ -355,6 +356,29 @@ MonoBehaviour:
   strafeIdleTimeMin: 0.5
   strafeIdleTimeMax: 1.5
   retreatDelay: 0.5
+--- !u!114 &2878338833426155221
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3306226684668820766}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d4dd2a12fa25f34e925bf8bd905354b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
+  entries:
+  - material: {fileID: 11400000, guid: 2d986a1b4e06fd84cbecdbdde14af55f, type: 2}
+    weight: 20
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 0}
+    weight: 80
+    minCount: 0
+    maxCount: 0
+  maxDropsPerKill: 1
+  groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
 --- !u!1 &8678485007192300171
 GameObject:
   m_ObjectHideFlags: 0

@@ -157,6 +157,7 @@ GameObject:
   - component: {fileID: 6021029256873973459}
   - component: {fileID: 1725738327197803718}
   - component: {fileID: 6574624719163675747}
+  - component: {fileID: 8102250709167687699}
   m_Layer: 8
   m_Name: Harpy_Elite
   m_TagString: Enemy
@@ -272,8 +273,7 @@ MonoBehaviour:
   healthBarHeight: 0.4
   healthBarScale: {x: 2, y: 1.5, z: 1}
   tier: 1
-  airPhaseHPThreshold: 0.6
-  eliteController: {fileID: 6574624719163675747}
+  enrageThreshold: 0.5
 --- !u!114 &6021029256873973459
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -335,27 +335,57 @@ MonoBehaviour:
   movement: {fileID: 0}
   stats: {fileID: 0}
   animator: {fileID: 0}
+  coinDropMin: 50
+  coinDropMax: 80
   attackRange: 1.5
   attackDamageScale: 1
   attackCooldown: 1.5
   attackDashSpeed: 15
   attackDashDuration: 0.1
   attackDashHitRadius: 0.6
-  airCooldown: 8
+  airCooldown: 15
+  airCooldownEnraged: 8
   flyHeight: 5
   flySpeed: 8
   hoverDuration: 2
-  diveSpeed: 14
+  diveSpeed: 25
   diveDamageScale: 2
   diveHitRadius: 1
   diveWarningPrefab: {fileID: 7845990777759493363, guid: 5f5ca432fd1f7c04cad90250c95492fa, type: 3}
   diveWarningRadius: 0.8
   diveWanderDuration: 2
-  diveLockDuration: 0.5
-  diveMoveToPlayerDuration: 0.5
-  diveWanderRadius: 5
-  diveWanderSpeed: 3
+  diveLockDuration: 0.2
+  diveMoveToPlayerDuration: 0.2
+  diveWanderRadius: 2.5
+  diveWanderSpeed: 6
   shockwavePrefab: {fileID: 542710960782387923, guid: 80a5637c73398b747a1ad0672a1a13af, type: 3}
   shockwaveDamageScale: 1
   landRadius: 5
   rb: {fileID: 749927982167029811}
+--- !u!114 &8102250709167687699
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2371149561134109772}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d4dd2a12fa25f34e925bf8bd905354b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
+  entries:
+  - material: {fileID: 11400000, guid: 3ebaea6ce79161b41a27ab479dae5444, type: 2}
+    weight: 60
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: f0ca83b97b25b5d49a5f13cfa1e2ee1e, type: 2}
+    weight: 30
+    minCount: 2
+    maxCount: 4
+  - material: {fileID: 0}
+    weight: 10
+    minCount: 0
+    maxCount: 0
+  maxDropsPerKill: 1
+  groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}

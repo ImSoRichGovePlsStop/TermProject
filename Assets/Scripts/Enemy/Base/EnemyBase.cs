@@ -29,6 +29,10 @@ public abstract class EnemyBase : MonoBehaviour
     [SerializeField] protected EntityStats stats;
     [SerializeField] protected Animator animator;
 
+    [Header("Coin Drop")]
+    [SerializeField] public int coinDropMin = 4;
+    [SerializeField] public int coinDropMax = 9;
+
     protected bool isDead;
 
     protected PlayerStats playerTarget;

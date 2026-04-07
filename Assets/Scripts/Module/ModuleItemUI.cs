@@ -351,9 +351,9 @@ public class ModuleItemUI : MonoBehaviour,
                 t += Time.deltaTime;
                 float lerp = t / pulseDuration;
                 for (int i = 0; i < rawImages.Length; i++)
-                    rawImages[i].color = Color.Lerp(rawOriginals[i], rawTargets[i], lerp);
+                    if (rawImages[i] != null) rawImages[i].color = Color.Lerp(rawOriginals[i], rawTargets[i], lerp);
                 for (int i = 0; i < images.Length; i++)
-                    if (images[i].color != Color.clear)
+                    if (images[i] != null && images[i].color != Color.clear)
                         images[i].color = Color.Lerp(imgOriginals[i], imgTargets[i], lerp);
                 yield return null;
             }
@@ -363,17 +363,17 @@ public class ModuleItemUI : MonoBehaviour,
                 t += Time.deltaTime;
                 float lerp = t / pulseDuration;
                 for (int i = 0; i < rawImages.Length; i++)
-                    rawImages[i].color = Color.Lerp(rawTargets[i], rawOriginals[i], lerp);
+                    if (rawImages[i] != null) rawImages[i].color = Color.Lerp(rawTargets[i], rawOriginals[i], lerp);
                 for (int i = 0; i < images.Length; i++)
-                    if (images[i].color != Color.clear)
+                    if (images[i] != null && images[i].color != Color.clear)
                         images[i].color = Color.Lerp(imgTargets[i], imgOriginals[i], lerp);
                 yield return null;
             }
         }
         for (int i = 0; i < rawImages.Length; i++)
-            rawImages[i].color = rawOriginals[i];
+            if (rawImages[i] != null) rawImages[i].color = rawOriginals[i];
         for (int i = 0; i < images.Length; i++)
-            if (images[i].color != Color.clear)
+            if (images[i] != null && images[i].color != Color.clear)
                 images[i].color = imgOriginals[i];
     }
 

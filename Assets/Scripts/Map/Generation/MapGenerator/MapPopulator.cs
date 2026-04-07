@@ -168,14 +168,12 @@ public class MapPopulator : MonoBehaviour
 
     int ScaleEnemyCount(Vector3 vol)
     {
-        float scale = (((vol.x * vol.z) / 60f)-1)*0.7f + 1f;
+        float scale = (((vol.x * vol.z) / 60f) - 1) * 0.3f + 1f;
 
-
-        
-        return (int)((Random.Range(3, 8) + (RunManager.Instance?.CurrentFloor ?? 1)) * scale + 2);
+        return (int)(Random.Range(8f, 12f) * scale);
     }
 
-        GameObject PickBoss()
+    GameObject PickBoss()
     {
         if (bossPrefabs == null || bossPrefabs.Length == 0) return null;
         int idx = Mathf.Clamp((RunManager.Instance?.CurrentFloor ?? 1) - 1, 0, bossPrefabs.Length - 1);
