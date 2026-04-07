@@ -1,2 +1,14 @@
 fileFormatVersion: 2
 guid: 04040f047ea04784585ea17b9ed1e39c
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - shopStationPrefab: {fileID: 1093928034212126860, guid: 8b795f5129d428344a94c032060bfa9e, type: 3}
+  - HealStationPrefab: {fileID: 2767562332682079375, guid: c526cc79c9200bc4c8851ea8886bd976, type: 3}
+  - UpgradeStationPrefab: {fileID: 7158039087586434884, guid: 572ffcb4eefecb24098d3ed45262f716, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -1,205 +1,160 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.ProBuilder;
-using UnityEngine.ProBuilder.MeshOperations;
-using static UnityEditor.PlayerSettings;
 
-public class BossRoom : MonoBehaviour
+public class BossRoom : BattleRoom
 {
-    [Header("State")]
-    public bool isLocked  = false;
-    public bool isCleared = false;
-
-    [HideInInspector] public RoomNode node;
-
-    [Header("Room")]
-    private Vector3          roomSize;
-    private List<GameObject> invisibleWalls = new List<GameObject>();
-
     [Header("Boss")]
     public GameObject bossPrefab;
-    public GameObject lootPrefab;
     public GameObject portalPrefab;
     public GameObject portalFinalPrefab;
 
-    public Material boundaryMaterial;
+    [Header("Normal Enemy Spawns")]
+    public float spawnInterval = 12f;
+    public int spawnCountMin = 1;
+    public int spawnCountMax = 3;
+    public int maxAliveNormals = 6;
 
-    private List<GameObject> spawnedEnemies = new List<GameObject>();
+    private GameObject _bossInstance;
+    private List<GameObject> _normalEnemies = new();
+    private Coroutine _spawnRoutine;
 
-    void Update()
+    public override void OnPlayerEnter()
     {
-        if (isLocked && !isCleared)
-        {
-            spawnedEnemies.RemoveAll(e => e == null);
-            if (spawnedEnemies.Count == 0)
-            {
-                UIManager _uiManager = FindFirstObjectByType<UIManager>();
-                _uiManager.isInBattle = false;
-                ClearRoom();
-            }
-        }
-    }
+        FindFirstObjectByType<MinimapManager>()?.OnPlayerEnterRoom(node);
+        if (isCleared) return;
 
-    public void SetRoomSize(Vector3 size)
-    {
-        roomSize = size;
-    }
+        LockRoom();
+        Subscribe();
+        SpawnBoss();
 
-    public void OnPlayerEnter()
-    {
-        if (!isCleared)
-        {
-            LockRoom();
-            SpawnBoss();
-            UIManager _uiManager = FindFirstObjectByType<UIManager>();
-            _uiManager.isInBattle = true;
-            _uiManager.CloseShop();
-            if (_uiManager.IsInventoryOpen)
-                _uiManager.ToggleInventory();
-            FindFirstObjectByType<MinimapManager>()?.OnPlayerEnterRoom(node);
-        }
-    }
+        if (enemyPrefabs != null && enemyPrefabs.Length > 0)
+            _spawnRoutine = StartCoroutine(PeriodicNormalSpawner());
 
-    private void LockRoom()
-    {
-        isLocked = true;
-        CreateInvisibleWalls();
-    }
-
-    private void ClearRoom()
-    {
-        isCleared = true;
-        isLocked  = false;
-        RemoveInvisibleWalls();
-
-        // loot slightly south
-        Vector3 lootPos = transform.position + new Vector3(0f, 0f, -2f);
-        Instantiate(lootPrefab, lootPos, Quaternion.identity);
-
-        // pick portal based on next floor
-        int nextFloor = (RunManager.Instance?.CurrentFloor ?? 1) + 1;
-        GameObject selectedPortal = nextFloor > 4 && portalFinalPrefab != null
-            ? portalFinalPrefab
-            : portalPrefab;
-
-        Vector3 portalPos = transform.position + new Vector3(0f, 0f, 2f);
-        Instantiate(selectedPortal, portalPos, Quaternion.identity);
-
-        CurrencyManager wallet = Object.FindFirstObjectByType<CurrencyManager>();
-        wallet.AddCoins(Random.Range(100,300));
-
-        RunManager.Instance?.OnBossKilled();
+        var ui = FindFirstObjectByType<UIManager>();
+        ui.isInBattle = true;
+        ui.CloseShop();
+        if (ui.IsInventoryOpen) ui.ToggleInventory();
     }
 
     private void SpawnBoss()
     {
-        if (bossPrefab == null) { Debug.LogWarning("[BossRoom] Boss prefab missing!"); return; }
+        if (bossPrefab == null) return;
 
-        GameObject currentEnemy = Instantiate(bossPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
-        if (currentEnemy.TryGetComponent<EntityStats>(out EntityStats entityStats))
+        _bossInstance = Instantiate(bossPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
+        _aliveCount = 1;
+
+        if (_bossInstance.TryGetComponent<EntityStats>(out var stats))
         {
-            PlayerStats playerStats = FindFirstObjectByType<PlayerStats>();
-            StatScale scale = new StatScale();
+            var player = FindFirstObjectByType<PlayerStats>();
+            var scale = new StatScale();
             scale.moveSpeed = Random.Range(0.9f, 1.1f);
-            scale.hp = 1f + (RunManager.Instance?.TotalBossKilled ?? 0) * 1.1f + (playerStats.BaseDamage) / (playerStats.Damage) * 0.05f - (RunManager.Instance?.TotalEnemyKilled??0)*0.001f;
-            scale.damage = 1f + (RunManager.Instance?.TotalBossKilled ?? 0) * 0.3f + (playerStats.MaxHealth) / (playerStats.BaseHealth) * 0.05f;
-            entityStats.SetStatScale(scale);
+            scale.hp = 1f + (RunManager.Instance?.TotalBossKilled ?? 0) * 1.1f
+                                 + (player.BaseDamage / Mathf.Max(1f, player.Damage)) * 0.05f
+                                 - (RunManager.Instance?.TotalEnemyKilled ?? 0) * 0.001f;
+            scale.damage = 1f + (RunManager.Instance?.TotalBossKilled ?? 0) * 0.3f
+                                 + (player.MaxHealth / Mathf.Max(1f, player.BaseHealth)) * 0.05f;
+            stats.SetStatScale(scale);
         }
-
-        spawnedEnemies.Add(currentEnemy);
     }
 
-    private void CreateInvisibleWalls()
+    protected override void OnEntityKilled(HealthBase enemy)
     {
-        //CreateRoomBoundary();
+        if (!isLocked || isCleared) return;
 
-        (Vector3 pos, Vector3 size)[] wallConfigs = new[]
+        RunManager.Instance?.OnEnemyKilled();
+        var enemyBase = enemy.GetComponent<EnemyBase>();
+        int coinMin = enemyBase != null ? enemyBase.coinDropMin : 4;
+        int coinMax = enemyBase != null ? enemyBase.coinDropMax : 9;
+        float floorMult = 1f + ((RunManager.Instance?.CurrentFloor ?? 1) - 1) * 0.3f;
+        Object.FindFirstObjectByType<CurrencyManager>()
+              ?.AddCoins(Mathf.RoundToInt(Random.Range(coinMin, coinMax + 1) * floorMult));
+
+        if (enemy.gameObject == _bossInstance)
         {
-            (new Vector3(-roomSize.x / 2f, roomSize.y / 2f, 0f), new Vector3(0.01f, roomSize.y, roomSize.z)),
-            (new Vector3( roomSize.x / 2f, roomSize.y / 2f, 0f), new Vector3(0.01f, roomSize.y, roomSize.z)),
-            (new Vector3(0f, roomSize.y / 2f,  roomSize.z / 2f), new Vector3(roomSize.x, roomSize.y, 0.01f)),
-            (new Vector3(0f, roomSize.y / 2f, -roomSize.z / 2f), new Vector3(roomSize.x, roomSize.y, 0.01f)),
+            _aliveCount = 0;
+            StartCoroutine(OnWaveCleared());
+        }
+        else
+        {
+            _normalEnemies.RemoveAll(e => e == null);
+        }
+    }
+
+    protected override IEnumerator OnWaveCleared()
+    {
+        if (_spawnRoutine != null) { StopCoroutine(_spawnRoutine); _spawnRoutine = null; }
+
+        FindFirstObjectByType<UIManager>().isInBattle = false;
+        Unsubscribe();
+        ClearRoom();
+        yield break;
+    }
+
+    private IEnumerator PeriodicNormalSpawner()
+    {
+        yield return new WaitForSeconds(spawnInterval);
+
+        while (_bossInstance != null && !isCleared)
+        {
+            _normalEnemies.RemoveAll(e => e == null);
+
+            int alreadyAlive = _normalEnemies.Count;
+            int toSpawn = Random.Range(spawnCountMin, spawnCountMax + 1);
+
+            for (int i = 0; i < toSpawn; i++)
+            {
+                if (alreadyAlive >= maxAliveNormals) break;
+
+                var prefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
+                Vector2 offset = Random.insideUnitCircle.normalized * Random.Range(1f, spawnRadius);
+                Vector3 pos = transform.position + new Vector3(offset.x, 0.5f, offset.y);
+                var enemy = Instantiate(prefab, pos, Quaternion.identity);
+                ApplyEnemyScale(enemy);
+                _normalEnemies.Add(enemy);
+                alreadyAlive++;
+            }
+
+            yield return new WaitForSeconds(spawnInterval);
+        }
+    }
+
+    protected override void ClearRoom()
+    {
+        isCleared = true;
+        isLocked = false;
+        RemoveInvisibleWalls();
+
+        foreach (var e in _normalEnemies)
+            if (e != null) Destroy(e);
+        _normalEnemies.Clear();
+
+        SpawnLoot(transform.position + new Vector3(0f, 0f, -2f));
+
+        int nextFloor = (RunManager.Instance?.CurrentFloor ?? 1) + 1;
+        var portal = nextFloor > 4 && portalFinalPrefab != null ? portalFinalPrefab : portalPrefab;
+        Instantiate(portal, transform.position + new Vector3(0f, 0f, 2f), Quaternion.identity);
+
+        Object.FindFirstObjectByType<CurrencyManager>()?.AddCoins(Random.Range(100, 300));
+        RunManager.Instance?.OnBossKilled();
+    }
+
+    protected override LootConfig BuildLootConfig()
+    {
+        int floor = RunManager.Instance?.CurrentFloor ?? 1;
+        int roomsCleared = RunManager.Instance?.TotalRoomsCleared ?? 0;
+        int bossKills = RunManager.Instance?.TotalBossKilled ?? 0;
+        float baseMean = 50f + floor * 30f + roomsCleared * 5f + 10f;
+        return new LootConfig
+        {
+            optionCount = 1,
+            meanCost = baseMean * 3f + bossKills * 50f,
+            sd = (20f + (floor - 1) * 3f) * 0.2f,
+            allowDuplicates = false,
         };
-
-        foreach (var (localPos, size) in wallConfigs)
-        {
-            var wall = new GameObject("InvisibleWall");
-            wall.transform.SetParent(transform);
-            wall.transform.localPosition = localPos;
-            wall.AddComponent<BoxCollider>().size = size;
-            invisibleWalls.Add(wall);
-        }
     }
 
-    private void CreateRoomBoundary()
-    {
-        ProBuilderMesh pbMesh = ProBuilderMesh.Create();
-        PolyShape polyShape   = pbMesh.gameObject.AddComponent<PolyShape>();
-
-        float halfX = (roomSize.x / 2f) + 0.01f;
-        float halfZ = (roomSize.z / 2f) + 0.01f;
-
-        polyShape.SetControlPoints(new Vector3[]
-        {
-            new Vector3(-halfX, 0, -halfZ),
-            new Vector3(-halfX, 0,  halfZ),
-            new Vector3( halfX, 0,  halfZ),
-            new Vector3( halfX, 0, -halfZ),
-        });
-
-        polyShape.extrude     = 2;
-        polyShape.flipNormals = true;
-
-        pbMesh.CreateShapeFromPolygon(polyShape.controlPoints, polyShape.extrude, polyShape.flipNormals);
-        pbMesh.transform.SetParent(transform);
-        pbMesh.transform.localPosition = new Vector3(0f, -0.01f, 0f);
-        pbMesh.ToMesh();
-        pbMesh.Refresh();
-
-        if (boundaryMaterial != null)
-            pbMesh.GetComponent<Renderer>().material = boundaryMaterial;
-
-        invisibleWalls.Add(pbMesh.gameObject);
-    }
-
-    private void RemoveInvisibleWalls()
-    {
-        foreach (var wall in invisibleWalls)
-            if (wall != null) Destroy(wall);
-        invisibleWalls.Clear();
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (!other.CompareTag("Player")) return;
-        StartCoroutine(WaitForPlayerInside(other.transform));
-    }
-
-    private System.Collections.IEnumerator WaitForPlayerInside(Transform playerTransform)
-    {
-        float inset = 0.3f;
-        while (true)
-        {
-            Vector3 playerFlat = new Vector3(playerTransform.position.x, transform.position.y, playerTransform.position.z);
-            Vector3 roomMin    = transform.position - new Vector3(roomSize.x / 2f - inset, 0, roomSize.z / 2f - inset);
-            Vector3 roomMax    = transform.position + new Vector3(roomSize.x / 2f - inset, 0, roomSize.z / 2f - inset);
-
-            bool insideX = playerFlat.x >= roomMin.x && playerFlat.x <= roomMax.x;
-            bool insideZ = playerFlat.z >= roomMin.z && playerFlat.z <= roomMax.z;
-
-            if (insideX && insideZ) break;
-
-            float distFromCenter = Vector3.Distance(playerFlat, transform.position);
-            float maxDist = Mathf.Max(roomSize.x, roomSize.z);
-            if (distFromCenter > maxDist) yield break;
-
-            yield return null;
-        }
-
-        OnPlayerEnter();
-    }
-
-    void OnDrawGizmosSelected()
+    protected override void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.magenta;
         Gizmos.DrawWireCube(transform.position + Vector3.up * (roomSize.y / 2f), roomSize);
