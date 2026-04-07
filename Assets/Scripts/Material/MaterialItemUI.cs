@@ -315,9 +315,9 @@ public class MaterialItemUI : MonoBehaviour,
     {
         yield return null;
         var rawImages = GetComponentsInChildren<RawImage>(true);
-        float pulseDuration = 0.8f;
-        int pulseCount = 2;
-        Color brightColor = new Color(1f, 1f, 1f, 1f);
+        float pulseDuration = 0.2f;
+        int pulseCount = 3;
+        Color brightColor = new Color(1f, 1f, 0.4f, 1f); // yellow-white flash
 
         for (int p = 0; p < pulseCount; p++)
         {
@@ -415,8 +415,8 @@ public class MaterialItemUI : MonoBehaviour,
         ClearHighlights();
 
         var gridsToCheck = MergeUI.IsMergeOpen
-            ? new[] { InputGridUI, BagGridUI, EnvGridUI, DiscardGridUI.Instance?.GridUI }
-            : new[] { BagGridUI, EnvGridUI, InputGridUI, DiscardGridUI.Instance?.GridUI };
+            ? new[] { InputGridUI, BagGridUI, EnvGridUI, (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible ? DiscardGridUI.Instance.GridUI : null) }
+            : new[] { BagGridUI, EnvGridUI, InputGridUI, (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible ? DiscardGridUI.Instance.GridUI : null) };
 
         foreach (var g in gridsToCheck)
         {
@@ -543,8 +543,8 @@ public class MaterialItemUI : MonoBehaviour,
         }
 
         GridUI[] gridsToHighlight = MergeUI.IsMergeOpen
-            ? new[] { InputGridUI, BagGridUI, EnvGridUI, DiscardGridUI.Instance?.GridUI }
-            : new[] { BagGridUI, EnvGridUI, InputGridUI, DiscardGridUI.Instance?.GridUI };
+            ? new[] { InputGridUI, BagGridUI, EnvGridUI, (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible ? DiscardGridUI.Instance.GridUI : null) }
+            : new[] { BagGridUI, EnvGridUI, InputGridUI, (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible ? DiscardGridUI.Instance.GridUI : null) };
 
         foreach (var g in gridsToHighlight)
         {
@@ -569,7 +569,7 @@ public class MaterialItemUI : MonoBehaviour,
         BagGridUI?.ClearHighlights();
         EnvGridUI?.ClearHighlights();
         InputGridUI?.ClearHighlights();
-        DiscardGridUI.Instance?.GridUI.ClearHighlights();
+        if (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible) DiscardGridUI.Instance.GridUI?.ClearHighlights();
     }
 
     private Vector2Int GetClickedLocalCell(PointerEventData e)

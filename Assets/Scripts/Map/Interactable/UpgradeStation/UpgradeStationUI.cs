@@ -92,11 +92,12 @@ public class UpgradeStationUI : MonoBehaviour
     {
         instance.SetLevel(instance.Level + 1);
 
-
         var moduleUI = instance.UIElement as ModuleItemUI;
         if (moduleUI != null)
+        {
             moduleUI.RefreshAfterUpgrade();
-
+            moduleUI.PlaySpawnPulse();
+        }
 
         var uiManager = FindFirstObjectByType<UIManager>();
         uiManager?.CloseUpgrade();
