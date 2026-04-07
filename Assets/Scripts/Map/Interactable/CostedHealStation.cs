@@ -40,7 +40,7 @@ public class PaidHealObject : MonoBehaviour, IInteractable
                          CurrencyManager.Instance.Coins >= cost;
 
         string affordMarker = canAfford ? "" : " <color=#FF6060>(can't afford)</color>";
-        return $"[ E ]  Heal  {healStr}  ({cost} coins){affordMarker}";
+        return $"[ E ]  Heal  {healStr}  ({cost} coins)";
     }
 
     public void Interact(PlayerController playerController)

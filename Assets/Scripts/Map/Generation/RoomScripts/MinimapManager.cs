@@ -219,7 +219,7 @@ public class MinimapManager : MonoBehaviour
             RoomType.Boss => bossColor,
             RoomType.Shop => shopColor,
             RoomType.Heal => healColor,
-            RoomType.Upgrade => upgradeColor,
+            RoomType.RareLoot => upgradeColor,
             RoomType.Merge => mergeColor,
             _ => visitedBattle
         };

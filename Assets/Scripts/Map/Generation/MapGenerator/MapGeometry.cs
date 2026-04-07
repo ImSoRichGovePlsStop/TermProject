@@ -5,7 +5,7 @@ using UnityEngine.ProBuilder;
 using UnityEngine.ProBuilder.MeshOperations;
 using Random = UnityEngine.Random;
 
-public enum RoomType { None, Spawn, Battle, Boss, Shop, Merge, Heal, Upgrade }
+public enum RoomType { None, Spawn, Battle, Boss, Shop, Merge, Heal, RareLoot }
 
 public static class Cell
 {
@@ -63,8 +63,8 @@ public class MapGeometry : MonoBehaviour
     public GameObject[] bossRoomPrefabs;
     public GameObject[] shopRoomPrefabs;
     public GameObject[] healRoomPrefabs;
-    public GameObject[] upgradeRoomPrefabs;
     public GameObject[] mergeRoomPrefabs;
+    public GameObject[] rareLootRoomPrefabs;
 
     [Header("Matrix")]
     public int matrixSize = 150;
@@ -85,8 +85,15 @@ public class MapGeometry : MonoBehaviour
     public float fillRoomBudget = 0.35f;
     [Tooltip("Max extra Battle rooms placed outside the main path. -1 = unlimited.")]
     public int maxExtraBattleRooms = 6;
-    [Tooltip("Max extra Event rooms (Heal/Shop/Upgrade/Merge) placed outside the main path. -1 = unlimited.")]
+    [Tooltip("Max extra Event rooms (Heal/Shop/RareLoot/Merge) placed outside the main path. -1 = unlimited.")]
     public int maxExtraEventRooms = 4;
+
+    [Header("Event Room Weights")]
+    public float weightBattle = 4f;
+    public float weightHeal = 1f;
+    public float weightShop = 1f;
+    public float weightRareLoot = 1f;
+    public float weightMerge = 1f;
 
     [Header("Corridors")]
     public int corridorWidth = 3;
@@ -233,26 +240,13 @@ public class MapGeometry : MonoBehaviour
         int extraBattle = 0;
         int extraEvent = 0;
 
-        var fillTypes = new[]
-        {
-            RoomType.Battle, RoomType.Heal,    RoomType.Battle,
-            RoomType.Shop,   RoomType.Battle,   RoomType.Upgrade,
-            RoomType.Battle, RoomType.Merge,
-        };
-        int typeIdx = 0;
-
         while (CountUsedCells() < budgetCells && consecutiveFails < maxFails)
         {
-            RoomType type = fillTypes[typeIdx++ % fillTypes.Length];
-
-            if (type == RoomType.Battle && maxExtraBattleRooms >= 0 && extraBattle >= maxExtraBattleRooms)
-                type = PickEventType(typeIdx);
-            if (IsEventRoom(type) && maxExtraEventRooms >= 0 && extraEvent >= maxExtraEventRooms)
-                type = RoomType.Battle;
-
             bool battleFull = maxExtraBattleRooms >= 0 && extraBattle >= maxExtraBattleRooms;
             bool eventFull = maxExtraEventRooms >= 0 && extraEvent >= maxExtraEventRooms;
             if (battleFull && eventFull) break;
+
+            RoomType type = PickWeightedRoomType(battleFull, eventFull);
 
             int hintX = Random.Range(maxRoomSize + roomPadding, matrixSize - maxRoomSize - roomPadding);
             int hintZ = Random.Range(maxRoomSize + roomPadding, matrixSize - maxRoomSize - roomPadding);
@@ -265,6 +259,25 @@ public class MapGeometry : MonoBehaviour
             }
             consecutiveFails = node == null ? consecutiveFails + 1 : 0;
         }
+    }
+
+    RoomType PickWeightedRoomType(bool battleFull, bool eventFull)
+    {
+        float bw = battleFull ? 0f : weightBattle;
+        float hw = eventFull ? 0f : weightHeal;
+        float sw = eventFull ? 0f : weightShop;
+        float rw = eventFull ? 0f : weightRareLoot;
+        float mw = eventFull ? 0f : weightMerge;
+
+        float total = bw + hw + sw + rw + mw;
+        if (total <= 0f) return RoomType.Battle;
+
+        float roll = Random.Range(0f, total);
+        if ((roll -= bw) < 0f) return RoomType.Battle;
+        if ((roll -= hw) < 0f) return RoomType.Heal;
+        if ((roll -= sw) < 0f) return RoomType.Shop;
+        if ((roll -= rw) < 0f) return RoomType.RareLoot;
+        return RoomType.Merge;
     }
 
     int CountUsedCells()
@@ -523,18 +536,18 @@ public class MapGeometry : MonoBehaviour
         var lShape = TryLShape(a, b);
         if (lShape != null)
         {
-            
+
             return lShape;
         }
 
         var szShape = TrySZShape(a, b);
         if (szShape != null)
         {
-            
+
             return szShape;
         }
 
-        
+
         return WaypointFallback(a, b);
     }
 
@@ -914,15 +927,15 @@ public class MapGeometry : MonoBehaviour
 
     static bool IsEventRoom(MapNode n) =>
         n.Type == RoomType.Heal || n.Type == RoomType.Shop ||
-        n.Type == RoomType.Upgrade || n.Type == RoomType.Merge;
+        n.Type == RoomType.RareLoot || n.Type == RoomType.Merge;
 
     static bool IsEventRoom(RoomType t) =>
         t == RoomType.Heal || t == RoomType.Shop ||
-        t == RoomType.Upgrade || t == RoomType.Merge;
+        t == RoomType.RareLoot || t == RoomType.Merge;
 
     static RoomType PickEventType(int idx)
     {
-        var events = new[] { RoomType.Heal, RoomType.Shop, RoomType.Upgrade, RoomType.Merge };
+        var events = new[] { RoomType.Heal, RoomType.Shop, RoomType.RareLoot, RoomType.Merge };
         return events[idx % events.Length];
     }
 
@@ -1029,7 +1042,7 @@ public class MapGeometry : MonoBehaviour
         RoomType.Boss => bossRoomPrefabs,
         RoomType.Shop => shopRoomPrefabs,
         RoomType.Heal => healRoomPrefabs,
-        RoomType.Upgrade => upgradeRoomPrefabs,
+        RoomType.RareLoot => rareLootRoomPrefabs,
         RoomType.Merge => mergeRoomPrefabs,
         _ => battleRoomPrefabs
     };
@@ -1089,7 +1102,7 @@ public class MapGeometry : MonoBehaviour
                 RoomType.Shop => Color.yellow,
                 RoomType.Merge => Color.cyan,
                 RoomType.Heal => Color.white,
-                RoomType.Upgrade => new Color(1f, 0.5f, 0f),
+                RoomType.RareLoot => new Color(1f, 0.5f, 0f),
                 _ => Color.grey
             };
             Gizmos.DrawWireCube(

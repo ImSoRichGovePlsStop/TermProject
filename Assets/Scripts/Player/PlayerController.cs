@@ -182,7 +182,6 @@ public class PlayerController : MonoBehaviour
         }
 
         closest?.Interact(this);
-        Debug.Log("casted");
     }
 
 
