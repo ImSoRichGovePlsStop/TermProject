@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public enum CardMode { Reward, Shop }
+public enum CardMode { Reward, Shop, Upgrade }
 
 public class ItemCardUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
@@ -26,6 +26,9 @@ public class ItemCardUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
     private bool _purchased = false;
     private int _price;
 
+    // Upgrade
+    private UpgradeStationUI _upgradeUI;
+
     // --- Init ---
 
     public void InitReward(ModuleInstance inst, LootRewardUI rewardUI)
@@ -35,6 +38,24 @@ public class ItemCardUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
         _rewardUI = rewardUI;
 
         if (priceText != null) priceText.gameObject.SetActive(false);
+        if (buyButton != null) buyButton.gameObject.SetActive(false);
+        if (statusText != null) statusText.gameObject.SetActive(false);
+
+        SetNameText(inst);
+        BuildShapePreview(inst.Data, inst.Rarity);
+    }
+
+    public void InitUpgrade(ModuleInstance inst, UpgradeStationUI upgradeUI)
+    {
+        _mode = CardMode.Upgrade;
+        _inst = inst;
+        _upgradeUI = upgradeUI;
+
+        if (priceText != null)
+        {
+            priceText.gameObject.SetActive(true);
+            priceText.text = $"Lv.{inst.Level} <voffset=0.05em>\u2192</voffset> Lv.{inst.Level + 1}";
+        }
         if (buyButton != null) buyButton.gameObject.SetActive(false);
         if (statusText != null) statusText.gameObject.SetActive(false);
 
@@ -91,10 +112,13 @@ public class ItemCardUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
 
     public void OnPointerClick(PointerEventData e)
     {
-        if (_mode != CardMode.Reward) return;
         if (e.button != PointerEventData.InputButton.Left) return;
         ModuleTooltipUI.Instance?.Hide();
-        _rewardUI.OnOptionSelected(_inst);
+
+        if (_mode == CardMode.Reward)
+            _rewardUI.OnOptionSelected(_inst);
+        else if (_mode == CardMode.Upgrade)
+            _upgradeUI.OnOptionSelected(_inst);
     }
 
     // --- Shop ---
@@ -163,7 +187,10 @@ public class ItemCardUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
     public void OnPointerEnter(PointerEventData e)
     {
         if (_mode == CardMode.Shop && _purchased) return;
-        ModuleTooltipUI.Instance?.ShowAtRect(_inst, GetComponent<RectTransform>());
+        if (_mode == CardMode.Upgrade)
+            ModuleTooltipUI.Instance?.ShowNextLevelAtRect(_inst, GetComponent<RectTransform>());
+        else
+            ModuleTooltipUI.Instance?.ShowAtRect(_inst, GetComponent<RectTransform>());
     }
 
     public void OnPointerExit(PointerEventData e)

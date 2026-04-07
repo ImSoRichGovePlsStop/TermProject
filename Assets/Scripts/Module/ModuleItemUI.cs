@@ -285,23 +285,52 @@ public class ModuleItemUI : MonoBehaviour,
         }
     }
 
+    private RawImage[] _pulsingRawImages;
+    private Image[] _pulsingImages;
+    private Color[] _pulsingImageOriginals;
+
     public void PlaySpawnPulse()
     {
+        StopAllCoroutines();
+        _pulsingRawImages = GetComponentsInChildren<RawImage>(true);
+        _pulsingImages = GetComponentsInChildren<Image>(true);
+        _pulsingImageOriginals = new Color[_pulsingImages.Length];
+        for (int i = 0; i < _pulsingImages.Length; i++)
+            _pulsingImageOriginals[i] = _pulsingImages[i].color;
         StartCoroutine(SpawnPulseCoroutine());
+    }
+
+    private void OnDisable()
+    {
+        StopAllCoroutines();
+        if (_pulsingRawImages != null)
+        {
+            foreach (var raw in _pulsingRawImages)
+                if (raw != null) raw.color = Color.white;
+            _pulsingRawImages = null;
+        }
+        if (_pulsingImages != null && _pulsingImageOriginals != null)
+        {
+            for (int i = 0; i < _pulsingImages.Length; i++)
+                if (_pulsingImages[i] != null)
+                    _pulsingImages[i].color = _pulsingImageOriginals[i];
+            _pulsingImages = null;
+            _pulsingImageOriginals = null;
+        }
     }
 
     private IEnumerator SpawnPulseCoroutine()
     {
+        yield return null;
         var rawImages = GetComponentsInChildren<RawImage>(true);
         var images = GetComponentsInChildren<Image>(true);
+        _pulsingRawImages = rawImages;
         var rawOriginals = new Color[rawImages.Length];
         for (int i = 0; i < rawImages.Length; i++)
             rawOriginals[i] = rawImages[i].color;
         var imgOriginals = new Color[images.Length];
         for (int i = 0; i < images.Length; i++)
             imgOriginals[i] = images[i].color;
-
-        // Set value
         float pulseDuration = 0.8f;
         int pulseCount = 2;
         float pulseStrength = 0.7f;

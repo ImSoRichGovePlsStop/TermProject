@@ -4,10 +4,21 @@ using UnityEngine;
 public class UpgradeStationUI : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private Transform optionContainer;
-    [SerializeField] private UpgradeOptionUI optionPrefab;
+    [SerializeField] private Transform topRow;
+    [SerializeField] private Transform bottomRow;
+    [SerializeField] private ItemCardUI optionPrefab;
 
     private UpgradeStation _currentStation;
+
+    private static (int top, int bot) GetLayout(int total) => total switch
+    {
+        1 => (1, 0),
+        2 => (2, 0),
+        3 => (2, 1),
+        4 => (3, 1),
+        5 => (3, 2),
+        _ => (3, 3),
+    };
 
     public void Open(UpgradeStation station)
     {
@@ -17,9 +28,6 @@ public class UpgradeStationUI : MonoBehaviour
 
     private void PopulateOptions()
     {
-        foreach (Transform child in optionContainer)
-            Destroy(child.gameObject);
-
         var candidates = BuildWeightedCandidateList();
 
         if (candidates.Count == 0)
@@ -44,11 +52,18 @@ public class UpgradeStationUI : MonoBehaviour
             selected.Add(inst);
         }
 
-        foreach (var inst in selected)
+        var (topCount, _) = GetLayout(selected.Count);
+        foreach (Transform child in topRow) Destroy(child.gameObject);
+        foreach (Transform child in bottomRow) Destroy(child.gameObject);
+
+        for (int i = 0; i < selected.Count; i++)
         {
-            var option = Instantiate(optionPrefab, optionContainer);
-            option.Init(inst, this);
+            Transform parent = i < topCount ? topRow : bottomRow;
+            var option = Instantiate(optionPrefab, parent);
+            option.InitUpgrade(selected[i], this);
         }
+
+        bottomRow.gameObject.SetActive(selected.Count > topCount);
     }
 
     private List<ModuleInstance> BuildWeightedCandidateList()
@@ -76,7 +91,7 @@ public class UpgradeStationUI : MonoBehaviour
     public void OnOptionSelected(ModuleInstance instance)
     {
         instance.SetLevel(instance.Level + 1);
- 
+
 
         var moduleUI = instance.UIElement as ModuleItemUI;
         if (moduleUI != null)
