@@ -127,11 +127,9 @@ public class MapGeometry : MonoBehaviour
 
         int spawnCorner = PickRandomCorner();
         _spawnNode = PlaceSpawnInCorner(spawnCorner);
-        if (_spawnNode == null) { Debug.LogError("[MapGeometry] Failed to place Spawn."); return; }
 
         int bossCorner = OppositeCorner(spawnCorner);
         _bossNode = PlaceBossInCorner(bossCorner);
-        if (_bossNode == null) { Debug.LogError("[MapGeometry] Failed to place Boss."); return; }
 
         BuildMainPath();
 
@@ -168,7 +166,6 @@ public class MapGeometry : MonoBehaviour
 
         if (!FitsInMatrix(ox, oz, bossRoomSize, bossRoomSize))
         {
-            Debug.LogError("[MapGeometry] Boss room does not fit — reduce bossRoomSize or cornerMargin.");
             return null;
         }
 
@@ -203,7 +200,6 @@ public class MapGeometry : MonoBehaviour
             return StampAndCreateNode(RoomType.Spawn, prefab, ox, oz, sx, sz);
         }
 
-        Debug.LogWarning($"[MapGeometry] Could not place Spawn in corner {corner}.");
         return null;
     }
 
@@ -282,7 +278,6 @@ public class MapGeometry : MonoBehaviour
 
     void BuildEdges()
     {
-
         var parent = new Dictionary<MapNode, MapNode>();
         MapNode Find(MapNode n) { return parent[n] == n ? n : (parent[n] = Find(parent[n])); }
         void Union(MapNode a, MapNode b) { parent[Find(a)] = Find(b); }
@@ -316,7 +311,6 @@ public class MapGeometry : MonoBehaviour
             for (int j = i + 1; j < _nodes.Count; j++)
             {
                 if (AlreadyConnected(_nodes[i], _nodes[j])) continue;
-
                 if (EdgeViolatesRestriction(_nodes[i], _nodes[j])) continue;
                 candidates.Add((NodeDist(_nodes[i], _nodes[j]), _nodes[i], _nodes[j]));
             }
@@ -330,16 +324,137 @@ public class MapGeometry : MonoBehaviour
             Union(a, b);
         }
 
-        float shortThreshold = matrixSize * 0.22f;
-        foreach (var (dist, a, b) in candidates)
-        {
-            if (dist > shortThreshold) break;
-            if (AlreadyConnected(a, b)) continue;
-            if (CenterLineCrosses(a, b)) continue;
-            AddEdge(a, b);
-        }
 
+
+        var treeParent = BfsParent(_spawnNode);
+
+        var onCycle = new HashSet<MapNode>();
+
+        bool addedAny = true;
+        while (addedAny)
+        {
+            addedAny = false;
+
+            List<MapNode> bestCycleNodes = null;
+            MapNode bestLeaf = null, bestPartner = null;
+
+            foreach (var leaf in _nodes)
+            {
+                if (leaf.Edges.Count != 1) continue;
+                if (onCycle.Contains(leaf)) continue;
+
+                foreach (var partner in _nodes)
+                {
+                    if (partner == leaf) continue;
+                    if (AlreadyConnected(leaf, partner)) continue;
+                    if (EdgeViolatesRestriction(leaf, partner)) continue;
+                    if (CenterLineCrosses(leaf, partner)) continue;
+
+                    var cyclePath = GetTreePath(leaf, partner, treeParent);
+                    if (cyclePath == null) continue;
+
+                    if (bestCycleNodes != null && cyclePath.Count <= bestCycleNodes.Count) continue;
+
+                    if (!CycleIsEmpty(cyclePath)) continue;
+
+                    bestCycleNodes = cyclePath;
+                    bestLeaf = leaf;
+                    bestPartner = partner;
+                }
+            }
+
+            if (bestLeaf != null)
+            {
+                AddEdge(bestLeaf, bestPartner);
+                foreach (var n in bestCycleNodes) onCycle.Add(n);
+                addedAny = true;
+            }
+        }
     }
+
+    Dictionary<MapNode, MapNode> BfsParent(MapNode start)
+    {
+        var parent = new Dictionary<MapNode, MapNode> { [start] = null };
+        var queue = new Queue<MapNode>();
+        queue.Enqueue(start);
+        while (queue.Count > 0)
+        {
+            var cur = queue.Dequeue();
+            foreach (var edge in cur.Edges)
+            {
+                var nb = edge.A == cur ? edge.B : edge.A;
+                if (!parent.ContainsKey(nb))
+                {
+                    parent[nb] = cur;
+                    queue.Enqueue(nb);
+                }
+            }
+        }
+        return parent;
+    }
+
+
+    List<MapNode> GetTreePath(MapNode a, MapNode b, Dictionary<MapNode, MapNode> parent)
+    {
+        if (!parent.ContainsKey(a) || !parent.ContainsKey(b)) return null;
+
+        var ancestorsA = new Dictionary<MapNode, int>();
+        var cur = a; int depth = 0;
+        while (cur != null) { ancestorsA[cur] = depth++; cur = parent[cur]; }
+
+        var pathB = new List<MapNode>();
+        cur = b;
+        while (cur != null && !ancestorsA.ContainsKey(cur))
+        {
+            pathB.Add(cur);
+            cur = parent[cur];
+        }
+        if (cur == null) return null;
+        var lca = cur;
+
+        var pathA = new List<MapNode>();
+        cur = a;
+        while (cur != lca) { pathA.Add(cur); cur = parent[cur]; }
+        pathA.Add(lca);
+
+        pathB.Reverse();
+        pathA.AddRange(pathB);
+        return pathA;
+    }
+
+
+    bool CycleIsEmpty(List<MapNode> cyclePath)
+    {
+        var polygon = new List<Vector2>(cyclePath.Count);
+        foreach (var n in cyclePath)
+            polygon.Add(new Vector2(n.WorldCenter.x, n.WorldCenter.z));
+
+        var cycleSet = new HashSet<MapNode>(cyclePath);
+        foreach (var n in _nodes)
+        {
+            if (cycleSet.Contains(n)) continue;
+            if (PointInPolygon(new Vector2(n.WorldCenter.x, n.WorldCenter.z), polygon))
+                return false;
+        }
+        return true;
+    }
+
+    static bool PointInPolygon(Vector2 point, List<Vector2> polygon)
+    {
+        int n = polygon.Count;
+        bool inside = false;
+        for (int i = 0, j = n - 1; i < n; j = i++)
+        {
+            float xi = polygon[i].x, yi = polygon[i].y;
+            float xj = polygon[j].x, yj = polygon[j].y;
+            if (((yi > point.y) != (yj > point.y)) &&
+                point.x < (xj - xi) * (point.y - yi) / (yj - yi) + xi)
+                inside = !inside;
+        }
+        return inside;
+    }
+
+
 
     bool CenterLineCrosses(MapNode a, MapNode b)
     {
@@ -395,14 +510,12 @@ public class MapGeometry : MonoBehaviour
             var straight = TryStraight(a, b, preferTravelX);
             if (straight != null)
             {
-                
                 return straight;
             }
 
             straight = TryStraight(a, b, !preferTravelX);
             if (straight != null)
             {
-                
                 return straight;
             }
         }
