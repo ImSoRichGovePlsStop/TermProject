@@ -317,7 +317,7 @@ public class MaterialItemUI : MonoBehaviour,
         var rawImages = GetComponentsInChildren<RawImage>(true);
         float pulseDuration = 0.2f;
         int pulseCount = 3;
-        Color brightColor = new Color(1f, 1f, 0.4f, 1f); // yellow-white flash
+        Color brightColor = new Color(1f, 1f, 1f, 1f); // yellow-white flash
 
         for (int p = 0; p < pulseCount; p++)
         {

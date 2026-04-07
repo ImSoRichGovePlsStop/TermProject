@@ -157,6 +157,7 @@ GameObject:
   - component: {fileID: 5942300544733507474}
   - component: {fileID: -7828810673546042633}
   - component: {fileID: 4861128534556401032}
+  - component: {fileID: 3414316426762644326}
   m_Layer: 8
   m_Name: Hoplite_Elite
   m_TagString: Enemy
@@ -336,6 +337,8 @@ MonoBehaviour:
   movement: {fileID: 0}
   stats: {fileID: 0}
   animator: {fileID: 0}
+  coinDropMin: 50
+  coinDropMax: 80
   attackRange: 1.2
   attackDamageScale: 1
   attackCooldown: 1.2
@@ -354,3 +357,30 @@ MonoBehaviour:
   chargeHitRadius: 0.6
   chargeRotateSpeed: 150
   chargeWarningPrefab: {fileID: 885239749217862817, guid: 94eb01aec598ed34798c99dd8106f458, type: 3}
+--- !u!114 &3414316426762644326
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 998253066982403686}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d4dd2a12fa25f34e925bf8bd905354b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
+  entries:
+  - material: {fileID: 11400000, guid: 1943ab224046af546b92465f6b40ef50, type: 2}
+    weight: 20
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: bec557e530cca6b4ca0c34160b5c3f7a, type: 2}
+    weight: 60
+    minCount: 2
+    maxCount: 4
+  - material: {fileID: 0}
+    weight: 20
+    minCount: 0
+    maxCount: 0
+  maxDropsPerKill: 1
+  groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}

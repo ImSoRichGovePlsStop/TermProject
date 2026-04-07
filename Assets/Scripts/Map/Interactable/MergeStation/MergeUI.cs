@@ -170,7 +170,12 @@ public class MergeUI : MonoBehaviour
         if (inputModules.Count == 0) { Debug.LogWarning("[MergeUI] No input items!"); return; }
 
         int totalCost = 0;
-        foreach (var inst in inputModules) totalCost += inst.Data.cost[(int)inst.Rarity];
+        foreach (var inst in inputModules)
+        {
+            var cost = inst.Data.cost;
+            int rarityIdx = Mathf.Clamp((int)inst.Rarity, 0, cost.Length - 1);
+            totalCost += cost[rarityIdx];
+        }
 
         var rolled = Randomizer.Roll(1, 1, totalCost * 0.75f, totalCost * 0.2f);
         if (rolled.Count == 0) { Debug.LogWarning("[MergeUI] Randomizer returned no results!"); return; }

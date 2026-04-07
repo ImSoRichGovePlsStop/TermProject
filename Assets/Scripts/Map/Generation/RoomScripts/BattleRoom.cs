@@ -1,10 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.ProBuilder;
 using UnityEngine.ProBuilder.MeshOperations;
-using Random = UnityEngine.Random;
 
 public class BattleRoom : MonoBehaviour
 {
@@ -29,42 +27,43 @@ public class BattleRoom : MonoBehaviour
     [Range(1, 5)]
     public int waveCount = 3;
     public float wavePause = 1f;
+    [Tooltip("Trigger next wave when alive enemies drop to or below this")]
+    public int waveThreshold = 0;
 
     public Material boundaryMaterial;
 
+    private int _aliveCount = 0;
+    private PlayerCombatContext _combatContext;
+    private int _currentWave = 0;
+    private int[] _waveSizes;
 
-    private Transform _player;
-    private List<GameObject> _activeEnemies = new();
-    private int _currentWave = 0;  
-    private int[] _waveSizes;        
 
- 
 
     void Start()
     {
         var playerObj = GameObject.FindWithTag("Player");
-        if (playerObj != null) _player = playerObj.transform;
+        if (playerObj != null)
+            _combatContext = playerObj.GetComponent<PlayerCombatContext>();
     }
 
-    void Update()
+    private void Subscribe() => _combatContext.OnEntityKilled += OnEntityKilled;
+    private void Unsubscribe() => _combatContext.OnEntityKilled -= OnEntityKilled;
+    private void OnDestroy() => Unsubscribe();
+
+    private void OnEntityKilled(HealthBase enemy)
     {
         if (!isLocked || isCleared) return;
+        _aliveCount = Mathf.Max(0, _aliveCount - 1);
 
-        int before = _activeEnemies.Count;
-        _activeEnemies.RemoveAll(e => e == null);
-        int killed = before - _activeEnemies.Count;
+        RunManager.Instance?.OnEnemyKilled();
+        var enemyBase = enemy.GetComponent<EnemyBase>();
+        int coinMin = enemyBase != null ? enemyBase.coinDropMin : 4;
+        int coinMax = enemyBase != null ? enemyBase.coinDropMax : 9;
+        int baseCoins = Random.Range(coinMin, coinMax + 1);
+        float floorMultiplier = 1f + ((RunManager.Instance?.CurrentFloor ?? 1) - 1) * 0.3f;
+        Object.FindFirstObjectByType<CurrencyManager>()?.AddCoins(Mathf.RoundToInt(baseCoins * floorMultiplier));
 
-        for (int i = 0; i < killed; i++)
-        {
-            RunManager.Instance?.OnEnemyKilled();
-            int baseCoins = Random.Range(10, 25);
-            int bonusCoins = ((RunManager.Instance?.CurrentFloor ?? 1) - 1) * 7;
-            Object.FindFirstObjectByType<CurrencyManager>()?.AddCoins(baseCoins + bonusCoins);
-
-        }
-
-
-        if (_activeEnemies.Count == 0)
+        if (_aliveCount <= waveThreshold)
             StartCoroutine(OnWaveCleared());
     }
 
@@ -72,7 +71,7 @@ public class BattleRoom : MonoBehaviour
 
     IEnumerator OnWaveCleared()
     {
-       
+
         isLocked = false;
 
         _currentWave++;
@@ -85,8 +84,9 @@ public class BattleRoom : MonoBehaviour
         }
         else
         {
-          
+
             FindFirstObjectByType<UIManager>().isInBattle = false;
+            Unsubscribe();
             ClearRoom();
         }
     }
@@ -110,7 +110,7 @@ public class BattleRoom : MonoBehaviour
 
 
         int count = _waveSizes[waveIndex];
-     
+        _aliveCount += count;
 
         for (int i = 0; i < count; i++)
         {
@@ -118,16 +118,16 @@ public class BattleRoom : MonoBehaviour
             Vector2 circle = Random.insideUnitCircle.normalized * Random.Range(1f, spawnRadius);
             Vector3 pos = transform.position + new Vector3(circle.x, 0.5f, circle.y);
             GameObject currentEnemy = Instantiate(prefab, pos, Quaternion.identity);
-            if ( currentEnemy.TryGetComponent<EntityStats>(out EntityStats entityStats)){
+            if (currentEnemy.TryGetComponent<EntityStats>(out EntityStats entityStats))
+            {
                 PlayerStats playerStats = FindFirstObjectByType<PlayerStats>();
                 StatScale scale = new StatScale();
                 scale.moveSpeed = Random.Range(0.9f, 1.1f);
-                scale.hp = 1f + (RunManager.Instance?.TotalRoomsCleared??0)*0.1f + (playerStats.Damage) / (playerStats.BaseDamage) * 0.15f;
-                scale.damage = 1f + (RunManager.Instance?.TotalBossKilled ?? 0) * 0.3f + (playerStats.MaxHealth) / (playerStats.BaseHealth) * 0.15f;
+                float statScale = (RunManager.Instance?.TotalBossKilled ?? 0) * 0.3f + (RunManager.Instance?.TotalRoomsCleared ?? 0) * 0.1f;
+                scale.hp = 1f + statScale + (playerStats.Damage) / (playerStats.BaseDamage) * 0.15f;
+                scale.damage = 1f + statScale + (playerStats.MaxHealth) / (playerStats.BaseHealth) * 0.15f;
                 entityStats.SetStatScale(scale);
             }
-            
-            _activeEnemies.Add(currentEnemy);
         }
     }
 
@@ -141,7 +141,8 @@ public class BattleRoom : MonoBehaviour
 
         BuildWaveSizes();
         _currentWave = 0;
-        spawnRadius = math.min(roomSize.x,roomSize.z)/2.2f;
+        _aliveCount = 0;
+        Subscribe();
         SpawnWave(0);
 
         var ui = FindFirstObjectByType<UIManager>();
@@ -236,7 +237,7 @@ public class BattleRoom : MonoBehaviour
         OnPlayerEnter();
     }
 
- 
+
 
     void OnDrawGizmosSelected()
     {
