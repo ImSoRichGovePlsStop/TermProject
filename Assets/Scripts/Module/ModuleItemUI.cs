@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -284,6 +285,98 @@ public class ModuleItemUI : MonoBehaviour,
         }
     }
 
+    private RawImage[] _pulsingRawImages;
+    private Image[] _pulsingImages;
+    private Color[] _pulsingImageOriginals;
+
+    public void PlaySpawnPulse()
+    {
+        StopAllCoroutines();
+        _pulsingRawImages = GetComponentsInChildren<RawImage>(true);
+        _pulsingImages = GetComponentsInChildren<Image>(true);
+        _pulsingImageOriginals = new Color[_pulsingImages.Length];
+        for (int i = 0; i < _pulsingImages.Length; i++)
+            _pulsingImageOriginals[i] = _pulsingImages[i].color;
+        StartCoroutine(SpawnPulseCoroutine());
+    }
+
+    private void OnDisable()
+    {
+        StopAllCoroutines();
+        if (_pulsingRawImages != null)
+        {
+            foreach (var raw in _pulsingRawImages)
+                if (raw != null) raw.color = Color.white;
+            _pulsingRawImages = null;
+        }
+        if (_pulsingImages != null && _pulsingImageOriginals != null)
+        {
+            for (int i = 0; i < _pulsingImages.Length; i++)
+                if (_pulsingImages[i] != null)
+                    _pulsingImages[i].color = _pulsingImageOriginals[i];
+            _pulsingImages = null;
+            _pulsingImageOriginals = null;
+        }
+    }
+
+    private IEnumerator SpawnPulseCoroutine()
+    {
+        yield return null;
+        var rawImages = GetComponentsInChildren<RawImage>(true);
+        var images = GetComponentsInChildren<Image>(true);
+        _pulsingRawImages = rawImages;
+        var rawOriginals = new Color[rawImages.Length];
+        for (int i = 0; i < rawImages.Length; i++)
+            rawOriginals[i] = rawImages[i].color;
+        var imgOriginals = new Color[images.Length];
+        for (int i = 0; i < images.Length; i++)
+            imgOriginals[i] = images[i].color;
+        float pulseDuration = 0.8f;
+        int pulseCount = 2;
+        float pulseStrength = 0.7f;
+        Color pulseColor = Color.white;
+
+        var rawTargets = new Color[rawImages.Length];
+        for (int i = 0; i < rawImages.Length; i++)
+            rawTargets[i] = Color.Lerp(rawOriginals[i], pulseColor, pulseStrength);
+        var imgTargets = new Color[images.Length];
+        for (int i = 0; i < images.Length; i++)
+            imgTargets[i] = Color.Lerp(imgOriginals[i], pulseColor, pulseStrength);
+
+        for (int p = 0; p < pulseCount; p++)
+        {
+            float t = 0f;
+            while (t < pulseDuration)
+            {
+                t += Time.deltaTime;
+                float lerp = t / pulseDuration;
+                for (int i = 0; i < rawImages.Length; i++)
+                    rawImages[i].color = Color.Lerp(rawOriginals[i], rawTargets[i], lerp);
+                for (int i = 0; i < images.Length; i++)
+                    if (images[i].color != Color.clear)
+                        images[i].color = Color.Lerp(imgOriginals[i], imgTargets[i], lerp);
+                yield return null;
+            }
+            t = 0f;
+            while (t < pulseDuration)
+            {
+                t += Time.deltaTime;
+                float lerp = t / pulseDuration;
+                for (int i = 0; i < rawImages.Length; i++)
+                    rawImages[i].color = Color.Lerp(rawTargets[i], rawOriginals[i], lerp);
+                for (int i = 0; i < images.Length; i++)
+                    if (images[i].color != Color.clear)
+                        images[i].color = Color.Lerp(imgTargets[i], imgOriginals[i], lerp);
+                yield return null;
+            }
+        }
+        for (int i = 0; i < rawImages.Length; i++)
+            rawImages[i].color = rawOriginals[i];
+        for (int i = 0; i < images.Length; i++)
+            if (images[i].color != Color.clear)
+                images[i].color = imgOriginals[i];
+    }
+
     public void RefreshAfterUpgrade()
     {
         RebuildVisual(Instance.Rotation);
@@ -379,8 +472,8 @@ public class ModuleItemUI : MonoBehaviour,
         Vector2 sampleScreen = GetClickedCellCenterScreen();
 
         GridUI[] gridsToScan = MergeUI.IsMergeOpen
-            ? new[] { InputGridUI, BagGridUI, WeaponGridUI, EnvGridUI, DiscardGridUI.Instance?.GridUI }
-            : new[] { WeaponGridUI, BagGridUI, EnvGridUI, InputGridUI, DiscardGridUI.Instance?.GridUI };
+            ? new[] { InputGridUI, BagGridUI, WeaponGridUI, EnvGridUI, (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible ? DiscardGridUI.Instance.GridUI : null) }
+            : new[] { WeaponGridUI, BagGridUI, EnvGridUI, InputGridUI, (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible ? DiscardGridUI.Instance.GridUI : null) };
 
         foreach (var g in gridsToScan)
         {
@@ -502,8 +595,8 @@ public class ModuleItemUI : MonoBehaviour,
         Vector2 sampleScreen = GetClickedCellCenterScreen();
 
         GridUI[] gridsToHighlight = MergeUI.IsMergeOpen
-            ? new[] { InputGridUI, BagGridUI, WeaponGridUI, EnvGridUI, DiscardGridUI.Instance?.GridUI }
-            : new[] { WeaponGridUI, BagGridUI, EnvGridUI, InputGridUI, DiscardGridUI.Instance?.GridUI };
+            ? new[] { InputGridUI, BagGridUI, WeaponGridUI, EnvGridUI, (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible ? DiscardGridUI.Instance.GridUI : null) }
+            : new[] { WeaponGridUI, BagGridUI, EnvGridUI, InputGridUI, (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible ? DiscardGridUI.Instance.GridUI : null) };
 
         foreach (var g in gridsToHighlight)
         {
@@ -526,7 +619,7 @@ public class ModuleItemUI : MonoBehaviour,
         BagGridUI?.ClearHighlights();
         EnvGridUI?.ClearHighlights();
         InputGridUI?.ClearHighlights();
-        DiscardGridUI.Instance?.GridUI.ClearHighlights();
+        if (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible) DiscardGridUI.Instance.GridUI?.ClearHighlights();
     }
 
     private Vector2Int GetClickedLocalCell(PointerEventData e)

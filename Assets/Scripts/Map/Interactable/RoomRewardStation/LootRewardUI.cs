@@ -1,31 +1,50 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class LootRewardUI : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private Transform optionContainer;
-    [SerializeField] private LootOptionUI optionPrefab;
+    [SerializeField] private Transform topRow;
+    [SerializeField] private Transform bottomRow;
+    [SerializeField] private ItemCardUI optionPrefab;
 
-    private List<ModuleInstance> _rolledOptions = new List<ModuleInstance>();
-    private RandomLoot _currentStation;
+    private List<ModuleInstance> rolledOptions = new List<ModuleInstance>();
+    private RandomLoot currentStation;
+
+    private static (int top, int bot) GetLayout(int total) => total switch
+    {
+        1 => (1, 0),
+        2 => (2, 0),
+        3 => (2, 1),
+        4 => (3, 1),
+        5 => (3, 2),
+        _ => (3, 3),
+    };
 
     public void Open(RandomLoot station, List<TestModuleEntry> rolled)
     {
-        _currentStation = station;
-        _rolledOptions.Clear();
+        currentStation = station;
+        rolledOptions.Clear();
 
-        foreach (Transform child in optionContainer)
-            Destroy(child.gameObject);
+        foreach (Transform child in topRow) Destroy(child.gameObject);
+        foreach (Transform child in bottomRow) Destroy(child.gameObject);
 
-        foreach (var entry in rolled)
+        var validEntries = rolled.FindAll(e => e.data != null);
+        var (topCount, botCount) = GetLayout(validEntries.Count);
+
+        for (int i = 0; i < validEntries.Count; i++)
         {
-            if (entry.data == null) continue;
+            var entry = validEntries[i];
             var inst = new ModuleInstance(entry.data, entry.rarity, entry.level);
-            _rolledOptions.Add(inst);
-            var option = Instantiate(optionPrefab, optionContainer);
-            option.Init(inst, this);
+            rolledOptions.Add(inst);
+
+            Transform parent = i < topCount ? topRow : bottomRow;
+            var option = Instantiate(optionPrefab, parent);
+            option.InitReward(inst, this);
         }
+
+        bottomRow.gameObject.SetActive(botCount > 0);
     }
 
     public void OnOptionSelected(ModuleInstance chosen)
@@ -33,8 +52,8 @@ public class LootRewardUI : MonoBehaviour
         var inventoryUI = FindFirstObjectByType<InventoryUI>(FindObjectsInactive.Include);
         inventoryUI?.SpawnModule(chosen.Data, chosen.Rarity, chosen.Level);
 
-        if (_currentStation != null)
-            Object.Destroy(_currentStation.gameObject);
+        if (currentStation != null)
+            Object.Destroy(currentStation.gameObject);
 
         var uiManager = FindFirstObjectByType<UIManager>();
         uiManager?.CloseRewardLoot();

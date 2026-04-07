@@ -55,6 +55,14 @@ public abstract class ModuleEffect : ScriptableObject
 
     public virtual string[] BoldKeywords => System.Array.Empty<string>();
 
+    public void PreparePreviewState(Rarity rarity, int level, ModuleRuntimeState state)
+    {
+        state.isActive = true;
+        state.buffedLevel = level;
+        var (_, buffed) = GetBaseModuleStat(rarity, level, state);
+        if (buffed >= 0f) state.currentStat = buffed;
+    }
+
     public virtual (float unbuffed, float buffed) GetBaseModuleStat(Rarity rarity, int level, ModuleRuntimeState state)
     {
         return (-1f, -1f);

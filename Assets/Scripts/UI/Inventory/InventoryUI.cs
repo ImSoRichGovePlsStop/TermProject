@@ -46,6 +46,7 @@ public class InventoryUI : MonoBehaviour
 
     public enum Tab { Inventory, PlayerStat, Skill, Quest, Menu }
     public Tab CurrentTab { get; private set; } = Tab.Inventory;
+    private readonly List<(MaterialItemUI ui, GridUI grid, Vector2Int cell)> pendingSnaps = new();
 
     private void Awake()
     {
@@ -78,6 +79,27 @@ public class InventoryUI : MonoBehaviour
         if (mgr == null) return;
         mgr.OnWeaponGridChanged -= OnWeaponGridChanged;
         mgr.OnBagGridChanged -= OnBagGridChanged;
+    }
+
+    private void OnEnable()
+    {
+        if (pendingSnaps.Count == 0) return;
+        StartCoroutine(FlushPendingSnaps());
+    }
+
+    private IEnumerator FlushPendingSnaps()
+    {
+        yield return null;
+        Canvas.ForceUpdateCanvases();
+        foreach (var (ui, grid, cell) in pendingSnaps)
+        {
+            if (ui == null) continue;
+            ui.SnapToCell(grid, cell);
+            var cg = ui.GetComponent<CanvasGroup>();
+            if (cg != null) cg.alpha = 1f;
+            ui.PlaySpawnPulse();
+        }
+        pendingSnaps.Clear();
     }
 
     public void SwitchTab(Tab tab)
@@ -196,7 +218,10 @@ public class InventoryUI : MonoBehaviour
         ui.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
         ui.Init(inst);
         ui.InventoryUI = this;
-        StartCoroutine(SnapNextFrame(ui, bagGridUI, inst.GridPosition));
+        if (gameObject.activeInHierarchy)
+            StartCoroutine(SnapNextFrame(ui, bagGridUI, inst.GridPosition));
+        else
+            pendingSnaps.Add((ui, bagGridUI, inst.GridPosition));
         return ui;
     }
 
@@ -223,9 +248,11 @@ public class InventoryUI : MonoBehaviour
         var cg = ui.GetComponent<CanvasGroup>();
         if (cg != null) cg.alpha = 0f;
         yield return null;
+        if (ui == null) yield break;
         Canvas.ForceUpdateCanvases();
         ui.SnapToCell(grid, cell);
         if (cg != null) cg.alpha = 1f;
+        ui.PlaySpawnPulse();
     }
 
     private IEnumerator SnapNextFrame(ModuleItemUI ui, GridUI grid, Vector2Int cell)
@@ -236,5 +263,6 @@ public class InventoryUI : MonoBehaviour
         Canvas.ForceUpdateCanvases();
         ui.SnapToCell(grid, cell);
         if (cg != null) cg.alpha = 1f;
+        ui.PlaySpawnPulse();
     }
 }

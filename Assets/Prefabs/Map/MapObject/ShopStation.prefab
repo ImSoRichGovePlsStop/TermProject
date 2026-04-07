@@ -104,6 +104,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e6d50285b3671548a01de664f2a07da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BillboardSprite
+  isBillboard: 1
 --- !u!1 &1093928034212126860
 GameObject:
   m_ObjectHideFlags: 0
@@ -173,8 +174,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ShopInteractable
   shopEntries: []
   useRandomizer: 1
-  minCount: 10
-  maxCount: 10
+  minCount: 6
+  maxCount: 6
   meanCost: 100
   sd: 30
   allowDuplicates: 0

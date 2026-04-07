@@ -390,6 +390,9 @@ MonoBehaviour:
   normalProjectilePrefab: {fileID: 6020657565367428352, guid: 5489ff0ad2772eb488ae79ac7c783f0e, type: 3}
   bigProjectilePrefab: {fileID: 1498933385405443144, guid: 0689d45a3ee982f4a9e69452e08c3f03, type: 3}
   totemPrefab: {fileID: 4737737749466170205, guid: 2c60181e9c4a990458cc7a8544a71be3, type: 3}
+  totemCooldown: 20
+  interChargeDelay: 3
+  maxCharges: 1
   projectileSpawnPoint: {fileID: 0}
   totemCooldownIcon: {fileID: 379350332, guid: c7a80c8c83325df41b367ecdc86972d6, type: 3}
 --- !u!114 &2649959589608857903
@@ -422,6 +425,8 @@ GameObject:
   - component: {fileID: 2637183520048015493}
   - component: {fileID: 1370494549704891401}
   - component: {fileID: 5544963485620162098}
+  - component: {fileID: 446823080959027054}
+  - component: {fileID: 2881311209668028173}
   m_Layer: 6
   m_Name: Sprite
   m_TagString: Untagged
@@ -550,3 +555,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb2cc833cd16a5341a1387f1568a76e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationEvents
+--- !u!114 &446823080959027054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7199941304210273291}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8426aac43e6583e44aacff4f61bd5c55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerVisual
+  invincibleTint: {r: 0.5019608, g: 0.8, b: 1, a: 1}
+  invincibleWhiteAmount: 1
+  hitFlashColor: {r: 1, g: 0, b: 0, a: 1}
+  flashDuration: 0.1
+--- !u!114 &2881311209668028173
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7199941304210273291}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e162110b0b5ae654c8a920daf06f30e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DashTrail
+  spawnInterval: 0.03
+  fadeDuration: 0.2
+  trailColor: {r: 0.5, g: 0.8, b: 1, a: 0.6}
