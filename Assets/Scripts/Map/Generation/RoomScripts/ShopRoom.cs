@@ -43,7 +43,7 @@ public class ShopRoom : MonoBehaviour
 
         float meanCost = 80f + floor * 40f + roomsCleared * 6f + bossKills * 20f;
         float sd = 25f + floor * 5f;
-        int minCount = 3;
+        int minCount = 5;
         int maxCount = 6;
 
         return new ShopConfig

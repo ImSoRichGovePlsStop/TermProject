@@ -19,7 +19,7 @@ public class BattleRoom : MonoBehaviour
 
     [Header("Waves")]
     [Range(1, 5)] public int waveCount = 3;
-    public float wavePause = 1f;
+    public float wavePause = 1.6f;
     public int waveThreshold = 0;
 
     public Material boundaryMaterial;
@@ -151,8 +151,9 @@ public class BattleRoom : MonoBehaviour
         isCleared = true;
         isLocked = false;
         RemoveInvisibleWalls();
+        float lootUpgradeThreshold = 0.5f;
 
-        if (Random.value < 0.70f)
+        if (Random.value < lootUpgradeThreshold)
             SpawnLoot(transform.position);
         else if (upgradeStationPrefab != null)
             Instantiate(upgradeStationPrefab, transform.position, Quaternion.identity);
