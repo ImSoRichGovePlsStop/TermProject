@@ -199,8 +199,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MapPopulator
   healStationPrefab: {fileID: 2767562332682079375, guid: c526cc79c9200bc4c8851ea8886bd976, type: 3}
   shopStationPrefab: {fileID: 1093928034212126860, guid: 8b795f5129d428344a94c032060bfa9e, type: 3}
-  upgradeStationPrefab: {fileID: 4791528569421838511, guid: 47627ba72b23cd7498bcd1afb60de23a, type: 3}
   mergeStationPrefab: {fileID: 106242591161022991, guid: fa2d894cb67834243979d6236231c48c, type: 3}
+  costedHealPrefab: {fileID: 215060849656432227, guid: 7c4baba96bf5cfc4798fb91492455b72, type: 3}
+  costedUpgradePrefab: {fileID: 7158039087586434884, guid: 572ffcb4eefecb24098d3ed45262f716, type: 3}
+  freeUpgradeStationPrefab: {fileID: 4791528569421838511, guid: 47627ba72b23cd7498bcd1afb60de23a, type: 3}
   portalPrefab: {fileID: 8261454306142249107, guid: 323db3c7dad372342aed4732f194c622, type: 3}
   portalFinalPrefab: {fileID: 2217644600164415563, guid: ffaead280080565408dde90a744f411c, type: 3}
   normalEnemyPrefabs:
@@ -233,19 +235,22 @@ MonoBehaviour:
   - {fileID: 4518944767196815896, guid: e6f8d233161363c4aafc075c2c2c5f48, type: 3}
   battleRoomPrefabs:
   - {fileID: 4518944767196815896, guid: eecba8bacd40c6d44a0f26f9ead97b08, type: 3}
-  - {fileID: 4518944767196815896, guid: 10b1124dc2ef15247a1b8f36c0b3be30, type: 3}
+  - {fileID: 4518944767196815896, guid: 91f76bae2321f254987feab07f0edfce, type: 3}
+  - {fileID: 4518944767196815896, guid: 757f395cf458a3443aa97c48a8338968, type: 3}
+  - {fileID: 4518944767196815896, guid: eecba8bacd40c6d44a0f26f9ead97b08, type: 3}
+  - {fileID: 4518944767196815896, guid: 2079e077e6adf5e4289035231cd3d54d, type: 3}
   bossRoomPrefabs:
   - {fileID: 4518944767196815896, guid: 10b1124dc2ef15247a1b8f36c0b3be30, type: 3}
   shopRoomPrefabs:
-  - {fileID: 4518944767196815896, guid: e6f8d233161363c4aafc075c2c2c5f48, type: 3}
+  - {fileID: 4518944767196815896, guid: 757f395cf458a3443aa97c48a8338968, type: 3}
   healRoomPrefabs:
-  - {fileID: 4518944767196815896, guid: e6f8d233161363c4aafc075c2c2c5f48, type: 3}
-  upgradeRoomPrefabs:
   - {fileID: 4518944767196815896, guid: e6f8d233161363c4aafc075c2c2c5f48, type: 3}
   mergeRoomPrefabs:
   - {fileID: 4518944767196815896, guid: e6f8d233161363c4aafc075c2c2c5f48, type: 3}
-  matrixSize: 80
-  minRoomSize: 5
+  rareLootRoomPrefabs:
+  - {fileID: 4518944767196815896, guid: e6f8d233161363c4aafc075c2c2c5f48, type: 3}
+  matrixSize: 75
+  minRoomSize: 1
   maxRoomSize: 15
   bossRoomSize: 15
   cornerMargin: 7
@@ -253,8 +258,13 @@ MonoBehaviour:
   maxPlacementAttempts: 50
   roomPadding: 5
   fillRoomBudget: 0.281
-  maxExtraBattleRooms: 2
-  maxExtraEventRooms: 3
+  maxExtraBattleRooms: 1
+  maxExtraEventRooms: 2
+  weightBattle: 4
+  weightHeal: 3
+  weightShop: 3
+  weightRareLoot: 1
+  weightMerge: 1
   corridorWidth: 1
   straightLineThreshold: 0.4
   coverageThreshold: 0.8

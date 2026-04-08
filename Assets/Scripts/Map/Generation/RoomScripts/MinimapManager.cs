@@ -9,7 +9,6 @@ public class MinimapManager : MonoBehaviour
     public float cellPixels = 2f;
 
     [Header("Colors")]
-    public Color emptyColor = new Color(0, 0, 0, 0);
     public Color corridorColor = new Color(0.45f, 0.45f, 0.45f, 1f);
     public Color unvisitedRoom = new Color(0.3f, 0.3f, 0.3f, 0.5f);
     public Color currentColor = Color.white;
@@ -25,43 +24,51 @@ public class MinimapManager : MonoBehaviour
     public Transform player;
     public Color playerCorridorColor = Color.white;
 
+
     private Dictionary<Vector2Int, Image> _cellImages = new();
     private Dictionary<Vector2Int, RoomNode> _centerToNode = new();
     private HashSet<Vector2Int> _visited = new();
     private HashSet<Vector2Int> _revealed = new();
+
+    private Dictionary<(Vector2Int, Vector2Int), HashSet<Vector2Int>> _edgeCells = new();
+    private HashSet<Vector2Int> _visibleCorridorCells = new();
+
     private Vector2Int _currentRoomCell;
     private Vector2Int _lastCorridorCell = new Vector2Int(-1, -1);
 
     private byte[,] _matrix;
     private int _matrixSize;
-    private int _minX, _minZ;   // map bounds offset used for UI positioning
 
-    // ── Called by MapGenerator ────────────────────────────────────────────────
 
-    public void BuildMinimapFromMatrix(byte[,] matrix, int size, List<RoomNode> rooms)
+    public void BuildMinimapFromMatrix(byte[,] matrix, int size,
+                                       List<RoomNode> rooms,
+                                       IReadOnlyList<MapEdge> edges = null)
     {
         _matrix = matrix;
         _matrixSize = size;
 
-        foreach (Transform child in minimapRoot)
-            Destroy(child.gameObject);
+        foreach (Transform child in minimapRoot) Destroy(child.gameObject);
         _cellImages.Clear();
         _centerToNode.Clear();
+        _edgeCells.Clear();
+        _visibleCorridorCells.Clear();
         _visited.Clear();
         _revealed.Clear();
 
-        int maxX = 0, maxZ = 0;
-        _minX = size; _minZ = size;
+        int minX = size, minZ = size, maxX = 0, maxZ = 0;
         for (int x = 0; x < size; x++)
             for (int z = 0; z < size; z++)
-                if (matrix[x, z] != Cell.Empty)
+                if (matrix[x, z] != Cell.Empty && matrix[x, z] != Cell.Occupied)
                 {
-                    if (x < _minX) _minX = x; if (x > maxX) maxX = x;
-                    if (z < _minZ) _minZ = z; if (z > maxZ) maxZ = z;
+                    if (x < minX) minX = x; if (x > maxX) maxX = x;
+                    if (z < minZ) minZ = z; if (z > maxZ) maxZ = z;
                 }
 
-        for (int x = _minX; x <= maxX; x++)
-            for (int z = _minZ; z <= maxZ; z++)
+        minimapRoot.pivot = new Vector2(0.5f, 0.5f);
+        int matCX = size / 2, matCZ = size / 2;
+
+        for (int x = minX; x <= maxX; x++)
+            for (int z = minZ; z <= maxZ; z++)
             {
                 byte v = matrix[x, z];
                 if (v == Cell.Empty || v == Cell.Occupied) continue;
@@ -69,83 +76,118 @@ public class MinimapManager : MonoBehaviour
                 var img = MakeCell($"MC_{x}_{z}", minimapRoot);
                 img.rectTransform.sizeDelta = Vector2.one * cellPixels;
                 img.rectTransform.anchoredPosition = new Vector2(
-                    (x - _minX) * cellPixels,
-                    (z - _minZ) * cellPixels);
+                    (x - matCX) * cellPixels,
+                    (z - matCZ) * cellPixels);
 
-                img.color = v == Cell.Corridor ? corridorColor : unvisitedRoom;
+                img.color = Color.clear;
                 _cellImages[new Vector2Int(x, z)] = img;
             }
 
         foreach (var node in rooms)
             _centerToNode[node.MatrixCenter] = node;
 
-        // Auto-size panel to fit the map
-        minimapRoot.sizeDelta = new Vector2(
-            (maxX - _minX + 1) * cellPixels,
-            (maxZ - _minZ + 1) * cellPixels);
+        if (edges != null)
+        {
+            foreach (var edge in edges)
+            {
+                var key = EdgeKey(edge.A.CenterX, edge.A.CenterZ,
+                                  edge.B.CenterX, edge.B.CenterZ);
+                if (!_edgeCells.TryGetValue(key, out var set))
+                    _edgeCells[key] = set = new HashSet<Vector2Int>();
+
+                foreach (var seg in edge.Segments)
+                    foreach (var cell in seg)
+                        set.Add(cell);
+            }
+        }
+        else
+        {
+            var all = new HashSet<Vector2Int>();
+            for (int x = 0; x < size; x++)
+                for (int z = 0; z < size; z++)
+                    if (matrix[x, z] == Cell.Corridor)
+                        all.Add(new Vector2Int(x, z));
+            _edgeCells[(new Vector2Int(-1, -1), new Vector2Int(-1, -1))] = all;
+        }
     }
 
-    // ── Called by room scripts on player enter ────────────────────────────────
 
     public void OnPlayerEnterRoom(RoomNode node)
     {
-        // Repaint the previous room to its visited color (if there was one)
         if (_currentRoomCell != default && _visited.Contains(_currentRoomCell))
             PaintRoomCells(_currentRoomCell, VisitedColor(_currentRoomCell));
 
         _currentRoomCell = node.MatrixCenter;
         _visited.Add(_currentRoomCell);
 
-        // Always paint current room white — even on re-entry after clearing
         PaintRoomCells(_currentRoomCell, currentColor);
 
-        // Reveal unvisited neighbours
         foreach (var neighbor in node.Neighbors)
         {
-            if (_visited.Contains(neighbor.MatrixCenter)) continue;
-            _revealed.Add(neighbor.MatrixCenter);
-            PaintRoomCells(neighbor.MatrixCenter, unvisitedRoom);
+            Vector2Int nc = neighbor.MatrixCenter;
+
+            bool neighborVisited = _visited.Contains(nc);
+
+            if (!neighborVisited && !_revealed.Contains(nc))
+            {
+                _revealed.Add(nc);
+                PaintRoomCells(nc, unvisitedRoom);
+            }
+
+            RevealEdgeCorridors(_currentRoomCell, nc);
         }
 
-        // Clear any highlighted corridor cell when entering a room
+        foreach (var visited in _visited)
+        {
+            if (visited == _currentRoomCell) continue;
+            RevealEdgeCorridors(_currentRoomCell, visited);
+        }
+
         RestoreCorridorCell(_lastCorridorCell);
         _lastCorridorCell = new Vector2Int(-1, -1);
     }
 
-    // ── Update: track player position in corridors ────────────────────────────
+    void RevealEdgeCorridors(Vector2Int centerA, Vector2Int centerB)
+    {
+        var key = EdgeKey(centerA.x, centerA.y, centerB.x, centerB.y);
+        if (!_edgeCells.TryGetValue(key, out var cells)) return;
+
+        foreach (var cell in cells)
+        {
+            if (_visibleCorridorCells.Add(cell))
+                if (_cellImages.TryGetValue(cell, out var img))
+                    img.color = corridorColor;
+        }
+    }
+
 
     void LateUpdate()
     {
         if (player == null || _matrix == null) return;
 
-        // Convert player world position to matrix cell
         int cx = Mathf.FloorToInt(player.position.x);
         int cz = Mathf.FloorToInt(player.position.z);
         var cell = new Vector2Int(cx, cz);
 
         if (cell == _lastCorridorCell) return;
-
-        // Only highlight if this cell is a corridor cell
         if (cx < 0 || cz < 0 || cx >= _matrixSize || cz >= _matrixSize) return;
+
         if (_matrix[cx, cz] != Cell.Corridor)
         {
-            // Player left corridor — restore previous corridor highlight
             RestoreCorridorCell(_lastCorridorCell);
             _lastCorridorCell = new Vector2Int(-1, -1);
             return;
         }
 
-        // Restore previous corridor cell
+        if (!_visibleCorridorCells.Contains(cell)) return;
+
         RestoreCorridorCell(_lastCorridorCell);
 
-        // Player just stepped into a corridor for the first time —
-        // revert the last room to its visited color immediately
         if (_lastCorridorCell.x < 0 && _visited.Contains(_currentRoomCell))
             PaintRoomCells(_currentRoomCell, VisitedColor(_currentRoomCell));
 
-        // Highlight new corridor cell
-        if (_cellImages.TryGetValue(cell, out var img))
-            img.color = playerCorridorColor;
+        if (_cellImages.TryGetValue(cell, out var cImg))
+            cImg.color = playerCorridorColor;
 
         _lastCorridorCell = cell;
     }
@@ -154,16 +196,14 @@ public class MinimapManager : MonoBehaviour
     {
         if (cell.x < 0) return;
         if (_cellImages.TryGetValue(cell, out var img))
-            img.color = corridorColor;
+            img.color = _visibleCorridorCells.Contains(cell) ? corridorColor : Color.clear;
     }
 
-    // ── Internals ─────────────────────────────────────────────────────────────
 
     void PaintRoomCells(Vector2Int center, Color color)
     {
         if (!_centerToNode.TryGetValue(center, out var node)) return;
-        int ox = node.MatrixOrigin.x;
-        int oz = node.MatrixOrigin.y;
+        int ox = node.MatrixOrigin.x, oz = node.MatrixOrigin.y;
         for (int x = ox; x < ox + node.Size.x; x++)
             for (int z = oz; z < oz + node.Size.y; z++)
                 if (_cellImages.TryGetValue(new Vector2Int(x, z), out var img))
@@ -179,10 +219,17 @@ public class MinimapManager : MonoBehaviour
             RoomType.Boss => bossColor,
             RoomType.Shop => shopColor,
             RoomType.Heal => healColor,
-            RoomType.Upgrade => upgradeColor,
+            RoomType.RareLoot => upgradeColor,
             RoomType.Merge => mergeColor,
             _ => visitedBattle
         };
+    }
+
+    static (Vector2Int, Vector2Int) EdgeKey(int ax, int az, int bx, int bz)
+    {
+        var a = new Vector2Int(ax, az);
+        var b = new Vector2Int(bx, bz);
+        return a.x < b.x || (a.x == b.x && a.y < b.y) ? (a, b) : (b, a);
     }
 
     Image MakeCell(string name, RectTransform parent)

@@ -9,8 +9,10 @@ public class MapPopulator : MonoBehaviour
     [Header("Interactable Prefabs")]
     public GameObject healStationPrefab;
     public GameObject shopStationPrefab;
-    public GameObject upgradeStationPrefab;
     public GameObject mergeStationPrefab;
+    public GameObject costedHealPrefab;
+    public GameObject costedUpgradePrefab;
+    public GameObject freeUpgradeStationPrefab;
 
     [Header("Portals")]
     public GameObject portalPrefab;
@@ -32,7 +34,7 @@ public class MapPopulator : MonoBehaviour
     [Header("Trigger")]
     public float triggerHeight = 3f;
 
-   
+
 
     void Awake()
     {
@@ -78,7 +80,7 @@ public class MapPopulator : MonoBehaviour
         RoomType.Boss => SpawnBossRoom(node),
         RoomType.Heal => SpawnEventRoom(node, healStationPrefab, SetupHeal),
         RoomType.Shop => SpawnEventRoom(node, shopStationPrefab, SetupShop),
-        RoomType.Upgrade => SpawnEventRoom(node, upgradeStationPrefab, SetupUpgrade),
+        RoomType.RareLoot => SpawnEventRoom(node, lootPrefab, SetupRareLoot),
         RoomType.Merge => SpawnEventRoom(node, mergeStationPrefab, SetupMerge),
         _ => null
     };
@@ -102,6 +104,7 @@ public class MapPopulator : MonoBehaviour
         var room = obj.AddComponent<BattleRoom>();
         room.node = ToLegacy(node);
         room.lootPrefab = lootPrefab;
+        room.upgradeStationPrefab = freeUpgradeStationPrefab;
         room.boundaryMaterial = boundaryMaterial;
         room.enemyPrefabs = normalEnemyPrefabs;
         room.SetRoomSize(vol);
@@ -123,6 +126,7 @@ public class MapPopulator : MonoBehaviour
         room.portalPrefab = portalPrefab;
         room.portalFinalPrefab = portalFinalPrefab;
         room.boundaryMaterial = boundaryMaterial;
+        room.enemyPrefabs = normalEnemyPrefabs;
         room.SetRoomSize(vol);
 
         AddTrigger(obj, vol);
@@ -149,19 +153,36 @@ public class MapPopulator : MonoBehaviour
 
     void SetupHeal(GameObject o, Transform p, MapNode n)
     {
-        var r = o.AddComponent<HealRoom>(); r.node = ToLegacy(n); r.healStationPrefab = healStationPrefab; r.Init(p);
+        var r = o.AddComponent<HealRoom>();
+        r.node = ToLegacy(n);
+        r.healStationPrefab = healStationPrefab;
+        r.Init(p);
     }
+
     void SetupShop(GameObject o, Transform p, MapNode n)
     {
-        var r = o.AddComponent<ShopRoom>(); r.node = ToLegacy(n); r.shopStationPrefab = shopStationPrefab; r.Init(p);
+        var r = o.AddComponent<ShopRoom>();
+        r.node = ToLegacy(n);
+        r.shopStationPrefab = shopStationPrefab;
+        r.costedHealPrefab = costedHealPrefab;
+        r.costedUpgradePrefab = costedUpgradePrefab;
+        r.Init(p);
     }
-    void SetupUpgrade(GameObject o, Transform p, MapNode n)
+
+    void SetupRareLoot(GameObject o, Transform p, MapNode n)
     {
-        var r = o.AddComponent<UpgradeRoom>(); r.node = ToLegacy(n); r.upgradeStationPrefab = upgradeStationPrefab; r.Init(p);
+        var r = o.AddComponent<RareLootRoom>();
+        r.node = ToLegacy(n);
+        r.lootPrefab = lootPrefab;
+        r.Init(p);
     }
+
     void SetupMerge(GameObject o, Transform p, MapNode n)
     {
-        var r = o.AddComponent<MergeRoom>(); r.node = ToLegacy(n); r.mergeStationPrefab = mergeStationPrefab; r.Init(p);
+        var r = o.AddComponent<MergeRoom>();
+        r.node = ToLegacy(n);
+        r.mergeStationPrefab = mergeStationPrefab;
+        r.Init(p);
     }
 
 
@@ -206,14 +227,18 @@ public class MapPopulator : MonoBehaviour
     }
 
 
-    static RoomNode ToLegacy(MapNode n) => new RoomNode
+    static RoomNode ToLegacy(MapNode n)
     {
-        Type = n.Type,
-        MatrixOrigin = new Vector2Int(n.MinX, n.MinZ),
-        MatrixCenter = new Vector2Int(n.CenterX, n.CenterZ),
-        Size = new Vector2Int(n.Width, n.Depth),
-        WorldPosition = n.WorldCenter,
-        ChosenPrefab = n.ChosenPrefab,
-        RoomObject = n.RoomObject,
-    };
+        if (n.LegacyNode != null) return n.LegacyNode;
+        return new RoomNode
+        {
+            Type = n.Type,
+            MatrixOrigin = new Vector2Int(n.MinX, n.MinZ),
+            MatrixCenter = new Vector2Int(n.CenterX, n.CenterZ),
+            Size = new Vector2Int(n.Width, n.Depth),
+            WorldPosition = n.WorldCenter,
+            ChosenPrefab = n.ChosenPrefab,
+            RoomObject = n.RoomObject,
+        };
+    }
 }

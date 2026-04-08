@@ -35,14 +35,13 @@ public class EndGameUI : MonoBehaviour
 
     private void OnContinue()
     {
-        if (won)
-        {
+
             var inv = InventoryManager.Instance;
             if (inv != null)
                 foreach (var module in inv.BagGrid.GetAllModules())
                     if (module is MaterialInstance mat)
                         MaterialStorage.Instance.Add(mat.MaterialData, mat.StackCount);
-        }
+        
 
         var playerStats = FindFirstObjectByType<PlayerStats>();
         if (playerStats != null)

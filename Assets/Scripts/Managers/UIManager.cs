@@ -98,13 +98,14 @@ public class UIManager : MonoBehaviour
             else ClosePassive();
         }
 
+
         if (kb[Key.Escape].wasPressedThisFrame)
         {
             if (IsCardPhaseOpen) return;
             if (IsPassiveOpen) ClosePassive();
             else if (IsGamblerOpen) CloseGambler();
             else if (IsStorageOpen) CloseStorage();
-            else if (_upgradeOpen) return; 
+            else if (_upgradeOpen) return;
             else if (IsMergeOpen) { CloseMerge(); CloseInventoryImmediate(); }
             else if (IsShopOpen) { CloseShop(); CloseInventoryImmediate(); }
             else if (IsInventoryOpen) ToggleInventory();

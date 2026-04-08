@@ -5,7 +5,7 @@ using UnityEngine.ProBuilder;
 using UnityEngine.ProBuilder.MeshOperations;
 using Random = UnityEngine.Random;
 
-public enum RoomType { None, Spawn, Battle, Boss, Shop, Merge, Heal, Upgrade }
+public enum RoomType { None, Spawn, Battle, Boss, Shop, Merge, Heal, RareLoot }
 
 public static class Cell
 {
@@ -25,6 +25,7 @@ public class MapNode
     public GameObject RoomObject;
 
     [NonSerialized] public List<MapEdge> Edges = new();
+    [NonSerialized] public RoomNode LegacyNode;
 
     public int CenterX => (MinX + MaxX) / 2;
     public int CenterZ => (MinZ + MaxZ) / 2;
@@ -62,8 +63,8 @@ public class MapGeometry : MonoBehaviour
     public GameObject[] bossRoomPrefabs;
     public GameObject[] shopRoomPrefabs;
     public GameObject[] healRoomPrefabs;
-    public GameObject[] upgradeRoomPrefabs;
     public GameObject[] mergeRoomPrefabs;
+    public GameObject[] rareLootRoomPrefabs;
 
     [Header("Matrix")]
     public int matrixSize = 150;
@@ -84,8 +85,15 @@ public class MapGeometry : MonoBehaviour
     public float fillRoomBudget = 0.35f;
     [Tooltip("Max extra Battle rooms placed outside the main path. -1 = unlimited.")]
     public int maxExtraBattleRooms = 6;
-    [Tooltip("Max extra Event rooms (Heal/Shop/Upgrade/Merge) placed outside the main path. -1 = unlimited.")]
+    [Tooltip("Max extra Event rooms (Heal/Shop/RareLoot/Merge) placed outside the main path. -1 = unlimited.")]
     public int maxExtraEventRooms = 4;
+
+    [Header("Event Room Weights")]
+    public float weightBattle = 4f;
+    public float weightHeal = 1f;
+    public float weightShop = 1f;
+    public float weightRareLoot = 1f;
+    public float weightMerge = 1f;
 
     [Header("Corridors")]
     public int corridorWidth = 3;
@@ -108,7 +116,6 @@ public class MapGeometry : MonoBehaviour
     public byte[,] Matrix => _matrix;
     public int MatrixSize => matrixSize;
 
-
     public event Action<IReadOnlyList<MapNode>> OnMapReady;
 
     byte[,] _matrix;
@@ -127,11 +134,9 @@ public class MapGeometry : MonoBehaviour
 
         int spawnCorner = PickRandomCorner();
         _spawnNode = PlaceSpawnInCorner(spawnCorner);
-        if (_spawnNode == null) { Debug.LogError("[MapGeometry] Failed to place Spawn."); return; }
 
         int bossCorner = OppositeCorner(spawnCorner);
         _bossNode = PlaceBossInCorner(bossCorner);
-        if (_bossNode == null) { Debug.LogError("[MapGeometry] Failed to place Boss."); return; }
 
         BuildMainPath();
 
@@ -145,7 +150,7 @@ public class MapGeometry : MonoBehaviour
         SpawnAllWalls();
 
         FindFirstObjectByType<MinimapManager>()
-            ?.BuildMinimapFromMatrix(_matrix, matrixSize, ToLegacyRoomNodes());
+            ?.BuildMinimapFromMatrix(_matrix, matrixSize, ToLegacyRoomNodes(), _edges);
 
         OnMapReady?.Invoke(_nodes);
     }
@@ -168,7 +173,6 @@ public class MapGeometry : MonoBehaviour
 
         if (!FitsInMatrix(ox, oz, bossRoomSize, bossRoomSize))
         {
-            Debug.LogError("[MapGeometry] Boss room does not fit — reduce bossRoomSize or cornerMargin.");
             return null;
         }
 
@@ -203,7 +207,6 @@ public class MapGeometry : MonoBehaviour
             return StampAndCreateNode(RoomType.Spawn, prefab, ox, oz, sx, sz);
         }
 
-        Debug.LogWarning($"[MapGeometry] Could not place Spawn in corner {corner}.");
         return null;
     }
 
@@ -237,26 +240,13 @@ public class MapGeometry : MonoBehaviour
         int extraBattle = 0;
         int extraEvent = 0;
 
-        var fillTypes = new[]
-        {
-            RoomType.Battle, RoomType.Heal,    RoomType.Battle,
-            RoomType.Shop,   RoomType.Battle,   RoomType.Upgrade,
-            RoomType.Battle, RoomType.Merge,
-        };
-        int typeIdx = 0;
-
         while (CountUsedCells() < budgetCells && consecutiveFails < maxFails)
         {
-            RoomType type = fillTypes[typeIdx++ % fillTypes.Length];
-
-            if (type == RoomType.Battle && maxExtraBattleRooms >= 0 && extraBattle >= maxExtraBattleRooms)
-                type = PickEventType(typeIdx);
-            if (IsEventRoom(type) && maxExtraEventRooms >= 0 && extraEvent >= maxExtraEventRooms)
-                type = RoomType.Battle;
-
             bool battleFull = maxExtraBattleRooms >= 0 && extraBattle >= maxExtraBattleRooms;
             bool eventFull = maxExtraEventRooms >= 0 && extraEvent >= maxExtraEventRooms;
             if (battleFull && eventFull) break;
+
+            RoomType type = PickWeightedRoomType(battleFull, eventFull);
 
             int hintX = Random.Range(maxRoomSize + roomPadding, matrixSize - maxRoomSize - roomPadding);
             int hintZ = Random.Range(maxRoomSize + roomPadding, matrixSize - maxRoomSize - roomPadding);
@@ -271,6 +261,25 @@ public class MapGeometry : MonoBehaviour
         }
     }
 
+    RoomType PickWeightedRoomType(bool battleFull, bool eventFull)
+    {
+        float bw = battleFull ? 0f : weightBattle;
+        float hw = eventFull ? 0f : weightHeal;
+        float sw = eventFull ? 0f : weightShop;
+        float rw = eventFull ? 0f : weightRareLoot;
+        float mw = eventFull ? 0f : weightMerge;
+
+        float total = bw + hw + sw + rw + mw;
+        if (total <= 0f) return RoomType.Battle;
+
+        float roll = Random.Range(0f, total);
+        if ((roll -= bw) < 0f) return RoomType.Battle;
+        if ((roll -= hw) < 0f) return RoomType.Heal;
+        if ((roll -= sw) < 0f) return RoomType.Shop;
+        if ((roll -= rw) < 0f) return RoomType.RareLoot;
+        return RoomType.Merge;
+    }
+
     int CountUsedCells()
     {
         int c = 0;
@@ -282,7 +291,6 @@ public class MapGeometry : MonoBehaviour
 
     void BuildEdges()
     {
-
         var parent = new Dictionary<MapNode, MapNode>();
         MapNode Find(MapNode n) { return parent[n] == n ? n : (parent[n] = Find(parent[n])); }
         void Union(MapNode a, MapNode b) { parent[Find(a)] = Find(b); }
@@ -316,7 +324,6 @@ public class MapGeometry : MonoBehaviour
             for (int j = i + 1; j < _nodes.Count; j++)
             {
                 if (AlreadyConnected(_nodes[i], _nodes[j])) continue;
-
                 if (EdgeViolatesRestriction(_nodes[i], _nodes[j])) continue;
                 candidates.Add((NodeDist(_nodes[i], _nodes[j]), _nodes[i], _nodes[j]));
             }
@@ -330,16 +337,137 @@ public class MapGeometry : MonoBehaviour
             Union(a, b);
         }
 
-        float shortThreshold = matrixSize * 0.22f;
-        foreach (var (dist, a, b) in candidates)
-        {
-            if (dist > shortThreshold) break;
-            if (AlreadyConnected(a, b)) continue;
-            if (CenterLineCrosses(a, b)) continue;
-            AddEdge(a, b);
-        }
 
+
+        var treeParent = BfsParent(_spawnNode);
+
+        var onCycle = new HashSet<MapNode>();
+
+        bool addedAny = true;
+        while (addedAny)
+        {
+            addedAny = false;
+
+            List<MapNode> bestCycleNodes = null;
+            MapNode bestLeaf = null, bestPartner = null;
+
+            foreach (var leaf in _nodes)
+            {
+                if (leaf.Edges.Count != 1) continue;
+                if (onCycle.Contains(leaf)) continue;
+
+                foreach (var partner in _nodes)
+                {
+                    if (partner == leaf) continue;
+                    if (AlreadyConnected(leaf, partner)) continue;
+                    if (EdgeViolatesRestriction(leaf, partner)) continue;
+                    if (CenterLineCrosses(leaf, partner)) continue;
+
+                    var cyclePath = GetTreePath(leaf, partner, treeParent);
+                    if (cyclePath == null) continue;
+
+                    if (bestCycleNodes != null && cyclePath.Count <= bestCycleNodes.Count) continue;
+
+                    if (!CycleIsEmpty(cyclePath)) continue;
+
+                    bestCycleNodes = cyclePath;
+                    bestLeaf = leaf;
+                    bestPartner = partner;
+                }
+            }
+
+            if (bestLeaf != null)
+            {
+                AddEdge(bestLeaf, bestPartner);
+                foreach (var n in bestCycleNodes) onCycle.Add(n);
+                addedAny = true;
+            }
+        }
     }
+
+    Dictionary<MapNode, MapNode> BfsParent(MapNode start)
+    {
+        var parent = new Dictionary<MapNode, MapNode> { [start] = null };
+        var queue = new Queue<MapNode>();
+        queue.Enqueue(start);
+        while (queue.Count > 0)
+        {
+            var cur = queue.Dequeue();
+            foreach (var edge in cur.Edges)
+            {
+                var nb = edge.A == cur ? edge.B : edge.A;
+                if (!parent.ContainsKey(nb))
+                {
+                    parent[nb] = cur;
+                    queue.Enqueue(nb);
+                }
+            }
+        }
+        return parent;
+    }
+
+
+    List<MapNode> GetTreePath(MapNode a, MapNode b, Dictionary<MapNode, MapNode> parent)
+    {
+        if (!parent.ContainsKey(a) || !parent.ContainsKey(b)) return null;
+
+        var ancestorsA = new Dictionary<MapNode, int>();
+        var cur = a; int depth = 0;
+        while (cur != null) { ancestorsA[cur] = depth++; cur = parent[cur]; }
+
+        var pathB = new List<MapNode>();
+        cur = b;
+        while (cur != null && !ancestorsA.ContainsKey(cur))
+        {
+            pathB.Add(cur);
+            cur = parent[cur];
+        }
+        if (cur == null) return null;
+        var lca = cur;
+
+        var pathA = new List<MapNode>();
+        cur = a;
+        while (cur != lca) { pathA.Add(cur); cur = parent[cur]; }
+        pathA.Add(lca);
+
+        pathB.Reverse();
+        pathA.AddRange(pathB);
+        return pathA;
+    }
+
+
+    bool CycleIsEmpty(List<MapNode> cyclePath)
+    {
+        var polygon = new List<Vector2>(cyclePath.Count);
+        foreach (var n in cyclePath)
+            polygon.Add(new Vector2(n.WorldCenter.x, n.WorldCenter.z));
+
+        var cycleSet = new HashSet<MapNode>(cyclePath);
+        foreach (var n in _nodes)
+        {
+            if (cycleSet.Contains(n)) continue;
+            if (PointInPolygon(new Vector2(n.WorldCenter.x, n.WorldCenter.z), polygon))
+                return false;
+        }
+        return true;
+    }
+
+    static bool PointInPolygon(Vector2 point, List<Vector2> polygon)
+    {
+        int n = polygon.Count;
+        bool inside = false;
+        for (int i = 0, j = n - 1; i < n; j = i++)
+        {
+            float xi = polygon[i].x, yi = polygon[i].y;
+            float xj = polygon[j].x, yj = polygon[j].y;
+            if (((yi > point.y) != (yj > point.y)) &&
+                point.x < (xj - xi) * (point.y - yi) / (yj - yi) + xi)
+                inside = !inside;
+        }
+        return inside;
+    }
+
+
 
     bool CenterLineCrosses(MapNode a, MapNode b)
     {
@@ -395,33 +523,32 @@ public class MapGeometry : MonoBehaviour
             var straight = TryStraight(a, b, preferTravelX);
             if (straight != null)
             {
-                
                 return straight;
             }
 
             straight = TryStraight(a, b, !preferTravelX);
             if (straight != null)
             {
-                
                 return straight;
             }
+        }
+
+
+
+        var szShape = TrySZShape(a, b);
+        if (szShape != null)
+        {
+
+            return szShape;
         }
 
         var lShape = TryLShape(a, b);
         if (lShape != null)
         {
-            
+
             return lShape;
         }
 
-        var szShape = TrySZShape(a, b);
-        if (szShape != null)
-        {
-            
-            return szShape;
-        }
-
-        
         return WaypointFallback(a, b);
     }
 
@@ -801,15 +928,15 @@ public class MapGeometry : MonoBehaviour
 
     static bool IsEventRoom(MapNode n) =>
         n.Type == RoomType.Heal || n.Type == RoomType.Shop ||
-        n.Type == RoomType.Upgrade || n.Type == RoomType.Merge;
+        n.Type == RoomType.RareLoot || n.Type == RoomType.Merge;
 
     static bool IsEventRoom(RoomType t) =>
         t == RoomType.Heal || t == RoomType.Shop ||
-        t == RoomType.Upgrade || t == RoomType.Merge;
+        t == RoomType.RareLoot || t == RoomType.Merge;
 
     static RoomType PickEventType(int idx)
     {
-        var events = new[] { RoomType.Heal, RoomType.Shop, RoomType.Upgrade, RoomType.Merge };
+        var events = new[] { RoomType.Heal, RoomType.Shop, RoomType.RareLoot, RoomType.Merge };
         return events[idx % events.Length];
     }
 
@@ -916,7 +1043,7 @@ public class MapGeometry : MonoBehaviour
         RoomType.Boss => bossRoomPrefabs,
         RoomType.Shop => shopRoomPrefabs,
         RoomType.Heal => healRoomPrefabs,
-        RoomType.Upgrade => upgradeRoomPrefabs,
+        RoomType.RareLoot => rareLootRoomPrefabs,
         RoomType.Merge => mergeRoomPrefabs,
         _ => battleRoomPrefabs
     };
@@ -937,9 +1064,10 @@ public class MapGeometry : MonoBehaviour
 
     List<RoomNode> ToLegacyRoomNodes()
     {
-        var list = new List<RoomNode>();
+        var nodeMap = new Dictionary<MapNode, RoomNode>();
         foreach (var n in _nodes)
-            list.Add(new RoomNode
+        {
+            var legacy = new RoomNode
             {
                 Type = n.Type,
                 MatrixOrigin = new Vector2Int(n.MinX, n.MinZ),
@@ -948,8 +1076,18 @@ public class MapGeometry : MonoBehaviour
                 WorldPosition = n.WorldCenter,
                 ChosenPrefab = n.ChosenPrefab,
                 RoomObject = n.RoomObject,
-            });
-        return list;
+            };
+            nodeMap[n] = legacy;
+            n.LegacyNode = legacy;
+        }
+        foreach (var edge in _edges)
+        {
+            if (!nodeMap.TryGetValue(edge.A, out var la) ||
+                !nodeMap.TryGetValue(edge.B, out var lb)) continue;
+            if (!la.Neighbors.Contains(lb)) la.Neighbors.Add(lb);
+            if (!lb.Neighbors.Contains(la)) lb.Neighbors.Add(la);
+        }
+        return new List<RoomNode>(nodeMap.Values);
     }
 
     void OnDrawGizmos()
@@ -965,7 +1103,7 @@ public class MapGeometry : MonoBehaviour
                 RoomType.Shop => Color.yellow,
                 RoomType.Merge => Color.cyan,
                 RoomType.Heal => Color.white,
-                RoomType.Upgrade => new Color(1f, 0.5f, 0f),
+                RoomType.RareLoot => new Color(1f, 0.5f, 0f),
                 _ => Color.grey
             };
             Gizmos.DrawWireCube(

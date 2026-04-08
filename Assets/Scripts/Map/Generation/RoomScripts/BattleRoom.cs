@@ -1,8 +1,6 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.ProBuilder;
-using UnityEngine.ProBuilder.MeshOperations;
 
 public class BattleRoom : MonoBehaviour
 {
@@ -12,45 +10,52 @@ public class BattleRoom : MonoBehaviour
 
     [HideInInspector] public RoomNode node;
 
-    [Header("Room")]
-    private Vector3 roomSize;
-    private List<GameObject> invisibleWalls = new();
-
     [Header("Enemy Spawning")]
     public GameObject[] enemyPrefabs;
     public GameObject lootPrefab;
+    public GameObject upgradeStationPrefab;
     public int enemyCount = 3;
     public float spawnRadius = 3f;
 
     [Header("Waves")]
-    [Tooltip("How many waves to split the enemies into. 1 = original behaviour.")]
-    [Range(1, 5)]
-    public int waveCount = 3;
-    public float wavePause = 1f;
-    [Tooltip("Trigger next wave when alive enemies drop to or below this")]
+    [Range(1, 5)] public int waveCount = 3;
+    public float wavePause = 1.6f;
     public int waveThreshold = 0;
 
     public Material boundaryMaterial;
 
-    private int _aliveCount = 0;
-    private PlayerCombatContext _combatContext;
-    private int _currentWave = 0;
-    private int[] _waveSizes;
+    protected Vector3 roomSize;
+    protected List<GameObject> invisibleWalls = new();
+    protected int _aliveCount = 0;
+    protected PlayerCombatContext _combatContext;
+    protected int _currentWave = 0;
+    protected int[] _waveSizes;
 
-
-
-    void Start()
+    protected virtual void Start()
     {
         var playerObj = GameObject.FindWithTag("Player");
         if (playerObj != null)
             _combatContext = playerObj.GetComponent<PlayerCombatContext>();
     }
 
-    private void Subscribe() => _combatContext.OnEntityKilled += OnEntityKilled;
-    private void Unsubscribe() => _combatContext.OnEntityKilled -= OnEntityKilled;
-    private void OnDestroy() => Unsubscribe();
+    protected void Subscribe()
+    {
+        if (_combatContext == null)
+        {
+            var playerObj = GameObject.FindWithTag("Player");
+            if (playerObj != null) _combatContext = playerObj.GetComponent<PlayerCombatContext>();
+        }
+        if (_combatContext != null) _combatContext.OnEntityKilled += OnEntityKilled;
+    }
 
-    private void OnEntityKilled(HealthBase enemy)
+    protected void Unsubscribe()
+    {
+        if (_combatContext != null) _combatContext.OnEntityKilled -= OnEntityKilled;
+    }
+
+    protected virtual void OnDestroy() => Unsubscribe();
+
+    protected virtual void OnEntityKilled(HealthBase enemy)
     {
         if (!isLocked || isCleared) return;
         _aliveCount = Mathf.Max(0, _aliveCount - 1);
@@ -59,21 +64,17 @@ public class BattleRoom : MonoBehaviour
         var enemyBase = enemy.GetComponent<EnemyBase>();
         int coinMin = enemyBase != null ? enemyBase.coinDropMin : 4;
         int coinMax = enemyBase != null ? enemyBase.coinDropMax : 9;
-        int baseCoins = Random.Range(coinMin, coinMax + 1);
-        float floorMultiplier = 1f + ((RunManager.Instance?.CurrentFloor ?? 1) - 1) * 0.3f;
-        Object.FindFirstObjectByType<CurrencyManager>()?.AddCoins(Mathf.RoundToInt(baseCoins * floorMultiplier));
+        float floorMult = 1f + ((RunManager.Instance?.CurrentFloor ?? 1) - 1) * 0.3f;
+        Object.FindFirstObjectByType<CurrencyManager>()
+              ?.AddCoins(Mathf.RoundToInt(Random.Range(coinMin, coinMax + 1) * floorMult));
 
         if (_aliveCount <= waveThreshold)
             StartCoroutine(OnWaveCleared());
     }
 
-
-
-    IEnumerator OnWaveCleared()
+    protected virtual IEnumerator OnWaveCleared()
     {
-
         isLocked = false;
-
         _currentWave++;
 
         if (_currentWave < waveCount)
@@ -84,31 +85,24 @@ public class BattleRoom : MonoBehaviour
         }
         else
         {
-
             FindFirstObjectByType<UIManager>().isInBattle = false;
             Unsubscribe();
             ClearRoom();
         }
     }
 
-
-    void BuildWaveSizes()
+    protected void BuildWaveSizes()
     {
-        int clampedWaves = Mathf.Clamp(waveCount, 1, Mathf.Max(1, enemyCount));
-        waveCount = clampedWaves;
+        waveCount = Mathf.Clamp(waveCount, 1, Mathf.Max(1, enemyCount));
         _waveSizes = new int[waveCount];
-
         int baseCount = enemyCount / waveCount;
         int remainder = enemyCount % waveCount;
-
         for (int i = 0; i < waveCount; i++)
             _waveSizes[i] = baseCount + (i < remainder ? 1 : 0);
     }
 
-    void SpawnWave(int waveIndex)
+    protected virtual void SpawnWave(int waveIndex)
     {
-
-
         int count = _waveSizes[waveIndex];
         _aliveCount += count;
 
@@ -117,28 +111,29 @@ public class BattleRoom : MonoBehaviour
             var prefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
             Vector2 circle = Random.insideUnitCircle.normalized * Random.Range(1f, spawnRadius);
             Vector3 pos = transform.position + new Vector3(circle.x, 0.5f, circle.y);
-            GameObject currentEnemy = Instantiate(prefab, pos, Quaternion.identity);
-            if (currentEnemy.TryGetComponent<EntityStats>(out EntityStats entityStats))
-            {
-                PlayerStats playerStats = FindFirstObjectByType<PlayerStats>();
-                StatScale scale = new StatScale();
-                scale.moveSpeed = Random.Range(0.9f, 1.1f);
-                float statScale = (RunManager.Instance?.TotalBossKilled ?? 0) * 0.3f + (RunManager.Instance?.TotalRoomsCleared ?? 0) * 0.1f;
-                scale.hp = 1f + statScale + (playerStats.Damage) / (playerStats.BaseDamage) * 0.15f;
-                scale.damage = 1f + statScale + (playerStats.MaxHealth) / (playerStats.BaseHealth) * 0.15f;
-                entityStats.SetStatScale(scale);
-            }
+            ApplyEnemyScale(Instantiate(prefab, pos, Quaternion.identity));
         }
     }
 
-    public void OnPlayerEnter()
+    protected void ApplyEnemyScale(GameObject enemy)
+    {
+        if (!enemy.TryGetComponent<EntityStats>(out var stats)) return;
+        var player = FindFirstObjectByType<PlayerStats>();
+        var scale = new StatScale();
+        float progress = (RunManager.Instance?.TotalBossKilled ?? 0) * 0.3f
+                       + (RunManager.Instance?.TotalRoomsCleared ?? 0) * 0.1f;
+        scale.moveSpeed = Random.Range(0.9f, 1.1f);
+        scale.hp = 1f + progress + (player.Damage / Mathf.Max(1f, player.BaseDamage)) * 0.15f;
+        scale.damage = 1f + progress + (player.MaxHealth / Mathf.Max(1f, player.BaseHealth)) * 0.15f;
+        stats.SetStatScale(scale);
+    }
+
+    public virtual void OnPlayerEnter()
     {
         FindFirstObjectByType<MinimapManager>()?.OnPlayerEnterRoom(node);
-
         if (isCleared) return;
 
         LockRoom();
-
         BuildWaveSizes();
         _currentWave = 0;
         _aliveCount = 0;
@@ -151,38 +146,49 @@ public class BattleRoom : MonoBehaviour
         if (ui.IsInventoryOpen) ui.ToggleInventory();
     }
 
-
-    private void ClearRoom()
+    protected virtual void ClearRoom()
     {
         isCleared = true;
         isLocked = false;
         RemoveInvisibleWalls();
+        float lootUpgradeThreshold = 0.5f;
 
-        var lootObj = Instantiate(lootPrefab, transform.position, Quaternion.identity);
-        var randomLoot = lootObj.GetComponent<RandomLoot>();
-        if (randomLoot != null)
-        {
-            int floor = RunManager.Instance?.CurrentFloor ?? 1;
-            int roomsCleared = RunManager.Instance?.TotalRoomsCleared ?? 0;
-            randomLoot.Configure(floor, roomsCleared);
-        }
-
-
+        if (Random.value < lootUpgradeThreshold)
+            SpawnLoot(transform.position);
+        else if (upgradeStationPrefab != null)
+            Instantiate(upgradeStationPrefab, transform.position, Quaternion.identity);
+        else
+            SpawnLoot(transform.position);
 
         RunManager.Instance?.OnRoomCleared();
     }
 
+    protected void SpawnLoot(Vector3 position)
+    {
+        var lootObj = Instantiate(lootPrefab, position, Quaternion.identity);
+        var randomLoot = lootObj.GetComponent<RandomLoot>();
+        if (randomLoot != null)
+            randomLoot.Configure(BuildLootConfig());
+    }
 
+    protected virtual LootConfig BuildLootConfig()
+    {
+        int floor = RunManager.Instance?.CurrentFloor ?? 1;
+        int roomsCleared = RunManager.Instance?.TotalRoomsCleared ?? 0;
+        float mean = 50f + floor * 30f + roomsCleared * 5f + 10f;
+        float sd = 20f + (floor - 1) * 3f;
+        return new LootConfig { optionCount = 3, meanCost = mean, sd = sd, allowDuplicates = false };
+    }
 
     public void SetRoomSize(Vector3 size) => roomSize = size;
 
-    private void LockRoom()
+    protected void LockRoom()
     {
         isLocked = true;
         CreateInvisibleWalls();
     }
 
-    private void CreateInvisibleWalls()
+    protected void CreateInvisibleWalls()
     {
         (Vector3 pos, Vector3 size)[] configs =
         {
@@ -202,14 +208,12 @@ public class BattleRoom : MonoBehaviour
         }
     }
 
-    private void RemoveInvisibleWalls()
+    protected void RemoveInvisibleWalls()
     {
         foreach (var wall in invisibleWalls)
             if (wall != null) Destroy(wall);
         invisibleWalls.Clear();
     }
-
-
 
     private void OnTriggerEnter(Collider other)
     {
@@ -237,9 +241,7 @@ public class BattleRoom : MonoBehaviour
         OnPlayerEnter();
     }
 
-
-
-    void OnDrawGizmosSelected()
+    protected virtual void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireCube(transform.position + Vector3.up * (roomSize.y / 2f), roomSize);
