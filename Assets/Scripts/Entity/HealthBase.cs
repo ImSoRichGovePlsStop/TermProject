@@ -179,7 +179,7 @@ public abstract class HealthBase : MonoBehaviour
     {
         if (flashSpriteRenderer != null)
         {
-            flashSpriteRenderer.color = new Color(color.r, color.g, color.b, 1f);
+            flashSpriteRenderer.color = color;
             yield return new WaitForSeconds(flashDuration);
             flashSpriteRenderer.color = new Color(color.r, color.g, color.b, 0f);
         }

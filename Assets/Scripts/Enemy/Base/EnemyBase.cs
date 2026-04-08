@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -33,7 +34,38 @@ public abstract class EnemyBase : MonoBehaviour
     [SerializeField] public int coinDropMin = 4;
     [SerializeField] public int coinDropMax = 9;
 
+    [Header("Hurt")]
+    [SerializeField] private float hurtDuration = 0.2f;
+    [SerializeField] private float postHurtDelayMin = 0.1f;
+    [SerializeField] private float postHurtDelayMax = 0.3f;
+
     protected bool isDead;
+    protected bool isHurting = false;
+
+    public virtual bool CanBeInterrupted() => true;
+
+    private Coroutine hurtCoroutine;
+
+    public void TriggerHurt()
+    {
+        if (isDead) return;
+        if (hurtCoroutine != null) StopCoroutine(hurtCoroutine);
+        hurtCoroutine = StartCoroutine(HurtRoutine());
+    }
+
+    private IEnumerator HurtRoutine()
+    {
+        isHurting = true;
+        OnHurtTriggered();
+        animator?.SetBool("IsHurting", true);
+        yield return new WaitForSeconds(hurtDuration);
+        isHurting = false;
+        animator?.SetBool("IsHurting", false);
+        hurtCoroutine = null;
+        TriggerPostHurtDelay();
+    }
+
+    protected virtual void OnHurtTriggered() { }
 
     protected PlayerStats playerTarget;
     protected HealthBase entityTarget;
@@ -62,6 +94,7 @@ public abstract class EnemyBase : MonoBehaviour
     protected virtual void Update()
     {
         if (isDead) return;
+        if (isHurting) { movement.StopMoving(); return; }
 
         if (isPostAttackDelay)
         {
@@ -81,6 +114,12 @@ public abstract class EnemyBase : MonoBehaviour
     {
         isPostAttackDelay = true;
         postAttackTimer = Random.Range(postAttackDelayMin, postAttackDelayMax);
+    }
+
+    protected void TriggerPostHurtDelay()
+    {
+        isPostAttackDelay = true;
+        postAttackTimer = Random.Range(postHurtDelayMin, postHurtDelayMax);
     }
 
     private void UpdateTarget()

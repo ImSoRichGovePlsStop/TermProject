@@ -27,6 +27,12 @@ public class EnemyHealthBase : HealthBase
         DamageNumberSpawner.Instance?.RegisterEntity(this, healthBarHeight);
     }
 
+    protected override void OnHurtStart()
+    {
+        if (controller != null && controller.CanBeInterrupted())
+            controller.TriggerHurt();
+    }
+
     protected override void OnDeathStart()
     {
         controller?.OnDeath();

@@ -174,6 +174,26 @@ public class HopliteController : EnemyBase
         return candidate;
     }
 
+    public override bool CanBeInterrupted() => !isDashing;
+
+    protected override void OnHurtTriggered()
+    {
+        isAttacking = false;
+        lockedAttackDir = Vector3.zero;
+        health.StopFlashBuildup();
+
+        var agent = movement.GetAgent();
+        if (agent != null && !agent.enabled)
+        {
+            agent.enabled = true;
+            movement.SetCanMove(true);
+        }
+
+        StopCoroutine(nameof(DashAttackRoutine));
+        isDashing = false;
+        ResetStrafe();
+    }
+
     protected bool TryAttack()
     {
         if (isAttacking) return true;
@@ -199,7 +219,7 @@ public class HopliteController : EnemyBase
         int frames = int.Parse(parts[0]);
         int fps = int.Parse(parts[1]);
         float duration = frames / (float)fps;
-        health.StartFlashBuildup(Color.white, duration, 0.2f);
+        health.StartFlashBuildup(Color.white, duration, 0.4f);
     }
 
     // Animation Event
