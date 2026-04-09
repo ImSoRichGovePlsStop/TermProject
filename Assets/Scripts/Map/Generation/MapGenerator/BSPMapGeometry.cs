@@ -11,26 +11,50 @@ public class BSPMapGeometry : MonoBehaviour
     [Header("Matrix")]
     public int matrixSize = 150;
 
-    [Header("Room Sizes")]
-    public int minRoomSize = 6;
-    public int maxRoomSize = 24;
+    [Header("Battle Room Sizes")]
+    public int minBattleRoomSize = 8;
+    public int maxBattleRoomSize = 24;
+
+    [Header("Event Room Sizes")]
+    public int minEventRoomSize = 6;
+    public int maxEventRoomSize = 18;
+
+    [Header("Empty Room Sizes")]
+    public int minEmptyRoomSize = 4;
+    public int maxEmptyRoomSize = 14;
+    [Tooltip("Empty rooms smaller than this area (cells) will be merged with neighbours.")]
+    public int mergeAreaThreshold = 20;
+
+    [Header("Room Type Counts")]
+    [Tooltip("How many Spawn rooms to place (always 1).")]
+    public int spawnCount = 1;
+    [Tooltip("How many Boss rooms to place (always 1).")]
+    public int bossCount = 1;
+    public int battleCount = 8;
+    public int healCount = 1;
+    public int shopCount = 1;
+    public int rareLootCount = 1;
+    public int mergeCount = 1;
+    [Tooltip("Remaining unclaimed space becomes empty rooms.")]
+    public int emptyCount = 6;
+
+    [Header("Preset Usage Probability per Type")]
+    [Tooltip("0 = always random rect, 1 = always use preset if available.")]
+    [Range(0f, 1f)] public float presetChanceBattle = 0.7f;
+    [Range(0f, 1f)] public float presetChanceHeal = 1f;
+    [Range(0f, 1f)] public float presetChanceShop = 1f;
+    [Range(0f, 1f)] public float presetChanceRareLoot = 1f;
+    [Range(0f, 1f)] public float presetChanceMerge = 1f;
+    [Range(0f, 1f)] public float presetChanceSpawn = 1f;
+    [Range(0f, 1f)] public float presetChanceBoss = 1f;
+
+    [Header("Room Presets")]
+    public BSPRoomPreset[] roomPresets;
 
     [Header("Doors")]
     public int doorWidth = 3;
-    [Tooltip("Extra doors added beyond the spanning tree per adjacent room pair.")]
     [Range(0f, 1f)]
     public float extraDoorChance = 0.35f;
-
-    [Header("Room Presets")]
-    [Tooltip("Optional. Preset rooms are placed first; remaining space is filled with random rectangles.")]
-    public BSPRoomPreset[] roomPresets;
-
-    [Header("Room Type Assignment")]
-    [Range(0f, 1f)] public float emptyRoomChance = 0.15f;
-    [Range(0f, 1f)] public float battleRoomFraction = 0.45f;
-    [Range(0f, 1f)] public float healRoomFraction = 0.12f;
-    [Range(0f, 1f)] public float shopRoomFraction = 0.12f;
-    [Range(0f, 1f)] public float rareLootFraction = 0.08f;
 
     [Header("Walls")]
     public float wallHeight = 2f;
@@ -63,9 +87,7 @@ public class BSPMapGeometry : MonoBehaviour
     List<MapNode> _nodes = new();
     List<MapEdge> _edges = new();
 
-    static readonly Vector2Int[] Dirs = {
-        new(1,0), new(-1,0), new(0,1), new(0,-1)
-    };
+    static readonly Vector2Int[] Dirs = { new(1, 0), new(-1, 0), new(0, 1), new(0, -1) };
 
     // ── Entry ─────────────────────────────────────────────────────────────────
 
@@ -80,9 +102,9 @@ public class BSPMapGeometry : MonoBehaviour
         _edges.Clear();
 
         FillMatrix();
+        MergeSmallEmptyRooms();
         BuildConnectivity();
         PunchDoors();
-        AssignRoomTypes();
         SpawnGeometry();
 
         FindFirstObjectByType<MinimapManager>()
@@ -95,101 +117,182 @@ public class BSPMapGeometry : MonoBehaviour
     }
 
     // ═════════════════════════════════════════════════════════════════════════
-    //  Step 1 — Fill the entire matrix with rooms
-    //
-    //  Seed with preset rooms first. Then grow from a frontier:
-    //  pick a random unclaimed cell, find its largest possible rectangle,
-    //  stamp it. Repeat until every cell is claimed.
+    //  Step 1 — Fill matrix: place typed rooms in order, then fill remainder
     // ═════════════════════════════════════════════════════════════════════════
 
     void FillMatrix()
     {
-        // Place preset rooms first
-        if (roomPresets != null)
+        // Build placement queue: typed rooms in order of placement priority.
+        // Spawn and Boss go into opposite corners. The rest are random.
+        var queue = new List<(RoomType type, int minSize, int maxSize, float presetChance)>();
+
+        for (int i = 0; i < spawnCount; i++) queue.Add((RoomType.Spawn, minBattleRoomSize, maxBattleRoomSize, presetChanceSpawn));
+        for (int i = 0; i < bossCount; i++) queue.Add((RoomType.Boss, minBattleRoomSize, maxBattleRoomSize, presetChanceBoss));
+        for (int i = 0; i < battleCount; i++) queue.Add((RoomType.Battle, minBattleRoomSize, maxBattleRoomSize, presetChanceBattle));
+        for (int i = 0; i < healCount; i++) queue.Add((RoomType.Heal, minEventRoomSize, maxEventRoomSize, presetChanceHeal));
+        for (int i = 0; i < shopCount; i++) queue.Add((RoomType.Shop, minEventRoomSize, maxEventRoomSize, presetChanceShop));
+        for (int i = 0; i < rareLootCount; i++) queue.Add((RoomType.RareLoot, minEventRoomSize, maxEventRoomSize, presetChanceRareLoot));
+        for (int i = 0; i < mergeCount; i++) queue.Add((RoomType.Merge, minEventRoomSize, maxEventRoomSize, presetChanceMerge));
+
+        // Shuffle everything except spawn/boss so event rooms land in random positions
+        int fixedHead = spawnCount + bossCount;
+        var shuffleable = queue.GetRange(fixedHead, queue.Count - fixedHead);
+        Shuffle(shuffleable);
+        queue.RemoveRange(fixedHead, queue.Count - fixedHead);
+        queue.AddRange(shuffleable);
+
+        // Spawn gets corner 0 (top-left). Boss gets any other corner at random.
+        int spawnCorner = 0;
+        int bossCorner = Random.Range(1, 4);  // 1, 2, or 3 — never same as spawn
+
+        int cornerAssign = 0;
+        foreach (var (type, minSz, maxSz, pChance) in queue)
         {
-            var pool = new List<BSPRoomPreset>(roomPresets);
-            Shuffle(pool);
-            foreach (var preset in pool)
-                TryPlacePreset(preset);
+            int cIdx = -1;
+            if (type == RoomType.Spawn) cIdx = spawnCorner;
+            else if (type == RoomType.Boss) cIdx = bossCorner;
+            PlaceTypedRoom(type, minSz, maxSz, pChance, cIdx);
         }
 
-        // Fill remaining empty cells with random rectangles
-        for (int pass = 0; pass < matrixSize * matrixSize; pass++)
+        // Fill remaining empty space with empty rooms then tiny filler
+        FillRemaining();
+    }
+
+    void PlaceTypedRoom(RoomType type, int minSz, int maxSz, float presetChance, int cornerIdx)
+    {
+        // Try preset first if roll succeeds
+        if (Random.value < presetChance && roomPresets != null && roomPresets.Length > 0)
         {
-            // Find any unclaimed cell
-            Vector2Int? empty = FindEmptyCell();
-            if (!empty.HasValue) break;
+            var compatible = new List<BSPRoomPreset>();
+            foreach (var p in roomPresets)
+                if (p != null && p.AllowsType(type)) compatible.Add(p);
 
-            int ox = empty.Value.x, oz = empty.Value.y;
-
-            // Grow the largest rectangle starting from this cell that stays empty
-            int bestW = 1, bestH = 1;
-            int maxW = Mathf.Min(maxRoomSize, matrixSize - ox);
-
-            for (int w = 1; w <= maxW; w++)
+            if (compatible.Count > 0)
             {
-                if (ox + w > matrixSize) break;
-                if (_matrix[ox + w - 1, oz] != Cell.Empty) break;
-
-                int maxH = Mathf.Min(maxRoomSize, matrixSize - oz);
-                for (int h = 1; h <= maxH; h++)
+                Shuffle(compatible);
+                foreach (var preset in compatible)
                 {
-                    if (oz + h > matrixSize) break;
-                    if (!RowEmpty(ox, oz + h - 1, w)) break;
-                    bestW = w; bestH = h;
+                    if (TryPlacePresetRoom(type, preset, cornerIdx)) return;
                 }
             }
-
-            // Skip if there isn't enough space to meet the minimum size
-            if (bestW < minRoomSize || bestH < minRoomSize)
-            {
-                // Can't fit a valid room here — stamp a 1-cell filler so the loop advances
-                // (marks it claimed so we don't loop forever, but it stays non-Room)
-                _matrix[ox, oz] = Cell.Occupied;
-                continue;
-            }
-
-            int sw = Mathf.Min(bestW, Random.Range(minRoomSize, maxRoomSize + 1));
-            int sh = Mathf.Min(bestH, Random.Range(minRoomSize, maxRoomSize + 1));
-
-            StampRoom(ox, oz, sw, sh, preset: null);
         }
+
+        // Fall back to random rectangle
+        TryPlaceRandomRoom(type, minSz, maxSz, cornerIdx);
     }
 
-    bool RowEmpty(int ox, int z, int w)
+    bool TryPlacePresetRoom(RoomType type, BSPRoomPreset preset, int cornerIdx)
     {
-        for (int x = ox; x < ox + w; x++)
-            if (x >= matrixSize || _matrix[x, z] != Cell.Empty) return false;
-        return true;
-    }
+        if (cornerIdx >= 0)
+        {
+            // Corner rooms have a fixed position — only one valid placement
+            GetCornerOrigin(cornerIdx, preset.sizeX, preset.sizeZ, out int ox, out int oz);
+            if (!RectEmpty(ox, oz, preset.sizeX, preset.sizeZ)) return false;
+            StampRoom(ox, oz, preset.sizeX, preset.sizeZ, preset, type);
+            return true;
+        }
 
-    Vector2Int? FindEmptyCell()
-    {
-        // Scan top-left to find first empty cell
-        for (int x = 0; x < matrixSize; x++)
-            for (int z = 0; z < matrixSize; z++)
-                if (_matrix[x, z] == Cell.Empty)
-                    return new Vector2Int(x, z);
-        return null;
-    }
-
-    void TryPlacePreset(BSPRoomPreset preset)
-    {
-        for (int attempt = 0; attempt < 60; attempt++)
+        for (int attempt = 0; attempt < 80; attempt++)
         {
             int ox = Random.Range(0, matrixSize - preset.sizeX);
             int oz = Random.Range(0, matrixSize - preset.sizeZ);
             if (!RectEmpty(ox, oz, preset.sizeX, preset.sizeZ)) continue;
-            StampRoom(ox, oz, preset.sizeX, preset.sizeZ, preset);
-            return;
+            StampRoom(ox, oz, preset.sizeX, preset.sizeZ, preset, type);
+            return true;
+        }
+        return false;
+    }
+
+    bool TryPlaceRandomRoom(RoomType type, int minSz, int maxSz, int cornerIdx)
+    {
+        if (cornerIdx >= 0)
+        {
+            // Corner rooms — try a few sizes, all anchored to the exact corner
+            for (int attempt = 0; attempt < 20; attempt++)
+            {
+                int sx = Random.Range(minSz, maxSz + 1);
+                int sz = Random.Range(minSz, maxSz + 1);
+                GetCornerOrigin(cornerIdx, sx, sz, out int ox, out int oz);
+                if (!RectEmpty(ox, oz, sx, sz)) continue;
+                StampRoom(ox, oz, sx, sz, null, type);
+                return true;
+            }
+            return false;
+        }
+
+        for (int attempt = 0; attempt < 80; attempt++)
+        {
+            int sx = Random.Range(minSz, maxSz + 1);
+            int sz = Random.Range(minSz, maxSz + 1);
+            int ox = Random.Range(0, Mathf.Max(1, matrixSize - sx));
+            int oz = Random.Range(0, Mathf.Max(1, matrixSize - sz));
+            if (!RectEmpty(ox, oz, sx, sz)) continue;
+            StampRoom(ox, oz, sx, sz, null, type);
+            return true;
+        }
+        return false;
+    }
+
+    void GetCornerOrigin(int cornerIdx, int sx, int sz, out int ox, out int oz)
+    {
+        // Room corner flush with matrix corner — no margin, no scatter
+        switch (cornerIdx % 4)
+        {
+            case 0: ox = 0; oz = 0; break;  // top-left
+            case 1: ox = matrixSize - sx; oz = matrixSize - sz; break;  // bottom-right
+            case 2: ox = matrixSize - sx; oz = 0; break;  // top-right
+            default: ox = 0; oz = matrixSize - sz; break;  // bottom-left
         }
     }
 
-    void StampRoom(int ox, int oz, int sx, int sz, BSPRoomPreset preset)
+    void FillRemaining()
+    {
+        // Fill every remaining empty cell with a None room.
+        // We keep trying until no empty cells remain — using progressively
+        // smaller minimum sizes so even tight gaps get claimed.
+        for (int minSz = minEmptyRoomSize; minSz >= 1; minSz--)
+        {
+            for (int pass = 0; pass < matrixSize * matrixSize; pass++)
+            {
+                var cell = FindEmptyCell();
+                if (!cell.HasValue) break;
+
+                int ox = cell.Value.x, oz = cell.Value.y;
+
+                int bestW = 1, bestH = 1;
+                int maxW = Mathf.Min(maxEmptyRoomSize, matrixSize - ox);
+
+                for (int w = 1; w <= maxW; w++)
+                {
+                    if (_matrix[ox + w - 1, oz] != Cell.Empty) break;
+                    int maxH = Mathf.Min(maxEmptyRoomSize, matrixSize - oz);
+                    for (int h = 1; h <= maxH; h++)
+                    {
+                        if (!RowEmpty(ox, oz + h - 1, w)) break;
+                        bestW = w; bestH = h;
+                    }
+                }
+
+                if (bestW < minSz || bestH < minSz)
+                {
+                    // Can't fit even minimum — mark this single cell occupied
+                    // so the outer loop reduces minSz and tries again
+                    if (minSz == 1) _matrix[ox, oz] = Cell.Occupied;
+                    continue;
+                }
+
+                int sw = Mathf.Min(bestW, Mathf.Max(minSz, Random.Range(minEmptyRoomSize, maxEmptyRoomSize + 1)));
+                int sh = Mathf.Min(bestH, Mathf.Max(minSz, Random.Range(minEmptyRoomSize, maxEmptyRoomSize + 1)));
+                StampRoom(ox, oz, sw, sh, null, RoomType.None);
+            }
+        }
+    }
+
+    void StampRoom(int ox, int oz, int sx, int sz, BSPRoomPreset preset, RoomType type)
     {
         var node = new MapNode
         {
-            Type = RoomType.Battle,
+            Type = type,
             MinX = ox,
             MinZ = oz,
             MaxX = ox + sx - 1,
@@ -211,24 +314,91 @@ public class BSPMapGeometry : MonoBehaviour
             }
     }
 
-    bool RectEmpty(int ox, int oz, int sx, int sz)
+    // ═════════════════════════════════════════════════════════════════════════
+    //  Step 2 — Merge small empty rooms into adjacent neighbours
+    // ═════════════════════════════════════════════════════════════════════════
+
+    void MergeSmallEmptyRooms()
     {
-        for (int x = ox; x < ox + sx; x++)
-            for (int z = oz; z < oz + sz; z++)
+        bool anyMerged = true;
+        while (anyMerged)
+        {
+            anyMerged = false;
+            foreach (var node in new List<MapNode>(_nodes))
             {
-                if (x >= matrixSize || z >= matrixSize) return false;
-                if (_matrix[x, z] != Cell.Empty) return false;
+                if (node.Type != RoomType.None) continue;
+
+                int area = CountCells(node);
+                if (area >= mergeAreaThreshold) continue;
+
+                // Find the largest adjacent EMPTY room to merge into
+                MapNode best = null;
+                int bestShared = 0;
+
+                foreach (var other in _nodes)
+                {
+                    if (other == node) continue;
+                    if (other.Type != RoomType.None) continue;  // only merge with empty rooms
+                    int shared = SharedEdgeCount(node, other);
+                    if (shared > bestShared) { bestShared = shared; best = other; }
+                }
+
+                if (best == null) continue;
+
+                // Re-assign all cells of node to best
+                for (int x = node.MinX; x <= node.MaxX; x++)
+                    for (int z = node.MinZ; z <= node.MaxZ; z++)
+                        if (_roomMap[x, z] == node)
+                        {
+                            _roomMap[x, z] = best;
+                            // Update best bounds
+                            best.MinX = Mathf.Min(best.MinX, x);
+                            best.MinZ = Mathf.Min(best.MinZ, z);
+                            best.MaxX = Mathf.Max(best.MaxX, x);
+                            best.MaxZ = Mathf.Max(best.MaxZ, z);
+                        }
+
+                _nodes.Remove(node);
+                anyMerged = true;
+                break; // restart loop after mutation
             }
-        return true;
+        }
+    }
+
+    int CountCells(MapNode node)
+    {
+        int c = 0;
+        for (int x = node.MinX; x <= node.MaxX; x++)
+            for (int z = node.MinZ; z <= node.MaxZ; z++)
+                if (_roomMap[x, z] == node) c++;
+        return c;
+    }
+
+    int SharedEdgeCount(MapNode a, MapNode b)
+    {
+        int count = 0;
+        for (int x = a.MinX; x <= a.MaxX; x++)
+            for (int z = a.MinZ; z <= a.MaxZ; z++)
+            {
+                if (_roomMap[x, z] != a) continue;
+                foreach (var d in Dirs)
+                {
+                    int nx = x + d.x, nz = z + d.y;
+                    if (nx < 0 || nz < 0 || nx >= matrixSize || nz >= matrixSize) continue;
+                    if (_roomMap[nx, nz] == b) count++;
+                }
+            }
+        return count;
     }
 
     // ═════════════════════════════════════════════════════════════════════════
-    //  Step 2 — Build adjacency graph and spanning tree
+    //  Step 3 — Build adjacency + MST
     // ═════════════════════════════════════════════════════════════════════════
+
+    Dictionary<(MapNode, MapNode), List<Vector2Int>> _sharedCells;
 
     void BuildConnectivity()
     {
-        // Find all adjacent pairs
         var pairShared = new Dictionary<(MapNode, MapNode), List<Vector2Int>>();
 
         for (int x = 0; x < matrixSize; x++)
@@ -236,27 +406,23 @@ public class BSPMapGeometry : MonoBehaviour
             {
                 var a = _roomMap[x, z];
                 if (a == null) continue;
-
                 foreach (var d in new[] { new Vector2Int(1, 0), new Vector2Int(0, 1) })
                 {
                     int nx = x + d.x, nz = z + d.y;
                     if (nx >= matrixSize || nz >= matrixSize) continue;
                     var b = _roomMap[nx, nz];
                     if (b == null || b == a) continue;
-
                     var key = a.GetHashCode() < b.GetHashCode() ? (a, b) : (b, a);
                     if (!pairShared.ContainsKey(key)) pairShared[key] = new();
                     pairShared[key].Add(new Vector2Int(x, z));
                 }
             }
 
-        // MST (Kruskal by shared-edge length descending — more shared = closer)
         var parent = new Dictionary<MapNode, MapNode>();
         foreach (var n in _nodes) parent[n] = n;
         MapNode Find(MapNode n) { while (parent[n] != n) { parent[n] = parent[parent[n]]; n = parent[n]; } return n; }
         void Union(MapNode a, MapNode b) { parent[Find(a)] = Find(b); }
 
-        // Sort: most shared cells first (adjacent rooms get connected preferentially)
         var sorted = new List<KeyValuePair<(MapNode, MapNode), List<Vector2Int>>>(pairShared);
         sorted.Sort((x, y) => y.Value.Count.CompareTo(x.Value.Count));
 
@@ -266,13 +432,11 @@ public class BSPMapGeometry : MonoBehaviour
             var (a, b) = kvp.Key;
             if (Find(a) != Find(b))
             {
-                Union(a, b);
-                AddEdge(a, b);
+                Union(a, b); AddEdge(a, b);
                 guaranteed.Add(kvp.Key);
             }
         }
 
-        // Extra doors for the rest of adjacent pairs
         foreach (var kvp in sorted)
         {
             if (guaranteed.Contains(kvp.Key)) continue;
@@ -280,21 +444,11 @@ public class BSPMapGeometry : MonoBehaviour
                 AddEdge(kvp.Key.Item1, kvp.Key.Item2);
         }
 
-        // Store shared cells for door punching
         _sharedCells = pairShared;
-        _connectedPairs = new HashSet<(MapNode, MapNode)>();
-        foreach (var e in _edges)
-        {
-            var key = e.A.GetHashCode() < e.B.GetHashCode() ? (e.A, e.B) : (e.B, e.A);
-            _connectedPairs.Add(key);
-        }
     }
 
-    Dictionary<(MapNode, MapNode), List<Vector2Int>> _sharedCells;
-    HashSet<(MapNode, MapNode)> _connectedPairs;
-
     // ═════════════════════════════════════════════════════════════════════════
-    //  Step 3 — Punch doors on all connected pairs
+    //  Step 4 — Punch doors
     // ═════════════════════════════════════════════════════════════════════════
 
     void PunchDoors()
@@ -302,8 +456,8 @@ public class BSPMapGeometry : MonoBehaviour
         foreach (var e in _edges)
         {
             var key = e.A.GetHashCode() < e.B.GetHashCode() ? (e.A, e.B) : (e.B, e.A);
-            if (!_sharedCells.TryGetValue(key, out var cells)) continue;
-            PunchDoor(cells);
+            if (_sharedCells.TryGetValue(key, out var cells))
+                PunchDoor(cells);
         }
     }
 
@@ -311,13 +465,11 @@ public class BSPMapGeometry : MonoBehaviour
     {
         if (boundary.Count == 0) return;
 
-        // Filter out void cells — preset void areas must never get doors
         var valid = new List<Vector2Int>();
         foreach (var c in boundary)
         {
             var owner = _roomMap[c.x, c.y];
             if (owner == null) continue;
-            // If the owner has a preset, check the cell isn't in a void position
             if (owner.Preset != null && owner.Preset.IsVoid(c.x - owner.MinX, c.y - owner.MinZ)) continue;
             valid.Add(c);
         }
@@ -328,54 +480,12 @@ public class BSPMapGeometry : MonoBehaviour
         int start = Mathf.Max(0, mid - doorWidth / 2);
         int end = Mathf.Min(valid.Count, start + doorWidth);
 
-        // Only mark the boundary cell itself (A-side).
-        // The wall skipping logic handles both sides via the _isDoor check.
         for (int i = start; i < end; i++)
             _isDoor[valid[i].x, valid[i].y] = true;
     }
 
     // ═════════════════════════════════════════════════════════════════════════
-    //  Step 4 — Assign room types
-    // ═════════════════════════════════════════════════════════════════════════
-
-    void AssignRoomTypes()
-    {
-        if (_nodes.Count == 0) return;
-
-        MapNode spawnNode = _nodes[0], bossNode = _nodes[0];
-        foreach (var n in _nodes)
-        {
-            if (n.CenterX + n.CenterZ < spawnNode.CenterX + spawnNode.CenterZ) spawnNode = n;
-            if (n.CenterX + n.CenterZ > bossNode.CenterX + bossNode.CenterZ) bossNode = n;
-        }
-        spawnNode.Type = RoomType.Spawn;
-        bossNode.Type = RoomType.Boss;
-
-        // Prefer preset rooms for typed roles
-        var rest = new List<MapNode>();
-        foreach (var n in _nodes)
-            if (n != spawnNode && n != bossNode)
-                rest.Add(n);
-        Shuffle(rest);
-
-        int total = rest.Count;
-        int emptyCnt = Mathf.RoundToInt(total * emptyRoomChance);
-        int healCnt = Mathf.RoundToInt(total * healRoomFraction);
-        int shopCnt = Mathf.RoundToInt(total * shopRoomFraction);
-        int rareCnt = Mathf.RoundToInt(total * rareLootFraction);
-        int mergeCnt = Mathf.Max(0, total - emptyCnt - healCnt - shopCnt - rareCnt
-                       - Mathf.RoundToInt(total * battleRoomFraction));
-
-        int idx = 0;
-        for (int i = 0; i < emptyCnt && idx < total; i++, idx++) rest[idx].Type = RoomType.None;
-        for (int i = 0; i < healCnt && idx < total; i++, idx++) rest[idx].Type = RoomType.Heal;
-        for (int i = 0; i < shopCnt && idx < total; i++, idx++) rest[idx].Type = RoomType.Shop;
-        for (int i = 0; i < rareCnt && idx < total; i++, idx++) rest[idx].Type = RoomType.RareLoot;
-        for (int i = 0; i < mergeCnt && idx < total; i++, idx++) rest[idx].Type = RoomType.Merge;
-    }
-
-    // ═════════════════════════════════════════════════════════════════════════
-    //  Step 5 — Spawn geometry
+    //  Step 5 — Geometry
     // ═════════════════════════════════════════════════════════════════════════
 
     void SpawnGeometry()
@@ -451,6 +561,33 @@ public class BSPMapGeometry : MonoBehaviour
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
+    bool RectEmpty(int ox, int oz, int sx, int sz)
+    {
+        for (int x = ox; x < ox + sx; x++)
+            for (int z = oz; z < oz + sz; z++)
+            {
+                if (x >= matrixSize || z >= matrixSize) return false;
+                if (_matrix[x, z] != Cell.Empty) return false;
+            }
+        return true;
+    }
+
+    bool RowEmpty(int ox, int z, int w)
+    {
+        for (int x = ox; x < ox + w; x++)
+            if (x >= matrixSize || _matrix[x, z] != Cell.Empty) return false;
+        return true;
+    }
+
+    Vector2Int? FindEmptyCell()
+    {
+        for (int x = 0; x < matrixSize; x++)
+            for (int z = 0; z < matrixSize; z++)
+                if (_matrix[x, z] == Cell.Empty)
+                    return new Vector2Int(x, z);
+        return null;
+    }
+
     void AddEdge(MapNode a, MapNode b)
     {
         if (a == b) return;
@@ -460,12 +597,6 @@ public class BSPMapGeometry : MonoBehaviour
         _edges.Add(edge);
         a.Edges.Add(edge);
         b.Edges.Add(edge);
-    }
-
-    float NodeDist(MapNode a, MapNode b)
-    {
-        float dx = a.CenterX - b.CenterX, dz = a.CenterZ - b.CenterZ;
-        return Mathf.Sqrt(dx * dx + dz * dz);
     }
 
     static void Shuffle<T>(List<T> list)
@@ -508,7 +639,6 @@ public class BSPMapGeometry : MonoBehaviour
     void OnDrawGizmos()
     {
         if (_roomMap == null) return;
-
         foreach (var node in _nodes)
         {
             Gizmos.color = node.Type switch
@@ -525,7 +655,6 @@ public class BSPMapGeometry : MonoBehaviour
             };
             DrawRoomBorder(node);
         }
-
         if (_isDoor == null) return;
         Gizmos.color = new Color(1f, 0.85f, 0f, 0.9f);
         for (int x = 0; x < matrixSize; x++)

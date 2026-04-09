@@ -9,7 +9,8 @@ public class BSPMapPopulator : MonoBehaviour
     [Header("Interactable Prefabs")]
     public GameObject healStationPrefab;
     public GameObject shopStationPrefab;
-    public GameObject rareLootPrefab;
+    public GameObject costedHealPrefab;
+    public GameObject costedUpgradePrefab;
     public GameObject mergeStationPrefab;
 
     [Header("Portals")]
@@ -78,7 +79,7 @@ public class BSPMapPopulator : MonoBehaviour
         RoomType.Boss => SpawnBossRoom(node),
         RoomType.Heal => SpawnEventRoom(node, healStationPrefab, SetupHeal),
         RoomType.Shop => SpawnEventRoom(node, shopStationPrefab, SetupShop),
-        RoomType.RareLoot => SpawnEventRoom(node, rareLootPrefab, SetupRareLoot),
+        RoomType.RareLoot => SpawnEventRoom(node, lootPrefab, SetupRareLoot),
         RoomType.Merge => SpawnEventRoom(node, mergeStationPrefab, SetupMerge),
         _ => null
     };
@@ -201,13 +202,18 @@ public class BSPMapPopulator : MonoBehaviour
     }
     void SetupShop(GameObject o, Transform p, MapNode n)
     {
-        var r = o.AddComponent<ShopRoom>(); r.node = ToLegacy(n); r.shopStationPrefab = shopStationPrefab; r.Init(p);
+        var r = o.AddComponent<ShopRoom>();
+        r.node = ToLegacy(n);
+        r.shopStationPrefab = shopStationPrefab;
+        r.costedHealPrefab = costedHealPrefab;
+        r.costedUpgradePrefab = costedUpgradePrefab;
+        r.Init(p);
     }
     void SetupRareLoot(GameObject o, Transform p, MapNode n)
     {
         var r = o.AddComponent<RareLootRoom>();
         r.node = ToLegacy(n);
-        r.lootPrefab = rareLootPrefab;
+        r.lootPrefab = lootPrefab;
         r.Init(o.transform);
     }
     void SetupMerge(GameObject o, Transform p, MapNode n)
