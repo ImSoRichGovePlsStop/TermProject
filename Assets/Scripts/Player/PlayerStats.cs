@@ -146,13 +146,13 @@ public class PlayerStats : MonoBehaviour
     public float DamageTaken =>
         (weaponDamageTaken + flatModifier.damageTaken) * (1 + multiplierModifier.damageTaken);
 
-    public float BaseHP      => weaponHealth;
-    public float BaseDMG     => weaponDamage;
-    public float BaseATKSPD  => weaponAttackSpeed;
-    public float BaseMOVSPD  => weaponMoveSpeed;
-    public float BaseCrit    => weaponCritChance;
+    public float BaseHP => weaponHealth;
+    public float BaseDMG => weaponDamage;
+    public float BaseATKSPD => weaponAttackSpeed;
+    public float BaseMOVSPD => weaponMoveSpeed;
+    public float BaseCrit => weaponCritChance;
     public float BaseCritDMG => weaponCritDamage;
-    public float BaseEvade   => weaponEvadeChance;
+    public float BaseEvade => weaponEvadeChance;
 
     public float CurrentHealth { get; private set; }
     public bool IsDead => CurrentHealth <= 0f;
@@ -433,6 +433,8 @@ public class PlayerStats : MonoBehaviour
                 shields.Remove(instance);
                 OnShieldInstanceLost?.Invoke(instance, 0f, false);
             }
+
+            OnPlayerDamaged?.Invoke(finalDamage);
 
             if (context != null)
                 context.NotifyGetHit(attacker);

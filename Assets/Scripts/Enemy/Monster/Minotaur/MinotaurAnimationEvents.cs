@@ -9,7 +9,9 @@ public class MinotaurAnimationEvents : MonoBehaviour
         minotaur = GetComponentInParent<MinotaurController>();
     }
 
-    public void DashToTarget() => minotaur?.DashToTarget();
-    public void DealDamage() => minotaur?.DealDamage();
+    public void LockAttackDirection() => minotaur?.LockAttackDirection();
+    public void StartFlashBuildup(string args) => minotaur?.StartFlashBuildup(args);
+    public void FlashWhite() => minotaur?.FlashWhite();
+    public void DashAttack() => minotaur?.DashAttack();
     public void FinishAttack() => minotaur?.FinishAttack();
 }
