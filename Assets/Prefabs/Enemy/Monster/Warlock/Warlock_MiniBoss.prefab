@@ -299,12 +299,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EliteWarlockHealthBase
   destroyDelay: 5
   spriteRenderer: {fileID: 0}
+  flashSpriteRenderer: {fileID: 0}
   flashColor: {r: 1, g: 0, b: 0, a: 1}
   flashDuration: 0.1
   showHealthBar: 1
   healthBarHeight: 0.5
   healthBarScale: {x: 2, y: 1.5, z: 1}
-  tier: 1
+  tier: 2
   enrageThreshold: 0.6
 --- !u!114 &5644794410267954326
 MonoBehaviour:
@@ -337,6 +338,7 @@ MonoBehaviour:
   baseMoveSpeed: 2
   baseDamage: 12
   baseAttackSpeed: 1
+  baseShield: 0
 --- !u!114 &1875878696231198487
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -369,8 +371,17 @@ MonoBehaviour:
   animator: {fileID: 0}
   coinDropMin: 50
   coinDropMax: 80
+  hurtDuration: 0.2
+  postHurtDelayMin: 0.1
+  postHurtDelayMax: 0.3
+  strafe:
+    preferredDistMin: 0
+    preferredDistMax: 0
+    angleMin: 30
+    angleMax: 90
+    idleTimeMin: 0.3
+    idleTimeMax: 0.8
   shootRange: 6
-  minRange: 4
   shootCooldown: 2
   projectileDamageScale: 1
   spreadAngle: 15
@@ -387,9 +398,6 @@ MonoBehaviour:
   targetLayers:
     serializedVersion: 2
     m_Bits: 704
-  strafeIdleTimeMin: 0.5
-  strafeIdleTimeMax: 1.5
-  retreatDelay: 0.5
   jumpTriggerRange: 2
   jumpEscapeCooldown: 12
   jumpRadius: 6
