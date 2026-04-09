@@ -8,11 +8,12 @@ public class ShopInteractable : MonoBehaviour, IInteractable
 
     [Header("Randomizer Settings")]
     [SerializeField] private bool useRandomizer = true;
-    [SerializeField] private int minCount = 3;
-    [SerializeField] private int maxCount = 6;
-    [SerializeField] private float meanCost = 100f;
-    [SerializeField] private float sd = 30f;
+    [SerializeField] private int count = 3;
+    [SerializeField] private float midCost = 100f;
+    [SerializeField] private float cheapSd = 30f;
+    [SerializeField] private float expensiveSd = 30f;
     [SerializeField] private bool allowDuplicates = false;
+    [SerializeField] private float currentModuleDupChance = 0.1f;
 
     [Header("References")]
     [SerializeField] private ShopUI shopUI;
@@ -36,18 +37,20 @@ public class ShopInteractable : MonoBehaviour, IInteractable
     }
 
     public void SetRandomizerSettings(
-        int minCount,
-        int maxCount,
-        float meanCost,
-        float sd,
+        int count,
+        float midCost,
+        float cheapSd,
+        float expensiveSd,
         bool allowDuplicates = false,
+        float currentModuleDupChance = 0.1f,
         bool regenerate = true)
     {
-        this.minCount = minCount;
-        this.maxCount = maxCount;
-        this.meanCost = meanCost;
-        this.sd = sd;
+        this.count = count;
+        this.midCost = midCost;
+        this.cheapSd = cheapSd;
+        this.expensiveSd = expensiveSd;
         this.allowDuplicates = allowDuplicates;
+        this.currentModuleDupChance = currentModuleDupChance;
         this.useRandomizer = true;
 
         if (regenerate)
@@ -67,8 +70,15 @@ public class ShopInteractable : MonoBehaviour, IInteractable
     {
         if (useRandomizer)
         {
-            var rolled = Randomizer.Roll(minCount, maxCount, meanCost, sd, allowDuplicates);
-            _generatedEntries = rolled.ToArray();
+            var (cheap, mid, expensive) = Randomizer.ShopRoll(
+                midCost, cheapSd, expensiveSd,
+                count, allowDuplicates, currentModuleDupChance);
+
+            var all = new List<TestModuleEntry>();
+            all.AddRange(cheap);
+            all.AddRange(mid);
+            all.AddRange(expensive);
+            _generatedEntries = all.ToArray();
         }
         else
         {

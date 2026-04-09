@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public static class Randomizer
@@ -12,7 +13,7 @@ public static class Randomizer
         var data = Resources.LoadAll<ModuleData>("Module");
         if (data == null || data.Length == 0)
         {
-            
+
             return System.Array.Empty<TestModuleEntry>();
         }
 
@@ -20,7 +21,7 @@ public static class Randomizer
         for (int i = 0; i < data.Length; i++)
             _cachedPool[i] = new TestModuleEntry { data = data[i] };
 
-        
+
         return _cachedPool;
     }
 
@@ -29,7 +30,8 @@ public static class Randomizer
         int maxCount,
         float meanCost,
         float sd,
-        bool allowDuplicates = false)
+        bool allowDuplicates = false,
+        float currentModuleDupChance = 0.5f)
     {
         var result = new List<TestModuleEntry>();
         var pool = GetPool();
@@ -43,12 +45,26 @@ public static class Randomizer
         var candidates = new List<(TestModuleEntry entry, float delta)>();
         var seen = new HashSet<ModuleData>();
 
+        var currentSet = new HashSet<ModuleData>();
+        var mgr = InventoryManager.Instance;
+        if (mgr != null)
+            foreach (var m in mgr.BagGrid.GetAllModules())
+                if (m.Data != null) currentSet.Add(m.Data);
+            foreach (var m in mgr.WeaponGrid.GetAllModules())
+                if (m.Data != null) currentSet.Add(m.Data);
+
         for (int i = 0; i < candidateCount; i++)
         {
             int j = Random.Range(0, pool.Length);
             var data = pool[j].data;
 
-            if (!allowDuplicates && seen.Contains(data)) continue;
+            if (seen.Contains(data)) continue;
+//            if(currentSet.Any(x => x.moduleName == data.moduleName)) Debug.Log($"Duplicate found: {data.moduleName}");
+            if (!allowDuplicates && currentSet.Any(x => x.moduleName == data.moduleName) && Random.value > currentModuleDupChance)
+            {
+//                Debug.Log($"Skipping duplicate: {data.moduleName}");
+                continue;
+            }
 
             float sampledCost = SampleGaussian(meanCost, sd);
 
@@ -85,6 +101,61 @@ public static class Randomizer
             result.Add(candidates[i].entry);
 
         return result;
+    }
+
+    public static (List<TestModuleEntry> cheap, List<TestModuleEntry> mid, List<TestModuleEntry> expensive) ShopRoll(
+        float midCost,
+        float cheapSd,
+        float expensiveSd,
+        int count,
+        bool allowDuplicates = false,
+        float currentModuleDupChance = 0.1f)
+    {
+
+        float separationFactor = 2.0f;   // increase = less overlap
+        float spreadFactor = 0.6f;       // decrease = tighter distribution
+
+        float cheapMean = midCost - (cheapSd * separationFactor);
+        float expensiveMean = midCost + (expensiveSd * separationFactor);
+
+        float midSd = (cheapSd + expensiveSd) * 0.5f * spreadFactor;
+        cheapSd *= spreadFactor;
+        expensiveSd *= spreadFactor;
+
+        var cheap = new List<TestModuleEntry>();
+        var mid = new List<TestModuleEntry>();
+        var expensive = new List<TestModuleEntry>();
+
+        if (count > 0)
+        {
+            mid.AddRange(Roll(1, 1, midCost, midSd, allowDuplicates, currentModuleDupChance));
+            count--;
+        }
+
+        if (count > 0)
+        {
+            int half = count / 2;
+
+            if (half > 0)
+                cheap.AddRange(Roll(half, half, cheapMean, cheapSd, allowDuplicates, currentModuleDupChance));
+
+            if (half > 0)
+                expensive.AddRange(Roll(half, half, expensiveMean, expensiveSd, allowDuplicates, currentModuleDupChance));
+
+            count -= (half * 2);
+        }
+
+        if (count > 0)
+        {
+            bool pickCheap = Random.value < 0.5f;
+
+            if (pickCheap)
+                cheap.AddRange(Roll(1, 1, cheapMean, cheapSd, allowDuplicates, currentModuleDupChance));
+            else
+                expensive.AddRange(Roll(1, 1, expensiveMean, expensiveSd, allowDuplicates, currentModuleDupChance));
+        }
+
+        return (cheap, mid, expensive);
     }
 
     private static float SampleGaussian(float mean, float sd)
