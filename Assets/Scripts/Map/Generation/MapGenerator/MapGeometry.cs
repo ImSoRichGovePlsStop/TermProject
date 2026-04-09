@@ -26,6 +26,7 @@ public class MapNode
 
     [NonSerialized] public List<MapEdge> Edges = new();
     [NonSerialized] public RoomNode LegacyNode;
+    [NonSerialized] public BSPRoomPreset Preset;
 
     public int CenterX => (MinX + MaxX) / 2;
     public int CenterZ => (MinZ + MaxZ) / 2;
@@ -37,7 +38,6 @@ public class MapEdge
 {
     public MapNode A;
     public MapNode B;
-
     public List<List<Vector2Int>> Segments = new();
 }
 
@@ -56,15 +56,14 @@ public class RoomNode
 
 public class MapGeometry : MonoBehaviour
 {
-
     [Header("Room Prefabs")]
     public GameObject[] spawnRoomPrefabs;
     public GameObject[] battleRoomPrefabs;
     public GameObject[] bossRoomPrefabs;
     public GameObject[] shopRoomPrefabs;
     public GameObject[] healRoomPrefabs;
-    public GameObject[] mergeRoomPrefabs;
     public GameObject[] rareLootRoomPrefabs;
+    public GameObject[] mergeRoomPrefabs;
 
     [Header("Matrix")]
     public int matrixSize = 150;
@@ -85,15 +84,8 @@ public class MapGeometry : MonoBehaviour
     public float fillRoomBudget = 0.35f;
     [Tooltip("Max extra Battle rooms placed outside the main path. -1 = unlimited.")]
     public int maxExtraBattleRooms = 6;
-    [Tooltip("Max extra Event rooms (Heal/Shop/RareLoot/Merge) placed outside the main path. -1 = unlimited.")]
+    [Tooltip("Max extra Event rooms (Heal/Shop/Upgrade/Merge) placed outside the main path. -1 = unlimited.")]
     public int maxExtraEventRooms = 4;
-
-    [Header("Event Room Weights")]
-    public float weightBattle = 4f;
-    public float weightHeal = 1f;
-    public float weightShop = 1f;
-    public float weightRareLoot = 1f;
-    public float weightMerge = 1f;
 
     [Header("Corridors")]
     public int corridorWidth = 3;
@@ -134,18 +126,16 @@ public class MapGeometry : MonoBehaviour
 
         int spawnCorner = PickRandomCorner();
         _spawnNode = PlaceSpawnInCorner(spawnCorner);
+        if (_spawnNode == null) return;
 
         int bossCorner = OppositeCorner(spawnCorner);
         _bossNode = PlaceBossInCorner(bossCorner);
+        if (_bossNode == null) return;
 
         BuildMainPath();
-
         FillRemainingRooms();
-
         BuildEdges();
-
         StampAllCorridors();
-
         SpawnCorridorGeometry();
         SpawnAllWalls();
 
@@ -157,11 +147,7 @@ public class MapGeometry : MonoBehaviour
 
     int PickRandomCorner() => Random.Range(0, 4);
 
-    int OppositeCorner(int c)
-    {
-
-        return c ^ 3;
-    }
+    int OppositeCorner(int c) => c ^ 3;
 
     MapNode PlaceBossInCorner(int corner)
     {
@@ -171,10 +157,7 @@ public class MapGeometry : MonoBehaviour
         int ox = right ? matrixSize - cornerMargin - bossRoomSize : cornerMargin;
         int oz = top ? matrixSize - cornerMargin - bossRoomSize : cornerMargin;
 
-        if (!FitsInMatrix(ox, oz, bossRoomSize, bossRoomSize))
-        {
-            return null;
-        }
+        if (!FitsInMatrix(ox, oz, bossRoomSize, bossRoomSize)) return null;
 
         return StampAndCreateNode(RoomType.Boss, RandomFrom(bossRoomPrefabs), ox, oz, bossRoomSize, bossRoomSize);
     }
@@ -223,7 +206,7 @@ public class MapGeometry : MonoBehaviour
             var hint = ClampToMatrix(Vector2Int.RoundToInt(Vector2.Lerp(spawnC, bossC, t)), maxRoomSize + roomPadding);
 
             var node = TryPlaceNear(RoomType.Battle, battleRoomPrefabs, hint, scatter: 10);
-            if (node == null) { Debug.LogWarning($"[MapGeometry] Main-path battle node {i}/{n} failed."); continue; }
+            if (node == null) continue;
 
             AddEdge(prev, node);
             prev = node;
@@ -240,13 +223,26 @@ public class MapGeometry : MonoBehaviour
         int extraBattle = 0;
         int extraEvent = 0;
 
+        var fillTypes = new[]
+        {
+            RoomType.Battle, RoomType.Heal,    RoomType.Battle,
+            RoomType.Shop,   RoomType.Battle,  RoomType.RareLoot,
+            RoomType.Battle, RoomType.Merge,
+        };
+        int typeIdx = 0;
+
         while (CountUsedCells() < budgetCells && consecutiveFails < maxFails)
         {
+            RoomType type = fillTypes[typeIdx++ % fillTypes.Length];
+
+            if (type == RoomType.Battle && maxExtraBattleRooms >= 0 && extraBattle >= maxExtraBattleRooms)
+                type = PickEventType(typeIdx);
+            if (IsEventRoom(type) && maxExtraEventRooms >= 0 && extraEvent >= maxExtraEventRooms)
+                type = RoomType.Battle;
+
             bool battleFull = maxExtraBattleRooms >= 0 && extraBattle >= maxExtraBattleRooms;
             bool eventFull = maxExtraEventRooms >= 0 && extraEvent >= maxExtraEventRooms;
             if (battleFull && eventFull) break;
-
-            RoomType type = PickWeightedRoomType(battleFull, eventFull);
 
             int hintX = Random.Range(maxRoomSize + roomPadding, matrixSize - maxRoomSize - roomPadding);
             int hintZ = Random.Range(maxRoomSize + roomPadding, matrixSize - maxRoomSize - roomPadding);
@@ -259,25 +255,6 @@ public class MapGeometry : MonoBehaviour
             }
             consecutiveFails = node == null ? consecutiveFails + 1 : 0;
         }
-    }
-
-    RoomType PickWeightedRoomType(bool battleFull, bool eventFull)
-    {
-        float bw = battleFull ? 0f : weightBattle;
-        float hw = eventFull ? 0f : weightHeal;
-        float sw = eventFull ? 0f : weightShop;
-        float rw = eventFull ? 0f : weightRareLoot;
-        float mw = eventFull ? 0f : weightMerge;
-
-        float total = bw + hw + sw + rw + mw;
-        if (total <= 0f) return RoomType.Battle;
-
-        float roll = Random.Range(0f, total);
-        if ((roll -= bw) < 0f) return RoomType.Battle;
-        if ((roll -= hw) < 0f) return RoomType.Heal;
-        if ((roll -= sw) < 0f) return RoomType.Shop;
-        if ((roll -= rw) < 0f) return RoomType.RareLoot;
-        return RoomType.Merge;
     }
 
     int CountUsedCells()
@@ -337,10 +314,7 @@ public class MapGeometry : MonoBehaviour
             Union(a, b);
         }
 
-
-
         var treeParent = BfsParent(_spawnNode);
-
         var onCycle = new HashSet<MapNode>();
 
         bool addedAny = true;
@@ -406,7 +380,6 @@ public class MapGeometry : MonoBehaviour
         return parent;
     }
 
-
     List<MapNode> GetTreePath(MapNode a, MapNode b, Dictionary<MapNode, MapNode> parent)
     {
         if (!parent.ContainsKey(a) || !parent.ContainsKey(b)) return null;
@@ -434,7 +407,6 @@ public class MapGeometry : MonoBehaviour
         pathA.AddRange(pathB);
         return pathA;
     }
-
 
     bool CycleIsEmpty(List<MapNode> cyclePath)
     {
@@ -466,8 +438,6 @@ public class MapGeometry : MonoBehaviour
         }
         return inside;
     }
-
-
 
     bool CenterLineCrosses(MapNode a, MapNode b)
     {
@@ -506,7 +476,6 @@ public class MapGeometry : MonoBehaviour
 
     List<List<Vector2Int>> RouteEdge(MapNode a, MapNode b)
     {
-
         float overlapX = AxisOverlapRatio(a.MinX, a.MaxX, b.MinX, b.MaxX);
         float overlapZ = AxisOverlapRatio(a.MinZ, a.MaxZ, b.MinZ, b.MaxZ);
 
@@ -521,33 +490,17 @@ public class MapGeometry : MonoBehaviour
             bool preferTravelX = coverZ || overlapZ >= overlapX;
 
             var straight = TryStraight(a, b, preferTravelX);
-            if (straight != null)
-            {
-                return straight;
-            }
+            if (straight != null) return straight;
 
             straight = TryStraight(a, b, !preferTravelX);
-            if (straight != null)
-            {
-                return straight;
-            }
-        }
-
-
-
-        var szShape = TrySZShape(a, b);
-        if (szShape != null)
-        {
-
-            return szShape;
+            if (straight != null) return straight;
         }
 
         var lShape = TryLShape(a, b);
-        if (lShape != null)
-        {
+        if (lShape != null) return lShape;
 
-            return lShape;
-        }
+        var szShape = TrySZShape(a, b);
+        if (szShape != null) return szShape;
 
         return WaypointFallback(a, b);
     }
@@ -567,7 +520,6 @@ public class MapGeometry : MonoBehaviour
 
         if (travelX)
         {
-
             int zMin = Mathf.Max(a.MinZ, b.MinZ);
             int zMax = Mathf.Min(a.MaxZ, b.MaxZ);
             if (zMin > zMax) return null;
@@ -605,7 +557,6 @@ public class MapGeometry : MonoBehaviour
             foreach (var eB in exitsB)
             {
                 bool bIsHorizontal = eB.x < b.MinX || eB.x > b.MaxX;
-
                 if (aIsHorizontal == bIsHorizontal) continue;
 
                 int dx = b.CenterX - a.CenterX, dz = b.CenterZ - a.CenterZ;
@@ -626,7 +577,6 @@ public class MapGeometry : MonoBehaviour
 
             if (aExitsEastWest)
             {
-
                 var bend = new Vector2Int(eB.x, eA.y);
                 var sA = Rasterize(eA.x, eA.y, bend.x, bend.y);
                 var sB = Rasterize(bend.x, bend.y, eB.x, eB.y);
@@ -635,7 +585,6 @@ public class MapGeometry : MonoBehaviour
             }
             else
             {
-
                 var bend = new Vector2Int(eA.x, eB.y);
                 var sA = Rasterize(eA.x, eA.y, bend.x, bend.y);
                 var sB = Rasterize(bend.x, bend.y, eB.x, eB.y);
@@ -677,7 +626,6 @@ public class MapGeometry : MonoBehaviour
 
             if (gapMax - gapMin >= 2)
             {
-
                 int centerMidX = (exitAX + exitBX) / 2;
                 int turnX = Mathf.Clamp(centerMidX, gapMin + 1, gapMax - 1);
 
@@ -706,7 +654,6 @@ public class MapGeometry : MonoBehaviour
 
             if (gapMax - gapMin >= 2)
             {
-
                 int centerMidZ = (exitAZ + exitBZ) / 2;
                 int turnZ = Mathf.Clamp(centerMidZ, gapMin + 1, gapMax - 1);
 
@@ -740,7 +687,6 @@ public class MapGeometry : MonoBehaviour
             return new List<List<Vector2Int>> { toWP, fromWP };
         }
 
-        Debug.LogWarning($"[MapGeometry] Waypoint fallback forcing straight: {a.Type}↔{b.Type}");
         return new List<List<Vector2Int>> { Rasterize(exitA.x, exitA.y, exitB.x, exitB.y) };
     }
 
@@ -751,16 +697,13 @@ public class MapGeometry : MonoBehaviour
 
         if (Mathf.Abs(dx) >= Mathf.Abs(dz))
         {
-
             int faceX = dx > 0 ? from.MaxX : from.MinX;
             int exitX = dx > 0 ? faceX + 1 : faceX - 1;
-
             int midZ = Mathf.Clamp((from.CenterZ + to.CenterZ) / 2, from.MinZ, from.MaxZ);
             return new Vector2Int(exitX, midZ);
         }
         else
         {
-
             int faceZ = dz > 0 ? from.MaxZ : from.MinZ;
             int exitZ = dz > 0 ? faceZ + 1 : faceZ - 1;
             int midX = Mathf.Clamp((from.CenterX + to.CenterX) / 2, from.MinX, from.MaxX);
