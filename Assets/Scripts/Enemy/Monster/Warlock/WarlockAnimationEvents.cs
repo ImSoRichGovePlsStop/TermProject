@@ -13,6 +13,7 @@ public class WarlockAnimationEvents : MonoBehaviour
 
     public void FireProjectile() => controller?.FireProjectile();
     public void FireLastProjectile() => controller?.FireLastProjectile();
-
     public void FinishSmash() => eliteController?.FinishSmash();
+    public void StartFlashBuildup(string args) => controller?.StartFlashBuildup(args);
+    public void FlashWhite() => controller?.FlashWhite();
 }

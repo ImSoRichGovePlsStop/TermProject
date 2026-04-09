@@ -134,7 +134,17 @@ public class WarlockController : EnemyBase
         movement.StopMoving();
 
         animator?.SetTrigger("SmashWindUp");
+
+        yield return null;
+
+        if (animator != null)
+        {
+            AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(0);
+            if (info.length > 0f) animator.speed = info.length / smashWindUpDuration;
+        }
+
         yield return new UnityEngine.WaitForSeconds(smashWindUpDuration);
+        if (animator != null) animator.speed = 1f;
 
         isSmashExecuting = true;
         SpawnAOEWarning(TargetPosition, smashDamageScale, smashAoeRadius, smashWarningDuration);
@@ -164,6 +174,21 @@ public class WarlockController : EnemyBase
         lockedTargetPosition = TargetPosition;
         animator?.SetTrigger("WindUp");
         return true;
+    }
+
+    // Animation Events
+    public virtual void StartFlashBuildup(string args)
+    {
+        var parts = args.Split(',');
+        int frames = int.Parse(parts[0]);
+        int fps = int.Parse(parts[1]);
+        float duration = frames / (float)fps;
+        health.StartFlashBuildup(Color.white, duration, 0.4f);
+    }
+
+    public virtual void FlashWhite()
+    {
+        health.TryFlash(Color.white);
     }
 
     public virtual void FireProjectile()
