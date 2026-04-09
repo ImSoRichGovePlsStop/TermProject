@@ -27,6 +27,7 @@ public abstract class HealthBase : MonoBehaviour
     protected bool isHurt;
 
     private Coroutine flashCoroutine;
+    private Coroutine hitFlashCoroutine;
     private Color originalColor;
 
     public float CurrentHP => currentHP;
@@ -162,17 +163,33 @@ public abstract class HealthBase : MonoBehaviour
 
     public void TryFlash()
     {
-        TryFlash(flashColor);
+        if (spriteRenderer == null) return;
+        if (hitFlashCoroutine != null) StopCoroutine(hitFlashCoroutine);
+        hitFlashCoroutine = StartCoroutine(HitFlashRoutine());
     }
 
     public void TryFlash(Color color)
     {
         if (spriteRenderer == null) return;
 
+        if (buildupCoroutine != null)
+        {
+            StopCoroutine(buildupCoroutine);
+            buildupCoroutine = null;
+        }
+
         if (flashCoroutine != null)
             StopCoroutine(flashCoroutine);
 
         flashCoroutine = StartCoroutine(FlashRoutine(color));
+    }
+
+    private IEnumerator HitFlashRoutine()
+    {
+        spriteRenderer.color = flashColor;
+        yield return new WaitForSeconds(flashDuration);
+        spriteRenderer.color = originalColor;
+        hitFlashCoroutine = null;
     }
 
     private IEnumerator FlashRoutine(Color color)

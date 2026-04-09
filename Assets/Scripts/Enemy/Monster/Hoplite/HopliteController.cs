@@ -6,6 +6,9 @@ public class HopliteController : EnemyBase
 {
     public enum HopliteState { Wander, Chase, Strafe, Attack }
 
+    [Header("Strafe")]
+    [SerializeField] private StrafeBehavior strafe;
+
     [Header("Attack")]
     [SerializeField] protected float attackRange = 1.2f;
     [SerializeField] protected float attackDamageScale = 1f;
@@ -17,14 +20,6 @@ public class HopliteController : EnemyBase
     [SerializeField] private float attackDashDuration = 0.15f;
     [SerializeField] private float attackDashHitRadius = 0.6f;
 
-    [Header("Strafe")]
-    [SerializeField] private float strafePreferredDistMin = 0f;
-    [SerializeField] private float strafePreferredDistMax = 0f;
-    [SerializeField] private float strafeAngleMin = 30f;
-    [SerializeField] private float strafeAngleMax = 90f;
-    [SerializeField] private float strafeIdleTimeMin = 0.3f;
-    [SerializeField] private float strafeIdleTimeMax = 0.8f;
-
     protected HopliteState currentState = HopliteState.Wander;
     protected bool isAttacking = false;
     public bool IsAttacking => isAttacking;
@@ -34,20 +29,12 @@ public class HopliteController : EnemyBase
     private bool isDashing = false;
     protected Vector3 lockedAttackDir = Vector3.zero;
 
-    // Strafe
-    private bool strafeIsIdling = false;
-    private float strafeIdleTimer = 0f;
-    private Vector3 strafeTarget = Vector3.zero;
-    private int strafeDir = 0;
-
     protected override void Awake()
     {
         base.Awake();
         movement.SetStopDistance(0.1f);
         currentAttackCooldown = Random.Range(attackCooldownMin, attackCooldownMax);
-
-        if (strafePreferredDistMin <= 0f) strafePreferredDistMin = attackRange * 0.7f;
-        if (strafePreferredDistMax <= 0f) strafePreferredDistMax = attackRange;
+        strafe.Init(attackRange);
     }
 
     protected override void UpdateState()
@@ -119,59 +106,12 @@ public class HopliteController : EnemyBase
 
     private void TickStrafe()
     {
-        movement.FaceTarget(TargetPosition);
-
-        if (strafeIsIdling)
-        {
-            movement.StopMoving();
-            strafeIdleTimer -= Time.deltaTime;
-            if (strafeIdleTimer <= 0f)
-                ResetStrafe();
-            return;
-        }
-
-        if (strafeTarget == Vector3.zero)
-        {
-            float preferredDist = Random.Range(strafePreferredDistMin, strafePreferredDistMax);
-            strafeTarget = GetStrafePoint(preferredDist);
-        }
-
-
-        var agent = movement.GetAgent();
-        bool reached = agent != null && agent.hasPath && agent.remainingDistance <= agent.stoppingDistance + 0.1f;
-        if (reached)
-        {
-            strafeIsIdling = true;
-            strafeIdleTimer = Random.Range(strafeIdleTimeMin, strafeIdleTimeMax);
-            movement.StopMoving();
-            return;
-        }
-
-        movement.MoveToTarget(strafeTarget);
+        strafe.Tick(transform, TargetPosition, movement);
     }
 
     private void ResetStrafe()
     {
-        strafeIsIdling = false;
-        strafeTarget = Vector3.zero;
-    }
-
-    private Vector3 GetStrafePoint(float preferredDist)
-    {
-        if (strafeDir == 0) strafeDir = Random.value > 0.5f ? 1 : -1;
-        if (Random.value < 0.25f) strafeDir *= -1;
-
-        Vector3 toEnemy = transform.position - TargetPosition;
-        toEnemy.y = 0f;
-        if (toEnemy.sqrMagnitude < 0.001f) toEnemy = Vector3.forward;
-
-        float currentAngle = Mathf.Atan2(toEnemy.x, toEnemy.z) * Mathf.Rad2Deg;
-        float angle = currentAngle + strafeDir * Random.Range(strafeAngleMin, strafeAngleMax);
-        Vector3 dir = Quaternion.Euler(0f, angle, 0f) * Vector3.forward;
-
-        Vector3 candidate = TargetPosition + dir * preferredDist;
-        candidate.y = transform.position.y;
-        return candidate;
+        strafe.Reset();
     }
 
     public override bool CanBeInterrupted() => !isDashing;
@@ -288,6 +228,7 @@ public class HopliteController : EnemyBase
         lastAttackTime = Time.time;
         currentAttackCooldown = Random.Range(attackCooldownMin, attackCooldownMax);
         lockedAttackDir = Vector3.zero;
+        strafe.Reset();
         TriggerPostAttackDelay();
     }
 
@@ -296,8 +237,5 @@ public class HopliteController : EnemyBase
         base.OnDrawGizmosSelected();
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, strafePreferredDistMin);
-        Gizmos.DrawWireSphere(transform.position, strafePreferredDistMax);
     }
 }

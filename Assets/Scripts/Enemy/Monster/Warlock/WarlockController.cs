@@ -5,9 +5,11 @@ public class WarlockController : EnemyBase
 {
     public enum WarlockState { Wander, Chase, Strafe, WindUp }
 
+    [Header("Strafe")]
+    [SerializeField] private StrafeBehavior strafe;
+
     [Header("Shoot")]
     [SerializeField] protected float shootRange = 6f;
-    [SerializeField] protected float minRange = 4f;
     [SerializeField] protected float shootCooldown = 2.5f;
     [SerializeField] protected float projectileDamageScale = 1f;
     [SerializeField] protected float spreadAngle = 15f;
@@ -25,52 +27,29 @@ public class WarlockController : EnemyBase
     [SerializeField] protected GameObject aoeWarningPrefab;
     [SerializeField] protected LayerMask targetLayers;
 
-    [Header("Strafe")]
-    [SerializeField] protected float strafeIdleTimeMin = 0.5f;
-    [SerializeField] protected float strafeIdleTimeMax = 1.5f;
-
-    [Header("Retreat")]
-    [SerializeField] private float retreatDelay = 0.5f;
-
     protected WarlockState currentState = WarlockState.Wander;
     protected bool isWindingUp = false;
     protected bool isSmashing = false;
     protected float lastShootTime = -Mathf.Infinity;
     protected float lastSmashTime = 0f;
     protected Vector3 lockedTargetPosition;
+    private bool hasFired = false;
+    private bool isSmashExecuting = false;
 
-    // Strafe
-    private bool strafeIsIdling = false;
-    private float strafeIdleTimer = 0f;
-    private Vector3 strafeTarget = Vector3.zero;
-
-    // Retreat
-    private bool isWaitingToRetreat = false;
-    private bool isRetreating = false;
-    private float retreatDelayTimer = 0f;
-    private Vector3 retreatDestination;
+    public override bool CanBeInterrupted() => !hasFired && !isSmashExecuting;
 
     protected override void Awake()
     {
         base.Awake();
         movement.SetStopDistance(0.1f);
+        strafe.Init(shootRange);
     }
-
-    // ?? State Machine ??????????????????????????????????????????
 
     protected override void UpdateState()
     {
         if (isWindingUp || isSmashing) return;
 
         WarlockState prevState = currentState;
-
-        if (!HasTarget || Vector3.Distance(transform.position, TargetPosition) >= minRange + 0.5f)
-        {
-            isRetreating = false;
-            isWaitingToRetreat = false;
-        }
-
-        if (isRetreating || isWaitingToRetreat) return;
 
         if (!HasTarget)
         {
@@ -85,8 +64,7 @@ public class WarlockController : EnemyBase
         bool canShoot = Time.time >= lastShootTime + shootCooldown;
 
         if (canShoot && dist <= shootRange) currentState = WarlockState.WindUp;
-        else if (dist > shootRange) currentState = WarlockState.Chase;
-        else if (dist < minRange) currentState = WarlockState.Chase;
+        else if (dist > shootRange) { strafe.Reset(); currentState = WarlockState.Chase; }
         else currentState = WarlockState.Strafe;
     }
 
@@ -101,8 +79,6 @@ public class WarlockController : EnemyBase
         }
     }
 
-    // ?? State Ticks ????????????????????????????????????????????
-
     private void TickWander()
     {
         wander.Tick(transform, transform, movement, stats);
@@ -110,77 +86,12 @@ public class WarlockController : EnemyBase
 
     private void TickChase()
     {
-        float dist = Vector3.Distance(transform.position, TargetPosition);
-
-        if (isRetreating)
-        {
-            var ag = movement.GetAgent();
-            bool reached = ag != null && ag.hasPath && ag.remainingDistance <= 0.2f;
-            if (reached || dist >= minRange + 0.5f)
-                isRetreating = false;
-            else
-                movement.MoveToTarget(retreatDestination);
-            return;
-        }
-
-        if (dist < minRange)
-        {
-            if (!isWaitingToRetreat)
-            {
-                isWaitingToRetreat = true;
-                retreatDelayTimer = retreatDelay;
-            }
-            else
-            {
-                retreatDelayTimer -= Time.deltaTime;
-                if (retreatDelayTimer <= 0f)
-                {
-                    isWaitingToRetreat = false;
-                    isRetreating = true;
-                    Vector3 awayDir = (transform.position - TargetPosition);
-                    awayDir.y = 0f;
-                    awayDir = awayDir.sqrMagnitude > 0.001f ? awayDir.normalized : Vector3.forward;
-                    retreatDestination = transform.position + awayDir * (minRange - dist + 1.5f);
-                }
-            }
-            movement.StopMoving();
-            return;
-        }
-
-        isWaitingToRetreat = false;
         movement.MoveToTarget(TargetPosition);
     }
 
     private void TickStrafe()
     {
-        movement.FaceTarget(TargetPosition);
-
-        if (strafeIsIdling)
-        {
-            movement.StopMoving();
-            strafeIdleTimer -= Time.deltaTime;
-            if (strafeIdleTimer <= 0f)
-            {
-                strafeIsIdling = false;
-                strafeTarget = Vector3.zero;
-            }
-            return;
-        }
-
-        if (strafeTarget == Vector3.zero)
-            strafeTarget = GetStrafePoint();
-
-        var agent = movement.GetAgent();
-        bool reached = agent != null && agent.hasPath && agent.remainingDistance <= agent.stoppingDistance + 0.1f;
-        if (reached)
-        {
-            strafeIsIdling = true;
-            strafeIdleTimer = Random.Range(strafeIdleTimeMin, strafeIdleTimeMax);
-            movement.StopMoving();
-            return;
-        }
-
-        movement.MoveToTarget(strafeTarget);
+        strafe.Tick(transform, TargetPosition, movement);
     }
 
     private void TickWindUp()
@@ -206,8 +117,6 @@ public class WarlockController : EnemyBase
         if (!TrySmash()) TryWindUp();
     }
 
-    // ?? Smash ??????????????????????????????????????????????????
-
     protected virtual bool TrySmash()
     {
         if (isSmashing) return true;
@@ -227,6 +136,7 @@ public class WarlockController : EnemyBase
         animator?.SetTrigger("SmashWindUp");
         yield return new UnityEngine.WaitForSeconds(smashWindUpDuration);
 
+        isSmashExecuting = true;
         SpawnAOEWarning(TargetPosition, smashDamageScale, smashAoeRadius, smashWarningDuration);
 
         animator?.SetTrigger("Smash");
@@ -234,6 +144,7 @@ public class WarlockController : EnemyBase
 
         lastSmashTime = Time.time;
         isSmashing = false;
+        isSmashExecuting = false;
         TriggerPostAttackDelay();
     }
 
@@ -242,28 +153,6 @@ public class WarlockController : EnemyBase
         if (aoeWarningPrefab == null) return;
         var go = Instantiate(aoeWarningPrefab, pos, Quaternion.identity);
         go.GetComponent<WarlockAOEWarning>()?.Initialize(stats.Damage * damageScale, radius, duration, targetLayers, health);
-    }
-
-    // ?? Helpers ????????????????????????????????????????????????
-
-    private Vector3 GetStrafePoint()
-    {
-        Vector3 toTarget = TargetPosition - transform.position;
-        toTarget.y = 0f;
-        if (toTarget.sqrMagnitude < 0.001f) toTarget = Vector3.forward;
-
-        float preferredDist = (minRange + shootRange) * 0.5f;
-        int dir = Random.value > 0.5f ? 1 : -1;
-        Vector3 strafeVec = Vector3.Cross(Vector3.up, toTarget.normalized) * dir;
-        Vector3 candidate = transform.position + strafeVec * Random.Range(1.5f, 3f);
-
-        Vector3 toCand = candidate - TargetPosition;
-        toCand.y = 0f;
-        if (toCand.sqrMagnitude > 0.001f)
-            candidate = TargetPosition + toCand.normalized * preferredDist;
-
-        candidate.y = transform.position.y;
-        return candidate;
     }
 
     protected bool TryWindUp()
@@ -277,11 +166,10 @@ public class WarlockController : EnemyBase
         return true;
     }
 
-    // ?? Animation Events ???????????????????????????????????????
-
     public virtual void FireProjectile()
     {
         if (projectilePrefab == null || firePoint == null) return;
+        hasFired = true;
         SpawnSingleProjectile();
     }
 
@@ -290,6 +178,7 @@ public class WarlockController : EnemyBase
         if (projectilePrefab == null || firePoint == null) return;
         SpawnSingleProjectile();
         isWindingUp = false;
+        hasFired = false;
         lastShootTime = Time.time;
         TriggerPostAttackDelay();
     }
@@ -309,7 +198,14 @@ public class WarlockController : EnemyBase
         proj?.Initialize(firePoint.position + dir * 20f, stats.Damage * projectileDamageScale, health);
     }
 
-    // ?? Overrides ??????????????????????????????????????????????
+    protected override void OnHurtTriggered()
+    {
+        isWindingUp = false;
+        isSmashing = false;
+        isSmashExecuting = false;
+        hasFired = false;
+        strafe.Reset();
+    }
 
     public override void OnDeath()
     {
@@ -324,7 +220,5 @@ public class WarlockController : EnemyBase
         base.OnDrawGizmosSelected();
         Gizmos.color = Color.magenta;
         Gizmos.DrawWireSphere(transform.position, shootRange);
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, minRange);
     }
 }
