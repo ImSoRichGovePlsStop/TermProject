@@ -119,6 +119,11 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!4 &66487276 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3087691651960519774, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
+  m_PrefabInstance: {fileID: 956402565}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &498197084
 GameObject:
   m_ObjectHideFlags: 0
@@ -1409,8 +1414,43 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5191426826245911996, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1141679702}
   m_SourcePrefab: {fileID: 100100000, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
+--- !u!1 &1141679696 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5191426826245911996, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
+  m_PrefabInstance: {fileID: 956402565}
+  m_PrefabAsset: {fileID: 0}
+--- !u!20 &1141679697 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 4227993369941918193, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
+  m_PrefabInstance: {fileID: 956402565}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1141679702
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1141679696}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e6395864889ca34faba5205ea995228, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WallVisibility
+  cam: {fileID: 1141679697}
+  player: {fileID: 66487276}
+  wallLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  wallLayerName: Wall
+  castHalfWidth: 1.5
+  fadeSpeed: 8
+  hiddenAlpha: 0
+  visibleAlpha: 1
 --- !u!1 &2145645482
 GameObject:
   m_ObjectHideFlags: 0
@@ -1490,9 +1530,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6576a02a2c9af2f43a19b9abe287afce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BSPMapGeometry
-  matrixSize: 50
+  matrixSize: 40
   minBattleRoomSize: 8
-  maxBattleRoomSize: 15
+  maxBattleRoomSize: 13
   minEventRoomSize: 6
   maxEventRoomSize: 7
   minEmptyRoomSize: 4
@@ -1500,12 +1540,14 @@ MonoBehaviour:
   mergeAreaThreshold: 36
   spawnCount: 1
   bossCount: 1
-  battleCount: 6
-  healCount: 1
-  shopCount: 1
-  rareLootCount: 1
-  mergeCount: 1
-  emptyCount: 20
+  maxBattleCount: 10
+  maxEventCount: 200
+  maxEmptyCount: 80000000
+  weightHeal: 1
+  weightShop: 10000
+  weightRareLoot: 1
+  weightMerge: 1
+  repeatPenalty: 0.4
   presetChanceBattle: 0.185
   presetChanceHeal: 0
   presetChanceShop: 0
@@ -1516,7 +1558,7 @@ MonoBehaviour:
   roomPresets:
   - {fileID: 11400000, guid: f8e48b83105e67b43a0ae7cfe8efdfda, type: 2}
   doorWidth: 1
-  extraDoorChance: 0.4
+  extraDoorChance: 0.139
   wallHeight: 2
   wallThickness: 0.1
   floorThickness: -5

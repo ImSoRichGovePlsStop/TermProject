@@ -5,7 +5,7 @@ using UnityEngine.ProBuilder;
 using UnityEngine.ProBuilder.MeshOperations;
 using Random = UnityEngine.Random;
 
-public enum RoomType { None, Spawn, Battle, Boss, Shop, Merge, Heal, RareLoot }
+public enum RoomType { Unmarked, Spawn, Battle, Boss, Shop, Merge, Heal, RareLoot }
 
 public static class Cell
 {
