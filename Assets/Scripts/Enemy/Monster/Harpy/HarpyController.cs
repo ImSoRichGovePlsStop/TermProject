@@ -4,12 +4,16 @@ using UnityEngine;
 
 public class HarpyController : EnemyBase
 {
-    public enum HarpyState { Wander, Chase, Attack }
+    public enum HarpyState { Wander, Chase, Strafe, Attack }
+
+    [Header("Strafe")]
+    [SerializeField] private StrafeBehavior strafe;
 
     [Header("Attack")]
     [SerializeField] protected float attackRange = 1.2f;
     [SerializeField] protected float attackDamageScale = 1f;
-    [SerializeField] protected float attackCooldown = 1.5f;
+    [SerializeField] protected float attackCooldownMin = 1.5f;
+    [SerializeField] protected float attackCooldownMax = 3f;
 
     [Header("Attack Dash")]
     [SerializeField] protected float attackDashSpeed = 6f;
@@ -20,12 +24,16 @@ public class HarpyController : EnemyBase
     protected bool isAttacking = false;
     public bool IsAttacking => isAttacking;
     protected float lastAttackTime = -Mathf.Infinity;
+    private float currentAttackCooldown = 0f;
     private bool isDashing = false;
+    private Vector3 lockedAttackDir = Vector3.zero;
 
     protected override void Awake()
     {
         base.Awake();
-        movement.SetStopDistance(attackRange * 0.8f);
+        movement.SetStopDistance(0.1f);
+        currentAttackCooldown = Random.Range(attackCooldownMin, attackCooldownMax);
+        strafe.Init(attackRange);
     }
 
     protected override void UpdateState()
@@ -44,7 +52,17 @@ public class HarpyController : EnemyBase
             wander.Reset(movement, stats);
 
         float dist = Vector3.Distance(transform.position, TargetPosition);
-        currentState = dist <= attackRange ? HarpyState.Attack : HarpyState.Chase;
+        bool canAttack = Time.time >= lastAttackTime + currentAttackCooldown;
+
+        if (canAttack && dist <= attackRange)
+            currentState = HarpyState.Attack;
+        else if (!canAttack && dist <= attackRange)
+            currentState = HarpyState.Strafe;
+        else
+        {
+            if (currentState == HarpyState.Strafe) strafe.Reset();
+            currentState = HarpyState.Chase;
+        }
     }
 
     protected override void TickState()
@@ -54,13 +72,17 @@ public class HarpyController : EnemyBase
             case HarpyState.Wander:
                 wander.Tick(transform, transform, movement, stats);
                 break;
-
             case HarpyState.Chase:
                 movement.MoveToTarget(TargetPosition);
                 break;
-
+            case HarpyState.Strafe:
+                strafe.Tick(transform, TargetPosition, movement);
+                break;
             case HarpyState.Attack:
-                movement.FaceTarget(TargetPosition);
+                if (!isAttacking || lockedAttackDir == Vector3.zero)
+                    movement.FaceTarget(TargetPosition);
+                else
+                    movement.FaceTarget(transform.position + lockedAttackDir);
                 if (!TryAttack())
                     movement.MoveToTarget(TargetPosition);
                 else
@@ -72,11 +94,55 @@ public class HarpyController : EnemyBase
     protected bool TryAttack()
     {
         if (isAttacking) return true;
-        if (Time.time < lastAttackTime + attackCooldown) return false;
+        if (Time.time < lastAttackTime + currentAttackCooldown) return false;
 
         isAttacking = true;
         animator?.SetTrigger("Attack");
         return true;
+    }
+
+    public override bool CanBeInterrupted() => !isDashing;
+
+    protected override void OnHurtTriggered()
+    {
+        isAttacking = false;
+        lockedAttackDir = Vector3.zero;
+        health.StopFlashBuildup();
+
+        var agent = movement.GetAgent();
+        if (agent != null && !agent.enabled)
+        {
+            agent.enabled = true;
+            movement.SetCanMove(true);
+        }
+
+        isDashing = false;
+        strafe.Reset();
+    }
+
+    // Animation Event
+    public virtual void LockAttackDirection()
+    {
+        lockedAttackDir = TargetPosition - transform.position;
+        lockedAttackDir.y = 0f;
+        if (lockedAttackDir.sqrMagnitude > 0.001f) lockedAttackDir.Normalize();
+    }
+
+    // Animation Event — e.g. "4,12" = 4 frames buildup at 12fps
+    public virtual void StartFlashBuildup(string args)
+    {
+        var parts = args.Split(',');
+        int frames = int.Parse(parts[0]);
+        int fps = int.Parse(parts[1]);
+        float duration = frames / (float)fps;
+        health.StartFlashBuildup(Color.white, duration, 0.4f);
+    }
+
+    // Animation Event
+    public virtual void FlashWhite()
+    {
+        health.StopFlashBuildup();
+        health.TryFlash(Color.white);
     }
 
     // Animation Event
@@ -90,7 +156,9 @@ public class HarpyController : EnemyBase
     {
         isDashing = true;
 
-        Vector3 dashDir = (TargetPosition - transform.position);
+        Vector3 dashDir = lockedAttackDir != Vector3.zero
+            ? lockedAttackDir
+            : (TargetPosition - transform.position);
         dashDir.y = 0f;
         if (dashDir.sqrMagnitude > 0.001f) dashDir.Normalize();
 
@@ -134,6 +202,9 @@ public class HarpyController : EnemyBase
     {
         isAttacking = false;
         lastAttackTime = Time.time;
+        currentAttackCooldown = Random.Range(attackCooldownMin, attackCooldownMax);
+        lockedAttackDir = Vector3.zero;
+        strafe.Reset();
         TriggerPostAttackDelay();
     }
 

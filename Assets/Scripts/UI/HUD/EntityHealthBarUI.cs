@@ -7,11 +7,16 @@ public class EntityHealthBarUI : MonoBehaviour
     [SerializeField] private RectTransform fill;
     [SerializeField] private CanvasGroup canvasGroup;
 
+    [Header("Shield Bar")]
+    [SerializeField] private RectTransform shieldFill;
+    [SerializeField] private GameObject shieldBarRoot;
+
     [Header("Settings")]
     [SerializeField] private float hideDelay = 3f;
     [SerializeField] private float fadeDuration = 0.3f;
 
     private HealthBase entity;
+    private EnemyHealthBase enemyHealth;
     private Camera cam;
     private float barWidth;
     private float heightOffset;
@@ -32,7 +37,16 @@ public class EntityHealthBarUI : MonoBehaviour
         cam = Camera.main;
         barWidth = ((RectTransform)fill.parent).rect.width;
         canvasGroup.alpha = 0f;
+
+        enemyHealth = healthBase as EnemyHealthBase;
+        if (enemyHealth != null)
+            enemyHealth.OnShieldChanged += UpdateShieldBar;
+
+        if (shieldBarRoot != null)
+            shieldBarRoot.SetActive(false);
+
         UpdateBar();
+        UpdateShieldBar();
     }
 
     private void OnDestroy()
@@ -42,6 +56,8 @@ public class EntityHealthBarUI : MonoBehaviour
             entity.OnDamageReceived -= OnDamageReceived;
             entity.OnDeath -= OnEntityDied;
         }
+        if (enemyHealth != null)
+            enemyHealth.OnShieldChanged -= UpdateShieldBar;
     }
 
     private void OnEntityDied()
@@ -73,6 +89,24 @@ public class EntityHealthBarUI : MonoBehaviour
         var size = fill.sizeDelta;
         size.x = barWidth * ratio;
         fill.sizeDelta = size;
+    }
+
+    private void UpdateShieldBar()
+    {
+        if (enemyHealth == null || shieldBarRoot == null || shieldFill == null) return;
+
+        bool hasShield = enemyHealth.HasShield;
+        shieldBarRoot.SetActive(hasShield);
+
+        if (!hasShield) return;
+
+        float ratio = enemyHealth.MaxShield > 0f
+            ? enemyHealth.CurrentShield / enemyHealth.MaxShield
+            : 0f;
+
+        var size = shieldFill.sizeDelta;
+        size.x = barWidth * ratio;
+        shieldFill.sizeDelta = size;
     }
 
     private void OnDamageReceived(float damage, bool isCrit)

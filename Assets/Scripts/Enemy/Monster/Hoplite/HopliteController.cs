@@ -4,12 +4,16 @@ using UnityEngine;
 
 public class HopliteController : EnemyBase
 {
-    public enum HopliteState { Wander, Chase, Attack }
+    public enum HopliteState { Wander, Chase, Strafe, Attack }
+
+    [Header("Strafe")]
+    [SerializeField] private StrafeBehavior strafe;
 
     [Header("Attack")]
     [SerializeField] protected float attackRange = 1.2f;
     [SerializeField] protected float attackDamageScale = 1f;
-    [SerializeField] protected float attackCooldown = 1.5f;
+    [SerializeField] protected float attackCooldownMin = 1.5f;
+    [SerializeField] protected float attackCooldownMax = 3f;
 
     [Header("Attack Dash")]
     [SerializeField] private float attackDashSpeed = 6f;
@@ -20,13 +24,17 @@ public class HopliteController : EnemyBase
     protected bool isAttacking = false;
     public bool IsAttacking => isAttacking;
     protected float lastAttackTime = -Mathf.Infinity;
+    private float currentAttackCooldown = 0f;
 
     private bool isDashing = false;
+    protected Vector3 lockedAttackDir = Vector3.zero;
 
     protected override void Awake()
     {
         base.Awake();
-        movement.SetStopDistance(attackRange * 0.8f);
+        movement.SetStopDistance(0.1f);
+        currentAttackCooldown = Random.Range(attackCooldownMin, attackCooldownMax);
+        strafe.Init(attackRange);
     }
 
     protected override void UpdateState()
@@ -45,7 +53,21 @@ public class HopliteController : EnemyBase
             wander.Reset(movement, stats);
 
         float dist = Vector3.Distance(transform.position, TargetPosition);
-        currentState = dist <= attackRange ? HopliteState.Attack : HopliteState.Chase;
+        bool canAttack = Time.time >= lastAttackTime + currentAttackCooldown;
+
+        if (canAttack && dist <= attackRange)
+        {
+            currentState = HopliteState.Attack;
+        }
+        else if (!canAttack && dist <= attackRange)
+        {
+            currentState = HopliteState.Strafe;
+        }
+        else
+        {
+            if (currentState == HopliteState.Strafe) ResetStrafe();
+            currentState = HopliteState.Chase;
+        }
     }
 
     protected override void TickState()
@@ -57,11 +79,18 @@ public class HopliteController : EnemyBase
                 break;
 
             case HopliteState.Chase:
-                movement.MoveToTarget(TargetPosition);
+                TickChase();
+                break;
+
+            case HopliteState.Strafe:
+                TickStrafe();
                 break;
 
             case HopliteState.Attack:
-                movement.FaceTarget(TargetPosition);
+                if (!isAttacking || lockedAttackDir == Vector3.zero)
+                    movement.FaceTarget(TargetPosition);
+                else
+                    movement.FaceTarget(transform.position + lockedAttackDir);
                 if (!TryAttack())
                     movement.MoveToTarget(TargetPosition);
                 else
@@ -70,14 +99,74 @@ public class HopliteController : EnemyBase
         }
     }
 
+    private void TickChase()
+    {
+        movement.MoveToTarget(TargetPosition);
+    }
+
+    private void TickStrafe()
+    {
+        strafe.Tick(transform, TargetPosition, movement);
+    }
+
+    private void ResetStrafe()
+    {
+        strafe.Reset();
+    }
+
+    public override bool CanBeInterrupted() => !isDashing;
+
+    protected override void OnHurtTriggered()
+    {
+        isAttacking = false;
+        lockedAttackDir = Vector3.zero;
+        health.StopFlashBuildup();
+
+        var agent = movement.GetAgent();
+        if (agent != null && !agent.enabled)
+        {
+            agent.enabled = true;
+            movement.SetCanMove(true);
+        }
+
+        StopCoroutine(nameof(DashAttackRoutine));
+        isDashing = false;
+        ResetStrafe();
+    }
+
     protected bool TryAttack()
     {
         if (isAttacking) return true;
-        if (Time.time < lastAttackTime + attackCooldown) return false;
+        if (Time.time < lastAttackTime + currentAttackCooldown) return false;
 
         isAttacking = true;
         animator?.SetTrigger("Attack");
         return true;
+    }
+
+    // Animation Event
+    public virtual void LockAttackDirection()
+    {
+        lockedAttackDir = TargetPosition - transform.position;
+        lockedAttackDir.y = 0f;
+        if (lockedAttackDir.sqrMagnitude > 0.001f) lockedAttackDir.Normalize();
+    }
+
+    // Animation Event — e.g. "4,12" = 4 frames buildup at 12fps
+    public virtual void StartFlashBuildup(string args)
+    {
+        var parts = args.Split(',');
+        int frames = int.Parse(parts[0]);
+        int fps = int.Parse(parts[1]);
+        float duration = frames / (float)fps;
+        health.StartFlashBuildup(Color.white, duration, 0.4f);
+    }
+
+    // Animation Event
+    public virtual void FlashWhite()
+    {
+        health.StopFlashBuildup();
+        health.TryFlash(Color.white);
     }
 
     // Animation Event
@@ -91,7 +180,9 @@ public class HopliteController : EnemyBase
     {
         isDashing = true;
 
-        Vector3 dashDir = (TargetPosition - transform.position);
+        Vector3 dashDir = lockedAttackDir != Vector3.zero
+            ? lockedAttackDir
+            : (TargetPosition - transform.position);
         dashDir.y = 0f;
         if (dashDir.sqrMagnitude > 0.001f) dashDir.Normalize();
 
@@ -135,6 +226,9 @@ public class HopliteController : EnemyBase
     {
         isAttacking = false;
         lastAttackTime = Time.time;
+        currentAttackCooldown = Random.Range(attackCooldownMin, attackCooldownMax);
+        lockedAttackDir = Vector3.zero;
+        strafe.Reset();
         TriggerPostAttackDelay();
     }
 
