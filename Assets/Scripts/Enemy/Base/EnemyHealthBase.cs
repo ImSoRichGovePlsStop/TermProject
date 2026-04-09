@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public enum EnemyTier { Normal, Elite, Miniboss, Boss }
@@ -10,6 +11,12 @@ public class EnemyHealthBase : HealthBase
 
     private EnemyBase controller;
     private PlayerCombatContext context;
+
+    // Shield
+    public float CurrentShield { get; private set; }
+    public float MaxShield { get; private set; }
+    public bool HasShield => CurrentShield > 0f;
+    public event Action OnShieldChanged;
 
     protected override void Awake()
     {
@@ -25,6 +32,62 @@ public class EnemyHealthBase : HealthBase
             context = playerObj.GetComponent<PlayerCombatContext>();
 
         DamageNumberSpawner.Instance?.RegisterEntity(this, healthBarHeight);
+
+        var entityStats = GetComponent<EntityStats>();
+        if (entityStats != null && entityStats.BaseShield > 0f)
+            GainShield(entityStats.BaseShield);
+    }
+
+    public void GainShield(float value)
+    {
+        if (value <= 0f) return;
+        MaxShield = value;
+        CurrentShield = value;
+        OnShieldChanged?.Invoke();
+    }
+
+    public override void TakeDamage(float damage, bool isCrit = false)
+    {
+        if (isDead) return;
+        if (IsInvincible) return;
+        if (damage <= 0f) return;
+
+        var entityStats = GetComponent<EntityStats>();
+        if (entityStats != null)
+            damage *= entityStats.DamageTaken;
+
+        float realDamage = damage;
+
+        if (CurrentShield > 0f)
+        {
+            float absorbed = Mathf.Min(CurrentShield, damage);
+            CurrentShield -= absorbed;
+            CurrentShield = Mathf.Max(CurrentShield, 0f);
+            damage -= absorbed;
+            OnShieldChanged?.Invoke();
+        }
+
+        if (damage <= 0f)
+        {
+            RaiseOnDamageReceived(realDamage, isCrit);
+            TryFlash();
+            return;
+        }
+
+        currentHP -= damage;
+        currentHP = Mathf.Max(currentHP, 0f);
+
+        RaiseOnDamageReceived(realDamage, isCrit);
+        OnDamageTaken(damage, isCrit);
+
+        if (currentHP <= 0f)
+        {
+            Die();
+            return;
+        }
+
+        isHurt = true;
+        OnHurtStart();
     }
 
     protected override void OnHurtStart()

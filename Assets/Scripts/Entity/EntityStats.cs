@@ -7,6 +7,8 @@ public class EntityStats : MonoBehaviour
     [SerializeField] protected float baseMoveSpeed = 3f;
     [SerializeField] protected float baseDamage = 6f;
     [SerializeField] protected float baseAttackSpeed = 1f;
+    [SerializeField] private float baseShield = 0f;
+    public float BaseShield => baseShield;
 
     private EntityStatModifier flatModifier = new EntityStatModifier();
     private EntityStatModifier multiplierModifier = new EntityStatModifier();
