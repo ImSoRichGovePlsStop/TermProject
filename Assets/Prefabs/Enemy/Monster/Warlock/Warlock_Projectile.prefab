@@ -162,7 +162,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WarlockProjectile
   speed: 8
   maxTravelDistance: 10
-  aoeRadius: 1
   targetLayers:
     serializedVersion: 2
     m_Bits: 704
+  obstacleLayers:
+    serializedVersion: 2
+    m_Bits: 4096
+  aoeRadius: 1
