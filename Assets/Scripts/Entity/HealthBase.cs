@@ -176,6 +176,8 @@ public abstract class HealthBase : MonoBehaviour
         {
             StopCoroutine(buildupCoroutine);
             buildupCoroutine = null;
+            if (flashSpriteRenderer != null)
+                flashSpriteRenderer.color = new Color(color.r, color.g, color.b, 0f);
         }
 
         if (flashCoroutine != null)
