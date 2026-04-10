@@ -21,6 +21,9 @@ public class ModuleData : ScriptableObject
     [Header("Active ability")]
     public bool hasActive = false;
 
+    [Header("Allow duplicate modules")]
+    public bool allowDuplicate = true;
+
     [Header("Module Buff")]
     public bool isBuffAdjacent;
 
