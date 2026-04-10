@@ -170,6 +170,8 @@ MonoBehaviour:
     m_Bits: 0
   homingStrength: 120
   targetScanRange: 30
+  randomizeInterval: 1
+  maxOffsetAngle: 90
   lifetime: 12
   damageInterval: 0.2
   colliderRadius: 0.75

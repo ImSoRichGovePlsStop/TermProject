@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4686877787391236696}
   - component: {fileID: 4959130837880275603}
   - component: {fileID: 7641827344802095928}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -99,10 +99,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1389051471520699610}
+  - component: {fileID: 6734070285788229271}
+  - component: {fileID: 8296729609792212062}
   - component: {fileID: 1538039067848201211}
-  m_Layer: 0
+  - component: {fileID: 3678140623814844636}
+  m_Layer: 8
   m_Name: ArcNode
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -123,6 +126,56 @@ Transform:
   - {fileID: 4686877787391236696}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &6734070285788229271
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3220897346437814394}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.08
+  m_Height: 0.5
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.09, z: 0}
+--- !u!54 &8296729609792212062
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3220897346437814394}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!114 &1538039067848201211
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -141,3 +194,24 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 1024
   groundOffset: 0.1
+--- !u!114 &3678140623814844636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3220897346437814394}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e2b937abdd22a5479b28c519dafe45c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ArcNodeHealthBase
+  destroyDelay: 0
+  spriteRenderer: {fileID: 0}
+  flashSpriteRenderer: {fileID: 0}
+  flashColor: {r: 1, g: 0, b: 0, a: 1}
+  flashDuration: 0
+  showHealthBar: 1
+  healthBarHeight: 0.2
+  healthBarScale: {x: 1, y: 1, z: 1}
+  maxHp: 20

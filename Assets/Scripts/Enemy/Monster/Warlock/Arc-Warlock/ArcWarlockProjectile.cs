@@ -1,15 +1,24 @@
 using UnityEngine;
+
 public class ArcWarlockProjectile : EnemyProjectileBase
 {
     [Header("Homing")]
     [SerializeField] private float homingStrength = 120f;
     [SerializeField] private float targetScanRange = 30f;
+
+    [Header("Zigzag")]
+    [SerializeField] private float randomizeInterval = 0.5f;
+    [SerializeField] private float maxOffsetAngle = 60f;
+
     [Header("Lifetime")]
     [SerializeField] private float lifetime = 8f;
+
     [Header("Damage Tick")]
     [SerializeField] private float damageInterval = 0.25f;
+
     [Header("Collider")]
     [SerializeField] private float colliderRadius = 0.3f;
+
     [Header("Animation")]
     [SerializeField] private AnimationClip projectileClip;
 
@@ -19,14 +28,21 @@ public class ArcWarlockProjectile : EnemyProjectileBase
     private float damageTimer;
     private Collider playerCollider;
 
+    private float randomTimer;
+    private float currentOffsetAngle;
+
     public override void Initialize(Vector3 targetPosition, float dmg, HealthBase attackerHealth = null)
     {
         base.Initialize(targetPosition, dmg, attackerHealth);
         homingTarget = FindPlayer();
         lifetimeTimer = lifetime;
         damageTimer = damageInterval;
+        randomTimer = 0f;
+        currentOffsetAngle = Random.Range(-maxOffsetAngle, maxOffsetAngle);
+
         var cap = GetComponent<CapsuleCollider>();
         if (cap != null) cap.radius = colliderRadius;
+
         animator = GetComponentInChildren<Animator>();
         if (animator != null && projectileClip != null)
             animator.Play(projectileClip.name);
@@ -35,30 +51,46 @@ public class ArcWarlockProjectile : EnemyProjectileBase
     protected override void Update()
     {
         if (hasHit) return;
+
         if (attacker != null && attacker.IsDead)
         {
             DestroySelf();
             return;
         }
+
         lifetimeTimer -= Time.deltaTime;
         if (lifetimeTimer <= 0f)
         {
             DestroySelf();
             return;
         }
+
         if (homingTarget == null)
             homingTarget = FindPlayer();
+
+        randomTimer -= Time.deltaTime;
+        if (randomTimer <= 0f)
+        {
+            randomTimer = randomizeInterval;
+            currentOffsetAngle = Random.Range(-maxOffsetAngle, maxOffsetAngle);
+        }
+
         if (homingTarget != null)
         {
             Vector3 toTarget = homingTarget.position - transform.position;
             toTarget.y = 0f;
+
             if (toTarget.sqrMagnitude > 0.001f)
             {
+                // apply random offset to target direction
+                Vector3 offsetDir = Quaternion.Euler(0f, currentOffsetAngle, 0f) * toTarget.normalized;
                 float maxRad = homingStrength * Mathf.Deg2Rad * Time.deltaTime;
-                moveDirection = Vector3.RotateTowards(moveDirection, toTarget.normalized, maxRad, 0f);
+                moveDirection = Vector3.RotateTowards(moveDirection, offsetDir, maxRad, 0f);
             }
         }
+
         Move();
+
         if (playerCollider != null)
         {
             damageTimer -= Time.deltaTime;
@@ -95,8 +127,7 @@ public class ArcWarlockProjectile : EnemyProjectileBase
 
     private Transform FindPlayer()
     {
-        var hits = Physics.OverlapSphere(transform.position, targetScanRange,
-                       LayerMask.GetMask("Player"));
+        var hits = Physics.OverlapSphere(transform.position, targetScanRange, LayerMask.GetMask("Player"));
         foreach (var col in hits)
         {
             var ps = col.GetComponent<PlayerStats>() ?? col.GetComponentInParent<PlayerStats>();

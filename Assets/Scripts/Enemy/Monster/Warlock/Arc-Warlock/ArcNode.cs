@@ -18,7 +18,7 @@ public class ArcNode : MonoBehaviour
 
     private float linkDamage;
     private HealthBase attacker;
-    private ArcNode.LinkMode linkMode;
+    private LinkMode linkMode;
 
     private bool initialDelayDone = false;
 
@@ -39,6 +39,9 @@ public class ArcNode : MonoBehaviour
     {
         AllNodes.Add(this);
         OnNodeCountChanged?.Invoke();
+
+        var health = GetComponent<HealthBase>();
+        if (health != null) health.OnDeath += OnDeath;
     }
 
     private void Start()
@@ -57,7 +60,13 @@ public class ArcNode : MonoBehaviour
     {
         OnNodeCountChanged -= OnNodeChanged;
         AllNodes.Remove(this);
-        OnNodeCountChanged?.Invoke();
+        if (gameObject.scene.isLoaded)
+            OnNodeCountChanged?.Invoke();
+    }
+
+    private void OnDeath()
+    {
+        // OnDestroy will handle the rest via Destroy(gameObject) in ArcNodeHealthBase
     }
 
     private void LateUpdate() => SnapToGround();

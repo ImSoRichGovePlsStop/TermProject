@@ -53,7 +53,7 @@ public class ArcLine : MonoBehaviour
     {
         if (nodeA == null || nodeB == null)
         {
-            HandleUnlink();
+            Destroy(gameObject);
             return;
         }
 
@@ -154,10 +154,11 @@ public class ArcLine : MonoBehaviour
         if (hb != null && !hb.IsDead) hb.TakeDamage(linkDamage);
     }
 
-    private void HandleUnlink()
+    private void OnDestroy()
     {
+        if (animator != null) animator.enabled = false;
+        if (!gameObject.scene.isLoaded) return;
         if (nodeA != null) nodeA.NotifyUnlink(nodeB);
         if (nodeB != null) nodeB.NotifyUnlink(nodeA);
-        Destroy(gameObject);
     }
 }

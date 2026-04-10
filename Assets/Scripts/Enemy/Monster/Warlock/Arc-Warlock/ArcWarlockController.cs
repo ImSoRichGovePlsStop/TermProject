@@ -14,6 +14,8 @@ public class ArcWarlockController : WarlockController
     [SerializeField] private float nodeMaxSpawnRadius = 4f;
     [SerializeField] private ArcNode.LinkMode nodeLinkMode = ArcNode.LinkMode.Nearest;
     [SerializeField] private float minNodeDistance = 3f;
+    [SerializeField] private int nodeCount = 2;
+    [SerializeField] private float nodeHpScale = 0.5f;
 
     public override void FireProjectile()
     {
@@ -77,14 +79,14 @@ public class ArcWarlockController : WarlockController
         if (arcNodePrefab == null) return;
         float dmg = stats.Damage * arcSpawnDamageScale;
 
-        Vector3 posA = FindSpawnPosition(center, -1f);
-        float angleA = Mathf.Atan2(posA.x - center.x, posA.z - center.z) * Mathf.Rad2Deg;
-        float oppositeAngle = angleA + 180f;
-
-        Vector3 posB = FindSpawnPosition(center, oppositeAngle);
-
-        var nodeA = InstantiateNode(posA, dmg);
-        var nodeB = InstantiateNode(posB, dmg);
+        float firstAngle = -1f;
+        for (int i = 0; i < nodeCount; i++)
+        {
+            float preferredAngle = firstAngle < 0f ? -1f : firstAngle + (180f / Mathf.Max(1, nodeCount - 1)) * i;
+            Vector3 pos = FindSpawnPosition(center, preferredAngle);
+            if (i == 0) firstAngle = Mathf.Atan2(pos.x - center.x, pos.z - center.z) * Mathf.Rad2Deg;
+            InstantiateNode(pos, dmg);
+        }
     }
 
     private Vector3 FindSpawnPosition(Vector3 center, float preferredAngle)
@@ -129,6 +131,8 @@ public class ArcWarlockController : WarlockController
         var node = go.GetComponent<ArcNode>();
         node.SetDamageConfig(dmg, health);
         node.SetLinkMode(nodeLinkMode);
+        var nodeHealth = go.GetComponent<ArcNodeHealthBase>();
+        if (nodeHealth != null) nodeHealth.SetMaxHp(stats.MaxHP * nodeHpScale);
         return node;
     }
 
