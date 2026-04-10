@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class ArcNode : MonoBehaviour
 {
@@ -9,6 +10,9 @@ public class ArcNode : MonoBehaviour
     [Header("Ground Snap")]
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private float groundOffset = 0.05f;
+
+    [Header("Wander")]
+    [SerializeField] private float wanderRadius = 3f;
 
     private static readonly List<ArcNode> AllNodes = new List<ArcNode>();
     private static event System.Action OnNodeCountChanged;
@@ -21,6 +25,10 @@ public class ArcNode : MonoBehaviour
     private LinkMode linkMode;
 
     private bool initialDelayDone = false;
+
+    // wander
+    private NavMeshAgent agent;
+    private bool canMove = false;
 
     public enum LinkMode { Nearest, Farthest, Random }
 
@@ -35,8 +43,21 @@ public class ArcNode : MonoBehaviour
         linkMode = mode;
     }
 
+    public void SetMoveConfig(bool move, float speed)
+    {
+        canMove = move;
+        if (agent != null)
+        {
+            agent.speed = speed;
+            agent.enabled = move;
+        }
+    }
+
     private void Awake()
     {
+        agent = GetComponent<NavMeshAgent>();
+        if (agent != null) agent.enabled = false;
+
         AllNodes.Add(this);
         OnNodeCountChanged?.Invoke();
 
@@ -64,12 +85,31 @@ public class ArcNode : MonoBehaviour
             OnNodeCountChanged?.Invoke();
     }
 
-    private void OnDeath()
+    private void OnDeath() { }
+
+    private void Update()
     {
-        // OnDestroy will handle the rest via Destroy(gameObject) in ArcNodeHealthBase
+        if (!canMove || agent == null || !agent.enabled) return;
+
+        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+            SetNewWanderTarget();
     }
 
     private void LateUpdate() => SnapToGround();
+
+    private void SetNewWanderTarget()
+    {
+        Vector3 forward = agent.velocity.sqrMagnitude > 0.01f
+            ? agent.velocity.normalized
+            : transform.forward;
+
+        float angle = Random.Range(-90f, 90f);
+        Vector3 dir = Quaternion.Euler(0f, angle, 0f) * forward;
+        Vector3 target = transform.position + dir * wanderRadius;
+
+        if (NavMesh.SamplePosition(target, out NavMeshHit hit, wanderRadius, NavMesh.AllAreas))
+            agent.SetDestination(hit.position);
+    }
 
     private void OnNodeChanged() => TryLink();
 
@@ -180,6 +220,7 @@ public class ArcNode : MonoBehaviour
 
     private void SnapToGround()
     {
+        if (canMove && agent != null && agent.enabled) return;
         Vector3 pos = transform.position;
         if (Physics.Raycast(pos + Vector3.up * 5f, Vector3.down, out RaycastHit hit, 20f, groundLayer))
             pos.y = hit.point.y + groundOffset;
@@ -190,5 +231,7 @@ public class ArcNode : MonoBehaviour
     {
         if (slot1 != null) { Gizmos.color = Color.magenta; Gizmos.DrawLine(transform.position, slot1.transform.position); }
         if (slot2 != null) { Gizmos.color = Color.cyan; Gizmos.DrawLine(transform.position, slot2.transform.position); }
+        Gizmos.color = new Color(1f, 1f, 0f, 0.3f);
+        Gizmos.DrawWireSphere(transform.position, wanderRadius);
     }
 }

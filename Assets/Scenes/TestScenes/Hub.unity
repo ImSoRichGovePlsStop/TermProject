@@ -3369,11 +3369,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1719088563286630646, guid: 7b3e637306542674a858675a8eb8614c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.30637
+      value: -5.488
       objectReference: {fileID: 0}
     - target: {fileID: 1719088563286630646, guid: 7b3e637306542674a858675a8eb8614c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.0000009785115
+      value: 0.41
       objectReference: {fileID: 0}
     - target: {fileID: 1719088563286630646, guid: 7b3e637306542674a858675a8eb8614c, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3410,10 +3410,6 @@ PrefabInstance:
     - target: {fileID: 2267385209059488080, guid: 7b3e637306542674a858675a8eb8614c, type: 3}
       propertyPath: m_Name
       value: ArcWarlock_Normal
-      objectReference: {fileID: 0}
-    - target: {fileID: 2267385209059488080, guid: 7b3e637306542674a858675a8eb8614c, type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4944,7 +4940,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7143792438297347694, guid: b5df83872bee4564aa94454221001c13, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

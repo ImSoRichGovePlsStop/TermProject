@@ -507,12 +507,14 @@ MonoBehaviour:
   arcProjectilePrefab: {fileID: 6586537130506963891, guid: a3497295d6e5c2040b37b2127cc9fbfa, type: 3}
   arcNodePrefab: {fileID: 3220897346437814394, guid: 15a4aa6c46d7d314591eff954732da0e, type: 3}
   arcSpawnDamageScale: 2
-  nodeMinSpawnRadius: 5
-  nodeMaxSpawnRadius: 6
+  nodeMinSpawnRadius: 4.5
+  nodeMaxSpawnRadius: 5
   nodeLinkMode: 2
   minNodeDistance: 4
   nodeCount: 3
   nodeHpScale: 0.75
+  nodeCanMove: 1
+  nodeMoveSpeed: 0.15
 --- !u!114 &4390107110161921945
 MonoBehaviour:
   m_ObjectHideFlags: 0

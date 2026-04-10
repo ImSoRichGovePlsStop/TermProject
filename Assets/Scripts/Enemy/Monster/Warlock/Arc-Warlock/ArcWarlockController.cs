@@ -17,6 +17,10 @@ public class ArcWarlockController : WarlockController
     [SerializeField] private int nodeCount = 2;
     [SerializeField] private float nodeHpScale = 0.5f;
 
+    [Header("Arc Node Movement")]
+    [SerializeField] private bool nodeCanMove = false;
+    [SerializeField] private float nodeMoveSpeed = 0.5f;
+
     public override void FireProjectile()
     {
         if (arcProjectilePrefab == null || firePoint == null) return;
@@ -131,6 +135,7 @@ public class ArcWarlockController : WarlockController
         var node = go.GetComponent<ArcNode>();
         node.SetDamageConfig(dmg, health);
         node.SetLinkMode(nodeLinkMode);
+        node.SetMoveConfig(nodeCanMove, nodeMoveSpeed);
         var nodeHealth = go.GetComponent<ArcNodeHealthBase>();
         if (nodeHealth != null) nodeHealth.SetMaxHp(stats.MaxHP * nodeHpScale);
         return node;
