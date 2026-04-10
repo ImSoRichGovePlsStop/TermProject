@@ -499,7 +499,12 @@ public class ModuleItemUI : MonoBehaviour,
                 && targetGrid.Data == InventoryManager.Instance.WeaponGrid
                 && !InventoryManager.Instance.CanPlaceInWeaponGrid(Instance, pivot, _dragRotation);
 
-            if (weaponBlocked)
+            bool dupBlocked = targetGrid == WeaponGridUI
+                && targetGrid.Data == InventoryManager.Instance.WeaponGrid
+                && !Instance.Data.allowDuplicate
+                && InventoryManager.Instance.IsModuleEquipped(Instance.Data, excluding: Instance);
+
+            if (weaponBlocked || dupBlocked)
             {
                 Instance.SetRotation(_originRotation);
                 prevGrid?.TryPlace(Instance, prevPos);
@@ -604,9 +609,18 @@ public class ModuleItemUI : MonoBehaviour,
             if (g.ScreenToCell(sampleScreen, UICam(), out var hoveredCell))
             {
                 var pivot = hoveredCell - _clickedCell;
-                bool canPlace = (g == WeaponGridUI && g.Data == InventoryManager.Instance.WeaponGrid)
-                    ? InventoryManager.Instance.CanPlaceInWeaponGrid(Instance, pivot, _dragRotation)
-                    : g.Data.CanPlace(Instance, pivot, _dragRotation);
+                bool canPlace;
+                if (g == WeaponGridUI && g.Data == InventoryManager.Instance.WeaponGrid)
+                {
+                    bool dupBlockedHover = !Instance.Data.allowDuplicate
+                        && InventoryManager.Instance.IsModuleEquipped(Instance.Data, excluding: Instance);
+                    canPlace = !dupBlockedHover
+                        && InventoryManager.Instance.CanPlaceInWeaponGrid(Instance, pivot, _dragRotation);
+                }
+                else
+                {
+                    canPlace = g.Data.CanPlace(Instance, pivot, _dragRotation);
+                }
                 g.HighlightCells(Instance.Data, pivot, canPlace, _dragRotation);
                 return;
             }

@@ -12,14 +12,18 @@ public class SelfDetonationPassive : MonoBehaviour
 
     private PlayerStats _stats;
     private PlayerCombatContext _context;
+    private LayerMask _layerMask;
 
     private bool _isArmed = false;
     private float _cooldownTimer = 0f;
 
-    public void Init(PlayerStats playerStats, PlayerCombatContext combatContext)
+    
+
+    public void Init(PlayerStats playerStats, PlayerCombatContext combatContext, LayerMask layerMask)
     {
         _stats = playerStats;
         _context = combatContext;
+        _layerMask = layerMask;
     }
 
     private void Update()
@@ -130,7 +134,7 @@ public class SelfDetonationPassive : MonoBehaviour
 
     private void DamageEnemiesInRadius(float damage, bool isCrit)
     {
-        var hits = Physics.OverlapSphere(transform.position, burstRadius);
+        var hits = Physics.OverlapSphere(transform.position, burstRadius, _layerMask.value);
         foreach (var col in hits)
         {
             var health = col.GetComponent<HealthBase>();

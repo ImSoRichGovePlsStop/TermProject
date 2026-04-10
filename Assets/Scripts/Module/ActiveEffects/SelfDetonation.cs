@@ -57,7 +57,7 @@ public class SelfDetonationModule : ModuleEffect
         passive.hpPercent = state.hpPercent * (1f + state.totalBuffPercent);
         passive.enabled = true;
 
-        passive.Init(stats, stats.GetComponent<PlayerCombatContext>());
+        passive.Init(stats, stats.GetComponent<PlayerCombatContext>(), LayerMask.GetMask("Enemy"));
     }
 
     protected override void OnUnequip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state)

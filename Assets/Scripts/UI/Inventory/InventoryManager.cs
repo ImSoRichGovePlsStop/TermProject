@@ -113,6 +113,14 @@ public class InventoryManager : MonoBehaviour
             if (!IsWithinWeaponUnlocked(cell)) return false;
         return WeaponGrid.CanPlace(inst, pivot, rotation);
     }
+
+    public bool IsModuleEquipped(ModuleData data, ModuleInstance excluding = null)
+    {
+        foreach (var inst in WeaponGrid.GetAllModules())
+            if (inst != excluding && inst.Data.moduleName == data.moduleName)
+                return true;
+        return false;
+    }
     public void DeleteModule(ModuleInstance inst)
     {
         WeaponGrid.Remove(inst);
