@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -19,7 +20,13 @@ public class ArcWarlockController : WarlockController
 
     [Header("Arc Node Movement")]
     [SerializeField] private bool nodeCanMove = false;
-    [SerializeField] private float nodeMoveSpeed = 0.5f;
+    [SerializeField] private float nodeMoveSpeed = 2f;
+
+    [Header("Arc Node Decay")]
+    [SerializeField] private int decaySimultaneous = 1;
+    [SerializeField] private float decayDuration = 2f;
+
+    private List<ArcNodeHealthBase> spawnedNodes = new List<ArcNodeHealthBase>();
 
     public override void FireProjectile()
     {
@@ -137,8 +144,25 @@ public class ArcWarlockController : WarlockController
         node.SetLinkMode(nodeLinkMode);
         node.SetMoveConfig(nodeCanMove, nodeMoveSpeed);
         var nodeHealth = go.GetComponent<ArcNodeHealthBase>();
-        if (nodeHealth != null) nodeHealth.SetMaxHp(stats.MaxHP * nodeHpScale);
+        if (nodeHealth != null)
+        {
+            nodeHealth.SetMaxHp(stats.MaxHP * nodeHpScale);
+            spawnedNodes.Add(nodeHealth);
+        }
         return node;
+    }
+
+    public override void OnDeath()
+    {
+        base.OnDeath();
+        spawnedNodes.RemoveAll(n => n == null || n.IsDead);
+        int[] counter = new int[1];
+        foreach (var node in spawnedNodes)
+        {
+            if (node == null || node.IsDead) continue;
+            float hpRatio = node.CurrentHP / node.MaxHP;
+            node.StartDecay(decayDuration * hpRatio, decaySimultaneous, counter);
+        }
     }
 
     protected new void OnDrawGizmosSelected()

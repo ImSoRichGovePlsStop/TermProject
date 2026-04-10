@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: f744ad5792ecbf845ae8bb305d7d1721
+guid: ba4c5c856c6794248b2dbaf53f684684
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -69,7 +69,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 4096
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 0
@@ -115,8 +115,8 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 310
-        height: 720
+        width: 510
+        height: 700
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -125,8 +125,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1ed60b749414da34b9b7ee0ede6e443a
-      internalID: -1051414290
+      spriteID: 33a87b25ccbd49541a67e12ad1e0b0d6
+      internalID: -144725701
       vertices: []
       indices: 
       edges: []
@@ -135,10 +135,10 @@ TextureImporter:
       name: Lightning_1
       rect:
         serializedVersion: 2
-        x: 310
+        x: 510
         y: 0
-        width: 310
-        height: 720
+        width: 510
+        height: 700
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -147,8 +147,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 70eea4bc647954d45a8656c98e618a7d
-      internalID: -941087292
+      spriteID: 99c8e5a246dfbaf4f8a74dc7df0861e0
+      internalID: 1421804743
       vertices: []
       indices: 
       edges: []
@@ -157,10 +157,10 @@ TextureImporter:
       name: Lightning_2
       rect:
         serializedVersion: 2
-        x: 620
+        x: 1020
         y: 0
-        width: 310
-        height: 720
+        width: 510
+        height: 700
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -169,8 +169,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: b5e228c342564b54c9cc2caca4867b55
-      internalID: 1969023309
+      spriteID: c94ae44ee41ce3f4987988663a74de3d
+      internalID: 632728116
       vertices: []
       indices: 
       edges: []
@@ -179,10 +179,10 @@ TextureImporter:
       name: Lightning_3
       rect:
         serializedVersion: 2
-        x: 930
+        x: 1530
         y: 0
-        width: 310
-        height: 720
+        width: 510
+        height: 700
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -191,8 +191,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 363a90ba25d2b2448be9b3484cad0aa0
-      internalID: 2062936209
+      spriteID: 5bbf45640e2304242bf55520c4e48673
+      internalID: -875603025
       vertices: []
       indices: 
       edges: []
@@ -201,10 +201,10 @@ TextureImporter:
       name: Lightning_4
       rect:
         serializedVersion: 2
-        x: 1240
+        x: 2040
         y: 0
-        width: 310
-        height: 720
+        width: 510
+        height: 700
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -213,8 +213,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a1cbd094075872e43945dc8bd438b5cd
-      internalID: -1539218472
+      spriteID: 5791459e8a413d94e879b5230fd5ef0d
+      internalID: 2010715135
       vertices: []
       indices: 
       edges: []
@@ -223,10 +223,10 @@ TextureImporter:
       name: Lightning_5
       rect:
         serializedVersion: 2
-        x: 1550
+        x: 2550
         y: 0
-        width: 310
-        height: 720
+        width: 510
+        height: 700
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -235,8 +235,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ac25808fecd7a10408cbe00b3c6eb3b6
-      internalID: -741335505
+      spriteID: 028f879b489da4e4ea8edf3711f0f628
+      internalID: -336171229
       vertices: []
       indices: 
       edges: []
@@ -245,7 +245,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: f3df6106cde6d014692094fa49ef29e8
+    spriteID: 9c86e960ee6cafb42af694b78587e123
     internalID: 0
     vertices: []
     indices: 
@@ -255,14 +255,14 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":310.0,"y":720.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":6.0,"y":1.0},"gridSpriteSize":{"x":510.0,"y":700.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":2,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Lightning_0: -1051414290
-      Lightning_1: -941087292
-      Lightning_2: 1969023309
-      Lightning_3: 2062936209
-      Lightning_4: -1539218472
-      Lightning_5: -741335505
+      Lightning_0: -144725701
+      Lightning_1: 1421804743
+      Lightning_2: 632728116
+      Lightning_3: -875603025
+      Lightning_4: 2010715135
+      Lightning_5: -336171229
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

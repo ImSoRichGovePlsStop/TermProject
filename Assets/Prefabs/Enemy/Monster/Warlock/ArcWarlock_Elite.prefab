@@ -515,6 +515,8 @@ MonoBehaviour:
   nodeHpScale: 0.75
   nodeCanMove: 1
   nodeMoveSpeed: 0.15
+  decaySimultaneous: 1
+  decayDuration: 5
 --- !u!114 &4390107110161921945
 MonoBehaviour:
   m_ObjectHideFlags: 0
