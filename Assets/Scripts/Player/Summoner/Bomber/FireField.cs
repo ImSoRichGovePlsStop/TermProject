@@ -72,7 +72,10 @@ public class FireField : MonoBehaviour
             foreach (var h in hits)
             {
                 if (h == null || h.IsDead) continue;
-                h.TakeDamage(damage);
+                if (h is EnemyHealthBase enemy)
+                    enemy.TakeDamage(damage, null, false, silent: true);
+                else
+                    h.TakeDamage(damage, false);
             }
         }
     }
