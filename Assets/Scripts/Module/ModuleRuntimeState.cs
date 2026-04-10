@@ -1,3 +1,4 @@
+using Unity.Hierarchy;
 using UnityEngine;
 
 public class ModuleRuntimeState
@@ -17,5 +18,8 @@ public class ModuleRuntimeState
     // LowHpModule
     public float currentThreshold = 0f;
     public bool buffActive = false;
-   
+
+    // SelfDetonation
+    public float attackPercent = 0f;
+    public float hpPercent = 0f;
 }
