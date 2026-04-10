@@ -267,12 +267,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EliteHarpyHealthBase
   destroyDelay: 0
   spriteRenderer: {fileID: 0}
+  flashSpriteRenderer: {fileID: 0}
   flashColor: {r: 1, g: 0, b: 0, a: 1}
   flashDuration: 0.1
   showHealthBar: 1
   healthBarHeight: 0.4
   healthBarScale: {x: 2, y: 1.5, z: 1}
-  tier: 1
+  tier: 2
   enrageThreshold: 0.5
 --- !u!114 &6021029256873973459
 MonoBehaviour:
@@ -305,6 +306,7 @@ MonoBehaviour:
   baseMoveSpeed: 3.5
   baseDamage: 15
   baseAttackSpeed: 1
+  baseShield: 0
 --- !u!114 &6574624719163675747
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -337,9 +339,20 @@ MonoBehaviour:
   animator: {fileID: 0}
   coinDropMin: 50
   coinDropMax: 80
+  hurtDuration: 0.2
+  postHurtDelayMin: 0.1
+  postHurtDelayMax: 0.3
+  strafe:
+    preferredDistMin: 0
+    preferredDistMax: 0
+    angleMin: 30
+    angleMax: 90
+    idleTimeMin: 0.3
+    idleTimeMax: 0.8
   attackRange: 1.5
   attackDamageScale: 1
-  attackCooldown: 1.5
+  attackCooldownMin: 1.5
+  attackCooldownMax: 3
   attackDashSpeed: 15
   attackDashDuration: 0.1
   attackDashHitRadius: 0.6

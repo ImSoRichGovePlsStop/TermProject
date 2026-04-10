@@ -194,6 +194,14 @@ public abstract class EnemyBase : MonoBehaviour
         playerTarget = null;
         entityTarget = null;
         movement.SetCanMove(false);
+
+        if (hurtCoroutine != null)
+        {
+            StopCoroutine(hurtCoroutine);
+            hurtCoroutine = null;
+        }
+        isHurting = false;
+        animator?.SetBool("IsHurting", false);
         animator?.SetTrigger("Die");
     }
 
