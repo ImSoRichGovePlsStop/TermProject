@@ -1,0 +1,163 @@
+using UnityEngine;
+
+public class ArcLine : MonoBehaviour
+{
+    [Header("Phase 1 - Pulse")]
+    [SerializeField] private LineRenderer lineRenderer;
+    [SerializeField] private float pulseDuration = 2f;
+    [SerializeField] private float pulseSpeed = 3f;
+    [SerializeField] private Color pulseColorA = new Color(0.6f, 0f, 1f, 0f);
+    [SerializeField] private Color pulseColorB = new Color(0.6f, 0f, 1f, 0.7f);
+
+    [Header("Phase 2 - Active")]
+    [SerializeField] private SpriteRenderer spriteRenderer;
+    [SerializeField] private Animator animator;
+    [SerializeField] private BoxCollider damageCollider;
+
+    [Header("Damage")]
+    [SerializeField] private float damageInterval = 0.5f;
+    [SerializeField] private float colliderHeight = 1f;
+    [SerializeField] private LayerMask targetLayers;
+
+    private ArcNode nodeA;
+    private ArcNode nodeB;
+    private float linkDamage;
+    private HealthBase attacker;
+
+    private float elapsed;
+    private bool isActive;
+    private float damageTimer;
+    private float scaleX;
+    private float scaleZ;
+
+    public void Initialize(ArcNode a, ArcNode b, float dmg, HealthBase atk)
+    {
+        nodeA = a;
+        nodeB = b;
+        linkDamage = dmg;
+        attacker = atk;
+        elapsed = 0f;
+        isActive = false;
+        damageTimer = 0f;
+
+        scaleX = transform.localScale.x;
+        scaleZ = transform.localScale.z;
+
+        if (lineRenderer != null) lineRenderer.positionCount = 2;
+        if (spriteRenderer != null) spriteRenderer.enabled = false;
+        if (animator != null) animator.enabled = false;
+        if (damageCollider != null) damageCollider.enabled = false;
+    }
+
+    private void Update()
+    {
+        if (nodeA == null || nodeB == null)
+        {
+            HandleUnlink();
+            return;
+        }
+
+        Vector3 posA = nodeA.transform.position;
+        Vector3 posB = nodeB.transform.position;
+
+        elapsed += Time.deltaTime;
+
+        if (!isActive)
+        {
+            UpdateLineRenderer(posA, posB);
+
+            float alpha = Mathf.Abs(Mathf.Sin(Time.time * pulseSpeed * Mathf.PI));
+            Color col = Color.Lerp(pulseColorA, pulseColorB, alpha);
+            lineRenderer.startColor = col;
+            lineRenderer.endColor = col;
+
+            if (elapsed >= pulseDuration) TransitionToActive(posA, posB);
+        }
+        else
+        {
+            UpdateSpriteTransform(posA, posB);
+            UpdateCollider(posA, posB);
+        }
+    }
+
+    private void TransitionToActive(Vector3 posA, Vector3 posB)
+    {
+        isActive = true;
+
+        if (lineRenderer != null) lineRenderer.enabled = false;
+        if (spriteRenderer != null) spriteRenderer.enabled = true;
+        if (animator != null) animator.enabled = true;
+        if (damageCollider != null) damageCollider.enabled = true;
+
+        UpdateSpriteTransform(posA, posB);
+        UpdateCollider(posA, posB);
+    }
+
+    private void UpdateLineRenderer(Vector3 posA, Vector3 posB)
+    {
+        if (lineRenderer == null) return;
+        lineRenderer.enabled = true;
+        lineRenderer.SetPosition(0, posA);
+        lineRenderer.SetPosition(1, posB);
+    }
+
+    private void UpdateSpriteTransform(Vector3 posA, Vector3 posB)
+    {
+        float distance = Vector3.Distance(posA, posB);
+        Vector3 dir = (posB - posA).normalized;
+
+        transform.position = (posA + posB) * 0.5f;
+        transform.up = dir;
+
+        float cameraRotX = Camera.main != null ? Camera.main.transform.eulerAngles.x : 0f;
+        Vector3 euler = transform.eulerAngles;
+        euler.x = cameraRotX;
+        transform.eulerAngles = euler;
+
+        float spriteHeight = spriteRenderer.sprite.bounds.size.y;
+        transform.localScale = new Vector3(scaleX, distance / spriteHeight, scaleZ);
+    }
+
+    private void UpdateCollider(Vector3 posA, Vector3 posB)
+    {
+        if (damageCollider == null) return;
+        float distance = Vector3.Distance(posA, posB);
+        damageCollider.size = new Vector3(0.6f, distance / transform.lossyScale.y, colliderHeight);
+        damageCollider.center = Vector3.zero;
+        // fix rotation X to 90 so collider aligns flat on ground
+        Vector3 euler = transform.eulerAngles;
+        euler.x = 90f;
+        damageCollider.transform.eulerAngles = euler;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!isActive) return;
+        DealDamage(other);
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (!isActive) return;
+        damageTimer += Time.deltaTime;
+        if (damageTimer < damageInterval) return;
+        damageTimer = 0f;
+        DealDamage(other);
+    }
+
+    private void DealDamage(Collider other)
+    {
+        if (targetLayers != 0 && (targetLayers.value & (1 << other.gameObject.layer)) == 0) return;
+        var ps = other.GetComponent<PlayerStats>() ?? other.GetComponentInParent<PlayerStats>();
+        if (ps != null && !ps.IsDead) { ps.TakeDamage(linkDamage, attacker); return; }
+        var hb = other.GetComponentInParent<HealthBase>();
+        if (hb != null && !hb.IsDead) hb.TakeDamage(linkDamage);
+    }
+
+    private void HandleUnlink()
+    {
+        if (nodeA != null) nodeA.NotifyUnlink(nodeB);
+        if (nodeB != null) nodeB.NotifyUnlink(nodeA);
+        Destroy(gameObject);
+    }
+}
