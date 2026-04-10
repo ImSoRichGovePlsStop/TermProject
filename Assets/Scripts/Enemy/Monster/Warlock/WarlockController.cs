@@ -33,8 +33,8 @@ public class WarlockController : EnemyBase
     protected float lastShootTime = -Mathf.Infinity;
     protected float lastSmashTime = 0f;
     protected Vector3 lockedTargetPosition;
-    private bool hasFired = false;
-    private bool isSmashExecuting = false;
+    protected bool hasFired = false;
+    protected bool isSmashExecuting = false;
 
     public override bool CanBeInterrupted() => !hasFired && !isSmashExecuting;
 
@@ -62,8 +62,9 @@ public class WarlockController : EnemyBase
 
         float dist = Vector3.Distance(transform.position, TargetPosition);
         bool canShoot = Time.time >= lastShootTime + shootCooldown;
+        bool canSmash = Time.time >= lastSmashTime + smashCooldown;
 
-        if (canShoot && dist <= shootRange) currentState = WarlockState.WindUp;
+        if ((canShoot || canSmash) && dist <= shootRange) currentState = WarlockState.WindUp;
         else if (dist > shootRange) { strafe.Reset(); currentState = WarlockState.Chase; }
         else currentState = WarlockState.Strafe;
     }
@@ -97,6 +98,7 @@ public class WarlockController : EnemyBase
     private void TickWindUp()
     {
         movement.StopMoving();
+        bool canShoot = Time.time >= lastShootTime + shootCooldown;
 
         if (HasTarget)
         {
@@ -114,7 +116,7 @@ public class WarlockController : EnemyBase
         }
 
         movement.FaceTarget(lockedTargetPosition);
-        if (!TrySmash()) TryWindUp();
+        if (!TrySmash() && canShoot) TryWindUp();
     }
 
     protected virtual bool TrySmash()

@@ -392,7 +392,10 @@ public class ZapperSummoner : SummonerBase
         foreach (var enemy in targets)
         {
             if (enemy == null || enemy.IsDead) continue;
-            enemy.TakeDamage(chainDamage);
+            if (enemy is EnemyHealthBase e)
+                e.TakeDamage(chainDamage, null, silent: true);
+            else
+                enemy.TakeDamage(chainDamage);
         }
         isChaining = false;
     }
@@ -526,7 +529,10 @@ public class ZapperSummoner : SummonerBase
         foreach (var enemy in targets)
         {
             if (enemy == null || enemy.IsDead || enemy == currentTarget) continue;
-            enemy.TakeDamage(chainDamage);
+            if (enemy is EnemyHealthBase e)
+                e.TakeDamage(chainDamage, null, silent: true);
+            else
+                enemy.TakeDamage(chainDamage);
         }
         isChaining = false;
     }
@@ -613,7 +619,10 @@ public class ZapperSummoner : SummonerBase
             if (h == null || h.IsDead) continue;
             if (h == currentTarget) continue;
             if (count >= arcPulseTargets) break;
-            h.TakeDamage(damage);
+            if (h is EnemyHealthBase e)
+                e.TakeDamage(damage, null, silent: true);
+            else
+                h.TakeDamage(damage);
             count++;
         }
         isChaining = false;

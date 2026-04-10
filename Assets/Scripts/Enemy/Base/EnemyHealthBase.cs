@@ -90,9 +90,9 @@ public class EnemyHealthBase : HealthBase
         OnHurtStart();
     }
 
-    public void TakeDamage(float damage, HealthBase attacker, bool isCrit = false)
+    public void TakeDamage(float damage, HealthBase attacker, bool isCrit = false, bool silent = false)
     {
-        suppressHurt = attacker is SummonerHealth;
+        suppressHurt = silent;
         TakeDamage(damage, isCrit);
         suppressHurt = false;
     }

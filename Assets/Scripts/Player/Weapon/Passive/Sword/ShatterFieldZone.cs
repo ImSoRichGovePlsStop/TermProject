@@ -57,7 +57,10 @@ public class ShatterFieldZone : MonoBehaviour
                 dmg = stats.Damage * damagePercent;
             }
 
-            enemy.TakeDamage(dmg, stats.LastHitWasCrit);
+            if (enemy is EnemyHealthBase e)
+                e.TakeDamage(dmg, null, stats.LastHitWasCrit, silent: true);
+            else
+                enemy.TakeDamage(dmg, stats.LastHitWasCrit);
             hitEnemies.Add(enemy);
 
             passive?.ApplySlow(enemy);
