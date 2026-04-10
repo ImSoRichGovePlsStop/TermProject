@@ -18,10 +18,15 @@ public class ModuleData : ScriptableObject
     public Color moduleColor = Color.white;
     public int[] cost = { 0, 0, 0, 0, 0 };
 
+    [Header("Active ability")]
+    public bool hasActive = false;
+
     [Header("Module Buff")]
     public bool isBuffAdjacent;
+
     [TextArea(1, 3)]
     public string buffDescription = "";
+
     [SerializeField] private ModuleShapeRow[] buffGrid = DefaultShape();
 
     [Header("Shape (5×5 — tick cells to form the shape)")]
