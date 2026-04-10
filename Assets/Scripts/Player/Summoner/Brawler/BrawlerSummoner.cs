@@ -232,7 +232,10 @@ public class BrawlerSummoner : SummonerBase
 
             var enemyHealth = hit.GetComponentInParent<HealthBase>();
             if (enemyHealth != null && !enemyHealth.IsDead)
-                enemyHealth.TakeDamage(damage);
+                if (enemyHealth is EnemyHealthBase enemy)
+                    enemy.TakeDamage(damage, null, silent: true);
+                else
+                    enemyHealth.TakeDamage(damage);
         }
     }
 

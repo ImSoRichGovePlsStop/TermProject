@@ -324,6 +324,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerStats
   defaultHealth: 100
   defaultMoveSpeed: 5
+  iFrameDuration: 0.08
   showDebugUI: 1
 --- !u!114 &2654450303875858809
 MonoBehaviour:

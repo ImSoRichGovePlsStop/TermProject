@@ -90,8 +90,18 @@ public class EnemyHealthBase : HealthBase
         OnHurtStart();
     }
 
+    public void TakeDamage(float damage, HealthBase attacker, bool isCrit = false, bool silent = false)
+    {
+        suppressHurt = silent;
+        TakeDamage(damage, isCrit);
+        suppressHurt = false;
+    }
+
+    private bool suppressHurt = false;
+
     protected override void OnHurtStart()
     {
+        if (suppressHurt) return;
         if (controller != null && controller.CanBeInterrupted())
             controller.TriggerHurt();
     }

@@ -9,6 +9,9 @@ public class PlayerStats : MonoBehaviour
     [SerializeField] private float defaultHealth = 100f;
     [SerializeField] private float defaultMoveSpeed = 5f;
 
+    [Header("iFrame")]
+    [SerializeField] private float iFrameDuration = 0.1f;
+
     private float weaponHealth;
     private float weaponDamage;
     private float weaponAttackSpeed;
@@ -408,6 +411,7 @@ public class PlayerStats : MonoBehaviour
         shields.Clear();
     }
 
+    private Coroutine iFrameCoroutine;
 
     public void TakeDamage(float amount, HealthBase attacker)
     {
@@ -438,6 +442,8 @@ public class PlayerStats : MonoBehaviour
 
             if (context != null)
                 context.NotifyGetHit(attacker);
+
+            StartIFrame();
             return;
         }
 
@@ -450,11 +456,27 @@ public class PlayerStats : MonoBehaviour
             context.NotifyTakeDamage(attacker);
         }
 
+        StartIFrame();
+
         if (CurrentHealth <= 0)
         {
             Debug.Log("Player died!");
             OnPlayerDeath?.Invoke();
         }
+    }
+
+    private void StartIFrame()
+    {
+        if (iFrameCoroutine != null) return;
+        iFrameCoroutine = StartCoroutine(IFrameRoutine());
+    }
+
+    private IEnumerator IFrameRoutine()
+    {
+        SetInvincible(true);
+        yield return new WaitForSeconds(iFrameDuration);
+        SetInvincible(false);
+        iFrameCoroutine = null;
     }
 
     public bool LastHitWasCrit { get; private set; }

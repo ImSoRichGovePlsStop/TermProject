@@ -13,11 +13,15 @@ MonoBehaviour:
   m_Name: TakeMoreHealSome_1
   m_EditorClassIdentifier: Assembly-CSharp::ModuleData
   moduleName: TakeMore
+  description: 
   icon: {fileID: 0}
   moduleEffect: {fileID: 11400000, guid: d6761900660c7b14fbeb84a3cda68ddc, type: 2}
   moduleColor: {r: 1, g: 0.28773582, b: 0.6065856, a: 1}
   cost: 0000000000000000960000002c010000f4010000
+  hasActive: 0
+  allowDuplicate: 0
   isBuffAdjacent: 0
+  buffDescription: 
   buffGrid:
   - cells: 0000000000
   - cells: 0000000000
