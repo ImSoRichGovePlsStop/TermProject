@@ -20,86 +20,97 @@ public class BSPMapGeometry : MonoBehaviour
     public int maxEventRoomSize = 18;
 
     [Header("Empty Room Sizes")]
-    public int minEmptyRoomSize  = 4;
-    public int maxEmptyRoomSize  = 14;
+    public int minEmptyRoomSize = 4;
+    public int maxEmptyRoomSize = 14;
     [Tooltip("Empty rooms smaller than this area (cells) will be merged with neighbours.")]
     public int mergeAreaThreshold = 20;
 
+    [Header("Gap Sealing Thresholds")]
+    [Tooltip("Rectangles narrower than this on either axis are sealed as wall.")]
+    public int sealMinWidth = 4;
+    [Tooltip("Rectangles with total cell area below this are sealed as wall.")]
+    public int sealMinArea = 10;
+
     [Header("Room Type Counts (Maximums)")]
     [Tooltip("Exactly 1 spawn is always placed.")]
-    public int spawnCount    = 1;
+    public int spawnCount = 1;
     [Tooltip("Exactly 1 boss is always placed.")]
-    public int bossCount     = 1;
+    public int bossCount = 1;
     [Tooltip("Max battle rooms.")]
-    public int maxBattleCount   = 10;
+    public int maxBattleCount = 10;
     [Tooltip("Max total event rooms across all event types.")]
-    public int maxEventCount    = 6;
+    public int maxEventCount = 6;
     [Tooltip("Max empty rooms (remaining space beyond this becomes solid wall).")]
-    public int maxEmptyCount    = 8;
+    public int maxEmptyCount = 8;
 
     [Header("Event Room Type Weights")]
     [Tooltip("Relative weight for each event type. Higher = more likely to be chosen.")]
-    public float weightHeal     = 1f;
-    public float weightShop     = 1f;
+    public float weightHeal = 1f;
+    public float weightShop = 1f;
     public float weightRareLoot = 1f;
-    public float weightMerge    = 1f;
+    public float weightMerge = 1f;
 
     [Header("Floor-Repeat Penalty")]
     [Tooltip("Weight multiplier applied to an event type that appeared last floor (0 = never repeat, 1 = no penalty).")]
     [Range(0f, 1f)]
-    public float repeatPenalty  = 0.4f;
+    public float repeatPenalty = 0.4f;
 
     [Header("Preset Usage Probability per Type")]
     [Tooltip("0 = always random rect, 1 = always use preset if available.")]
-    [Range(0f,1f)] public float presetChanceBattle   = 0.7f;
-    [Range(0f,1f)] public float presetChanceHeal      = 1f;
-    [Range(0f,1f)] public float presetChanceShop      = 1f;
-    [Range(0f,1f)] public float presetChanceRareLoot  = 1f;
-    [Range(0f,1f)] public float presetChanceMerge     = 1f;
-    [Range(0f,1f)] public float presetChanceSpawn     = 1f;
-    [Range(0f,1f)] public float presetChanceBoss      = 1f;
+    [Range(0f, 1f)] public float presetChanceBattle = 0.7f;
+    [Range(0f, 1f)] public float presetChanceHeal = 1f;
+    [Range(0f, 1f)] public float presetChanceShop = 1f;
+    [Range(0f, 1f)] public float presetChanceRareLoot = 1f;
+    [Range(0f, 1f)] public float presetChanceMerge = 1f;
+    [Range(0f, 1f)] public float presetChanceSpawn = 1f;
+    [Range(0f, 1f)] public float presetChanceBoss = 1f;
 
     [Header("Room Presets")]
     public BSPRoomPreset[] roomPresets;
 
     [Header("Doors")]
-    public int   doorWidth       = 3;
-    [Range(0f,1f)]
+    public int doorWidth = 3;
+    [Range(0f, 1f)]
     public float extraDoorChance = 0.35f;
 
     [Header("Walls")]
-    public float wallHeight     = 2f;
-    public float wallThickness  = 0.01f;
+    public float wallHeight = 2f;
+    public float wallThickness = 0.01f;
     public float floorThickness = -50f;
 
     [Header("Materials")]
     public Material floorMat;
     public Material wallMat;
+    public Material sealedMat;
 
     [Header("Navigation")]
     public NavMeshSurface navMeshSurface;
 
     // ── Public API ────────────────────────────────────────────────────────────
 
-    public IReadOnlyList<MapNode> Nodes         => _nodes;
-    public IReadOnlyList<MapEdge> Edges         => _edges;
-    public byte[,]                Matrix        => _matrix;
-    public int                    MatrixSize    => matrixSize;
-    public MapNode[,]             RoomMapPublic => _roomMap;
+    public IReadOnlyList<MapNode> Nodes => _nodes;
+    public IReadOnlyList<MapEdge> Edges => _edges;
+    public byte[,] Matrix => _matrix;
+    public int MatrixSize => matrixSize;
+    public MapNode[,] RoomMapPublic => _roomMap;
 
     public event Action<IReadOnlyList<MapNode>> OnMapReady;
 
     // ── Internal ──────────────────────────────────────────────────────────────
 
-    byte[,]    _matrix;
+    byte[,] _matrix;
     MapNode[,] _roomMap;
     MapNode[,] _voidOwnerMap;  // which room owns each void cell
-    bool[,]    _isDoor;
+    bool[,] _isDoor;
 
     List<MapNode> _nodes = new();
     List<MapEdge> _edges = new();
 
-    static readonly Vector2Int[] Dirs = { new(1,0), new(-1,0), new(0,1), new(0,-1) };
+    // Debug: all rectangles found during SealNarrowUnmarkedRooms
+    struct DebugRect { public int x, z, w, h; public bool sealed_; }
+    List<DebugRect> _debugRects = new();
+
+    static readonly Vector2Int[] Dirs = { new(1, 0), new(-1, 0), new(0, 1), new(0, -1) };
 
     // ── Entry ─────────────────────────────────────────────────────────────────
 
@@ -107,12 +118,13 @@ public class BSPMapGeometry : MonoBehaviour
 
     public void Generate()
     {
-        _matrix       = new byte[matrixSize, matrixSize];
-        _roomMap       = new MapNode[matrixSize, matrixSize];
-        _voidOwnerMap  = new MapNode[matrixSize, matrixSize];
-        _isDoor        = new bool[matrixSize, matrixSize];
+        _matrix = new byte[matrixSize, matrixSize];
+        _roomMap = new MapNode[matrixSize, matrixSize];
+        _voidOwnerMap = new MapNode[matrixSize, matrixSize];
+        _isDoor = new bool[matrixSize, matrixSize];
         _nodes.Clear();
         _edges.Clear();
+        _debugRects.Clear();
 
         FillMatrix();
         SealNarrowGaps();
@@ -137,12 +149,12 @@ public class BSPMapGeometry : MonoBehaviour
     void FillMatrix()
     {
         int spawnCorner = Random.Range(0, 4);
-        int bossCorner  = (spawnCorner + 1 + Random.Range(0, 3)) % 4;  // any other corner
+        int bossCorner = (spawnCorner + 1 + Random.Range(0, 3)) % 4;  // any other corner
 
         // ── Place all four corner rooms first so random placement can't steal them
         var usedCorners = new HashSet<int> { spawnCorner, bossCorner };
-        PlaceTypedRoom(RoomType.Spawn,  minBattleRoomSize, maxBattleRoomSize, presetChanceSpawn,   spawnCorner);
-        PlaceTypedRoom(RoomType.Boss,   minBattleRoomSize, maxBattleRoomSize, presetChanceBoss,    bossCorner);
+        PlaceTypedRoom(RoomType.Spawn, minBattleRoomSize, maxBattleRoomSize, presetChanceSpawn, spawnCorner);
+        PlaceTypedRoom(RoomType.Boss, minBattleRoomSize, maxBattleRoomSize, presetChanceBoss, bossCorner);
         for (int ci = 0; ci < 4; ci++)
         {
             if (usedCorners.Contains(ci)) continue;
@@ -159,10 +171,10 @@ public class BSPMapGeometry : MonoBehaviour
         // ── Place event rooms via weighted random ────────────────────────────
         // Build per-type weights, penalising types seen last floor
         var rm = RunManager.Instance;
-        float wHeal     = weightHeal     * (rm != null && rm.WasMissingLastFloor(RoomType.Heal)     ? 1f : repeatPenalty);
-        float wShop     = weightShop     * (rm != null && rm.WasMissingLastFloor(RoomType.Shop)     ? 1f : repeatPenalty);
+        float wHeal = weightHeal * (rm != null && rm.WasMissingLastFloor(RoomType.Heal) ? 1f : repeatPenalty);
+        float wShop = weightShop * (rm != null && rm.WasMissingLastFloor(RoomType.Shop) ? 1f : repeatPenalty);
         float wRareLoot = weightRareLoot * (rm != null && rm.WasMissingLastFloor(RoomType.RareLoot) ? 1f : repeatPenalty);
-        float wMerge    = weightMerge    * (rm != null && rm.WasMissingLastFloor(RoomType.Merge)    ? 1f : repeatPenalty);
+        float wMerge = weightMerge * (rm != null && rm.WasMissingLastFloor(RoomType.Merge) ? 1f : repeatPenalty);
 
         // Track how many of each type we place (each type max 1 per floor)
         var eventPlaced = new Dictionary<RoomType, int>
@@ -174,26 +186,26 @@ public class BSPMapGeometry : MonoBehaviour
         for (int i = 0; i < maxEventCount; i++)
         {
             // Rebuild weights zeroing out any type already placed
-            float h  = eventPlaced[RoomType.Heal]     > 0 ? 0f : wHeal;
-            float s  = eventPlaced[RoomType.Shop]     > 0 ? 0f : wShop;
-            float r  = eventPlaced[RoomType.RareLoot] > 0 ? 0f : wRareLoot;
-            float m  = eventPlaced[RoomType.Merge]    > 0 ? 0f : wMerge;
+            float h = eventPlaced[RoomType.Heal] > 0 ? 0f : wHeal;
+            float s = eventPlaced[RoomType.Shop] > 0 ? 0f : wShop;
+            float r = eventPlaced[RoomType.RareLoot] > 0 ? 0f : wRareLoot;
+            float m = eventPlaced[RoomType.Merge] > 0 ? 0f : wMerge;
             float total = h + s + r + m;
             if (total <= 0f) break;  // all types placed
 
             float roll = Random.Range(0f, total);
             RoomType chosen;
-            if ((roll -= h) < 0f)      chosen = RoomType.Heal;
+            if ((roll -= h) < 0f) chosen = RoomType.Heal;
             else if ((roll -= s) < 0f) chosen = RoomType.Shop;
             else if ((roll -= r) < 0f) chosen = RoomType.RareLoot;
-            else                       chosen = RoomType.Merge;
+            else chosen = RoomType.Merge;
 
             float pChance = chosen switch
             {
-                RoomType.Heal     => presetChanceHeal,
-                RoomType.Shop     => presetChanceShop,
+                RoomType.Heal => presetChanceHeal,
+                RoomType.Shop => presetChanceShop,
                 RoomType.RareLoot => presetChanceRareLoot,
-                _                 => presetChanceMerge,
+                _ => presetChanceMerge,
             };
 
             bool placed = false;
@@ -246,24 +258,24 @@ public class BSPMapGeometry : MonoBehaviour
         foreach (var (faceX, faceZ, dirX, dirZ) in faces)
         {
             for (int sx = maxBattleRoomSize; sx >= minBattleRoomSize; sx--)
-            for (int sz = maxBattleRoomSize; sz >= minBattleRoomSize; sz--)
-            {
-                // Anchor room flush against the spawn face, centered along it
-                int ox, oz;
-                if (dirX == 1)       { ox = spawnNode.MaxX + 1; oz = spawnNode.MinZ + (spawnNode.Depth - sz) / 2; }
-                else if (dirX == -1) { ox = spawnNode.MinX - sx; oz = spawnNode.MinZ + (spawnNode.Depth - sz) / 2; }
-                else if (dirZ == 1)  { oz = spawnNode.MaxZ + 1; ox = spawnNode.MinX + (spawnNode.Width - sx) / 2; }
-                else                 { oz = spawnNode.MinZ - sz; ox = spawnNode.MinX + (spawnNode.Width - sx) / 2; }
+                for (int sz = maxBattleRoomSize; sz >= minBattleRoomSize; sz--)
+                {
+                    // Anchor room flush against the spawn face, centered along it
+                    int ox, oz;
+                    if (dirX == 1) { ox = spawnNode.MaxX + 1; oz = spawnNode.MinZ + (spawnNode.Depth - sz) / 2; }
+                    else if (dirX == -1) { ox = spawnNode.MinX - sx; oz = spawnNode.MinZ + (spawnNode.Depth - sz) / 2; }
+                    else if (dirZ == 1) { oz = spawnNode.MaxZ + 1; ox = spawnNode.MinX + (spawnNode.Width - sx) / 2; }
+                    else { oz = spawnNode.MinZ - sz; ox = spawnNode.MinX + (spawnNode.Width - sx) / 2; }
 
-                ox = Mathf.Clamp(ox, 0, matrixSize - sx);
-                oz = Mathf.Clamp(oz, 0, matrixSize - sz);
+                    ox = Mathf.Clamp(ox, 0, matrixSize - sx);
+                    oz = Mathf.Clamp(oz, 0, matrixSize - sz);
 
-                if (!RectEmpty(ox, oz, sx, sz)) continue;
+                    if (!RectEmpty(ox, oz, sx, sz)) continue;
 
-                StampRoom(ox, oz, sx, sz, null, RoomType.Battle);
-                Debug.Log($"[BSPMap] Placed adjacent Battle at ({ox},{oz}) {sx}x{sz}");
-                return;
-            }
+                    StampRoom(ox, oz, sx, sz, null, RoomType.Battle);
+                    Debug.Log($"[BSPMap] Placed adjacent Battle at ({ox},{oz}) {sx}x{sz}");
+                    return;
+                }
         }
 
         // Absolute last resort: place minimum size flush to any valid face
@@ -272,10 +284,10 @@ public class BSPMapGeometry : MonoBehaviour
         {
             int sx = minBattleRoomSize, sz = minBattleRoomSize;
             int ox, oz;
-            if (dirX == 1)       { ox = spawnNode.MaxX + 1; oz = Mathf.Clamp(spawnNode.CenterZ - sz/2, 0, matrixSize - sz); }
-            else if (dirX == -1) { ox = Mathf.Clamp(spawnNode.MinX - sx, 0, matrixSize - sx); oz = Mathf.Clamp(spawnNode.CenterZ - sz/2, 0, matrixSize - sz); }
-            else if (dirZ == 1)  { oz = spawnNode.MaxZ + 1; ox = Mathf.Clamp(spawnNode.CenterX - sx/2, 0, matrixSize - sx); }
-            else                 { oz = Mathf.Clamp(spawnNode.MinZ - sz, 0, matrixSize - sz); ox = Mathf.Clamp(spawnNode.CenterX - sx/2, 0, matrixSize - sx); }
+            if (dirX == 1) { ox = spawnNode.MaxX + 1; oz = Mathf.Clamp(spawnNode.CenterZ - sz / 2, 0, matrixSize - sz); }
+            else if (dirX == -1) { ox = Mathf.Clamp(spawnNode.MinX - sx, 0, matrixSize - sx); oz = Mathf.Clamp(spawnNode.CenterZ - sz / 2, 0, matrixSize - sz); }
+            else if (dirZ == 1) { oz = spawnNode.MaxZ + 1; ox = Mathf.Clamp(spawnNode.CenterX - sx / 2, 0, matrixSize - sx); }
+            else { oz = Mathf.Clamp(spawnNode.MinZ - sz, 0, matrixSize - sz); ox = Mathf.Clamp(spawnNode.CenterX - sx / 2, 0, matrixSize - sx); }
 
             if (!RectEmpty(ox, oz, sx, sz)) continue;
             StampRoom(ox, oz, sx, sz, null, RoomType.Battle);
@@ -368,10 +380,10 @@ public class BSPMapGeometry : MonoBehaviour
         // Room corner flush with matrix corner — no margin, no scatter
         switch (cornerIdx % 4)
         {
-            case 0:  ox = 0;              oz = 0;              break;  // top-left
-            case 1:  ox = matrixSize-sx;  oz = matrixSize-sz;  break;  // bottom-right
-            case 2:  ox = matrixSize-sx;  oz = 0;              break;  // top-right
-            default: ox = 0;              oz = matrixSize-sz;  break;  // bottom-left
+            case 0: ox = 0; oz = 0; break;  // top-left
+            case 1: ox = matrixSize - sx; oz = matrixSize - sz; break;  // bottom-right
+            case 2: ox = matrixSize - sx; oz = 0; break;  // top-right
+            default: ox = 0; oz = matrixSize - sz; break;  // bottom-left
         }
     }
 
@@ -426,11 +438,13 @@ public class BSPMapGeometry : MonoBehaviour
     {
         var node = new MapNode
         {
-            Type        = type,
-            MinX = ox,           MinZ = oz,
-            MaxX = ox + sx - 1,  MaxZ = oz + sz - 1,
+            Type = type,
+            MinX = ox,
+            MinZ = oz,
+            MaxX = ox + sx - 1,
+            MaxZ = oz + sz - 1,
             WorldCenter = new Vector3(ox + sx * 0.5f, 0f, oz + sz * 0.5f),
-            Preset      = preset,
+            Preset = preset,
         };
         _nodes.Add(node);
 
@@ -453,6 +467,16 @@ public class BSPMapGeometry : MonoBehaviour
     // Seals those cells as Cell.Occupied so they become solid wall.
     void SealNarrowGaps()
     {
+        // Pass 1: seal thin Cell.Empty/Occupied regions (gaps that were never filled)
+        SealNarrowEmptyRegions();
+
+        // Pass 2: seal Unmarked rooms that are thin strips
+        // These were stamped by FillRemaining into narrow leftover spaces
+        SealNarrowUnmarkedRooms();
+    }
+
+    void SealNarrowEmptyRegions()
+    {
         bool[,] visited = new bool[matrixSize, matrixSize];
 
         for (int sx = 0; sx < matrixSize; sx++)
@@ -462,9 +486,8 @@ public class BSPMapGeometry : MonoBehaviour
                 byte v = _matrix[sx, sz];
                 if (v != Cell.Empty && v != Cell.Occupied) continue;
 
-                // Flood-fill the contiguous empty region
                 var region = new List<Vector2Int>();
-                var queue  = new Queue<Vector2Int>();
+                var queue = new Queue<Vector2Int>();
                 queue.Enqueue(new Vector2Int(sx, sz));
                 visited[sx, sz] = true;
 
@@ -489,18 +512,162 @@ public class BSPMapGeometry : MonoBehaviour
                     }
                 }
 
-                // Seal any empty region whose bounding box is narrower than
-                // minEmptyRoomSize on either axis — these are unnavigable thin strips
                 int regionW = maxX - minX + 1;
                 int regionH = maxZ - minZ + 1;
-                bool tooThin = regionW < minEmptyRoomSize || regionH < minEmptyRoomSize;
-
-                if (tooThin)
-                {
+                if (regionW < minEmptyRoomSize || regionH < minEmptyRoomSize)
                     foreach (var cell in region)
                         _matrix[cell.x, cell.y] = Cell.Occupied;
+            }
+    }
+
+    void SealNarrowUnmarkedRooms()
+    {
+        // Step 1: flood-fill ALL contiguous Unmarked cells (across node boundaries)
+        // into unified regions. Adjacent Unmarked nodes become one big region.
+        bool[,] visited = new bool[matrixSize, matrixSize];
+
+        for (int sx = 0; sx < matrixSize; sx++)
+            for (int sz = 0; sz < matrixSize; sz++)
+            {
+                if (visited[sx, sz]) continue;
+                var owner = _roomMap[sx, sz];
+                if (owner == null || owner.Type != RoomType.Unmarked) continue;
+
+                // Flood-fill to collect the full contiguous Unmarked region
+                var region = new HashSet<Vector2Int>();
+                var queue = new Queue<Vector2Int>();
+                var regionNodes = new HashSet<MapNode>();
+
+                queue.Enqueue(new Vector2Int(sx, sz));
+                visited[sx, sz] = true;
+
+                while (queue.Count > 0)
+                {
+                    var cur = queue.Dequeue();
+                    region.Add(cur);
+                    var curOwner = _roomMap[cur.x, cur.y];
+                    if (curOwner != null) regionNodes.Add(curOwner);
+
+                    foreach (var d in Dirs)
+                    {
+                        int nx = cur.x + d.x, nz = cur.y + d.y;
+                        if (nx < 0 || nz < 0 || nx >= matrixSize || nz >= matrixSize) continue;
+                        if (visited[nx, nz]) continue;
+                        var nb = _roomMap[nx, nz];
+                        if (nb == null || nb.Type != RoomType.Unmarked) continue;
+                        visited[nx, nz] = true;
+                        queue.Enqueue(new Vector2Int(nx, nz));
+                    }
+                }
+
+                // Step 2: decompose the unified region into maximal rectangles
+                var remaining = new HashSet<Vector2Int>(region);
+                var toSeal = new List<Vector2Int>();
+
+                while (remaining.Count > 0)
+                {
+                    var best = FindLargestRectangle(remaining);
+
+                    for (int x = best.x; x < best.x + best.width; x++)
+                        for (int z = best.z; z < best.z + best.height; z++)
+                            remaining.Remove(new Vector2Int(x, z));
+
+                    // Thin rectangle or tiny area — seal it
+                    bool isThin = best.width < sealMinWidth || best.height < sealMinWidth
+                                  || best.width * best.height < sealMinArea;
+                    _debugRects.Add(new DebugRect { x = best.x, z = best.z, w = best.width, h = best.height, sealed_ = isThin });
+                    if (isThin)
+                    {
+                        for (int x = best.x; x < best.x + best.width; x++)
+                            for (int z = best.z; z < best.z + best.height; z++)
+                                toSeal.Add(new Vector2Int(x, z));
+                    }
+                }
+
+                // Anything left in remaining after decomposition is a tiny fragment
+                foreach (var cell in remaining)
+                    toSeal.Add(cell);
+
+                // Step 3: seal the bad cells
+                foreach (var cell in toSeal)
+                {
+                    _matrix[cell.x, cell.y] = Cell.Occupied;
+                    _roomMap[cell.x, cell.y] = null;
+                }
+
+                // Remove nodes that are fully sealed
+                foreach (var node in regionNodes)
+                {
+                    bool anyLeft = false;
+                    for (int x = node.MinX; x <= node.MaxX && !anyLeft; x++)
+                        for (int z = node.MinZ; z <= node.MaxZ && !anyLeft; z++)
+                            if (_roomMap[x, z] == node) anyLeft = true;
+                    if (!anyLeft) _nodes.Remove(node);
                 }
             }
+    }
+
+    struct RectResult { public int x, z, width, height; }
+
+    // Finds the largest axis-aligned rectangle whose cells all exist in the given set.
+    // Uses the histogram / largest-rectangle-in-histogram approach row by row.
+    RectResult FindLargestRectangle(HashSet<Vector2Int> cells)
+    {
+        if (cells.Count == 0) return default;
+
+        // Determine bounds
+        int minX = int.MaxValue, maxX = int.MinValue;
+        int minZ = int.MaxValue, maxZ = int.MinValue;
+        foreach (var c in cells)
+        {
+            if (c.x < minX) minX = c.x; if (c.x > maxX) maxX = c.x;
+            if (c.y < minZ) minZ = c.y; if (c.y > maxZ) maxZ = c.y;
+        }
+
+        int W = maxX - minX + 1;
+        int H = maxZ - minZ + 1;
+        var heights = new int[W];
+        var best = new RectResult();
+        int bestArea = 0;
+
+        for (int row = 0; row < H; row++)
+        {
+            int z = minZ + row;
+            // Update histogram heights
+            for (int col = 0; col < W; col++)
+            {
+                int x = minX + col;
+                heights[col] = cells.Contains(new Vector2Int(x, z)) ? heights[col] + 1 : 0;
+            }
+
+            // Largest rectangle in this histogram
+            var stack = new Stack<int>();
+            for (int col = 0; col <= W; col++)
+            {
+                int h = col < W ? heights[col] : 0;
+                while (stack.Count > 0 && heights[stack.Peek()] > h)
+                {
+                    int height = heights[stack.Pop()];
+                    int width = stack.Count == 0 ? col : col - stack.Peek() - 1;
+                    int area = width * height;
+                    if (area > bestArea)
+                    {
+                        bestArea = area;
+                        int startCol = stack.Count == 0 ? 0 : stack.Peek() + 1;
+                        best = new RectResult
+                        {
+                            x = minX + startCol,
+                            z = z - height + 1,
+                            width = width,
+                            height = height,
+                        };
+                    }
+                }
+                stack.Push(col);
+            }
+        }
+
+        return best;
     }
 
     void MergeSmallEmptyRooms()
@@ -591,13 +758,13 @@ public class BSPMapGeometry : MonoBehaviour
             {
                 var a = _roomMap[x, z];
                 if (a == null) continue;
-                foreach (var d in new[] { new Vector2Int(1,0), new Vector2Int(0,1) })
+                foreach (var d in new[] { new Vector2Int(1, 0), new Vector2Int(0, 1) })
                 {
                     int nx = x + d.x, nz = z + d.y;
                     if (nx >= matrixSize || nz >= matrixSize) continue;
                     var b = _roomMap[nx, nz];
                     if (b == null || b == a) continue;
-                    var key = a.GetHashCode() < b.GetHashCode() ? (a,b) : (b,a);
+                    var key = a.GetHashCode() < b.GetHashCode() ? (a, b) : (b, a);
                     if (!pairShared.ContainsKey(key)) pairShared[key] = new();
                     pairShared[key].Add(new Vector2Int(x, z));
                 }
@@ -608,7 +775,7 @@ public class BSPMapGeometry : MonoBehaviour
         MapNode Find(MapNode n) { while (parent[n] != n) { parent[n] = parent[parent[n]]; n = parent[n]; } return n; }
         void Union(MapNode a, MapNode b) { parent[Find(a)] = Find(b); }
 
-        var sorted = new List<KeyValuePair<(MapNode,MapNode), List<Vector2Int>>>(pairShared);
+        var sorted = new List<KeyValuePair<(MapNode, MapNode), List<Vector2Int>>>(pairShared);
         sorted.Sort((x, y) => y.Value.Count.CompareTo(x.Value.Count));
 
         var guaranteed = new HashSet<(MapNode, MapNode)>();
@@ -622,11 +789,12 @@ public class BSPMapGeometry : MonoBehaviour
             }
         }
 
+        // Add all remaining adjacent pairs as edges — every shared wall gets a door
+        // (spawn's door restriction is enforced in PunchDoors, not here)
         foreach (var kvp in sorted)
         {
             if (guaranteed.Contains(kvp.Key)) continue;
-            if (Random.value < extraDoorChance)
-                AddEdge(kvp.Key.Item1, kvp.Key.Item2);
+            AddEdge(kvp.Key.Item1, kvp.Key.Item2);
         }
 
         _sharedCells = pairShared;
@@ -638,61 +806,80 @@ public class BSPMapGeometry : MonoBehaviour
 
     void PunchDoors()
     {
-        foreach (var e in _edges)
+        foreach (var kvp in _sharedCells)
         {
-            // Spawn room only opens doors toward Battle or Boss rooms
-            bool spawnEdge = e.A.Type == RoomType.Spawn || e.B.Type == RoomType.Spawn;
-            if (spawnEdge)
+            var (a, b) = kvp.Key;
+
+            // Spawn only opens toward Battle or Boss
+            bool involvesSpawn = a.Type == RoomType.Spawn || b.Type == RoomType.Spawn;
+            if (involvesSpawn)
             {
-                var other = e.A.Type == RoomType.Spawn ? e.B : e.A;
+                var other = a.Type == RoomType.Spawn ? b : a;
                 if (other.Type != RoomType.Battle && other.Type != RoomType.Boss) continue;
             }
 
-            var key = e.A.GetHashCode() < e.B.GetHashCode() ? (e.A, e.B) : (e.B, e.A);
-            if (_sharedCells.TryGetValue(key, out var cells))
-                PunchDoor(cells);
+            PunchDoor(kvp.Value);
         }
 
-        EnsureSpawnHasDoor();
+        EnsureCornerRoomHasDoor(RoomType.Spawn);
+
     }
 
     // Guarantees spawn always has at least one door.
     // If no battle/boss neighbour door was punched, relax the rule and
     // force a door to whichever adjacent room shares the most boundary cells.
-    void EnsureSpawnHasDoor()
+    void EnsureCornerRoomHasDoor(RoomType targetType)
     {
-        MapNode spawnNode = null;
+        MapNode target = null;
         foreach (var n in _nodes)
-            if (n.Type == RoomType.Spawn) { spawnNode = n; break; }
-        if (spawnNode == null) return;
+            if (n.Type == targetType) { target = n; break; }
+        if (target == null) return;
 
-        // Check if spawn already has a door
-        for (int x = spawnNode.MinX; x <= spawnNode.MaxX; x++)
-            for (int z = spawnNode.MinZ; z <= spawnNode.MaxZ; z++)
-                if (_isDoor[x, z]) return;  // already has a door — nothing to do
+        // Check if this room already has any door
+        for (int x = target.MinX; x <= target.MaxX; x++)
+            for (int z = target.MinZ; z <= target.MaxZ; z++)
+                if (_isDoor[x, z]) return;
 
-        Debug.LogWarning("[BSPMap] Spawn has no door — forcing door to best neighbour.");
+        Debug.LogWarning($"[BSPMap] {targetType} has no door — forcing door to best neighbour.");
 
-        // Find the adjacent room with the most shared boundary cells
+        // Preferred neighbours: Battle (and Spawn for Boss, Boss for Spawn)
+        // Try preferred types first, fall back to any neighbour
+        var preferred = targetType == RoomType.Spawn
+            ? new[] { RoomType.Battle, RoomType.Boss }
+            : new[] { RoomType.Battle, RoomType.Spawn };
+
         MapNode best = null;
         int bestCount = 0;
-        foreach (var kvp in _sharedCells)
+
+        foreach (var preferredType in preferred)
         {
-            MapNode a = kvp.Key.Item1, b = kvp.Key.Item2;
-            MapNode other = null;
-            if (a == spawnNode) other = b;
-            else if (b == spawnNode) other = a;
-            if (other == null) continue;
-            if (kvp.Value.Count > bestCount) { bestCount = kvp.Value.Count; best = other; }
+            foreach (var kvp in _sharedCells)
+            {
+                MapNode a = kvp.Key.Item1, b = kvp.Key.Item2;
+                MapNode other = a == target ? b : b == target ? a : null;
+                if (other == null || other.Type != preferredType) continue;
+                if (kvp.Value.Count > bestCount) { bestCount = kvp.Value.Count; best = other; }
+            }
+            if (best != null) break;
+        }
+
+        // Absolute fallback: any adjacent room
+        if (best == null)
+        {
+            foreach (var kvp in _sharedCells)
+            {
+                MapNode a = kvp.Key.Item1, b = kvp.Key.Item2;
+                MapNode other = a == target ? b : b == target ? a : null;
+                if (other == null) continue;
+                if (kvp.Value.Count > bestCount) { bestCount = kvp.Value.Count; best = other; }
+            }
         }
 
         if (best == null) return;
 
-        // Force the edge to exist if it doesn't yet
-        AddEdge(spawnNode, best);
-
-        var key = spawnNode.GetHashCode() < best.GetHashCode()
-            ? (spawnNode, best) : (best, spawnNode);
+        AddEdge(target, best);
+        var key = target.GetHashCode() < best.GetHashCode()
+            ? (target, best) : (best, target);
         if (_sharedCells.TryGetValue(key, out var cells))
             PunchDoor(cells);
     }
@@ -739,7 +926,7 @@ public class BSPMapGeometry : MonoBehaviour
 
         foreach (var kvp in groups)
         {
-            var dir   = kvp.Key;
+            var dir = kvp.Key;
             var cells = kvp.Value;
 
             // Sort along the axis perpendicular to the facing direction
@@ -755,10 +942,10 @@ public class BSPMapGeometry : MonoBehaviour
             for (int i = 1; i < cells.Count; i++)
             {
                 var prev = cells[i - 1];
-                var cur  = cells[i];
+                var cur = cells[i];
                 // Contiguous = same position on facing axis, adjacent on run axis
-                bool sameAxis   = faceX ? cur.x == prev.x : cur.y == prev.y;
-                bool adjacent   = faceX ? cur.y == prev.y + 1 : cur.x == prev.x + 1;
+                bool sameAxis = faceX ? cur.x == prev.x : cur.y == prev.y;
+                bool adjacent = faceX ? cur.y == prev.y + 1 : cur.x == prev.x + 1;
 
                 if (sameAxis && adjacent)
                     curRun.Add(cur);
@@ -776,9 +963,9 @@ public class BSPMapGeometry : MonoBehaviour
 
         if (bestRun == null || bestRun.Count < doorWidth) return;
 
-        int mid   = bestRun.Count / 2;
+        int mid = bestRun.Count / 2;
         int start = Mathf.Max(0, mid - doorWidth / 2);
-        int end   = Mathf.Min(bestRun.Count, start + doorWidth);
+        int end = Mathf.Min(bestRun.Count, start + doorWidth);
 
         for (int i = start; i < end; i++)
             _isDoor[bestRun[i].x, bestRun[i].y] = true;
@@ -791,14 +978,21 @@ public class BSPMapGeometry : MonoBehaviour
     void SpawnGeometry()
     {
         var floorParent = new GameObject("Floors").transform;
-        var wallParent  = new GameObject("Walls").transform;
-        var voidParent  = new GameObject("VoidBlockers").transform;
+        var wallParent = new GameObject("Walls").transform;
+        var voidParent = new GameObject("VoidBlockers").transform;
+        var sealedParent = new GameObject("Sealed").transform;
 
         var seenVoid = new HashSet<Vector2Int>();
 
         for (int x = 0; x < matrixSize; x++)
             for (int z = 0; z < matrixSize; z++)
             {
+                if (_matrix[x, z] == Cell.Occupied)
+                {
+                    SpawnSealedCube(sealedParent, x, z);
+                    continue;
+                }
+
                 if (_matrix[x, z] != Cell.Room) continue;
 
                 var owner = _roomMap[x, z];
@@ -817,7 +1011,7 @@ public class BSPMapGeometry : MonoBehaviour
                     var voidOwner = _voidOwnerMap[x, z];
                     foreach (var d in Dirs)
                     {
-                        int  nx  = x + d.x, nz = z + d.y;
+                        int nx = x + d.x, nz = z + d.y;
                         bool oob = nx < 0 || nz < 0 || nx >= matrixSize || nz >= matrixSize;
                         if (oob) { SpawnWallQuad(wallParent, x, z, d); continue; }
 
@@ -834,13 +1028,13 @@ public class BSPMapGeometry : MonoBehaviour
 
                 foreach (var d in Dirs)
                 {
-                    int  nx      = x + d.x, nz = z + d.y;
-                    bool oob     = nx < 0 || nz < 0 || nx >= matrixSize || nz >= matrixSize;
+                    int nx = x + d.x, nz = z + d.y;
+                    bool oob = nx < 0 || nz < 0 || nx >= matrixSize || nz >= matrixSize;
                     bool nonRoom = !oob && _matrix[nx, nz] != Cell.Room;
                     // Void neighbour (Cell.Room but _roomMap==null): no wall
-                    bool voidNb  = !oob && !nonRoom && _roomMap[nx, nz] == null;
-                    bool diff    = !oob && !nonRoom && !voidNb && _roomMap[nx, nz] != owner;
-                    bool door    = (_isDoor[x, z] || (!oob && !nonRoom && _isDoor[nx, nz])) && diff;
+                    bool voidNb = !oob && !nonRoom && _roomMap[nx, nz] == null;
+                    bool diff = !oob && !nonRoom && !voidNb && _roomMap[nx, nz] != owner;
+                    bool door = (_isDoor[x, z] || (!oob && !nonRoom && _isDoor[nx, nz])) && diff;
 
                     if ((oob || nonRoom || diff) && !door)
                         SpawnWallQuad(wallParent, x, z, d);
@@ -857,7 +1051,23 @@ public class BSPMapGeometry : MonoBehaviour
 
         var col = go.AddComponent<BoxCollider>();
         col.center = new Vector3(0f, wallHeight / 2f, 0f);
-        col.size   = new Vector3(1f, wallHeight * 2f, 1f);
+        col.size = new Vector3(1f, wallHeight * 2f, 1f);
+    }
+
+    void SpawnSealedCube(Transform parent, int x, int z)
+    {
+        var go = new GameObject($"Sealed_{x}_{z}");
+        go.transform.SetParent(parent);
+        go.transform.position = new Vector3(x + 0.5f, wallHeight * 0.5f, z + 0.5f);
+        go.transform.localScale = new Vector3(1f, wallHeight, 1f);
+        go.layer = LayerMask.NameToLayer("Wall");
+
+        var mr = go.AddComponent<MeshRenderer>();
+        var mf = go.AddComponent<MeshFilter>();
+        mf.sharedMesh = Resources.GetBuiltinResource<Mesh>("Cube.fbx");
+        mr.material = sealedMat;
+
+        go.AddComponent<BoxCollider>();
     }
 
     void SpawnFloorQuad(Transform parent, int x, int z)
@@ -865,7 +1075,7 @@ public class BSPMapGeometry : MonoBehaviour
         var go = new GameObject($"F_{x}_{z}");
         go.transform.SetParent(parent);
         go.transform.position = new Vector3(x + 0.5f, 0f, z + 0.5f);
-        var pb   = go.AddComponent<ProBuilderMesh>();
+        var pb = go.AddComponent<ProBuilderMesh>();
         var poly = go.AddComponent<PolyShape>();
         poly.SetControlPoints(new Vector3[] {
             new(-0.5f,0f,0.5f), new(0.5f,0f,0.5f),
@@ -879,9 +1089,9 @@ public class BSPMapGeometry : MonoBehaviour
 
     void SpawnWallQuad(Transform parent, int x, int z, Vector2Int facing)
     {
-        Vector3    center     = new(x + 0.5f, 0f, z + 0.5f);
-        Vector3    faceOffset = new(facing.x * 0.5f, wallHeight / 2f, facing.y * 0.5f);
-        Quaternion rot        = Quaternion.LookRotation(new(-facing.x, 0, -facing.y));
+        Vector3 center = new(x + 0.5f, 0f, z + 0.5f);
+        Vector3 faceOffset = new(facing.x * 0.5f, wallHeight / 2f, facing.y * 0.5f);
+        Quaternion rot = Quaternion.LookRotation(new(-facing.x, 0, -facing.y));
 
         var go = new GameObject($"W_{x}_{z}_{facing.x}_{facing.y}");
         go.transform.SetParent(parent);
@@ -890,7 +1100,7 @@ public class BSPMapGeometry : MonoBehaviour
         go.layer = LayerMask.NameToLayer("Wall");
 
         float hh = wallHeight / 2f;
-        var pb   = go.AddComponent<ProBuilderMesh>();
+        var pb = go.AddComponent<ProBuilderMesh>();
         var poly = go.AddComponent<PolyShape>();
         poly.SetControlPoints(new Vector3[] {
             new(-0.5f,-hh,0f), new(0.5f,-hh,0f),
@@ -916,31 +1126,60 @@ public class BSPMapGeometry : MonoBehaviour
                 if (_matrix[x, z] != Cell.Empty) return false;
             }
 
-        // No existing room cell may be within 1..(minEmptyRoomSize-1) cells of
-        // any edge — gap must be either 0 (flush) or >= minEmptyRoomSize.
+        // Reject if any side would have a thin empty strip (gap 1..minEmptyRoomSize-1).
+        // A strip is "thin" only when the cells in it are Empty — if they're
+        // already Room cells the rooms are flush (gap=0 from the other direction) which is fine.
         int minGap = minEmptyRoomSize;
         for (int gap = 1; gap < minGap; gap++)
         {
-            // West strip
+            // West strip at ox-gap: thin if empty AND a room exists just beyond it
             int wx = ox - gap;
-            if (wx >= 0)
-                for (int z = oz; z < oz + sz; z++)
-                    if (wx < matrixSize && _matrix[wx, z] == Cell.Room) return false;
-            // East strip
-            int ex = ox + sx + gap - 1;
+            if (wx >= 0 && wx < matrixSize)
+            {
+                bool stripEmpty = true;
+                for (int z = oz; z < oz + sz && stripEmpty; z++)
+                    if (_matrix[wx, z] != Cell.Empty) stripEmpty = false;
+                int beyond = wx - 1;
+                if (stripEmpty && beyond >= 0)
+                    for (int z = oz; z < oz + sz; z++)
+                        if (beyond < matrixSize && _matrix[beyond, z] == Cell.Room) return false;
+            }
+            // East strip at ox+sx+gap-1
+            int ex = ox + sx - 1 + gap;
             if (ex < matrixSize)
-                for (int z = oz; z < oz + sz; z++)
-                    if (_matrix[ex, z] == Cell.Room) return false;
-            // South strip
+            {
+                bool stripEmpty = true;
+                for (int z = oz; z < oz + sz && stripEmpty; z++)
+                    if (_matrix[ex, z] != Cell.Empty) stripEmpty = false;
+                int beyond = ex + 1;
+                if (stripEmpty && beyond < matrixSize)
+                    for (int z = oz; z < oz + sz; z++)
+                        if (_matrix[beyond, z] == Cell.Room) return false;
+            }
+            // South strip at oz-gap
             int sz2 = oz - gap;
-            if (sz2 >= 0)
-                for (int x = ox; x < ox + sx; x++)
-                    if (sz2 < matrixSize && _matrix[x, sz2] == Cell.Room) return false;
-            // North strip
-            int nz = oz + sz + gap - 1;
+            if (sz2 >= 0 && sz2 < matrixSize)
+            {
+                bool stripEmpty = true;
+                for (int x = ox; x < ox + sx && stripEmpty; x++)
+                    if (_matrix[x, sz2] != Cell.Empty) stripEmpty = false;
+                int beyond = sz2 - 1;
+                if (stripEmpty && beyond >= 0)
+                    for (int x = ox; x < ox + sx; x++)
+                        if (beyond < matrixSize && _matrix[x, beyond] == Cell.Room) return false;
+            }
+            // North strip at oz+sz+gap-1
+            int nz = oz + sz - 1 + gap;
             if (nz < matrixSize)
-                for (int x = ox; x < ox + sx; x++)
-                    if (_matrix[x, nz] == Cell.Room) return false;
+            {
+                bool stripEmpty = true;
+                for (int x = ox; x < ox + sx && stripEmpty; x++)
+                    if (_matrix[x, nz] != Cell.Empty) stripEmpty = false;
+                int beyond = nz + 1;
+                if (stripEmpty && beyond < matrixSize)
+                    for (int x = ox; x < ox + sx; x++)
+                        if (_matrix[x, beyond] == Cell.Room) return false;
+            }
         }
         return true;
     }
@@ -1007,8 +1246,8 @@ public class BSPMapGeometry : MonoBehaviour
         }
 
         // Snap to matrix walls: if within minGap of any edge, push flush
-        if (ox > 0 && ox < minGap)                         ox = 0;
-        if (oz > 0 && oz < minGap)                         oz = 0;
+        if (ox > 0 && ox < minGap) ox = 0;
+        if (oz > 0 && oz < minGap) oz = 0;
         if (ox + sx < matrixSize && ox + sx > matrixSize - minGap) ox = matrixSize - sx;
         if (oz + sz < matrixSize && oz + sz > matrixSize - minGap) oz = matrixSize - sz;
 
@@ -1060,13 +1299,13 @@ public class BSPMapGeometry : MonoBehaviour
         {
             var legacy = new RoomNode
             {
-                Type          = n.Type,
-                MatrixOrigin  = new(n.MinX, n.MinZ),
-                MatrixCenter  = new(n.CenterX, n.CenterZ),
-                Size          = new(n.Width, n.Depth),
+                Type = n.Type,
+                MatrixOrigin = new(n.MinX, n.MinZ),
+                MatrixCenter = new(n.CenterX, n.CenterZ),
+                Size = new(n.Width, n.Depth),
                 WorldPosition = n.WorldCenter,
-                ChosenPrefab  = n.ChosenPrefab,
-                RoomObject    = n.RoomObject,
+                ChosenPrefab = n.ChosenPrefab,
+                RoomObject = n.RoomObject,
             };
             map[n] = legacy; n.LegacyNode = legacy;
         }
@@ -1088,15 +1327,15 @@ public class BSPMapGeometry : MonoBehaviour
         {
             Gizmos.color = node.Type switch
             {
-                RoomType.Spawn    => Color.green,
-                RoomType.Battle   => Color.red,
-                RoomType.Boss     => Color.magenta,
-                RoomType.Shop     => Color.yellow,
-                RoomType.Merge    => Color.cyan,
-                RoomType.Heal     => new Color(0.4f, 1f, 0.4f),
+                RoomType.Spawn => Color.green,
+                RoomType.Battle => Color.red,
+                RoomType.Boss => Color.magenta,
+                RoomType.Shop => Color.yellow,
+                RoomType.Merge => Color.cyan,
+                RoomType.Heal => new Color(0.4f, 1f, 0.4f),
                 RoomType.RareLoot => new Color(1f, 0.5f, 0f),
-                RoomType.Unmarked     => new Color(0.55f, 0.55f, 0.55f, 0.5f),
-                _                 => Color.grey
+                RoomType.Unmarked => new Color(0.55f, 0.55f, 0.55f, 0.5f),
+                _ => Color.grey
             };
             DrawRoomBorder(node);
         }
@@ -1106,6 +1345,23 @@ public class BSPMapGeometry : MonoBehaviour
             for (int z = 0; z < matrixSize; z++)
                 if (_isDoor[x, z])
                     Gizmos.DrawCube(new Vector3(x + 0.5f, 1f, z + 0.5f), Vector3.one * 0.5f);
+
+        // Debug rectangles from SealNarrowUnmarkedRooms
+        if (_debugRects == null) return;
+        foreach (var r in _debugRects)
+        {
+            // Sealed rects = red, kept rects = green, both semi-transparent
+            Gizmos.color = r.sealed_
+                ? new Color(1f, 0.1f, 0.1f, 0.35f)
+                : new Color(0.1f, 1f, 0.1f, 0.25f);
+            float cx = r.x + r.w * 0.5f;
+            float cz = r.z + r.h * 0.5f;
+            Gizmos.DrawCube(new Vector3(cx, 2f, cz), new Vector3(r.w, 0.1f, r.h));
+
+            // Wireframe outline
+            Gizmos.color = r.sealed_ ? Color.red : Color.green;
+            Gizmos.DrawWireCube(new Vector3(cx, 2f, cz), new Vector3(r.w, 0.15f, r.h));
+        }
     }
 
     void DrawRoomBorder(MapNode node)
@@ -1120,7 +1376,7 @@ public class BSPMapGeometry : MonoBehaviour
                     bool border = nx < 0 || nz < 0 || nx >= matrixSize || nz >= matrixSize
                                   || _roomMap[nx, nz] != node;
                     if (!border) continue;
-                    Vector3 e    = new(x + 0.5f + d.x * 0.5f, 1f, z + 0.5f + d.y * 0.5f);
+                    Vector3 e = new(x + 0.5f + d.x * 0.5f, 1f, z + 0.5f + d.y * 0.5f);
                     Vector3 size = d.x != 0 ? new(0.05f, 0.15f, 1f) : new(1f, 0.15f, 0.05f);
                     Gizmos.DrawCube(e, size);
                 }
@@ -1168,15 +1424,15 @@ public class BSPMapGeometry : MonoBehaviour
                 {
                     ch = _roomMap[x, z].Type switch
                     {
-                        RoomType.Spawn    => 'S',
-                        RoomType.Boss     => 'X',
-                        RoomType.Battle   => 'B',
-                        RoomType.Shop     => 's',
-                        RoomType.Heal     => 'h',
+                        RoomType.Spawn => 'S',
+                        RoomType.Boss => 'X',
+                        RoomType.Battle => 'B',
+                        RoomType.Shop => 's',
+                        RoomType.Heal => 'h',
                         RoomType.RareLoot => 'r',
-                        RoomType.Merge    => 'm',
+                        RoomType.Merge => 'm',
                         RoomType.Unmarked => '.',
-                        _                 => '?',
+                        _ => '?',
                     };
                 }
                 sb.Append(ch);

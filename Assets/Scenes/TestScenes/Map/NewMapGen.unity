@@ -1506,9 +1506,9 @@ MonoBehaviour:
   portalFinalPrefab: {fileID: 2217644600164415563, guid: ffaead280080565408dde90a744f411c, type: 3}
   normalEnemyPrefabs:
   - {fileID: 4095530523079436333, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
-  - {fileID: 4095530523079436333, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
-  - {fileID: 4095530523079436333, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
-  - {fileID: 4095530523079436333, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
+  - {fileID: 1157175084331872940, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
+  - {fileID: 8370733333136472846, guid: 79fb2ac4a6080584db5cc99f39449607, type: 3}
+  - {fileID: 3306226684668820766, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
   bossPrefabs:
   - {fileID: 2371149561134109772, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
   - {fileID: 2371149561134109772, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
@@ -1530,14 +1530,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6576a02a2c9af2f43a19b9abe287afce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BSPMapGeometry
-  matrixSize: 40
+  matrixSize: 35
   minBattleRoomSize: 8
   maxBattleRoomSize: 13
   minEventRoomSize: 6
   maxEventRoomSize: 7
-  minEmptyRoomSize: 4
+  minEmptyRoomSize: 3
   maxEmptyRoomSize: 14
-  mergeAreaThreshold: 36
+  mergeAreaThreshold: 50
+  sealMinWidth: 2
+  sealMinArea: 10
   spawnCount: 1
   bossCount: 1
   maxBattleCount: 10
@@ -1548,7 +1550,7 @@ MonoBehaviour:
   weightRareLoot: 1
   weightMerge: 1
   repeatPenalty: 0.4
-  presetChanceBattle: 0.185
+  presetChanceBattle: 0.744
   presetChanceHeal: 0
   presetChanceShop: 0
   presetChanceRareLoot: 0
@@ -1557,6 +1559,8 @@ MonoBehaviour:
   presetChanceBoss: 1
   roomPresets:
   - {fileID: 11400000, guid: f8e48b83105e67b43a0ae7cfe8efdfda, type: 2}
+  - {fileID: 11400000, guid: 2ed41bb552d081145bce2fc4164fcd33, type: 2}
+  - {fileID: 11400000, guid: 9b87d61227132fb4db164e9a6433e9de, type: 2}
   doorWidth: 1
   extraDoorChance: 0.139
   wallHeight: 2
@@ -1564,6 +1568,7 @@ MonoBehaviour:
   floorThickness: -5
   floorMat: {fileID: 2100000, guid: bc13fd34aabd1de4a8587dbfd164dc30, type: 2}
   wallMat: {fileID: 2100000, guid: bc13fd34aabd1de4a8587dbfd164dc30, type: 2}
+  sealedMat: {fileID: 2100000, guid: 4f1ef37ae953c484bbc5d5e4049147e5, type: 2}
   navMeshSurface: {fileID: 2145645486}
 --- !u!114 &2145645486
 MonoBehaviour:
