@@ -55,32 +55,24 @@ AnimationClip:
     - time: 1.3333334
       value: {fileID: 1331901629, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
     - time: 1.4166666
-      value: {fileID: -1011648376, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
-    - time: 1.5
-      value: {fileID: -1306321376, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
-    - time: 1.5833334
-      value: {fileID: -1512426103, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
-    - time: 1.6666666
-      value: {fileID: 1609334620, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
-    - time: 1.75
       value: {fileID: 1483112607, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
-    - time: 1.8333334
+    - time: 1.5
       value: {fileID: -1745372534, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
-    - time: 1.9166666
+    - time: 1.5833334
       value: {fileID: -1428107305, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
-    - time: 2
+    - time: 1.6666666
       value: {fileID: -654009407, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
-    - time: 2.0833333
+    - time: 1.75
       value: {fileID: -824272606, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
-    - time: 2.1666667
+    - time: 1.8333334
       value: {fileID: 686334129, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
-    - time: 2.25
+    - time: 1.9166666
       value: {fileID: -1224750903, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
-    - time: 2.3333333
+    - time: 2
       value: {fileID: 841133929, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
-    - time: 2.4166667
+    - time: 2.0833333
       value: {fileID: 598732741, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
-    - time: 2.5
+    - time: 2.1666667
       value: {fileID: -1379143411, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
     attribute: m_Sprite
     path: 
@@ -121,10 +113,6 @@ AnimationClip:
     - {fileID: 1788793858, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
     - {fileID: 1104278216, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
     - {fileID: 1331901629, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
-    - {fileID: -1011648376, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
-    - {fileID: -1306321376, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
-    - {fileID: -1512426103, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
-    - {fileID: 1609334620, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
     - {fileID: 1483112607, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
     - {fileID: -1745372534, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
     - {fileID: -1428107305, guid: fd767808de024c44f9cf9e39b26fc45c, type: 3}
@@ -140,7 +128,7 @@ AnimationClip:
     m_AdditiveReferencePoseClip: {fileID: 0}
     m_AdditiveReferencePoseTime: 0
     m_StartTime: 0
-    m_StopTime: 2.5833333
+    m_StopTime: 2.25
     m_OrientationOffsetY: 0
     m_Level: 0
     m_CycleOffset: 0
@@ -160,21 +148,21 @@ AnimationClip:
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
   m_Events:
-  - time: 2
+  - time: 1.6666666
     functionName: StartFlashBuildup
     data: 5,12
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
-  - time: 2.4166667
+  - time: 2.0833333
     functionName: FlashWhite
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
-  - time: 2.5
+  - time: 2.1666667
     functionName: FireLastProjectile
     data: 
     objectReferenceParameter: {fileID: 0}
