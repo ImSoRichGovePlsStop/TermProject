@@ -609,13 +609,14 @@ public class BSPMapGeometry : MonoBehaviour
 
     struct RectResult { public int x, z, width, height; }
 
-    // Finds the largest axis-aligned rectangle whose cells all exist in the given set.
-    // Uses the histogram / largest-rectangle-in-histogram approach row by row.
+    // Finds the largest axis-aligned rectangle fully contained in the cell set.
+    // Uses the histogram approach: for each row, build heights of consecutive
+    // filled cells above, then find the largest rectangle in that histogram.
+    // Cells not in the set reset the height to 0, so walls/holes are respected.
     RectResult FindLargestRectangle(HashSet<Vector2Int> cells)
     {
         if (cells.Count == 0) return default;
 
-        // Determine bounds
         int minX = int.MaxValue, maxX = int.MinValue;
         int minZ = int.MaxValue, maxZ = int.MinValue;
         foreach (var c in cells)
@@ -633,37 +634,45 @@ public class BSPMapGeometry : MonoBehaviour
         for (int row = 0; row < H; row++)
         {
             int z = minZ + row;
-            // Update histogram heights
+
+            // Build histogram: how many consecutive rows up (including this one)
+            // are all in the cell set for each column
             for (int col = 0; col < W; col++)
             {
                 int x = minX + col;
                 heights[col] = cells.Contains(new Vector2Int(x, z)) ? heights[col] + 1 : 0;
             }
 
-            // Largest rectangle in this histogram
-            var stack = new Stack<int>();
+            // Largest rectangle in histogram — stack stores column indices
+            // whose bars are still "open" (not yet bounded on the right)
+            var stack = new Stack<int>(); // stores column indices
             for (int col = 0; col <= W; col++)
             {
-                int h = col < W ? heights[col] : 0;
-                while (stack.Count > 0 && heights[stack.Peek()] > h)
+                int curH = col < W ? heights[col] : 0;
+                int startCol = col; // where this bar's rectangle would start
+
+                while (stack.Count > 0 && heights[stack.Peek()] >= curH)
                 {
-                    int height = heights[stack.Pop()];
-                    int width = stack.Count == 0 ? col : col - stack.Peek() - 1;
-                    int area = width * height;
+                    int popCol = stack.Pop();
+                    int popH = heights[popCol];
+                    int left = stack.Count > 0 ? stack.Peek() + 1 : 0;
+                    int w = col - left;
+                    int area = w * popH;
+
                     if (area > bestArea)
                     {
                         bestArea = area;
-                        int startCol = stack.Count == 0 ? 0 : stack.Peek() + 1;
                         best = new RectResult
                         {
-                            x = minX + startCol,
-                            z = z - height + 1,
-                            width = width,
-                            height = height,
+                            x = minX + left,
+                            z = z - popH + 1,
+                            width = w,
+                            height = popH,
                         };
                     }
+                    startCol = popCol; // extend leftward
                 }
-                stack.Push(col);
+                if (col < W) stack.Push(col);
             }
         }
 
@@ -999,27 +1008,18 @@ public class BSPMapGeometry : MonoBehaviour
 
                 if (owner == null)
                 {
-                    // Void cell — blocker so player can't enter
+                    // Void cell — blocker + outer walls only
                     var key = new Vector2Int(x, z);
-                    if (!seenVoid.Contains(key))
-                    {
-                        seenVoid.Add(key);
-                        SpawnVoidBlocker(voidParent, x, z);
-                    }
+                    if (!seenVoid.Contains(key)) { seenVoid.Add(key); SpawnVoidBlocker(voidParent, x, z); }
 
-                    // Only wall on sides that face outside this void's owning room
                     var voidOwner = _voidOwnerMap[x, z];
                     foreach (var d in Dirs)
                     {
                         int nx = x + d.x, nz = z + d.y;
                         bool oob = nx < 0 || nz < 0 || nx >= matrixSize || nz >= matrixSize;
                         if (oob) { SpawnWallQuad(wallParent, x, z, d); continue; }
-
-                        // Neighbour belongs to the same owning room (real cell or another void) — no wall
-                        bool sameRoom = _roomMap[nx, nz] == voidOwner
-                                     || _voidOwnerMap[nx, nz] == voidOwner;
-                        if (!sameRoom)
-                            SpawnWallQuad(wallParent, x, z, d);
+                        bool sameRoom = _roomMap[nx, nz] == voidOwner || _voidOwnerMap[nx, nz] == voidOwner;
+                        if (!sameRoom) SpawnWallQuad(wallParent, x, z, d);
                     }
                     continue;
                 }
@@ -1031,12 +1031,16 @@ public class BSPMapGeometry : MonoBehaviour
                     int nx = x + d.x, nz = z + d.y;
                     bool oob = nx < 0 || nz < 0 || nx >= matrixSize || nz >= matrixSize;
                     bool nonRoom = !oob && _matrix[nx, nz] != Cell.Room;
-                    // Void neighbour (Cell.Room but _roomMap==null): no wall
                     bool voidNb = !oob && !nonRoom && _roomMap[nx, nz] == null;
+                    bool voidSameOwner = voidNb && _voidOwnerMap[nx, nz] == owner;
                     bool diff = !oob && !nonRoom && !voidNb && _roomMap[nx, nz] != owner;
                     bool door = (_isDoor[x, z] || (!oob && !nonRoom && _isDoor[nx, nz])) && diff;
 
-                    if ((oob || nonRoom || diff) && !door)
+                    if (door) continue;
+
+                    // Spawn wall on every boundary face — both sides of a room boundary
+                    // get a wall, giving consistent 2-layer walls everywhere
+                    if (oob || nonRoom || diff || (voidNb && !voidSameOwner))
                         SpawnWallQuad(wallParent, x, z, d);
                 }
             }
@@ -1089,8 +1093,14 @@ public class BSPMapGeometry : MonoBehaviour
 
     void SpawnWallQuad(Transform parent, int x, int z, Vector2Int facing)
     {
+        // Total wall height = above floor (wallHeight) + below floor (|floorThickness|)
+        float totalHeight = wallHeight + Mathf.Abs(floorThickness);
+        // Center Y: starts at floorThickness (bottom), ends at wallHeight (top)
+        // midpoint = floorThickness + totalHeight / 2
+        float centerY = floorThickness + totalHeight / 2f;
+
         Vector3 center = new(x + 0.5f, 0f, z + 0.5f);
-        Vector3 faceOffset = new(facing.x * 0.5f, wallHeight / 2f, facing.y * 0.5f);
+        Vector3 faceOffset = new(facing.x * 0.5f, centerY, facing.y * 0.5f);
         Quaternion rot = Quaternion.LookRotation(new(-facing.x, 0, -facing.y));
 
         var go = new GameObject($"W_{x}_{z}_{facing.x}_{facing.y}");
@@ -1099,12 +1109,12 @@ public class BSPMapGeometry : MonoBehaviour
         go.transform.rotation = rot;
         go.layer = LayerMask.NameToLayer("Wall");
 
-        float hh = wallHeight / 2f;
+        float hh = totalHeight / 2f;
         var pb = go.AddComponent<ProBuilderMesh>();
         var poly = go.AddComponent<PolyShape>();
         poly.SetControlPoints(new Vector3[] {
             new(-0.5f,-hh,0f), new(0.5f,-hh,0f),
-            new(0.5f,hh,0f),   new(-0.5f,hh,0f),
+            new(0.5f, hh,0f),  new(-0.5f,hh,0f),
         });
         poly.extrude = wallThickness; poly.flipNormals = false;
         pb.CreateShapeFromPolygon(poly.controlPoints, poly.extrude, poly.flipNormals);
