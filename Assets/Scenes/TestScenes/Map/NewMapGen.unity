@@ -215,13 +215,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 498197084}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
+  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!114 &498197087
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1447,7 +1447,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   wallLayerName: Wall
-  castHalfWidth: 1.5
+  castHalfWidth: 0
   fadeSpeed: 8
   hiddenAlpha: 0
   visibleAlpha: 1
@@ -1542,9 +1542,9 @@ MonoBehaviour:
   sealMinArea: 10
   maxBattleCount: 10
   maxEventCount: 2
-  weightHeal: 1
-  weightShop: 10000
-  weightRareLoot: 1
+  weightHeal: 4
+  weightShop: 2
+  weightRareLoot: 3
   weightMerge: 1
   repeatPenalty: 0.4
   presetChanceBattle: 0.744
@@ -1563,8 +1563,8 @@ MonoBehaviour:
   wallThickness: 0.1
   floorThickness: -5
   floorMat: {fileID: 2100000, guid: bc13fd34aabd1de4a8587dbfd164dc30, type: 2}
-  wallMat: {fileID: 2100000, guid: bc13fd34aabd1de4a8587dbfd164dc30, type: 2}
-  sealedMat: {fileID: 2100000, guid: 4f1ef37ae953c484bbc5d5e4049147e5, type: 2}
+  wallMat: {fileID: 2100000, guid: b354030ecf56d194aa76bff9eed6802a, type: 2}
+  sealedMat: {fileID: 2100000, guid: defdb7f80f413dc4491faac396d0fb16, type: 2}
   navMeshSurface: {fileID: 2145645486}
 --- !u!114 &2145645486
 MonoBehaviour:

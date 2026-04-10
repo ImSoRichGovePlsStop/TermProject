@@ -5,31 +5,31 @@ using UnityEngine;
 public class BattleRoom : MonoBehaviour
 {
     [Header("State")]
-    public bool isLocked  = false;
+    public bool isLocked = false;
     public bool isCleared = false;
 
     [HideInInspector] public RoomNode node;
 
     [Header("Enemy Spawning")]
     public GameObject[] enemyPrefabs;
-    public GameObject   lootPrefab;
-    public GameObject   upgradeStationPrefab;
-    public int          enemyCount  = 3;
+    public GameObject lootPrefab;
+    public GameObject upgradeStationPrefab;
+    public int enemyCount = 3;
     [HideInInspector] public System.Collections.Generic.List<Vector3> spawnCells = new();
 
     [Header("Waves")]
-    [Range(1, 5)] public int waveCount     = 3;
-    public float             wavePause     = 1f;
-    public int               waveThreshold = 0;
+    [Range(1, 5)] public int waveCount = 3;
+    public float wavePause = 1f;
+    public int waveThreshold = 0;
 
     public Material boundaryMaterial;
 
-    protected Vector3             roomSize;
-    protected List<GameObject>    invisibleWalls = new();
-    protected int                 _aliveCount    = 0;
+    protected Vector3 roomSize;
+    protected List<GameObject> invisibleWalls = new();
+    protected int _aliveCount = 0;
     protected PlayerCombatContext _combatContext;
-    protected int                 _currentWave   = 0;
-    protected int[]               _waveSizes;
+    protected int _currentWave = 0;
+    protected int[] _waveSizes;
 
     protected virtual void Start()
     {
@@ -93,7 +93,7 @@ public class BattleRoom : MonoBehaviour
 
     protected void BuildWaveSizes()
     {
-        waveCount  = Mathf.Clamp(waveCount, 1, Mathf.Max(1, enemyCount));
+        waveCount = Mathf.Clamp(waveCount, 1, Mathf.Max(1, enemyCount));
         _waveSizes = new int[waveCount];
         int baseCount = enemyCount / waveCount;
         int remainder = enemyCount % waveCount;
@@ -108,8 +108,8 @@ public class BattleRoom : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            var     prefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
-            Vector3 pos    = PickSpawnPosition();
+            var prefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
+            Vector3 pos = PickSpawnPosition();
             ApplyEnemyScale(Instantiate(prefab, pos, Quaternion.identity));
         }
     }
@@ -124,13 +124,13 @@ public class BattleRoom : MonoBehaviour
     protected void ApplyEnemyScale(GameObject enemy)
     {
         if (!enemy.TryGetComponent<EntityStats>(out var stats)) return;
-        var   player   = FindFirstObjectByType<PlayerStats>();
-        var   scale    = new StatScale();
+        var player = FindFirstObjectByType<PlayerStats>();
+        var scale = new StatScale();
         float progress = (RunManager.Instance?.TotalBossKilled ?? 0) * 0.3f
                        + (RunManager.Instance?.TotalRoomsCleared ?? 0) * 0.1f;
         scale.moveSpeed = Random.Range(0.9f, 1.1f);
-        scale.hp        = 1f + progress + (player.Damage / Mathf.Max(1f, player.BaseDamage)) * 0.15f;
-        scale.damage    = 1f + progress + (player.MaxHealth / Mathf.Max(1f, player.BaseHealth)) * 0.15f;
+        scale.hp = 1f + progress + (player.Damage / Mathf.Max(1f, player.BaseDamage)) * 0.15f;
+        scale.damage = 1f + progress + (player.MaxHealth / Mathf.Max(1f, player.BaseHealth)) * 0.15f;
         stats.SetStatScale(scale);
     }
 
@@ -142,7 +142,7 @@ public class BattleRoom : MonoBehaviour
         LockRoom();
         BuildWaveSizes();
         _currentWave = 0;
-        _aliveCount  = 0;
+        _aliveCount = 0;
         Subscribe();
         SpawnWave(0);
 
@@ -155,22 +155,22 @@ public class BattleRoom : MonoBehaviour
     protected virtual void ClearRoom()
     {
         isCleared = true;
-        isLocked  = false;
+        isLocked = false;
         RemoveInvisibleWalls();
 
         if (Random.value < 0.70f)
-            SpawnLoot(transform.position);
+            SpawnLoot(PickSpawnPosition());
         else if (upgradeStationPrefab != null)
-            Instantiate(upgradeStationPrefab, transform.position, Quaternion.identity);
+            Instantiate(upgradeStationPrefab, PickSpawnPosition(), Quaternion.identity);
         else
-            SpawnLoot(transform.position);
+            SpawnLoot(PickSpawnPosition());
 
         RunManager.Instance?.OnRoomCleared();
     }
 
     protected void SpawnLoot(Vector3 position)
     {
-        var lootObj    = Instantiate(lootPrefab, position, Quaternion.identity);
+        var lootObj = Instantiate(lootPrefab, position, Quaternion.identity);
         var randomLoot = lootObj.GetComponent<RandomLoot>();
         if (randomLoot != null)
             randomLoot.Configure(BuildLootConfig());
@@ -178,10 +178,10 @@ public class BattleRoom : MonoBehaviour
 
     protected virtual LootConfig BuildLootConfig()
     {
-        int   floor        = RunManager.Instance?.CurrentFloor ?? 1;
-        int   roomsCleared = RunManager.Instance?.TotalRoomsCleared ?? 0;
-        float mean         = 50f + floor * 30f + roomsCleared * 5f + 10f;
-        float sd           = 20f + (floor - 1) * 3f;
+        int floor = RunManager.Instance?.CurrentFloor ?? 1;
+        int roomsCleared = RunManager.Instance?.TotalRoomsCleared ?? 0;
+        float mean = 50f + floor * 30f + roomsCleared * 5f + 10f;
+        float sd = 20f + (floor - 1) * 3f;
         return new LootConfig { optionCount = 3, meanCost = mean, sd = sd, allowDuplicates = false };
     }
 
@@ -231,7 +231,7 @@ public class BattleRoom : MonoBehaviour
         float inset = 0.3f;
         while (true)
         {
-            Vector3 flat   = new Vector3(playerTransform.position.x, transform.position.y, playerTransform.position.z);
+            Vector3 flat = new Vector3(playerTransform.position.x, transform.position.y, playerTransform.position.z);
             Vector3 minBnd = transform.position - new Vector3(roomSize.x / 2f - inset, 0, roomSize.z / 2f - inset);
             Vector3 maxBnd = transform.position + new Vector3(roomSize.x / 2f - inset, 0, roomSize.z / 2f - inset);
 
