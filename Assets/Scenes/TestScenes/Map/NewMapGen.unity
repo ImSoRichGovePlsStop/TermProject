@@ -1540,11 +1540,8 @@ MonoBehaviour:
   mergeAreaThreshold: 50
   sealMinWidth: 2
   sealMinArea: 10
-  spawnCount: 1
-  bossCount: 1
   maxBattleCount: 10
-  maxEventCount: 200
-  maxEmptyCount: 80000000
+  maxEventCount: 2
   weightHeal: 1
   weightShop: 10000
   weightRareLoot: 1
@@ -1562,7 +1559,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2ed41bb552d081145bce2fc4164fcd33, type: 2}
   - {fileID: 11400000, guid: 9b87d61227132fb4db164e9a6433e9de, type: 2}
   doorWidth: 1
-  extraDoorChance: 0.139
   wallHeight: 2
   wallThickness: 0.1
   floorThickness: -5
