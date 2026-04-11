@@ -44,12 +44,6 @@ AnimationClip:
       value: {fileID: 869227651, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
     - time: 0.9166667
       value: {fileID: 966429162, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
-    - time: 1
-      value: {fileID: 1230062330, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
-    - time: 1.0833334
-      value: {fileID: -1058614929, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
-    - time: 1.1666666
-      value: {fileID: 231697901, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
     attribute: m_Sprite
     path: 
     classID: 212
@@ -84,15 +78,12 @@ AnimationClip:
     - {fileID: -240133770, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
     - {fileID: 869227651, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
     - {fileID: 966429162, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
-    - {fileID: 1230062330, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
-    - {fileID: -1058614929, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
-    - {fileID: 231697901, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
   m_AnimationClipSettings:
     serializedVersion: 2
     m_AdditiveReferencePoseClip: {fileID: 0}
     m_AdditiveReferencePoseTime: 0
     m_StartTime: 0
-    m_StopTime: 1.25
+    m_StopTime: 1
     m_OrientationOffsetY: 0
     m_Level: 0
     m_CycleOffset: 0
@@ -140,7 +131,7 @@ AnimationClip:
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
-  - time: 1.1666666
+  - time: 0.9166667
     functionName: OnComboGap
     data: 
     objectReferenceParameter: {fileID: 0}

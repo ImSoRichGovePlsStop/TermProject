@@ -1247,6 +1247,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Lasher_Normal
       objectReference: {fileID: 0}
+    - target: {fileID: 1157175084331872940, guid: 858921bbf0e0f074f83a6736a3b86d98, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2215287256965508536, guid: 858921bbf0e0f074f83a6736a3b86d98, type: 3}
       propertyPath: m_LocalPosition.x
       value: -5.0501513

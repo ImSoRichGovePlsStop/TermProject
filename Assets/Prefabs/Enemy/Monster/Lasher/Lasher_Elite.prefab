@@ -359,7 +359,7 @@ MonoBehaviour:
   comboDashHitRadius: 0.75
   comboDamageScale: 1
   comboMaxRedirectAngle: 105
-  comboDashGapDuration: 0.25
+  comboDashGapDuration: 0.2
   lashSpeedPenalty: -0.15
   lashChargeExitRange: 2.5
   lashChargeMaxDuration: 2.5
@@ -367,10 +367,10 @@ MonoBehaviour:
   lashHitRadius: 1.25
   lashDamageScale: 1.2
   lashTipDelay: 0.25
-  lashTipOffset: 1.5
+  lashTipOffset: 2
   lashTipCount: 2
-  lashTipRadius: 1
-  lashTipDamageScale: 0.8
+  lashTipRadius: 1.75
+  lashTipDamageScale: 1.2
   lashAoeVFX: {fileID: 245339282735500823, guid: 5292192e29d6a1447bdf673f3227f4a1, type: 3}
   lashVFXBaseRadius: 0.25
   lashVFXOffsetY: 0.5
