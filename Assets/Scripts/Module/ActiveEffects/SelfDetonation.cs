@@ -172,7 +172,7 @@ public class SelfDetonationModule : ModuleEffect
         {
             new PassiveEntry
             {
-                value         = $"+{effectiveAtk * 100f:F0}%",
+                value         = $"{effectiveAtk * 100f:F0}%",
                 label         = "ATK Damage",
                 sublabel      = "On Detonate",
                 isBuffed      = atkBuffed,
@@ -180,7 +180,7 @@ public class SelfDetonationModule : ModuleEffect
             },
             new PassiveEntry
             {
-                value         = $"+{effectiveHp * 100f:F0}%",
+                value         = $"{effectiveHp * 100f:F0}%",
                 label         = "Max HP Damage",
                 sublabel      = "On Detonate",
                 isBuffed      = hpBuffed,
