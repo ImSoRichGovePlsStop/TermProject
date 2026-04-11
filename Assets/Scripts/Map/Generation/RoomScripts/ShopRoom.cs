@@ -8,50 +8,63 @@ public class ShopRoom : MonoBehaviour
 
     [HideInInspector] public RoomNode node;
 
+    [Header("Shop Config")]
+    public int   shopMinCount         = 5;
+    public int   shopMaxCount         = 6;
+    public float shopBaseMean         = 80f;
+    public float shopMeanPerFloor     = 40f;
+    public float shopMeanPerRoom      = 6f;
+    public float shopMeanPerBossKill  = 20f;
+    public float shopBaseSd           = 25f;
+    public float shopSdPerFloor       = 5f;
+    [Tooltip("Duplicate chance for current modules in shop rolls.")]
+    public float shopDupChance        = 0.1f;
+
+    const float SideStationOffset = 2f;
+
     public void Init(Transform spawnCenter)
     {
         if (shopStationPrefab != null)
         {
             var shopObj = Instantiate(shopStationPrefab, spawnCenter.position, spawnCenter.rotation);
-            var shop = shopObj.GetComponent<ShopInteractable>();
+            var shop    = shopObj.GetComponent<ShopInteractable>();
             if (shop != null)
             {
                 var cfg = BuildShopConfig();
                 shop.SetRandomizerSettings(
-                    cfg.minCount,
-                    cfg.maxCount,
-                    cfg.meanCost,
-                    cfg.sd,
+                    cfg.count,
+                    cfg.midCost,
+                    cfg.cheapSd,
+                    cfg.expensiveSd,
                     cfg.allowDuplicates,
+                    shopDupChance,
                     regenerate: true
                 );
             }
         }
 
         if (costedHealPrefab != null)
-            Instantiate(costedHealPrefab, spawnCenter.position + spawnCenter.right * 2f, spawnCenter.rotation);
+            Instantiate(costedHealPrefab,    spawnCenter.position + spawnCenter.right * SideStationOffset,  spawnCenter.rotation);
 
         if (costedUpgradePrefab != null)
-            Instantiate(costedUpgradePrefab, spawnCenter.position - spawnCenter.right * 2f, spawnCenter.rotation);
+            Instantiate(costedUpgradePrefab, spawnCenter.position - spawnCenter.right * SideStationOffset, spawnCenter.rotation);
     }
 
     private ShopConfig BuildShopConfig()
     {
-        int floor = RunManager.Instance?.CurrentFloor ?? 1;
+        int floor        = RunManager.Instance?.CurrentFloor ?? 1;
         int roomsCleared = RunManager.Instance?.TotalRoomsCleared ?? 0;
-        int bossKills = RunManager.Instance?.TotalBossKilled ?? 0;
+        int bossKills    = RunManager.Instance?.TotalBossKilled ?? 0;
 
-        float meanCost = 80f + floor * 40f + roomsCleared * 6f + bossKills * 20f;
-        float sd = 25f + floor * 5f;
-        int minCount = 5;
-        int maxCount = 6;
+        float midCost = shopBaseMean + floor * shopMeanPerFloor + roomsCleared * shopMeanPerRoom + bossKills * shopMeanPerBossKill;
+        float sd      = shopBaseSd   + floor * shopSdPerFloor;
 
         return new ShopConfig
         {
-            minCount = minCount,
-            maxCount = maxCount,
-            meanCost = meanCost,
-            sd = sd,
+            count          = Random.Range(shopMinCount, shopMaxCount + 1),
+            midCost        = midCost,
+            cheapSd        = sd,
+            expensiveSd    = sd,
             allowDuplicates = false,
         };
     }
@@ -67,10 +80,10 @@ public class ShopRoom : MonoBehaviour
 
     private struct ShopConfig
     {
-        public int minCount;
-        public int maxCount;
-        public float meanCost;
-        public float sd;
-        public bool allowDuplicates;
+        public int   count;
+        public float midCost;
+        public float cheapSd;
+        public float expensiveSd;
+        public bool  allowDuplicates;
     }
 }

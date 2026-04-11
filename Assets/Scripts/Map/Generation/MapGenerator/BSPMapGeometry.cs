@@ -815,7 +815,7 @@ public class BSPMapGeometry : MonoBehaviour
         pb.ToMesh(); pb.Refresh();
         if (floorMat != null) pb.GetComponent<Renderer>().material = floorMat;
 
-        // Only Battle and Boss room floors get a MeshCollider — NavMesh bakes from these
+        
         if (owner != null && (owner.Type == RoomType.Battle || owner.Type == RoomType.Boss))
         {
             var mc = go.AddComponent<MeshCollider>();
