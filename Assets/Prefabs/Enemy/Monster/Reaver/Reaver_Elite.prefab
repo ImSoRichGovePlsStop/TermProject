@@ -134,7 +134,7 @@ MonoBehaviour:
   showHealthBar: 1
   healthBarHeight: 0.45
   healthBarScale: {x: 2, y: 1.5, z: 1}
-  tier: 0
+  tier: 1
 --- !u!114 &9137022862128079800
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -222,6 +222,7 @@ MonoBehaviour:
   chargeCooldownMax: 8
   chargeSpeed: 16
   chargeWindUpDuration: 0.8
+  windUpRotateSpeed: 180
   chargeHitRadius: 0.9
   chargeDamageScale: 1.2
   chargeRotateSpeed: 30

@@ -467,6 +467,7 @@ MonoBehaviour:
   chargeCooldownMax: 10
   chargeSpeed: 14
   chargeWindUpDuration: 1
+  windUpRotateSpeed: 120
   chargeHitRadius: 0.8
   chargeDamageScale: 1.2
   chargeRotateSpeed: 30

@@ -29,6 +29,7 @@ public class ReaverController : EnemyBase
     [SerializeField] private float chargeCooldownMax = 6f;
     [SerializeField] private float chargeSpeed = 8f;
     [SerializeField] private float chargeWindUpDuration = 1f;
+    [SerializeField] private float windUpRotateSpeed = 90f;
     [SerializeField] private float chargeHitRadius = 0.7f;
     [SerializeField] private float chargeDamageScale = 1.2f;
     [SerializeField] private float chargeRotateSpeed = 30f;
@@ -224,7 +225,7 @@ public class ReaverController : EnemyBase
         strafe.Reset();
     }
 
-    // ??? Animation Events ???????????????????????????????????????????
+    // Animation Events
 
     public void LockAttackDirection()
     {
@@ -247,14 +248,12 @@ public class ReaverController : EnemyBase
         health.TryFlash(Color.white);
     }
 
-    // Attack1
     public void DashAttack()
     {
         if (isDashing) return;
         StartCoroutine(DashRoutine());
     }
 
-    // Attack2 — frame ?????? Charge_WindUp clip
     public void StartCharge()
     {
         StartCoroutine(WindUpRoutine());
@@ -262,7 +261,6 @@ public class ReaverController : EnemyBase
 
     private IEnumerator WindUpRoutine()
     {
-        // init direction ???? ?????????? player ?????? range ?????
         if (HasTarget)
         {
             Vector3 toTarget = TargetPosition - transform.position;
@@ -288,9 +286,10 @@ public class ReaverController : EnemyBase
             {
                 Vector3 toTarget = TargetPosition - transform.position;
                 toTarget.y = 0f;
-                if (toTarget.sqrMagnitude > 0.001f)
-                    lockedAttackDir = toTarget.normalized;
+                if (lockedAttackDir.sqrMagnitude > 0.001f && toTarget.sqrMagnitude > 0.001f)
+                    lockedAttackDir = Vector3.RotateTowards(lockedAttackDir.normalized, toTarget.normalized, windUpRotateSpeed * Mathf.Deg2Rad * Time.deltaTime, 0f);
             }
+            movement.FaceTarget(transform.position + lockedAttackDir);
             yield return null;
         }
 
@@ -302,7 +301,6 @@ public class ReaverController : EnemyBase
         StartCoroutine(ChargeRoutine());
     }
 
-    // Attack2 — HitWall clip ????
     public void FinishCharge()
     {
         isAttacking = false;
@@ -333,7 +331,7 @@ public class ReaverController : EnemyBase
         TriggerPostAttackDelay();
     }
 
-    // ??? Coroutines ??????????????????????????????????????????????????
+    // Coroutines
 
     private IEnumerator DashRoutine()
     {
@@ -378,7 +376,6 @@ public class ReaverController : EnemyBase
 
         while (isCharging)
         {
-            // rotate toward player only if has target
             if (HasTarget)
             {
                 Vector3 toTarget = TargetPosition - transform.position;
@@ -390,7 +387,6 @@ public class ReaverController : EnemyBase
                 lockedAttackDir = chargeDir;
             }
 
-            // wall detection
             if (Physics.Raycast(transform.position, chargeDir, chargeWallDetectRange + chargeSpeed * stats.MoveSpeedRatio * Time.deltaTime, wallMask))
             {
                 isCharging = false;
@@ -400,10 +396,8 @@ public class ReaverController : EnemyBase
                 yield break;
             }
 
-            // move
             transform.position += chargeDir * chargeSpeed * stats.MoveSpeedRatio * Time.deltaTime;
 
-            // deal damage
             Collider[] hits = Physics.OverlapSphere(transform.position, chargeHitRadius, hitMask);
             foreach (var col in hits)
             {
@@ -414,7 +408,6 @@ public class ReaverController : EnemyBase
                 ApplyDamage(col, stats.Damage * chargeDamageScale);
             }
 
-            // redirect detection
             if (!playerHit && !hasRolledRedirect && HasTarget && currentRedirectCount < maxRedirectCount)
             {
                 Vector3 toPlayer = TargetPosition - transform.position;
@@ -454,7 +447,6 @@ public class ReaverController : EnemyBase
         LayerMask wallMask = GetWallMask();
         var agent = movement.GetAgent();
 
-        // brake
         float elapsed = 0f;
         float startSpeed = chargeSpeed;
         while (elapsed < brakeDuration)
@@ -475,7 +467,6 @@ public class ReaverController : EnemyBase
             yield return null;
         }
 
-        // redirect windup
         hasRolledRedirect = false;
         lockedAttackDir = HasTarget
             ? (TargetPosition - transform.position).normalized
@@ -501,8 +492,10 @@ public class ReaverController : EnemyBase
             {
                 Vector3 toTarget = TargetPosition - transform.position;
                 toTarget.y = 0f;
-                if (toTarget.sqrMagnitude > 0.001f) lockedAttackDir = toTarget.normalized;
+                if (lockedAttackDir.sqrMagnitude > 0.001f && toTarget.sqrMagnitude > 0.001f)
+                    lockedAttackDir = Vector3.RotateTowards(lockedAttackDir.normalized, toTarget.normalized, windUpRotateSpeed * Mathf.Deg2Rad * Time.deltaTime, 0f);
             }
+            movement.FaceTarget(transform.position + lockedAttackDir);
             yield return null;
         }
 
@@ -528,7 +521,7 @@ public class ReaverController : EnemyBase
         FinishCharge();
     }
 
-    // ??? Helpers ?????????????????????????????????????????????????????
+    // Helpers
 
     private void ApplyDamage(Collider col, float damage)
     {
