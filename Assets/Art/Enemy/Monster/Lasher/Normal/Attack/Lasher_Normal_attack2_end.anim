@@ -6,7 +6,7 @@ AnimationClip:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: ArcWarlock_Normal_spawnWindUp
+  m_Name: Lasher_Normal_attack2_end
   serializedVersion: 7
   m_Legacy: 0
   m_Compressed: 0
@@ -21,21 +21,19 @@ AnimationClip:
   - serializedVersion: 2
     curve:
     - time: 0
-      value: {fileID: -813298007, guid: 988293434befe8c418e88d79be75f4bc, type: 3}
+      value: {fileID: -37134505, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
     - time: 0.083333336
-      value: {fileID: -291966962, guid: 988293434befe8c418e88d79be75f4bc, type: 3}
+      value: {fileID: -921163110, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
     - time: 0.16666667
-      value: {fileID: -204038519, guid: 988293434befe8c418e88d79be75f4bc, type: 3}
+      value: {fileID: -422215541, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
     - time: 0.25
-      value: {fileID: -1143381618, guid: 988293434befe8c418e88d79be75f4bc, type: 3}
+      value: {fileID: -2038424046, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
     - time: 0.33333334
-      value: {fileID: -991111664, guid: 988293434befe8c418e88d79be75f4bc, type: 3}
+      value: {fileID: -116905189, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
     - time: 0.41666666
-      value: {fileID: -1732624607, guid: 988293434befe8c418e88d79be75f4bc, type: 3}
+      value: {fileID: -1159367927, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
     - time: 0.5
-      value: {fileID: 685637147, guid: 988293434befe8c418e88d79be75f4bc, type: 3}
-    - time: 0.5833333
-      value: {fileID: 2032526396, guid: 988293434befe8c418e88d79be75f4bc, type: 3}
+      value: {fileID: -1856620061, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
     attribute: m_Sprite
     path: 
     classID: 212
@@ -58,25 +56,24 @@ AnimationClip:
       isIntCurve: 0
       isSerializeReferenceCurve: 0
     pptrCurveMapping:
-    - {fileID: -813298007, guid: 988293434befe8c418e88d79be75f4bc, type: 3}
-    - {fileID: -291966962, guid: 988293434befe8c418e88d79be75f4bc, type: 3}
-    - {fileID: -204038519, guid: 988293434befe8c418e88d79be75f4bc, type: 3}
-    - {fileID: -1143381618, guid: 988293434befe8c418e88d79be75f4bc, type: 3}
-    - {fileID: -991111664, guid: 988293434befe8c418e88d79be75f4bc, type: 3}
-    - {fileID: -1732624607, guid: 988293434befe8c418e88d79be75f4bc, type: 3}
-    - {fileID: 685637147, guid: 988293434befe8c418e88d79be75f4bc, type: 3}
-    - {fileID: 2032526396, guid: 988293434befe8c418e88d79be75f4bc, type: 3}
+    - {fileID: -37134505, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
+    - {fileID: -921163110, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
+    - {fileID: -422215541, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
+    - {fileID: -2038424046, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
+    - {fileID: -116905189, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
+    - {fileID: -1159367927, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
+    - {fileID: -1856620061, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
   m_AnimationClipSettings:
     serializedVersion: 2
     m_AdditiveReferencePoseClip: {fileID: 0}
     m_AdditiveReferencePoseTime: 0
     m_StartTime: 0
-    m_StopTime: 0.6666666
+    m_StopTime: 0.5833333
     m_OrientationOffsetY: 0
     m_Level: 0
     m_CycleOffset: 0
     m_HasAdditiveReferencePose: 0
-    m_LoopTime: 1
+    m_LoopTime: 0
     m_LoopBlend: 0
     m_LoopBlendOrientation: 0
     m_LoopBlendPositionY: 0
@@ -91,15 +88,36 @@ AnimationClip:
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
   m_Events:
-  - time: 0.41666666
+  - time: 0
+    functionName: LockAttackDirection
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 0
     functionName: StartFlashBuildup
     data: 2,12
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
-  - time: 0.5833333
+  - time: 0.083333336
+    functionName: LashHit
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 0.16666667
     functionName: FlashWhite
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 0.5
+    functionName: FinishAttack
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0

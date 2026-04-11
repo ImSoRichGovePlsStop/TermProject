@@ -419,7 +419,7 @@ public class PlayerStats : MonoBehaviour
 
         if (UnityEngine.Random.value < EvadeChance)
         {
-            Debug.Log("Evaded!");
+            DamageNumberSpawner.Instance?.SpawnMessage(transform.position, "<b>MISS</b>", new UnityEngine.Color(1f, 1f, 1f, 1f), 0.4f);
             return;
         }
 
