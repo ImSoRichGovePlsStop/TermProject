@@ -175,6 +175,18 @@ public class WeaponDataEditor : Editor
             }
             EditorGUI.indentLevel--;
         }
+        EditorGUILayout.Space();
+
+        EditorGUILayout.LabelField("Level Up Costs", EditorStyles.boldLabel);
+        var costsProp = serializedObject.FindProperty("levelUpCosts");
+        EditorGUI.indentLevel++;
+        for (int i = 1; i < costsProp.arraySize; i++)
+        {
+            var costElement = costsProp.GetArrayElementAtIndex(i);
+            var materialsProp = costElement.FindPropertyRelative("materials");
+            EditorGUILayout.PropertyField(materialsProp, new GUIContent($"Level {i + 1}"), true);
+        }
+        EditorGUI.indentLevel--;
 
         serializedObject.ApplyModifiedProperties();
     }
