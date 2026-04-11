@@ -365,10 +365,21 @@ public class BSPMapGeometry : MonoBehaviour
         for (int x = ox; x < ox + sx; x++)
             for (int z = oz; z < oz + sz; z++)
             {
-                bool isVoid = preset != null && preset.IsVoid(x - ox, z - oz);
-                _matrix[x, z] = Cell.Room;
-                _roomMap[x, z] = isVoid ? null : node;
-                if (isVoid) _voidOwnerMap[x, z] = node;
+                int presetZ = (sz - 1) - (z - oz);
+                bool isVoid = preset != null && preset.IsVoid(x - ox, presetZ);
+                bool isPillar = preset != null && preset.IsPillar(x - ox, presetZ);
+
+                if (isPillar)
+                {
+                    _matrix[x, z] = Cell.Occupied;  // sealed cube via SpawnGeometry
+                    _roomMap[x, z] = node;            // still belongs to this room
+                }
+                else
+                {
+                    _matrix[x, z] = Cell.Room;
+                    _roomMap[x, z] = isVoid ? null : node;
+                    if (isVoid) _voidOwnerMap[x, z] = node;
+                }
             }
     }
 
@@ -747,7 +758,7 @@ public class BSPMapGeometry : MonoBehaviour
                     continue;
                 }
 
-                SpawnFloorQuad(floorP, x, z);
+                SpawnFloorQuad(floorP, x, z, owner);
                 foreach (var d in Dirs)
                 {
                     int nx = x + d.x, nz = z + d.y;
@@ -769,7 +780,7 @@ public class BSPMapGeometry : MonoBehaviour
         var go = new GameObject($"Void_{x}_{z}");
         go.transform.SetParent(parent);
         go.transform.position = new Vector3(x + 0.5f, 0f, z + 0.5f);
-        go.layer = LayerMask.NameToLayer("Wall");
+        go.layer = LayerMask.NameToLayer("Barrier");
         var col = go.AddComponent<BoxCollider>();
         col.center = new Vector3(0f, wallHeight / 2f, 0f);
         col.size = new Vector3(1f, wallHeight * 2f, 1f);
@@ -787,11 +798,13 @@ public class BSPMapGeometry : MonoBehaviour
         go.AddComponent<BoxCollider>();
     }
 
-    void SpawnFloorQuad(Transform parent, int x, int z)
+    void SpawnFloorQuad(Transform parent, int x, int z, MapNode owner)
     {
         var go = new GameObject($"F_{x}_{z}");
         go.transform.SetParent(parent);
         go.transform.position = new Vector3(x + 0.5f, 0f, z + 0.5f);
+        go.layer = LayerMask.NameToLayer("Ground");
+
         var pb = go.AddComponent<ProBuilderMesh>();
         var poly = go.AddComponent<PolyShape>();
         poly.SetControlPoints(new Vector3[] {
@@ -801,6 +814,13 @@ public class BSPMapGeometry : MonoBehaviour
         pb.CreateShapeFromPolygon(poly.controlPoints, poly.extrude, poly.flipNormals);
         pb.ToMesh(); pb.Refresh();
         if (floorMat != null) pb.GetComponent<Renderer>().material = floorMat;
+
+        // Only Battle and Boss room floors get a MeshCollider — NavMesh bakes from these
+        if (owner != null && (owner.Type == RoomType.Battle || owner.Type == RoomType.Boss))
+        {
+            var mc = go.AddComponent<MeshCollider>();
+            mc.sharedMesh = pb.GetComponent<MeshFilter>().sharedMesh;
+        }
     }
 
     void SpawnWallQuad(Transform parent, int x, int z, Vector2Int facing)

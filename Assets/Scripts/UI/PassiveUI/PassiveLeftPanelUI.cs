@@ -95,10 +95,17 @@ public class PassiveLeftPanelUI : MonoBehaviour
 
     private void OnUpgradeClick()
     {
-        if (WeaponLevelManager.Instance?.TryLevelUp(currentWeaponData) == true)
-            Refresh();
+        if (currentWeaponData == null) return;
+        int nextLevel = (WeaponLevelManager.Instance?.GetLevel(currentWeaponData) ?? 1) + 1;
 
-        FindFirstObjectByType<PassiveScreenUI>()?.RefreshPoints();
-        FindFirstObjectByType<PassiveScreenUI>()?.RefreshAll();
+        UpgradeConfirmPopupUI.Instance?.Show(currentWeaponData, nextLevel, () =>
+        {
+            if (WeaponLevelManager.Instance?.TryLevelUp(currentWeaponData) == true)
+            {
+                Refresh();
+                FindFirstObjectByType<PassiveScreenUI>()?.RefreshPoints();
+                FindFirstObjectByType<PassiveScreenUI>()?.RefreshAll();
+            }
+        });
     }
 }

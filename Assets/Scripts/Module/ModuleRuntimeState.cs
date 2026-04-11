@@ -22,4 +22,7 @@ public class ModuleRuntimeState
     // SelfDetonation
     public float attackPercent = 0f;
     public float hpPercent = 0f;
+
+    // OnKillAddMaxHp
+    public float hpAdded = 0f;
 }

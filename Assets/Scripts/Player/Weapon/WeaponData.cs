@@ -50,12 +50,21 @@ public class WeaponData : ScriptableObject
     [Header("Grid")]
     public Vector2Int[] gridSizePerLevel;
 
+    [Header("Level Up Materials")]
+    public LevelUpCost[] levelUpCosts;
+
     public Vector2Int GetGridSize(int level)
     {
         if (gridSizePerLevel == null || gridSizePerLevel.Length == 0)
             return new Vector2Int(5, 5);
         int index = Mathf.Clamp(level - 1, 0, gridSizePerLevel.Length - 1);
         return gridSizePerLevel[index];
+    }
+
+    public LevelUpCost GetLevelUpCost(int level)
+    {
+        if (levelUpCosts == null || level < 1 || level - 1 >= levelUpCosts.Length) return null;
+        return levelUpCosts[level - 1];
     }
 
     private void OnValidate()
@@ -66,6 +75,14 @@ public class WeaponData : ScriptableObject
             gridSizePerLevel = new Vector2Int[15];
             for (int i = 0; i < 15; i++)
                 gridSizePerLevel[i] = i < old.Length ? old[i] : new Vector2Int(5, 5);
+        }
+
+        if (levelUpCosts == null || levelUpCosts.Length != 15)
+        {
+            var old = levelUpCosts ?? new LevelUpCost[0];
+            levelUpCosts = new LevelUpCost[15];
+            for (int i = 0; i < 15; i++)
+                levelUpCosts[i] = i < old.Length ? old[i] : new LevelUpCost();
         }
     }
 }
@@ -90,6 +107,12 @@ public class ComboHit
     public float vfxOffset;
     public float vfxDurationMultiplier = 1f;
     public float vfxLoops = 1f;
+}
+
+[System.Serializable]
+public class LevelUpCost
+{
+    public MaterialRequirement[] materials;
 }
 
 // Wand-specific projectile settings

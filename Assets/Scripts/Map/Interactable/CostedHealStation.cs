@@ -36,10 +36,7 @@ public class PaidHealObject : MonoBehaviour, IInteractable
             ? $"+{ComputeHeal(stats)} HP"   
             : $"+{CurrentFlatHeal()}+ HP";  
 
-        bool canAfford = CurrencyManager.Instance != null &&
-                         CurrencyManager.Instance.Coins >= cost;
 
-        string affordMarker = canAfford ? "" : " <color=#FF6060>(can't afford)</color>";
         return $"[ E ]  Heal  {healStr}  ({cost} coins)";
     }
 

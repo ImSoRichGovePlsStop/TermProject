@@ -11,6 +11,7 @@ public class BSPMapPopulator : MonoBehaviour
     public GameObject shopStationPrefab;
     public GameObject costedHealPrefab;
     public GameObject costedUpgradePrefab;
+    public GameObject freeUpgradeStationPrefab;
     public GameObject mergeStationPrefab;
 
     [Header("Portals")]
@@ -119,6 +120,7 @@ public class BSPMapPopulator : MonoBehaviour
         var room = obj.AddComponent<BattleRoom>();
         room.node = ToLegacy(node);
         room.lootPrefab = lootPrefab;
+        room.upgradeStationPrefab = freeUpgradeStationPrefab;
         room.boundaryMaterial = boundaryMaterial;
         room.enemyPrefabs = normalEnemyPrefabs;
         room.SetRoomSize(vol);
