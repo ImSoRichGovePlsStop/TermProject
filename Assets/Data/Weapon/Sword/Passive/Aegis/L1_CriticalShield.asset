@@ -20,3 +20,7 @@ MonoBehaviour:
   requireAllParents: 0
   layer: 1
   branch: 0
+  overrideCost: 0
+  materialRequirements:
+  - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+    count: 10

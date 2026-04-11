@@ -66,6 +66,7 @@ public class PassiveScreenUI : MonoBehaviour, IGenericTreeScreenUI
         IsOpen = false;
         panel.SetActive(false);
         GenericTreeTooltipUI.Instance?.Hide();
+        UpgradeConfirmPopupUI.Instance?.Hide();
     }
 
     private void ClearTrees()
@@ -90,6 +91,7 @@ public class PassiveScreenUI : MonoBehaviour, IGenericTreeScreenUI
 
     public void OnResetHeld()
     {
+        WeaponLevelManager.Instance?.ResetLevel(currentWeaponData);
         int totalPoints = WeaponLevelManager.Instance.GetTotalPoints(currentWeaponData);
         manager.ResetPassive(currentData, totalPoints);
         RefreshAll();

@@ -30,6 +30,13 @@ public class WeaponLevelManager : MonoBehaviour
         if (!CanLevelUp(weapon)) return false;
 
         int newLevel = GetLevel(weapon) + 1;
+        var cost = weapon.GetLevelUpCost(newLevel);
+        if (cost?.materials != null && !MaterialStorage.Instance.HasEnoughAll(cost.materials))
+            return false;
+
+        if (cost?.materials != null)
+            MaterialStorage.Instance.RemoveAll(cost.materials);
+
         weaponLevels[weapon] = newLevel;
 
         int points = pointsPerLevel[newLevel];
@@ -39,6 +46,18 @@ public class WeaponLevelManager : MonoBehaviour
         InventoryManager.Instance?.UpgradeWeaponGrid(gridSize.x, gridSize.y);
 
         return true;
+    }
+
+    public void ResetLevel(WeaponData weapon)
+    {
+        int currentLevel = GetLevel(weapon);
+        for (int level = 2; level <= currentLevel; level++)
+        {
+            var cost = weapon.GetLevelUpCost(level);
+            if (cost?.materials != null)
+                MaterialStorage.Instance.AddAll(cost.materials);
+        }
+        weaponLevels[weapon] = 1;
     }
 
     public int GetTotalPoints(WeaponData weapon)
