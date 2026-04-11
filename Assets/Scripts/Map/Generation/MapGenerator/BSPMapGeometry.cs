@@ -780,7 +780,7 @@ public class BSPMapGeometry : MonoBehaviour
         var go = new GameObject($"Void_{x}_{z}");
         go.transform.SetParent(parent);
         go.transform.position = new Vector3(x + 0.5f, 0f, z + 0.5f);
-        go.layer = LayerMask.NameToLayer("Wall");
+        go.layer = LayerMask.NameToLayer("Barrier");
         var col = go.AddComponent<BoxCollider>();
         col.center = new Vector3(0f, wallHeight / 2f, 0f);
         col.size = new Vector3(1f, wallHeight * 2f, 1f);
