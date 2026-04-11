@@ -29,6 +29,16 @@ public class UpgradeStation : MonoBehaviour, IInteractable
             candidates.Add(inst);
         }
 
+        if (candidates.Count == 0)
+        {
+            DamageNumberSpawner.Instance?.SpawnMessage(
+                transform.position,
+                "Nothing to upgrade!",
+                new Color(1f, 0.6f, 0.2f));
+            return;
+        }
+
+
         if (candidates.Count > 0)
         {
             if (_uiManager == null) { Debug.LogError("[UpgradeStation] UIManager not found!"); return; }

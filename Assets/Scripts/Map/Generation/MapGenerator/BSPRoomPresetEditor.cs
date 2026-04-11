@@ -5,12 +5,13 @@ using UnityEngine;
 [CustomEditor(typeof(BSPRoomPreset))]
 public class BSPRoomPresetEditor : Editor
 {
-    const float CellSize    = 22f;
+    const float CellSize = 22f;
     const float CellPadding = 2f;
 
-    static readonly Color VoidColor  = new Color(0.15f, 0.15f, 0.15f, 1f);
+    static readonly Color VoidColor = new Color(0.15f, 0.15f, 0.15f, 1f);
     static readonly Color FloorColor = new Color(0.25f, 0.65f, 0.55f, 1f);
-    static readonly Color GridBg     = new Color(0.12f, 0.12f, 0.12f, 1f);
+    static readonly Color PillarColor = new Color(0.55f, 0.35f, 0.15f, 1f);
+    static readonly Color GridBg = new Color(0.12f, 0.12f, 0.12f, 1f);
 
     public override void OnInspectorGUI()
     {
@@ -29,8 +30,8 @@ public class BSPRoomPresetEditor : Editor
         }
 
         EditorGUILayout.Space(6);
-        EditorGUILayout.LabelField("Void Grid  (■ = void / blocked,  □ = floor)", EditorStyles.boldLabel);
-        EditorGUILayout.LabelField("Click cells to toggle. Void cells have no floor and block doors.",
+        EditorGUILayout.LabelField("Cell Grid  (■ = void,  □ = floor,  ▪ = pillar)", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField("Click to cycle: floor → void → pillar → floor.",
             EditorStyles.miniLabel);
         EditorGUILayout.Space(4);
 
@@ -78,15 +79,23 @@ public class BSPRoomPresetEditor : Editor
                 float cellY = gridRect.y + CellPadding + pz * (CellSize + CellPadding);
                 var cellRect = new Rect(cellX, cellY, CellSize, CellSize);
 
-                bool isVoid = preset.IsVoid(px, pz);
-                EditorGUI.DrawRect(cellRect, isVoid ? VoidColor : FloorColor);
+                byte cellVal = preset.voidGrid[pz].cells[px];
+                Color cellColor = cellVal == 1 ? VoidColor : cellVal == 2 ? PillarColor : FloorColor;
+                EditorGUI.DrawRect(cellRect, cellColor);
 
-                // Handle click
+                // Draw pillar indicator
+                if (cellVal == 2)
+                {
+                    var inner = new Rect(cellRect.x + 4, cellRect.y + 4, cellRect.width - 8, cellRect.height - 8);
+                    EditorGUI.DrawRect(inner, new Color(0.3f, 0.15f, 0.05f, 1f));
+                }
+
+                // Click cycles: floor(0) → void(1) → pillar(2) → floor(0)
                 if (e.type == EventType.MouseDown && e.button == 0 &&
                     cellRect.Contains(e.mousePosition))
                 {
-                    Undo.RecordObject(preset, "Toggle Void Cell");
-                    preset.voidGrid[pz].cells[px] = !isVoid;
+                    Undo.RecordObject(preset, "Cycle Cell State");
+                    preset.voidGrid[pz].cells[px] = (byte)((cellVal + 1) % 3);
                     EditorUtility.SetDirty(preset);
                     e.Use();
                     Repaint();
@@ -118,7 +127,7 @@ public class BSPRoomPresetEditor : Editor
             Undo.RecordObject(preset, "Fill Void Grid");
             foreach (var row in preset.voidGrid)
                 for (int x = 0; x < row.cells.Length; x++)
-                    row.cells[x] = true;
+                    row.cells[x] = 1;
             EditorUtility.SetDirty(preset);
         }
         EditorGUILayout.EndHorizontal();

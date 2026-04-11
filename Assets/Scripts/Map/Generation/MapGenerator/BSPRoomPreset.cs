@@ -5,11 +5,12 @@ using UnityEngine;
 public class BSPRoomShapeRow
 {
     [Tooltip("Each bool = one cell. True = void (blocked), False = floor.")]
-    public bool[] cells;
+    // 0 = floor, 1 = void, 2 = pillar
+    public byte[] cells;
 
     public BSPRoomShapeRow(int width)
     {
-        cells = new bool[width];
+        cells = new byte[width];
     }
 }
 
@@ -23,7 +24,7 @@ public class BSPRoomPreset : ScriptableObject
     public int sizeZ = 10;
 
     [Header("Void Grid")]
-    [Tooltip("Grid of sizeX x sizeZ. Toggle a cell to make it void â€” no floor, no door on that edge.")]
+    [Tooltip("Grid of sizeX x sizeZ. Toggle a cell to make it void — no floor, no door on that edge.")]
     public BSPRoomShapeRow[] voidGrid;
 
     [Header("Allowed Room Types")]
@@ -39,7 +40,15 @@ public class BSPRoomPreset : ScriptableObject
         if (voidGrid == null || z >= voidGrid.Length) return false;
         var row = voidGrid[z];
         if (row == null || row.cells == null || x >= row.cells.Length) return false;
-        return row.cells[x];
+        return row.cells[x] == 1;
+    }
+
+    public bool IsPillar(int x, int z)
+    {
+        if (voidGrid == null || z >= voidGrid.Length) return false;
+        var row = voidGrid[z];
+        if (row == null || row.cells == null || x >= row.cells.Length) return false;
+        return row.cells[x] == 2;
     }
 
     public bool AllowsType(RoomType type)
@@ -74,7 +83,7 @@ public class BSPRoomPreset : ScriptableObject
                 if (newGrid[z].cells == null || newGrid[z].cells.Length != sizeX)
                 {
                     var oldCells = newGrid[z].cells;
-                    newGrid[z].cells = new bool[sizeX];
+                    newGrid[z].cells = new byte[sizeX];
                     if (oldCells != null)
                         for (int x = 0; x < Mathf.Min(oldCells.Length, sizeX); x++)
                             newGrid[z].cells[x] = oldCells[x];
@@ -90,7 +99,7 @@ public class BSPRoomPreset : ScriptableObject
                 if (voidGrid[z].cells == null || voidGrid[z].cells.Length != sizeX)
                 {
                     var old = voidGrid[z].cells;
-                    voidGrid[z].cells = new bool[sizeX];
+                    voidGrid[z].cells = new byte[sizeX];
                     if (old != null)
                         for (int x = 0; x < Mathf.Min(old.Length, sizeX); x++)
                             voidGrid[z].cells[x] = old[x];
