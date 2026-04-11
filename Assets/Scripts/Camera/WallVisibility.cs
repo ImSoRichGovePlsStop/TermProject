@@ -1,35 +1,36 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// Attach to the Player or Camera.
-// Box-casts from the camera to the player each frame.
-// Any wall inside the box fades out smoothly; walls outside fade back in.
 public class WallVisibility : MonoBehaviour
 {
     [Header("References")]
     public Camera cam;
     public Transform player;
 
+    [Header("Materials")]
+    public Material opaqueMat;
+    public Material transparentMat;
+
     [Header("Settings")]
     public LayerMask wallLayer;
     public string wallLayerName = "Wall";
 
-    [Tooltip("Half-size of the box cast on X and Z. Increase to catch more walls to the sides.")]
-    public float castHalfWidth = 1.5f;
+    [Tooltip("How far behind the player (-Z) to raycast for obstruction detection.")]
+    public float detectionRange = 6f;
 
-    [Tooltip("How quickly walls fade out and back in (higher = faster).")]
+    [Tooltip("How far left/right to raycast to find room X boundaries.")]
+    public float sideRayRange = 30f;
+
+    [Tooltip("Fade speed.")]
     public float fadeSpeed = 8f;
 
-    [Tooltip("Target alpha when hidden.")]
-    [Range(0f, 1f)] public float hiddenAlpha = 0f;
+    Dictionary<MeshRenderer, float> _current = new();
+    Dictionary<MeshRenderer, float> _target = new();
+    Dictionary<MeshRenderer, Material> _original = new();
 
-    [Tooltip("Target alpha when visible.")]
-    [Range(0f, 1f)] public float visibleAlpha = 1f;
-
-    // Tracks every wall renderer we are currently managing and its target alpha
-    private Dictionary<Renderer, float> _wallTargets = new Dictionary<Renderer, float>();
-    // Tracks current alpha per renderer
-    private Dictionary<Renderer, float> _wallCurrent = new Dictionary<Renderer, float>();
+    // All wall renderers cached at start
+    List<MeshRenderer> _allWalls = new();
+    bool _indexed = false;
 
     void Awake()
     {
@@ -39,90 +40,92 @@ public class WallVisibility : MonoBehaviour
             wallLayer = LayerMask.GetMask(wallLayerName);
     }
 
+    public void IndexWalls()
+    {
+        _allWalls.Clear();
+        foreach (var r in FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None))
+            if (((1 << r.gameObject.layer) & wallLayer.value) != 0)
+                _allWalls.Add(r);
+        _indexed = true;
+    }
+
     void LateUpdate()
     {
+        if (!_indexed) IndexWalls();
         if (cam == null || player == null) return;
 
-        // Mark all tracked walls as visible (target = visibleAlpha)
-        // We'll override the ones hit by the cast below
-        var keys = new List<Renderer>(_wallTargets.Keys);
-        foreach (var r in keys)
-            _wallTargets[r] = visibleAlpha;
+        // Default all tracked to opaque
+        foreach (var r in new List<MeshRenderer>(_target.Keys))
+            if (r != null) _target[r] = 1f;
 
-        // Box cast from camera to player
-        Vector3 origin = cam.transform.position;
-        Vector3 target = player.position;
-        Vector3 direction = target - origin;
-        float distance = direction.magnitude;
+        Vector3 origin = player.position + Vector3.up * 0.5f;
 
-        // Box half-extents: wide on X and Z, thin on Y
-        Vector3 halfExtents = new Vector3(castHalfWidth, 0.1f, castHalfWidth);
+        // Phase 1: check if player is actually obstructed from behind
+        if (!Physics.Raycast(origin, Vector3.back, out RaycastHit backHit, detectionRange, wallLayer))
+            goto Animate;
 
-        RaycastHit[] hits = Physics.BoxCastAll(
-            origin,
-            halfExtents,
-            direction.normalized,
-            Quaternion.LookRotation(direction.normalized),
-            distance,
-            wallLayer);
+        // Phase 2: side raycasts to find room X boundaries
+        float xMin = player.position.x - sideRayRange;
+        float xMax = player.position.x + sideRayRange;
 
-        foreach (var hit in hits)
+        if (Physics.Raycast(origin, Vector3.left, out RaycastHit leftHit, sideRayRange, wallLayer))
+            xMin = leftHit.point.x;
+        if (Physics.Raycast(origin, Vector3.right, out RaycastHit rightHit, sideRayRange, wallLayer))
+            xMax = rightHit.point.x;
+
+        // Phase 3: fade walls within X range and between player and the hit wall (Z range)
+        float playerZ = player.position.z;
+        float hitZ = backHit.point.z;  // Z of the detected wall — nothing beyond this fades
+        foreach (var r in _allWalls)
         {
-            var r = hit.collider.GetComponent<Renderer>()
-                 ?? hit.collider.GetComponentInChildren<Renderer>();
             if (r == null) continue;
-
-            // Register if new
-            if (!_wallTargets.ContainsKey(r))
-            {
-                _wallTargets[r] = visibleAlpha;
-                _wallCurrent[r] = visibleAlpha;
-            }
-
-            _wallTargets[r] = hiddenAlpha;
+            float wx = r.transform.position.x;
+            float wz = r.transform.position.z;
+            if (wx < xMin || wx > xMax) continue;
+            if (wz > playerZ + 0.5f) continue;  // not behind player
+            if (wz < hitZ - 0.5f) continue;  // beyond the detected wall
+            if (!_target.ContainsKey(r)) { _target[r] = 1f; _current[r] = 1f; _original[r] = r.sharedMaterial; }
+            _target[r] = 0f;
         }
 
-        // Smooth all tracked renderers toward their target alpha
-        var toRemove = new List<Renderer>();
-        foreach (var r in new List<Renderer>(_wallTargets.Keys))
+    Animate:
+        // Animate all tracked renderers toward their target alpha
+        var toRemove = new List<MeshRenderer>();
+        foreach (var r in new List<MeshRenderer>(_target.Keys))
         {
             if (r == null) { toRemove.Add(r); continue; }
 
-            float current = _wallCurrent[r];
-            float target2 = _wallTargets[r];
-            float next = Mathf.MoveTowards(current, target2, fadeSpeed * Time.deltaTime);
-            _wallCurrent[r] = next;
-            SetAlpha(r, next);
+            float next = Mathf.MoveTowards(_current[r], _target[r], fadeSpeed * Time.deltaTime);
+            _current[r] = next;
 
-            // Stop tracking once fully visible again — avoids memory growing unbounded
-            if (Mathf.Approximately(next, visibleAlpha) && Mathf.Approximately(target2, visibleAlpha))
+            if (next < 1f)
+            {
+                if (r.sharedMaterial != transparentMat) r.material = transparentMat;
+                var col = r.material.color;
+                col.a = next;
+                r.material.color = col;
+            }
+            else
+            {
+                var orig = _original.TryGetValue(r, out var o) ? o : opaqueMat;
+                if (r.sharedMaterial != orig) r.material = orig;
+            }
+
+            if (Mathf.Approximately(next, 1f) && Mathf.Approximately(_target[r], 1f))
                 toRemove.Add(r);
         }
 
         foreach (var r in toRemove)
         {
-            _wallTargets.Remove(r);
-            _wallCurrent.Remove(r);
-        }
-    }
-
-    void SetAlpha(Renderer r, float alpha)
-    {
-        // Works with URP Lit (Transparent) and URP Unlit
-        foreach (var mat in r.materials)
-        {
-            Color c = mat.color;
-            c.a = alpha;
-            mat.color = c;
+            if (r != null) { var orig = _original.TryGetValue(r, out var o) ? o : opaqueMat; r.material = orig; }
+            _target.Remove(r); _current.Remove(r); _original.Remove(r);
         }
     }
 
     void OnDisable()
     {
-        // Restore all walls to full visibility when script is disabled
-        foreach (var kvp in _wallCurrent)
-            if (kvp.Key != null) SetAlpha(kvp.Key, visibleAlpha);
-        _wallTargets.Clear();
-        _wallCurrent.Clear();
+        foreach (var kvp in _current)
+            if (kvp.Key != null) { var orig = _original.TryGetValue(kvp.Key, out var o) ? o : opaqueMat; kvp.Key.material = orig; }
+        _target.Clear(); _current.Clear(); _original.Clear();
     }
 }

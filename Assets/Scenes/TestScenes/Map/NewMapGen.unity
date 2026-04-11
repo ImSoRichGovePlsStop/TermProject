@@ -1443,14 +1443,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WallVisibility
   cam: {fileID: 1141679697}
   player: {fileID: 66487276}
+  opaqueMat: {fileID: 2100000, guid: b354030ecf56d194aa76bff9eed6802a, type: 2}
+  transparentMat: {fileID: 2100000, guid: cc60bbaa2ab5adf4c96408162d9c1ff5, type: 2}
   wallLayer:
     serializedVersion: 2
     m_Bits: 0
   wallLayerName: Wall
-  castHalfWidth: 0
+  detectionRange: 2
+  sideRayRange: 30
   fadeSpeed: 8
-  hiddenAlpha: 0
-  visibleAlpha: 1
 --- !u!1 &2145645482
 GameObject:
   m_ObjectHideFlags: 0
@@ -1501,6 +1502,7 @@ MonoBehaviour:
   shopStationPrefab: {fileID: 1093928034212126860, guid: 8b795f5129d428344a94c032060bfa9e, type: 3}
   costedHealPrefab: {fileID: 215060849656432227, guid: 7c4baba96bf5cfc4798fb91492455b72, type: 3}
   costedUpgradePrefab: {fileID: 7158039087586434884, guid: 572ffcb4eefecb24098d3ed45262f716, type: 3}
+  freeUpgradeStationPrefab: {fileID: 4791528569421838511, guid: 47627ba72b23cd7498bcd1afb60de23a, type: 3}
   mergeStationPrefab: {fileID: 106242591161022991, guid: fa2d894cb67834243979d6236231c48c, type: 3}
   portalPrefab: {fileID: 8261454306142249107, guid: 323db3c7dad372342aed4732f194c622, type: 3}
   portalFinalPrefab: {fileID: 2217644600164415563, guid: ffaead280080565408dde90a744f411c, type: 3}
@@ -1558,9 +1560,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f8e48b83105e67b43a0ae7cfe8efdfda, type: 2}
   - {fileID: 11400000, guid: 2ed41bb552d081145bce2fc4164fcd33, type: 2}
   - {fileID: 11400000, guid: 9b87d61227132fb4db164e9a6433e9de, type: 2}
+  - {fileID: 11400000, guid: f4601b98d3fefb641baf3c22d4adc523, type: 2}
   doorWidth: 1
   wallHeight: 2
-  wallThickness: 0.1
+  wallThickness: 0.05
   floorThickness: -5
   floorMat: {fileID: 2100000, guid: bc13fd34aabd1de4a8587dbfd164dc30, type: 2}
   wallMat: {fileID: 2100000, guid: b354030ecf56d194aa76bff9eed6802a, type: 2}
@@ -1586,7 +1589,7 @@ MonoBehaviour:
   m_LayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_UseGeometry: 0
+  m_UseGeometry: 1
   m_DefaultArea: 0
   m_GenerateLinks: 0
   m_IgnoreNavMeshAgent: 1

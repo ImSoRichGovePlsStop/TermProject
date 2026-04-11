@@ -121,6 +121,13 @@ public class BattleRoom : MonoBehaviour
         return transform.position + Vector3.up * 0.5f;
     }
 
+    protected Vector3 PickLootPosition()
+    {
+        if (spawnCells != null && spawnCells.Count > 0)
+            return spawnCells[Random.Range(0, spawnCells.Count)];
+        return transform.position;
+    }
+
     protected void ApplyEnemyScale(GameObject enemy)
     {
         if (!enemy.TryGetComponent<EntityStats>(out var stats)) return;
@@ -158,12 +165,12 @@ public class BattleRoom : MonoBehaviour
         isLocked = false;
         RemoveInvisibleWalls();
 
-        if (Random.value < 0.70f)
-            SpawnLoot(PickSpawnPosition());
+        if (Random.value < 0.0f)
+            SpawnLoot(PickLootPosition());
         else if (upgradeStationPrefab != null)
-            Instantiate(upgradeStationPrefab, PickSpawnPosition(), Quaternion.identity);
+            Instantiate(upgradeStationPrefab, PickLootPosition(), Quaternion.identity);
         else
-            SpawnLoot(PickSpawnPosition());
+            SpawnLoot(PickLootPosition());
 
         RunManager.Instance?.OnRoomCleared();
     }
