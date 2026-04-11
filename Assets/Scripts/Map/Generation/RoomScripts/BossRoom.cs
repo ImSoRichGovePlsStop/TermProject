@@ -107,9 +107,7 @@ public class BossRoom : BattleRoom
                 if (alreadyAlive >= maxAliveNormals) break;
 
                 var prefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
-                Vector2 offset = Random.insideUnitCircle.normalized * Random.Range(1f, spawnRadius);
-                Vector3 pos = transform.position + new Vector3(offset.x, 0.5f, offset.y);
-                var enemy = Instantiate(prefab, pos, Quaternion.identity);
+                var enemy = Instantiate(prefab, PickSpawnPosition(), Quaternion.identity);
                 ApplyEnemyScale(enemy);
                 _normalEnemies.Add(enemy);
                 alreadyAlive++;

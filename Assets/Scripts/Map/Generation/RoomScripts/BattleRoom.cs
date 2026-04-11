@@ -15,11 +15,11 @@ public class BattleRoom : MonoBehaviour
     public GameObject lootPrefab;
     public GameObject upgradeStationPrefab;
     public int enemyCount = 3;
-    public float spawnRadius = 3f;
+    [HideInInspector] public System.Collections.Generic.List<Vector3> spawnCells = new();
 
     [Header("Waves")]
     [Range(1, 5)] public int waveCount = 3;
-    public float wavePause = 1.6f;
+    public float wavePause = 1f;
     public int waveThreshold = 0;
 
     public Material boundaryMaterial;
@@ -109,10 +109,16 @@ public class BattleRoom : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             var prefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
-            Vector2 circle = Random.insideUnitCircle.normalized * Random.Range(1f, spawnRadius);
-            Vector3 pos = transform.position + new Vector3(circle.x, 0.5f, circle.y);
+            Vector3 pos = PickSpawnPosition();
             ApplyEnemyScale(Instantiate(prefab, pos, Quaternion.identity));
         }
+    }
+
+    protected Vector3 PickSpawnPosition()
+    {
+        if (spawnCells != null && spawnCells.Count > 0)
+            return spawnCells[Random.Range(0, spawnCells.Count)] + Vector3.up * 0.5f;
+        return transform.position + Vector3.up * 0.5f;
     }
 
     protected void ApplyEnemyScale(GameObject enemy)
@@ -151,14 +157,13 @@ public class BattleRoom : MonoBehaviour
         isCleared = true;
         isLocked = false;
         RemoveInvisibleWalls();
-        float lootUpgradeThreshold = 0.5f;
 
-        if (Random.value < lootUpgradeThreshold)
-            SpawnLoot(transform.position);
+        if (Random.value < 0.70f)
+            SpawnLoot(PickSpawnPosition());
         else if (upgradeStationPrefab != null)
-            Instantiate(upgradeStationPrefab, transform.position, Quaternion.identity);
+            Instantiate(upgradeStationPrefab, PickSpawnPosition(), Quaternion.identity);
         else
-            SpawnLoot(transform.position);
+            SpawnLoot(PickSpawnPosition());
 
         RunManager.Instance?.OnRoomCleared();
     }
@@ -245,7 +250,6 @@ public class BattleRoom : MonoBehaviour
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireCube(transform.position + Vector3.up * (roomSize.y / 2f), roomSize);
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, spawnRadius);
+
     }
 }
