@@ -21,25 +21,25 @@ AnimationClip:
   - serializedVersion: 2
     curve:
     - time: 0
-      value: {fileID: -303899179, guid: c8781234892f1be45abe1795d1bffa3b, type: 3}
+      value: {fileID: -584430063, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
     - time: 0.083333336
-      value: {fileID: -934196276, guid: c8781234892f1be45abe1795d1bffa3b, type: 3}
+      value: {fileID: -2055887990, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
     - time: 0.16666667
-      value: {fileID: 1155010074, guid: c8781234892f1be45abe1795d1bffa3b, type: 3}
+      value: {fileID: -1081701579, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
     - time: 0.25
-      value: {fileID: -1382115801, guid: c8781234892f1be45abe1795d1bffa3b, type: 3}
+      value: {fileID: -1023823692, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
     - time: 0.33333334
-      value: {fileID: -1373859395, guid: c8781234892f1be45abe1795d1bffa3b, type: 3}
+      value: {fileID: -1035978468, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
     - time: 0.41666666
-      value: {fileID: -1909494384, guid: c8781234892f1be45abe1795d1bffa3b, type: 3}
+      value: {fileID: -1713287296, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
     - time: 0.5
-      value: {fileID: 813585030, guid: c8781234892f1be45abe1795d1bffa3b, type: 3}
+      value: {fileID: 749778905, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
     - time: 0.5833333
-      value: {fileID: 137221237, guid: c8781234892f1be45abe1795d1bffa3b, type: 3}
+      value: {fileID: 1209721538, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
     - time: 0.6666667
-      value: {fileID: 434506502, guid: c8781234892f1be45abe1795d1bffa3b, type: 3}
+      value: {fileID: -1355567144, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
     - time: 0.75
-      value: {fileID: 1969031358, guid: c8781234892f1be45abe1795d1bffa3b, type: 3}
+      value: {fileID: 2062625941, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
     attribute: m_Sprite
     path: 
     classID: 212
@@ -62,16 +62,16 @@ AnimationClip:
       isIntCurve: 0
       isSerializeReferenceCurve: 0
     pptrCurveMapping:
-    - {fileID: -303899179, guid: c8781234892f1be45abe1795d1bffa3b, type: 3}
-    - {fileID: -934196276, guid: c8781234892f1be45abe1795d1bffa3b, type: 3}
-    - {fileID: 1155010074, guid: c8781234892f1be45abe1795d1bffa3b, type: 3}
-    - {fileID: -1382115801, guid: c8781234892f1be45abe1795d1bffa3b, type: 3}
-    - {fileID: -1373859395, guid: c8781234892f1be45abe1795d1bffa3b, type: 3}
-    - {fileID: -1909494384, guid: c8781234892f1be45abe1795d1bffa3b, type: 3}
-    - {fileID: 813585030, guid: c8781234892f1be45abe1795d1bffa3b, type: 3}
-    - {fileID: 137221237, guid: c8781234892f1be45abe1795d1bffa3b, type: 3}
-    - {fileID: 434506502, guid: c8781234892f1be45abe1795d1bffa3b, type: 3}
-    - {fileID: 1969031358, guid: c8781234892f1be45abe1795d1bffa3b, type: 3}
+    - {fileID: -584430063, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
+    - {fileID: -2055887990, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
+    - {fileID: -1081701579, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
+    - {fileID: -1023823692, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
+    - {fileID: -1035978468, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
+    - {fileID: -1713287296, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
+    - {fileID: 749778905, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
+    - {fileID: 1209721538, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
+    - {fileID: -1355567144, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
+    - {fileID: 2062625941, guid: 4b80a604a1dc9db47a41f9836e44e19e, type: 3}
   m_AnimationClipSettings:
     serializedVersion: 2
     m_AdditiveReferencePoseClip: {fileID: 0}
@@ -97,6 +97,20 @@ AnimationClip:
   m_HasGenericRootTransform: 0
   m_HasMotionFloatCurves: 0
   m_Events:
+  - time: 0
+    functionName: StartFlashBuildup
+    data: 2,12
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 0.16666667
+    functionName: FlashWhite
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
   - time: 0.25
     functionName: DashAttackSecond
     data: 

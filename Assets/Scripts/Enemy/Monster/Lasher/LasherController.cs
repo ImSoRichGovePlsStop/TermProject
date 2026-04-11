@@ -31,12 +31,24 @@ public class LasherController : EnemyBase
     [SerializeField] private float lashSpeedPenalty = -0.6f;
     [SerializeField] private float lashChargeExitRange = 1.2f;
     [SerializeField] private float lashChargeMaxDuration = 3f;
+    [SerializeField] private float lashHitOffset = 0.5f;
     [SerializeField] private float lashHitRadius = 1.2f;
     [SerializeField] private float lashDamageScale = 1.2f;
     [SerializeField] private float lashTipDelay = 0.25f;
     [SerializeField] private float lashTipOffset = 1.5f;
+    [SerializeField] private int lashTipCount = 1;
     [SerializeField] private float lashTipRadius = 1f;
     [SerializeField] private float lashTipDamageScale = 0.8f;
+
+    [Header("Lash VFX")]
+    [SerializeField] private GameObject lashAoeVFX;
+    [SerializeField] private float lashVFXBaseRadius = 1f;
+    [SerializeField] private float lashVFXOffsetY = 0f;
+    [SerializeField] private float lashVFXOffsetZMult = 0f;
+    [SerializeField] private GameObject lashAoeFieldPrefab;
+    [SerializeField] private float lashFieldFadeInDuration = 0.25f;
+    [SerializeField] private float lashFieldStayDuration = 0.1f;
+    [SerializeField] private float lashFieldFadeOutDuration = 0.2f;
 
     private LasherState currentState = LasherState.Wander;
     private LasherAttackType currentAttackType = LasherAttackType.None;
@@ -46,6 +58,7 @@ public class LasherController : EnemyBase
     private float currentAttackCooldown = 0f;
 
     // combo
+    private bool isComboStarted = false;
     private bool isInComboGap = false;
     private Vector3 lockedAttackDir = Vector3.zero;
 
@@ -55,6 +68,7 @@ public class LasherController : EnemyBase
     private bool isLashHitPhase = false;
     private float lashChargeTimer = 0f;
     private EntityStatModifier lashSpeedMod;
+    private bool lashSpeedModApplied = false;
 
     protected override void Awake()
     {
@@ -131,6 +145,8 @@ public class LasherController : EnemyBase
                         }
                     }
                 }
+                else if (currentAttackType == LasherAttackType.Lash && isLashHitPhase)
+                    movement.FaceTarget(transform.position + lockedAttackDir);
                 else if (!isAttacking)
                     movement.MoveToTarget(TargetPosition);
                 else
@@ -159,18 +175,29 @@ public class LasherController : EnemyBase
 
     public override bool CanBeInterrupted()
     {
+        bool result;
         if (currentAttackType == LasherAttackType.DoubleCombo)
-            return isInComboGap;
-        if (currentAttackType == LasherAttackType.Lash)
-            return !isLashHitPhase;
-        return true;
+            result = !isComboStarted || isInComboGap;
+        else if (currentAttackType == LasherAttackType.Lash)
+            result = !isLashHitPhase;
+        else
+            result = true;
+
+        return result;
     }
 
     protected override void OnHurtTriggered()
     {
         if (!CanBeInterrupted()) return;
 
+        if (isInComboGap)
+        {
+            lastAttackTime = Time.time;
+            currentAttackCooldown = Random.Range(attackCooldownMin, attackCooldownMax);
+        }
+
         isAttacking = false;
+        isComboStarted = false;
         isLashActive = false;
         isLashCharging = false;
         isLashHitPhase = false;
@@ -179,7 +206,7 @@ public class LasherController : EnemyBase
         lockedAttackDir = Vector3.zero;
         currentAttackType = LasherAttackType.None;
 
-        stats.RemoveMultiplierModifier(lashSpeedMod);
+        RemoveLashSpeedMod();
         health.StopFlashBuildup();
 
         var agent = movement.GetAgent();
@@ -189,11 +216,13 @@ public class LasherController : EnemyBase
             movement.SetCanMove(true);
         }
 
-        StopAllCoroutines();
+        StopCoroutine(nameof(SingleDash));
+        StopCoroutine(nameof(ComboGapRoutine));
+        StopCoroutine(nameof(LashHitRoutine));
         strafe.Reset();
     }
 
-    // ??? Animation Events ???????????????????????????????????????????
+    // Animation Events
 
     public void LockAttackDirection()
     {
@@ -216,21 +245,19 @@ public class LasherController : EnemyBase
         health.TryFlash(Color.white);
     }
 
-    // Attack1_Dash1
     public void DashAttackFirst()
     {
+        isComboStarted = true;
         isInComboGap = false;
         StartCoroutine(SingleDash(lockedAttackDir));
     }
 
-    // Attack1_Dash1 ???? clip
     public void OnComboGap()
     {
         isInComboGap = true;
         StartCoroutine(ComboGapRoutine());
     }
 
-    // Attack1_Dash2
     public void DashAttackSecond()
     {
         isInComboGap = false;
@@ -244,19 +271,22 @@ public class LasherController : EnemyBase
             ? newDir
             : Vector3.RotateTowards(lockedAttackDir, newDir, comboMaxRedirectAngle * Mathf.Deg2Rad, 0f);
 
+        lockedAttackDir = dash2Dir;
         StartCoroutine(SingleDash(dash2Dir));
     }
 
-    // Attack2_Start ???? clip
     public void StartLashCharge()
     {
         isLashActive = true;
         isLashCharging = true;
         lashChargeTimer = 0f;
-        stats.AddMultiplierModifier(lashSpeedMod);
+        if (!lashSpeedModApplied)
+        {
+            stats.AddMultiplierModifier(lashSpeedMod);
+            lashSpeedModApplied = true;
+        }
     }
 
-    // Attack2_End
     public void LashHit()
     {
         isLashHitPhase = true;
@@ -267,6 +297,7 @@ public class LasherController : EnemyBase
     public void FinishAttack()
     {
         isAttacking = false;
+        isComboStarted = false;
         isLashActive = false;
         isLashCharging = false;
         isLashHitPhase = false;
@@ -274,14 +305,21 @@ public class LasherController : EnemyBase
         isInComboGap = false;
         lockedAttackDir = Vector3.zero;
         currentAttackType = LasherAttackType.None;
-        stats.RemoveMultiplierModifier(lashSpeedMod);
+        RemoveLashSpeedMod();
         lastAttackTime = Time.time;
         currentAttackCooldown = Random.Range(attackCooldownMin, attackCooldownMax);
         strafe.Reset();
         TriggerPostAttackDelay();
     }
 
-    // ??? Coroutines ??????????????????????????????????????????????????
+    private void RemoveLashSpeedMod()
+    {
+        if (!lashSpeedModApplied) return;
+        stats.RemoveMultiplierModifier(lashSpeedMod);
+        lashSpeedModApplied = false;
+    }
+
+    // Coroutines
 
     private IEnumerator ComboGapRoutine()
     {
@@ -321,20 +359,38 @@ public class LasherController : EnemyBase
 
     private IEnumerator LashHitRoutine()
     {
-        Vector3 hitPos = transform.position;
-        DealAoeDamage(hitPos, lashHitRadius, lashDamageScale);
-
-        yield return new WaitForSeconds(lashTipDelay);
-
-        Vector3 forward = transform.forward;
+        Vector3 forward = lockedAttackDir.sqrMagnitude > 0.001f ? lockedAttackDir : transform.forward;
         forward.y = 0f;
         if (forward.sqrMagnitude > 0.001f) forward.Normalize();
-        DealAoeDamage(hitPos + forward * lashTipOffset, lashTipRadius, lashTipDamageScale);
+
+        LayerMask hitMask = (1 << LayerMask.NameToLayer("Player"))
+                          | (1 << LayerMask.NameToLayer("Summoner"))
+                          | (1 << LayerMask.NameToLayer("Totem"));
+
+        Vector3 currentPos = transform.position + forward * lashHitOffset;
+        SpawnLashField(currentPos, lashHitRadius, stats.Damage * lashDamageScale, 0f, hitMask);
+
+        currentPos = transform.position + forward * lashHitOffset;
+        for (int i = 0; i < lashTipCount; i++)
+        {
+            currentPos += forward * lashTipOffset;
+            SpawnLashField(currentPos, lashTipRadius, stats.Damage * lashTipDamageScale, lashTipDelay * (i + 1), hitMask);
+        }
+
+        float totalDuration = lashTipDelay * lashTipCount + lashFieldFadeInDuration;
+        yield return new WaitForSeconds(totalDuration);
 
         isLashHitPhase = false;
     }
 
-    // ??? Helpers ?????????????????????????????????????????????????????
+    private void SpawnLashField(Vector3 pos, float radius, float damage, float startDelay, LayerMask targetLayers)
+    {
+        if (lashAoeFieldPrefab == null) return;
+        var go = Instantiate(lashAoeFieldPrefab, pos, Quaternion.identity);
+        go.GetComponent<LashAoeField>()?.Initialize(radius, damage, startDelay, lashFieldFadeInDuration, lashFieldStayDuration, lashFieldFadeOutDuration, targetLayers, health, lashAoeVFX, lashVFXBaseRadius, lashVFXOffsetY, lashVFXOffsetZMult);
+    }
+
+    // Helpers
 
     private void ApplyDamage(Collider col, float damage)
     {
@@ -345,30 +401,26 @@ public class LasherController : EnemyBase
         if (hb != null && !hb.IsDead && hb != health) hb.TakeDamage(damage);
     }
 
-    private void DealAoeDamage(Vector3 center, float radius, float damageScale)
-    {
-        LayerMask hitMask = (1 << LayerMask.NameToLayer("Player"))
-                          | (1 << LayerMask.NameToLayer("Summoner"))
-                          | (1 << LayerMask.NameToLayer("Totem"));
-
-        var alreadyHit = new HashSet<GameObject>();
-        Collider[] hits = Physics.OverlapSphere(center, radius, hitMask);
-        foreach (var col in hits)
-        {
-            if (alreadyHit.Contains(col.gameObject)) continue;
-            alreadyHit.Add(col.gameObject);
-            ApplyDamage(col, stats.Damage * damageScale);
-        }
-    }
-
     protected new void OnDrawGizmosSelected()
     {
         base.OnDrawGizmosSelected();
+
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
+
+        Vector3 forward = lockedAttackDir.sqrMagnitude > 0.001f ? lockedAttackDir : transform.forward;
+        forward.y = 0f;
+        if (forward.sqrMagnitude > 0.001f) forward.Normalize();
+
+        Vector3 currentPos = transform.position + forward * lashHitOffset;
         Gizmos.color = new Color(1f, 0.4f, 0f);
-        Gizmos.DrawWireSphere(transform.position, lashHitRadius);
+        Gizmos.DrawWireSphere(currentPos, lashHitRadius);
+
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position + transform.forward * lashTipOffset, lashTipRadius);
+        for (int i = 0; i < lashTipCount; i++)
+        {
+            currentPos += forward * lashTipOffset;
+            Gizmos.DrawWireSphere(currentPos, lashTipRadius);
+        }
     }
 }
