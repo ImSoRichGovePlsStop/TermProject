@@ -32,6 +32,11 @@ public abstract class EnemyProjectileBase : MonoBehaviour
     protected virtual void Update()
     {
         if (hasHit) return;
+        if (Physics.Raycast(transform.position, moveDirection, speed * Time.deltaTime + 0.1f, obstacleLayers))
+        {
+            OnHit();
+            return;
+        }
         Move();
         if (traveled >= maxTravelDistance)
             OnHit();
