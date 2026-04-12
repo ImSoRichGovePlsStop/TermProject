@@ -268,6 +268,7 @@ public class ReaverController : EnemyBase
             if (toTarget.sqrMagnitude > 0.001f) lockedAttackDir = toTarget.normalized;
         }
 
+        animator?.ResetTrigger("ChargeStart");
         yield return null;
         while (animator != null && !animator.GetCurrentAnimatorStateInfo(0).IsName("Charge_WindUp"))
             yield return null;
@@ -472,6 +473,7 @@ public class ReaverController : EnemyBase
             ? (TargetPosition - transform.position).normalized
             : lockedAttackDir;
 
+        animator?.ResetTrigger("ChargeStart");
         animator?.SetTrigger("ChargeRedirectWindUp");
 
         yield return null;
