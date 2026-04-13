@@ -48,6 +48,8 @@ public abstract class EnemyBase : MonoBehaviour
     [SerializeField] private float spawnEffectScale = 1f;
     [SerializeField] private float spawnStayDuration = 0.5f;
 
+    protected bool skipSpawnEffect = false;
+
     protected bool isDead;
     protected bool isHurting = false;
     protected bool isSpawning = false;
@@ -66,7 +68,7 @@ public abstract class EnemyBase : MonoBehaviour
 
     protected virtual void Start()
     {
-        if (spawnEffectPrefab != null)
+        if (spawnEffectPrefab != null || skipSpawnEffect)
             StartCoroutine(SpawnRoutine());
     }
 
@@ -90,11 +92,15 @@ public abstract class EnemyBase : MonoBehaviour
 
         if (spriteRenderer != null) spriteRenderer.enabled = true;
 
-        GameObject effectGO = Instantiate(spawnEffectPrefab, finalPos, Quaternion.identity);
-        effectGO.transform.localScale *= spawnEffectScale;
-        EnemySpawnEffect effect = effectGO.GetComponent<EnemySpawnEffect>();
-        effect.Init();
-        effect.PlayFadeIn(spawnDuration);
+        EnemySpawnEffect effect = null;
+        if (!skipSpawnEffect && spawnEffectPrefab != null)
+        {
+            GameObject effectGO = Instantiate(spawnEffectPrefab, finalPos, Quaternion.identity);
+            effectGO.transform.localScale *= spawnEffectScale;
+            effect = effectGO.GetComponent<EnemySpawnEffect>();
+            effect.Init();
+            effect.PlayFadeIn(spawnDuration);
+        }
 
         float t = 0f;
         while (t < spawnDuration)
@@ -106,7 +112,7 @@ public abstract class EnemyBase : MonoBehaviour
         }
         transform.position = finalPos;
 
-        effect.PlayFadeOut(spawnFadeOutDuration);
+        effect?.PlayFadeOut(spawnFadeOutDuration);
 
         agent.enabled = true;
         agent.Warp(finalPos);
