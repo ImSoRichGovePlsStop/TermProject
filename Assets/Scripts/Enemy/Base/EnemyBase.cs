@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 [RequireComponent(typeof(EnemyHealthBase))]
 [RequireComponent(typeof(EnemyMovementBase))]
@@ -39,12 +40,107 @@ public abstract class EnemyBase : MonoBehaviour
     [SerializeField] private float postHurtDelayMin = 0.1f;
     [SerializeField] private float postHurtDelayMax = 0.3f;
 
+    [Header("Spawn Animation")]
+    [SerializeField] private GameObject spawnEffectPrefab;
+    [SerializeField] private float spawnRiseDistance = 1.5f;
+    [SerializeField] private float spawnDuration = 1f;
+    [SerializeField] private float spawnFadeOutDuration = 0.4f;
+    [SerializeField] private float spawnEffectScale = 1f;
+    [SerializeField] private float spawnStayDuration = 0.5f;
+
     protected bool isDead;
     protected bool isHurting = false;
+    protected bool isSpawning = false;
 
     public virtual bool CanBeInterrupted() => true;
 
     private Coroutine hurtCoroutine;
+
+    protected virtual void Awake()
+    {
+        if (health == null) health = GetComponent<EnemyHealthBase>();
+        if (movement == null) movement = GetComponent<EnemyMovementBase>();
+        if (stats == null) stats = GetComponent<EntityStats>();
+        if (animator == null) animator = GetComponentInChildren<Animator>();
+    }
+
+    protected virtual void Start()
+    {
+        if (spawnEffectPrefab != null)
+            StartCoroutine(SpawnRoutine());
+    }
+
+    private IEnumerator SpawnRoutine()
+    {
+        isSpawning = true;
+        health.IsInvincible = true;
+
+        NavMeshAgent agent = movement.GetAgent();
+
+        SpriteRenderer spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        if (spriteRenderer != null) spriteRenderer.enabled = false;
+
+        yield return null;
+        Vector3 finalPos = transform.position;
+
+        agent.enabled = false;
+
+        Vector3 startPos = finalPos + Vector3.down * spawnRiseDistance;
+        transform.position = startPos;
+
+        if (spriteRenderer != null) spriteRenderer.enabled = true;
+
+        GameObject effectGO = Instantiate(spawnEffectPrefab, finalPos, Quaternion.identity);
+        effectGO.transform.localScale *= spawnEffectScale;
+        EnemySpawnEffect effect = effectGO.GetComponent<EnemySpawnEffect>();
+        effect.Init();
+        effect.PlayFadeIn(spawnDuration);
+
+        float t = 0f;
+        while (t < spawnDuration)
+        {
+            t += Time.deltaTime;
+            float ratio = Mathf.SmoothStep(0f, 1f, t / spawnDuration);
+            transform.position = Vector3.Lerp(startPos, finalPos, ratio);
+            yield return null;
+        }
+        transform.position = finalPos;
+
+        effect.PlayFadeOut(spawnFadeOutDuration);
+
+        agent.enabled = true;
+        agent.Warp(finalPos);
+
+        yield return new WaitForSeconds(spawnStayDuration);
+
+        health.IsInvincible = false;
+        movement.SetCanMove(true);
+        isSpawning = false;
+
+        OnSpawnComplete();
+    }
+
+    protected virtual void OnSpawnComplete() { }
+
+    protected virtual void Update()
+    {
+        if (isDead) return;
+        if (isSpawning) return;
+        if (isHurting) { movement.StopMoving(); return; }
+
+        if (isPostAttackDelay)
+        {
+            movement.StopMoving();
+            postAttackTimer -= Time.deltaTime;
+            if (postAttackTimer <= 0f)
+                isPostAttackDelay = false;
+            return;
+        }
+
+        UpdateTarget();
+        UpdateState();
+        TickState();
+    }
 
     public void TriggerHurt()
     {
@@ -81,33 +177,6 @@ public abstract class EnemyBase : MonoBehaviour
             if (entityTarget != null) return entityTarget.transform.position;
             return transform.position;
         }
-    }
-
-    protected virtual void Awake()
-    {
-        if (health == null) health = GetComponent<EnemyHealthBase>();
-        if (movement == null) movement = GetComponent<EnemyMovementBase>();
-        if (stats == null) stats = GetComponent<EntityStats>();
-        if (animator == null) animator = GetComponentInChildren<Animator>();
-    }
-
-    protected virtual void Update()
-    {
-        if (isDead) return;
-        if (isHurting) { movement.StopMoving(); return; }
-
-        if (isPostAttackDelay)
-        {
-            movement.StopMoving();
-            postAttackTimer -= Time.deltaTime;
-            if (postAttackTimer <= 0f)
-                isPostAttackDelay = false;
-            return;
-        }
-
-        UpdateTarget();
-        UpdateState();
-        TickState();
     }
 
     protected void TriggerPostAttackDelay()
