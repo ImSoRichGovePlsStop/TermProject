@@ -5,6 +5,9 @@ public class EnemyMovementBase : MovementBase
     [Header("Animation")]
     [SerializeField] private Animator animator;
 
+    [Header("Sprite")]
+    [SerializeField] private bool flipXByDefault = false;
+
     protected override void Awake()
     {
         base.Awake();
@@ -26,8 +29,8 @@ public class EnemyMovementBase : MovementBase
         if (spriteRenderer == null) return;
 
         if (direction.x > 0.05f)
-            spriteRenderer.flipX = false;
+            spriteRenderer.flipX = flipXByDefault;
         else if (direction.x < -0.05f)
-            spriteRenderer.flipX = true;
+            spriteRenderer.flipX = !flipXByDefault;
     }
 }

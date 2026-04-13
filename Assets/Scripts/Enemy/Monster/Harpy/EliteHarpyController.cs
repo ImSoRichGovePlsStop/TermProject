@@ -60,7 +60,7 @@ public class EliteHarpyController : HarpyController
             eliteHealth.OnEnrage += () => isEnraged = true;
     }
 
-    private void Start()
+    protected override void Start()
     {
         baseY = transform.position.y;
         lastAirTime = Time.time;
