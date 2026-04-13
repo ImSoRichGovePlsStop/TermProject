@@ -37,68 +37,26 @@ public class GoldenStatue : MonoBehaviour
     {
         int statIndex = Random.Range(0, 6);
         string statName;
-
+        string displayValue;
         StatModifier bonus = new StatModifier();
 
         switch (statIndex)
         {
-            case 0:
-                bonus.health = stats.BaseHP * boost;
-                statName = "Max HP";
-                DamageNumberSpawner.Instance?.SpawnMessage(
-                transform.position,
-                $"+{bonus.health:P0} {statName}!",
-                new Color(1f, 0.9f, 0.3f));
-                break;
-            case 1:
-                bonus.damage = stats.BaseDMG * boost;
-                statName = "Damage";
-                DamageNumberSpawner.Instance?.SpawnMessage(
-                transform.position,
-                $"+{bonus.damage:P0} {statName}!",
-                new Color(1f, 0.9f, 0.3f));
-                break;
-            case 2:
-                bonus.attackSpeed = stats.BaseATKSPD * boost;
-                statName = "Attack Speed";
-                DamageNumberSpawner.Instance?.SpawnMessage(
-                transform.position,
-                $"+{bonus.attackSpeed:P0} {statName}!",
-                new Color(1f, 0.9f, 0.3f));
-                break;
-            case 3:
-                bonus.moveSpeed = stats.BaseMOVSPD * boost;
-                statName = "Move Speed";
-                DamageNumberSpawner.Instance?.SpawnMessage(
-                transform.position,
-                $"+{bonus.moveSpeed:P0} {statName}!",
-                new Color(1f, 0.9f, 0.3f));
-                break;
-            case 4:
-                bonus.critChance = stats.BaseCrit * boost;
-                statName = "Crit Chance";
-                DamageNumberSpawner.Instance?.SpawnMessage(
-                transform.position,
-                $"+{bonus.critChance:P0} {statName}!",
-                new Color(1f, 0.9f, 0.3f));
-                break;
-            case 5:
-                bonus.critDamage = stats.BaseCritDMG * boost;
-                statName = "Crit Damage";
-                DamageNumberSpawner.Instance?.SpawnMessage(
-                transform.position,
-                $"+{bonus.critDamage:P0} {statName}!",
-                new Color(1f, 0.9f, 0.3f));
-                break;
-            default:
-                statName = "Stat";
-                break;
+            case 0: bonus.health = stats.BaseHP * boost; statName = "Max HP"; displayValue = $"{bonus.health:F1}"; break;
+            case 1: bonus.damage = stats.BaseDMG * boost; statName = "Damage"; displayValue = $"{bonus.damage:F1}"; break;
+            case 2: bonus.attackSpeed = stats.BaseATKSPD * boost; statName = "Attack Speed"; displayValue = $"{bonus.attackSpeed:F1}"; break;
+            case 3: bonus.moveSpeed = stats.BaseMOVSPD * boost; statName = "Move Speed"; displayValue = $"{bonus.moveSpeed:F1}"; break;
+            case 4: bonus.critChance = stats.BaseCrit * boost; statName = "Crit Chance"; displayValue = $"{bonus.critChance:P1}"; break;
+            case 5: bonus.critDamage = stats.BaseCritDMG * boost; statName = "Crit Damage"; displayValue = $"{bonus.critDamage:P1}"; break;
+            default: statName = "Stat"; displayValue = "0"; break;
         }
 
+        DamageNumberSpawner.Instance?.SpawnMessage(
+            transform.position,
+            $"+{displayValue} {statName}!",
+            new Color(1f, 0.9f, 0.3f));
+
         stats.AddFlatModifier(bonus);
-
-
-
         Destroy(gameObject);
     }
 }
