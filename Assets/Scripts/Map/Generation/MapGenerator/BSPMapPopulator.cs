@@ -2,7 +2,6 @@ using Unity.AI.Navigation;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-
 [RequireComponent(typeof(BSPMapGeometry))]
 public class BSPMapPopulator : MonoBehaviour
 {
@@ -34,8 +33,6 @@ public class BSPMapPopulator : MonoBehaviour
     [Header("Trigger")]
     public float triggerHeight = 3f;
 
-
-
     void Awake()
     {
         GetComponent<BSPMapGeometry>().OnMapReady += PopulateRooms;
@@ -47,8 +44,6 @@ public class BSPMapPopulator : MonoBehaviour
         if (geo != null) geo.OnMapReady -= PopulateRooms;
     }
 
-
-
     void PopulateRooms(System.Collections.Generic.IReadOnlyList<MapNode> nodes)
     {
         foreach (var node in nodes)
@@ -59,115 +54,60 @@ public class BSPMapPopulator : MonoBehaviour
 
     System.Collections.IEnumerator BakeNavMeshNextFrame()
     {
-
         yield return null;
-
         if (navMeshSurface != null)
-        {
             navMeshSurface.BuildNavMesh();
-            Debug.Log("[MapPopulator] NavMesh baked.");
-        }
-        else
-        {
-            Debug.LogWarning("[MapPopulator] NavMeshSurface not assigned — navmesh skipped.");
-        }
     }
 
     GameObject SpawnRoom(MapNode node) => node.Type switch
     {
-        RoomType.Spawn => SpawnSpawnRoom(node),
-        RoomType.Battle => SpawnBattleRoom(node),
-        RoomType.Boss => SpawnBossRoom(node),
-        RoomType.Heal => SpawnEventRoom(node, healStationPrefab, SetupHeal),
-        RoomType.Shop => SpawnEventRoom(node, shopStationPrefab, SetupShop),
+        RoomType.Spawn    => SpawnSpawnRoom(node),
+        RoomType.Battle   => SpawnBattleRoom(node),
+        RoomType.Boss     => SpawnBossRoom(node),
+        RoomType.Heal     => SpawnEventRoom(node, healStationPrefab, SetupHeal),
+        RoomType.Shop     => SpawnEventRoom(node, shopStationPrefab, SetupShop),
         RoomType.RareLoot => SpawnEventRoom(node, lootPrefab, SetupRareLoot),
-        RoomType.Merge => SpawnEventRoom(node, mergeStationPrefab, SetupMerge),
-        _ => null
+        RoomType.Merge    => SpawnEventRoom(node, mergeStationPrefab, SetupMerge),
+        _                 => null
     };
-
 
     GameObject SpawnSpawnRoom(MapNode node)
     {
-        var prefab = node.ChosenPrefab;
-        GameObject obj;
-        if (prefab != null)
-            obj = Instantiate(prefab, node.WorldCenter, Quaternion.identity);
-        else
-        {
-            obj = new GameObject();
-            obj.transform.position = node.WorldCenter;
-        }
-        obj.name = "SpawnRoom";
-        var sr = obj.AddComponent<SpawnRoom>();
-        sr.node = ToLegacy(node);
+        var obj = MakeRoomObject(node, "SpawnRoom");
+        obj.AddComponent<SpawnRoom>().node = ToLegacy(node);
         return obj;
     }
 
     GameObject SpawnBattleRoom(MapNode node)
     {
-        var prefab = node.ChosenPrefab;
-        GameObject obj;
-        if (prefab != null)
-            obj = Instantiate(prefab, node.WorldCenter, Quaternion.identity);
-        else
-        {
-            obj = new GameObject();
-            obj.transform.position = node.WorldCenter;
-        }
-        obj.name = "BattleRoom";
-        Vector3 vol = Volume(node);
-
+        var obj  = MakeRoomObject(node, "BattleRoom");
+        var vol  = Volume(node);
         var room = obj.AddComponent<BattleRoom>();
-        room.node = ToLegacy(node);
-        room.lootPrefab = lootPrefab;
-        room.upgradeStationPrefab = freeUpgradeStationPrefab;
-        room.boundaryMaterial = boundaryMaterial;
-        room.enemyPrefabs = normalEnemyPrefabs;
+        room.node                   = ToLegacy(node);
+        room.lootPrefab             = lootPrefab;
+        room.upgradeStationPrefab   = freeUpgradeStationPrefab;
+        room.boundaryMaterial       = boundaryMaterial;
+        room.enemyPrefabs           = normalEnemyPrefabs;
         room.SetRoomSize(vol);
-        room.enemyCount = ScaleEnemyCount(vol);
-        room.spawnCells = CollectSpawnCells(node);
+        room.enemyCount             = room.ScaleEnemyCount(vol);
+        room.spawnCells             = CollectSpawnCells(node);
         AddTrigger(obj, vol);
         return obj;
     }
 
-    System.Collections.Generic.List<Vector3> CollectSpawnCells(MapNode node)
-    {
-        var cells = new System.Collections.Generic.List<Vector3>();
-        var geo = GetComponent<BSPMapGeometry>();
-        if (geo == null) return cells;
-        var roomMap = geo.RoomMapPublic;
-        if (roomMap == null) return cells;
-
-        for (int x = node.MinX; x <= node.MaxX; x++)
-            for (int z = node.MinZ; z <= node.MaxZ; z++)
-                if (roomMap[x, z] == node)
-                    cells.Add(new Vector3(x + 0.5f, 0f, z + 0.5f));
-        return cells;
-    }
-
     GameObject SpawnBossRoom(MapNode node)
     {
-        var prefab = node.ChosenPrefab;
-        GameObject obj;
-        if (prefab != null)
-            obj = Instantiate(prefab, node.WorldCenter, Quaternion.identity);
-        else
-        {
-            obj = new GameObject();
-            obj.transform.position = node.WorldCenter;
-        }
-        obj.name = "BossRoom";
-        Vector3 vol = Volume(node);
-
+        var obj  = MakeRoomObject(node, "BossRoom");
+        var vol  = Volume(node);
         var room = obj.AddComponent<BossRoom>();
-        room.node = ToLegacy(node);
-        room.bossPrefab = PickBoss();
-        room.lootPrefab = lootPrefab;
-        room.portalPrefab = portalPrefab;
+        room.node             = ToLegacy(node);
+        room.bossPrefab       = PickBoss();
+        room.lootPrefab       = lootPrefab;
+        room.portalPrefab     = portalPrefab;
         room.portalFinalPrefab = portalFinalPrefab;
         room.boundaryMaterial = boundaryMaterial;
+        room.spawnCells       = CollectSpawnCells(node);
         room.SetRoomSize(vol);
-
         AddTrigger(obj, vol);
         return obj;
     }
@@ -175,24 +115,10 @@ public class BSPMapPopulator : MonoBehaviour
     GameObject SpawnEventRoom(MapNode node, GameObject stationPrefab,
                               System.Action<GameObject, Transform, MapNode> setup)
     {
-        if (stationPrefab == null)
-        {
-            Debug.LogWarning($"[MapPopulator] Missing station prefab for {node.Type}");
-            return null;
-        }
-        var prefab = node.ChosenPrefab;
-        GameObject obj;
-        if (prefab != null)
-            obj = Instantiate(prefab, node.WorldCenter, Quaternion.identity);
-        else
-        {
-            obj = new GameObject();
-            obj.transform.position = node.WorldCenter;
-        }
-        obj.name = node.Type + "Room";
+        if (stationPrefab == null) return null;
+        var obj    = MakeRoomObject(node, node.Type + "Room");
         var preset = obj.GetComponent<RoomPreset>();
-        var pt = (preset?.interactableSpawnPoint != null) ? preset.interactableSpawnPoint : obj.transform;
-
+        var pt     = (preset?.interactableSpawnPoint != null) ? preset.interactableSpawnPoint : obj.transform;
         AddTrigger(obj, Volume(node));
         setup(obj, pt, node);
         return obj;
@@ -200,36 +126,63 @@ public class BSPMapPopulator : MonoBehaviour
 
     void SetupHeal(GameObject o, Transform p, MapNode n)
     {
-        var r = o.AddComponent<HealRoom>(); r.node = ToLegacy(n); r.healStationPrefab = healStationPrefab; r.Init(p);
+        var r = o.AddComponent<HealRoom>();
+        r.node = ToLegacy(n);
+        r.healStationPrefab = healStationPrefab;
+        r.Init(p);
     }
+
     void SetupShop(GameObject o, Transform p, MapNode n)
     {
         var r = o.AddComponent<ShopRoom>();
-        r.node = ToLegacy(n);
-        r.shopStationPrefab = shopStationPrefab;
-        r.costedHealPrefab = costedHealPrefab;
+        r.node                = ToLegacy(n);
+        r.shopStationPrefab   = shopStationPrefab;
+        r.costedHealPrefab    = costedHealPrefab;
         r.costedUpgradePrefab = costedUpgradePrefab;
         r.Init(p);
     }
+
     void SetupRareLoot(GameObject o, Transform p, MapNode n)
     {
         var r = o.AddComponent<RareLootRoom>();
-        r.node = ToLegacy(n);
+        r.node      = ToLegacy(n);
         r.lootPrefab = lootPrefab;
         r.Init(o.transform);
     }
+
     void SetupMerge(GameObject o, Transform p, MapNode n)
     {
-        var r = o.AddComponent<MergeRoom>(); r.node = ToLegacy(n); r.mergeStationPrefab = mergeStationPrefab; r.Init(p);
+        var r = o.AddComponent<MergeRoom>();
+        r.node               = ToLegacy(n);
+        r.mergeStationPrefab = mergeStationPrefab;
+        r.Init(p);
     }
 
-
-
-    int ScaleEnemyCount(Vector3 vol)
+    GameObject MakeRoomObject(MapNode node, string name)
     {
-        float scale = (((vol.x * vol.z) / 60f) - 1) * 0.3f + 1f;
+        var prefab = node.ChosenPrefab;
+        GameObject obj;
+        if (prefab != null)
+            obj = Object.Instantiate(prefab, node.WorldCenter, Quaternion.identity);
+        else
+        {
+            obj = new GameObject();
+            obj.transform.position = node.WorldCenter;
+        }
+        obj.name = name;
+        return obj;
+    }
 
-        return (int)(Random.Range(8f, 12f) * scale);
+    System.Collections.Generic.List<Vector3> CollectSpawnCells(MapNode node)
+    {
+        var cells  = new System.Collections.Generic.List<Vector3>();
+        var roomMap = GetComponent<BSPMapGeometry>()?.RoomMapPublic;
+        if (roomMap == null) return cells;
+        for (int x = node.MinX; x <= node.MaxX; x++)
+            for (int z = node.MinZ; z <= node.MaxZ; z++)
+                if (roomMap[x, z] == node)
+                    cells.Add(new Vector3(x + 0.5f, 0f, z + 0.5f));
+        return cells;
     }
 
     GameObject PickBoss()
@@ -239,44 +192,28 @@ public class BSPMapPopulator : MonoBehaviour
         return bossPrefabs[idx];
     }
 
-    GameObject[] FloorWeightedEnemyPool()
-    {
-        if (normalEnemyPrefabs == null || normalEnemyPrefabs.Length == 0)
-            return new GameObject[0];
-
-        int floor = Mathf.Clamp(RunManager.Instance?.CurrentFloor ?? 1, 1, 4);
-        int count = floor switch { 1 => 2, 2 => 2, 3 => Mathf.Min(3, normalEnemyPrefabs.Length), _ => Mathf.Min(4, normalEnemyPrefabs.Length) };
-
-        var pool = new GameObject[count];
-        for (int i = 0; i < count; i++) pool[i] = normalEnemyPrefabs[i];
-        return pool;
-    }
-
-
-
     Vector3 Volume(MapNode n) => new Vector3(n.Width, triggerHeight, n.Depth);
 
     void AddTrigger(GameObject obj, Vector3 vol)
     {
         var col = obj.AddComponent<BoxCollider>();
         col.isTrigger = true;
-        col.size = vol;
-        col.center = new Vector3(0, triggerHeight / 2f, 0);
+        col.size      = vol;
+        col.center    = new Vector3(0, triggerHeight / 2f, 0);
     }
-
 
     static RoomNode ToLegacy(MapNode n)
     {
         if (n.LegacyNode != null) return n.LegacyNode;
         return new RoomNode
         {
-            Type = n.Type,
-            MatrixOrigin = new Vector2Int(n.MinX, n.MinZ),
-            MatrixCenter = new Vector2Int(n.CenterX, n.CenterZ),
-            Size = new Vector2Int(n.Width, n.Depth),
+            Type          = n.Type,
+            MatrixOrigin  = new Vector2Int(n.MinX, n.MinZ),
+            MatrixCenter  = new Vector2Int(n.CenterX, n.CenterZ),
+            Size          = new Vector2Int(n.Width, n.Depth),
             WorldPosition = n.WorldCenter,
-            ChosenPrefab = n.ChosenPrefab,
-            RoomObject = n.RoomObject,
+            ChosenPrefab  = n.ChosenPrefab,
+            RoomObject    = n.RoomObject,
         };
     }
 }
