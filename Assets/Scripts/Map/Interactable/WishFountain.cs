@@ -74,6 +74,8 @@ public class WishFountain : MonoBehaviour, IInteractable
 
                 case 3:
                     ApplyStatBlessing(playerController.GetComponent<PlayerStats>());
+                    DamageNumberSpawner.Instance?.SpawnMessage(
+                    transform.position, "Blessing: Body Enhancement", new Color(0f, 1f, 0.4f));
                     break;
             }
         }
@@ -124,9 +126,6 @@ public class WishFountain : MonoBehaviour, IInteractable
         }
 
         stats.AddFlatModifier(bonus);
-        DamageNumberSpawner.Instance?.SpawnMessage(
-            transform.position,
-            $"Blessing: +{boost:P0} {statName}!",
-            new Color(1f, 0.9f, 0.3f));
+
     }
 }
