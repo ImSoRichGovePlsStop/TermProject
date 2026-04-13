@@ -5,6 +5,7 @@ public class TilePlacer : MonoBehaviour
     public GameObject tilePrefab;
     public int width = 5;
     public int height = 5;
+    public float y = 0f;
     public float tileSize = 1f;
 
     [ContextMenu("Place Tiles")]
@@ -14,7 +15,7 @@ public class TilePlacer : MonoBehaviour
         {
             for (int z = 0; z < height; z++)
             {
-                Vector3 pos = new Vector3(x * tileSize, 0, z * tileSize);
+                Vector3 pos = new Vector3(x * tileSize, y, z * tileSize);
                 Instantiate(tilePrefab, pos, Quaternion.identity, transform);
             }
         }
