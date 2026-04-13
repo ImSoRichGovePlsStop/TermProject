@@ -251,7 +251,8 @@ public class ReaverController : EnemyBase
     public void DashAttack()
     {
         if (isDashing) return;
-        StartCoroutine(DashRoutine());
+        isDashing = true;
+        StartCoroutine(DashRoutine(lockedAttackDir, dashSpeed, dashDuration, dashHitRadius, dashDamageScale, () => isDashing = false));
     }
 
     public void StartCharge()
@@ -333,36 +334,6 @@ public class ReaverController : EnemyBase
     }
 
     // Coroutines
-
-    private IEnumerator DashRoutine()
-    {
-        isDashing = true;
-
-        var agent = movement.GetAgent();
-        if (agent != null && agent.isOnNavMesh) agent.enabled = false;
-
-        LayerMask hitMask = GetHitMask();
-        var alreadyHit = new HashSet<GameObject>();
-
-        float elapsed = 0f;
-        while (elapsed < dashDuration)
-        {
-            transform.position += lockedAttackDir * dashSpeed * stats.MoveSpeedRatio * Time.deltaTime;
-            elapsed += Time.deltaTime;
-
-            Collider[] hits = Physics.OverlapSphere(transform.position, dashHitRadius, hitMask);
-            foreach (var col in hits)
-            {
-                if (alreadyHit.Contains(col.gameObject)) continue;
-                alreadyHit.Add(col.gameObject);
-                ApplyDamage(col, stats.Damage * dashDamageScale);
-            }
-            yield return null;
-        }
-
-        if (agent != null && !agent.enabled) agent.enabled = true;
-        isDashing = false;
-    }
 
     private IEnumerator ChargeRoutine()
     {
