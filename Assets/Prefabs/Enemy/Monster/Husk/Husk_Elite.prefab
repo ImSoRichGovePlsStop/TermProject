@@ -202,6 +202,12 @@ MonoBehaviour:
   hurtDuration: 0.2
   postHurtDelayMin: 0.4
   postHurtDelayMax: 0.8
+  spawnEffectPrefab: {fileID: 3949215935890344370, guid: 797e565db31f59e419b532825631e891, type: 3}
+  spawnRiseDistance: 1.5
+  spawnDuration: 2
+  spawnFadeOutDuration: 1
+  spawnEffectScale: 3
+  spawnStayDuration: 0.5
   strafe:
     preferredDistMin: 1
     preferredDistMax: 1.5

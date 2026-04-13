@@ -52,6 +52,7 @@ public abstract class MovementBase : MonoBehaviour
     public virtual void MoveToTarget(Vector3 targetPosition)
     {
         if (!canMove) return;
+        if (!agent.isOnNavMesh) return;
 
         agent.isStopped = false;
         agent.SetDestination(targetPosition);

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 [RequireComponent(typeof(EnemyHealthBase))]
 [RequireComponent(typeof(EnemyMovementBase))]
@@ -39,12 +40,113 @@ public abstract class EnemyBase : MonoBehaviour
     [SerializeField] private float postHurtDelayMin = 0.1f;
     [SerializeField] private float postHurtDelayMax = 0.3f;
 
+    [Header("Spawn Animation")]
+    [SerializeField] private GameObject spawnEffectPrefab;
+    [SerializeField] private float spawnRiseDistance = 1.5f;
+    [SerializeField] private float spawnDuration = 1f;
+    [SerializeField] private float spawnFadeOutDuration = 0.4f;
+    [SerializeField] private float spawnEffectScale = 1f;
+    [SerializeField] private float spawnStayDuration = 0.5f;
+
+    protected bool skipSpawnEffect = false;
+
     protected bool isDead;
     protected bool isHurting = false;
+    protected bool isSpawning = false;
 
     public virtual bool CanBeInterrupted() => true;
 
     private Coroutine hurtCoroutine;
+
+    protected virtual void Awake()
+    {
+        if (health == null) health = GetComponent<EnemyHealthBase>();
+        if (movement == null) movement = GetComponent<EnemyMovementBase>();
+        if (stats == null) stats = GetComponent<EntityStats>();
+        if (animator == null) animator = GetComponentInChildren<Animator>();
+    }
+
+    protected virtual void Start()
+    {
+        if (spawnEffectPrefab != null || skipSpawnEffect)
+            StartCoroutine(SpawnRoutine());
+    }
+
+    private IEnumerator SpawnRoutine()
+    {
+        isSpawning = true;
+        health.IsInvincible = true;
+
+        NavMeshAgent agent = movement.GetAgent();
+
+        SpriteRenderer spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        if (spriteRenderer != null) spriteRenderer.enabled = false;
+
+        yield return null;
+        Vector3 finalPos = transform.position;
+
+        agent.enabled = false;
+
+        Vector3 startPos = finalPos + Vector3.down * spawnRiseDistance;
+        transform.position = startPos;
+
+        if (spriteRenderer != null) spriteRenderer.enabled = true;
+
+        EnemySpawnEffect effect = null;
+        if (!skipSpawnEffect && spawnEffectPrefab != null)
+        {
+            GameObject effectGO = Instantiate(spawnEffectPrefab, finalPos, Quaternion.identity);
+            effectGO.transform.localScale *= spawnEffectScale;
+            effect = effectGO.GetComponent<EnemySpawnEffect>();
+            effect.Init();
+            effect.PlayFadeIn(spawnDuration);
+        }
+
+        float t = 0f;
+        while (t < spawnDuration)
+        {
+            t += Time.deltaTime;
+            float ratio = Mathf.SmoothStep(0f, 1f, t / spawnDuration);
+            transform.position = Vector3.Lerp(startPos, finalPos, ratio);
+            yield return null;
+        }
+        transform.position = finalPos;
+
+        effect?.PlayFadeOut(spawnFadeOutDuration);
+
+        agent.enabled = true;
+        agent.Warp(finalPos);
+
+        yield return new WaitForSeconds(spawnStayDuration);
+
+        health.IsInvincible = false;
+        movement.SetCanMove(true);
+        isSpawning = false;
+
+        OnSpawnComplete();
+    }
+
+    protected virtual void OnSpawnComplete() { }
+
+    protected virtual void Update()
+    {
+        if (isDead) return;
+        if (isSpawning) return;
+        if (isHurting) { movement.StopMoving(); return; }
+
+        if (isPostAttackDelay)
+        {
+            movement.StopMoving();
+            postAttackTimer -= Time.deltaTime;
+            if (postAttackTimer <= 0f)
+                isPostAttackDelay = false;
+            return;
+        }
+
+        UpdateTarget();
+        UpdateState();
+        TickState();
+    }
 
     public void TriggerHurt()
     {
@@ -81,33 +183,6 @@ public abstract class EnemyBase : MonoBehaviour
             if (entityTarget != null) return entityTarget.transform.position;
             return transform.position;
         }
-    }
-
-    protected virtual void Awake()
-    {
-        if (health == null) health = GetComponent<EnemyHealthBase>();
-        if (movement == null) movement = GetComponent<EnemyMovementBase>();
-        if (stats == null) stats = GetComponent<EntityStats>();
-        if (animator == null) animator = GetComponentInChildren<Animator>();
-    }
-
-    protected virtual void Update()
-    {
-        if (isDead) return;
-        if (isHurting) { movement.StopMoving(); return; }
-
-        if (isPostAttackDelay)
-        {
-            movement.StopMoving();
-            postAttackTimer -= Time.deltaTime;
-            if (postAttackTimer <= 0f)
-                isPostAttackDelay = false;
-            return;
-        }
-
-        UpdateTarget();
-        UpdateState();
-        TickState();
     }
 
     protected void TriggerPostAttackDelay()
@@ -203,6 +278,45 @@ public abstract class EnemyBase : MonoBehaviour
         isHurting = false;
         animator?.SetBool("IsHurting", false);
         animator?.SetTrigger("Die");
+    }
+
+    protected IEnumerator DashRoutine(Vector3 dir, float speed, float duration, float hitRadius, float damageScale, System.Action onDashEnd)
+    {
+        var agent = movement.GetAgent();
+        if (agent != null && agent.isOnNavMesh) agent.enabled = false;
+
+        LayerMask hitMask = (1 << LayerMask.NameToLayer("Player"))
+                          | (1 << LayerMask.NameToLayer("Summoner"))
+                          | (1 << LayerMask.NameToLayer("Totem"));
+        LayerMask wallMask = (1 << LayerMask.NameToLayer("Wall"))
+                           | (1 << LayerMask.NameToLayer("Barrier"));
+        var alreadyHit = new HashSet<GameObject>();
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            float stepDist = speed * stats.MoveSpeedRatio * Time.deltaTime;
+            if (Physics.Raycast(transform.position, dir, stepDist + 0.1f, wallMask))
+                break;
+
+            transform.position += dir * stepDist;
+            elapsed += Time.deltaTime;
+
+            Collider[] hits = Physics.OverlapSphere(transform.position, hitRadius, hitMask);
+            foreach (var col in hits)
+            {
+                if (alreadyHit.Contains(col.gameObject)) continue;
+                alreadyHit.Add(col.gameObject);
+                var ps = col.GetComponent<PlayerStats>() ?? col.GetComponentInParent<PlayerStats>();
+                if (ps != null && !ps.IsDead) { ps.TakeDamage(stats.Damage * damageScale, health); continue; }
+                var hb = col.GetComponent<HealthBase>() ?? col.GetComponentInParent<HealthBase>();
+                if (hb != null && !hb.IsDead && hb != health) hb.TakeDamage(stats.Damage * damageScale);
+            }
+            yield return null;
+        }
+
+        if (agent != null && !agent.enabled) agent.enabled = true;
+        onDashEnd?.Invoke();
     }
 
     protected void DealDamageToTarget(float damage, float angle, float range)
