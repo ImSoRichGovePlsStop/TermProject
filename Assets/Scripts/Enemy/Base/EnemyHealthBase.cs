@@ -38,6 +38,14 @@ public class EnemyHealthBase : HealthBase
             GainShield(entityStats.BaseShield);
     }
 
+    public void ResetHP()
+    {
+        isDead = false;
+        currentHP = maxHP;
+        CurrentShield = 0f;
+        MaxShield = 0f;
+    }
+
     public void GainShield(float value)
     {
         if (value <= 0f) return;
