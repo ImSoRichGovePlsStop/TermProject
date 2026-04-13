@@ -878,19 +878,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MinimapManager
   minimapRoot: {fileID: 790892548458052559}
-  cellPixels: 4
-  corridorColor: {r: 0.45, g: 0.45, b: 0.45, a: 1}
-  unvisitedRoom: {r: 0.3, g: 0.3, b: 0.3, a: 0.5}
-  currentColor: {r: 1, g: 1, b: 1, a: 1}
-  visitedBattle: {r: 0.8, g: 0.2, b: 0.2, a: 1}
-  spawnColor: {r: 0, g: 1, b: 0, a: 1}
-  bossColor: {r: 1, g: 0, b: 1, a: 1}
-  shopColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  healColor: {r: 0.4, g: 1, b: 0.4, a: 1}
-  upgradeColor: {r: 1, g: 0.5, b: 0, a: 1}
-  mergeColor: {r: 0, g: 1, b: 1, a: 1}
+  fogRadius: 2
+  cellScale: 4
+  borderThickness: 1
+  colorUnmarked: {r: 0.45, g: 0.45, b: 0.45, a: 1}
+  colorEvent: {r: 0.745283, g: 0.71705574, b: 0.5238074, a: 1}
+  colorBattleUnvisited: {r: 0.6792453, g: 0.34282663, b: 0.34282663, a: 1}
+  colorBattleVisited: {r: 0.45, g: 0.45, b: 0.45, a: 1}
+  colorBossUnvisited: {r: 0.55, g: 0.1, b: 0.65, a: 1}
+  colorBossDefeated: {r: 0.4837872, g: 0.41362584, b: 0.5188679, a: 1}
+  colorPlayer: {r: 0.1, g: 0.9, b: 0.2, a: 1}
+  colorHidden: {r: 0, g: 0, b: 0, a: 0}
+  colorWall: {r: 0.2, g: 0.2, b: 0.2, a: 1}
   player: {fileID: 3087691651960519774}
-  playerCorridorColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &1941185337081448578
 GameObject:
   m_ObjectHideFlags: 0
@@ -4073,8 +4073,12 @@ PrefabInstance:
       value: 4278190080
       objectReference: {fileID: 0}
     - target: {fileID: 3428735504024073243, guid: 088faad1b73749547a68f37dcc120c66, type: 3}
+      propertyPath: m_Size
+      value: 0.4652778
+      objectReference: {fileID: 0}
+    - target: {fileID: 3428735504024073243, guid: 088faad1b73749547a68f37dcc120c66, type: 3}
       propertyPath: m_Value
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3456825823267640605, guid: 088faad1b73749547a68f37dcc120c66, type: 3}
       propertyPath: m_AnchorMax.x
@@ -5707,7 +5711,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3874700437601062225, guid: 9088ebf4d76fa9c49a234a6e60bef19e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1459552652860937313}
   m_SourcePrefab: {fileID: 100100000, guid: 9088ebf4d76fa9c49a234a6e60bef19e, type: 3}
 --- !u!4 &1651187646022689850 stripped
 Transform:
@@ -5719,3 +5726,31 @@ Camera:
   m_CorrespondingSourceObject: {fileID: 5143899279005939996, guid: 9088ebf4d76fa9c49a234a6e60bef19e, type: 3}
   m_PrefabInstance: {fileID: 9065205870611216621}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &5191426826245911996 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3874700437601062225, guid: 9088ebf4d76fa9c49a234a6e60bef19e, type: 3}
+  m_PrefabInstance: {fileID: 9065205870611216621}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1459552652860937313
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5191426826245911996}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e6395864889ca34faba5205ea995228, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WallVisibility
+  cam: {fileID: 4227993369941918193}
+  player: {fileID: 3087691651960519774}
+  opaqueMat: {fileID: 2100000, guid: b354030ecf56d194aa76bff9eed6802a, type: 2}
+  transparentMat: {fileID: 2100000, guid: cc60bbaa2ab5adf4c96408162d9c1ff5, type: 2}
+  wallLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  wallLayerName: Wall
+  detectionRange: 2
+  sideRayRange: 30
+  fadeSpeed: 8
