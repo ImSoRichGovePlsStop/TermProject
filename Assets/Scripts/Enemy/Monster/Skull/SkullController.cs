@@ -157,7 +157,8 @@ public class SkullController : EnemyBase
     public void DashAttack()
     {
         if (isDashing) return;
-        StartCoroutine(DashRoutine());
+        isDashing = true;
+        StartCoroutine(DashRoutine(lockedAttackDir, attackDashSpeed, attackDashDuration, attackHitRadius, attackDamageScale, () => isDashing = false));
     }
 
     public void FinishAttack()
@@ -169,40 +170,6 @@ public class SkullController : EnemyBase
         currentAttackCooldown = Random.Range(attackCooldownMin, attackCooldownMax);
         strafe.Reset();
         TriggerPostAttackDelay();
-    }
-
-    // Coroutines
-
-    private IEnumerator DashRoutine()
-    {
-        isDashing = true;
-
-        var agent = movement.GetAgent();
-        if (agent != null && agent.isOnNavMesh) agent.enabled = false;
-
-        LayerMask hitMask = (1 << LayerMask.NameToLayer("Player"))
-                          | (1 << LayerMask.NameToLayer("Summoner"))
-                          | (1 << LayerMask.NameToLayer("Totem"));
-        var alreadyHit = new HashSet<GameObject>();
-
-        float elapsed = 0f;
-        while (elapsed < attackDashDuration)
-        {
-            transform.position += lockedAttackDir * attackDashSpeed * stats.MoveSpeedRatio * Time.deltaTime;
-            elapsed += Time.deltaTime;
-
-            Collider[] hits = Physics.OverlapSphere(transform.position, attackHitRadius, hitMask);
-            foreach (var col in hits)
-            {
-                if (alreadyHit.Contains(col.gameObject)) continue;
-                alreadyHit.Add(col.gameObject);
-                ApplyDamage(col, stats.Damage * attackDamageScale);
-            }
-            yield return null;
-        }
-
-        if (agent != null && !agent.enabled) agent.enabled = true;
-        isDashing = false;
     }
 
     // Helpers

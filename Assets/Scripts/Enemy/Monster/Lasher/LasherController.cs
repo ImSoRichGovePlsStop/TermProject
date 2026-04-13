@@ -216,7 +216,7 @@ public class LasherController : EnemyBase
             movement.SetCanMove(true);
         }
 
-        StopCoroutine(nameof(SingleDash));
+        StopCoroutine(nameof(DashRoutine));
         StopCoroutine(nameof(ComboGapRoutine));
         StopCoroutine(nameof(LashHitRoutine));
         strafe.Reset();
@@ -249,7 +249,7 @@ public class LasherController : EnemyBase
     {
         isComboStarted = true;
         isInComboGap = false;
-        StartCoroutine(SingleDash(lockedAttackDir));
+        StartCoroutine(DashRoutine(lockedAttackDir, comboDashSpeed, comboDashDuration, comboDashHitRadius, comboDamageScale, null));
     }
 
     public void OnComboGap()
@@ -272,7 +272,7 @@ public class LasherController : EnemyBase
             : Vector3.RotateTowards(lockedAttackDir, newDir, comboMaxRedirectAngle * Mathf.Deg2Rad, 0f);
 
         lockedAttackDir = dash2Dir;
-        StartCoroutine(SingleDash(dash2Dir));
+        StartCoroutine(DashRoutine(dash2Dir, comboDashSpeed, comboDashDuration, comboDashHitRadius, comboDamageScale, null));
     }
 
     public void StartLashCharge()
@@ -326,35 +326,6 @@ public class LasherController : EnemyBase
         yield return new WaitForSeconds(comboDashGapDuration);
         isInComboGap = false;
         animator?.SetTrigger("Attack1Dash2");
-    }
-
-    private IEnumerator SingleDash(Vector3 dashDir)
-    {
-        var agent = movement.GetAgent();
-        if (agent != null) agent.enabled = false;
-
-        LayerMask hitMask = (1 << LayerMask.NameToLayer("Player"))
-                          | (1 << LayerMask.NameToLayer("Summoner"))
-                          | (1 << LayerMask.NameToLayer("Totem"));
-        var alreadyHit = new HashSet<GameObject>();
-
-        float elapsed = 0f;
-        while (elapsed < comboDashDuration)
-        {
-            transform.position += dashDir * comboDashSpeed * stats.MoveSpeedRatio * Time.deltaTime;
-            elapsed += Time.deltaTime;
-
-            Collider[] hits = Physics.OverlapSphere(transform.position, comboDashHitRadius, hitMask);
-            foreach (var col in hits)
-            {
-                if (alreadyHit.Contains(col.gameObject)) continue;
-                alreadyHit.Add(col.gameObject);
-                ApplyDamage(col, stats.Damage * comboDamageScale);
-            }
-            yield return null;
-        }
-
-        if (agent != null) agent.enabled = true;
     }
 
     private IEnumerator LashHitRoutine()

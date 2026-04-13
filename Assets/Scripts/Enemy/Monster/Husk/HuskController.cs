@@ -188,25 +188,6 @@ public class HuskController : EnemyBase
     public void DashAttack()
     {
         if (isDashing) return;
-        StartCoroutine(DashRoutine());
-    }
-
-    public void FinishAttack()
-    {
-        isAttacking = false;
-        isDashing = false;
-        lockedAttackDir = Vector3.zero;
-        currentAttackType = HuskAttackType.None;
-        lastAttackTime = Time.time;
-        currentAttackCooldown = Random.Range(attackCooldownMin, attackCooldownMax);
-        strafe.Reset();
-        TriggerPostAttackDelay();
-    }
-
-    // Coroutines
-
-    private IEnumerator DashRoutine()
-    {
         isDashing = true;
 
         float speed, duration, hitRadius, damageScale;
@@ -226,32 +207,19 @@ public class HuskController : EnemyBase
                 break;
         }
 
-        var agent = movement.GetAgent();
-        if (agent != null && agent.isOnNavMesh) agent.enabled = false;
+        StartCoroutine(DashRoutine(lockedAttackDir, speed, duration, hitRadius, damageScale, () => isDashing = false));
+    }
 
-        LayerMask hitMask = (1 << LayerMask.NameToLayer("Player"))
-                          | (1 << LayerMask.NameToLayer("Summoner"))
-                          | (1 << LayerMask.NameToLayer("Totem"));
-        var alreadyHit = new HashSet<GameObject>();
-
-        float elapsed = 0f;
-        while (elapsed < duration)
-        {
-            transform.position += lockedAttackDir * speed * stats.MoveSpeedRatio * Time.deltaTime;
-            elapsed += Time.deltaTime;
-
-            Collider[] hits = Physics.OverlapSphere(transform.position, hitRadius, hitMask);
-            foreach (var col in hits)
-            {
-                if (alreadyHit.Contains(col.gameObject)) continue;
-                alreadyHit.Add(col.gameObject);
-                ApplyDamage(col, stats.Damage * damageScale);
-            }
-            yield return null;
-        }
-
-        if (agent != null && !agent.enabled) agent.enabled = true;
+    public void FinishAttack()
+    {
+        isAttacking = false;
         isDashing = false;
+        lockedAttackDir = Vector3.zero;
+        currentAttackType = HuskAttackType.None;
+        lastAttackTime = Time.time;
+        currentAttackCooldown = Random.Range(attackCooldownMin, attackCooldownMax);
+        strafe.Reset();
+        TriggerPostAttackDelay();
     }
 
     // Helpers

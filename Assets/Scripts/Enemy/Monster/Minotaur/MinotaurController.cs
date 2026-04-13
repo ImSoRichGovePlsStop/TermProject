@@ -126,7 +126,6 @@ public class MinotaurController : EnemyBase
         if (lockedAttackDir.sqrMagnitude > 0.001f) lockedAttackDir.Normalize();
     }
 
-    // Animation Event — e.g. "4,12" = 4 frames buildup at 12fps
     public void StartFlashBuildup(string args)
     {
         var parts = args.Split(',');
@@ -147,52 +146,13 @@ public class MinotaurController : EnemyBase
     public void DashAttack()
     {
         if (isDashing) return;
-        StartCoroutine(DashAttackRoutine());
-    }
-
-    private IEnumerator DashAttackRoutine()
-    {
         isDashing = true;
-
         Vector3 dashDir = lockedAttackDir != Vector3.zero
             ? lockedAttackDir
             : (TargetPosition - transform.position);
         dashDir.y = 0f;
         if (dashDir.sqrMagnitude > 0.001f) dashDir.Normalize();
-
-        var agent = movement.GetAgent();
-        if (agent != null) agent.enabled = false;
-
-        LayerMask hitMask = (1 << LayerMask.NameToLayer("Player"))
-                          | (1 << LayerMask.NameToLayer("Summoner"))
-                          | (1 << LayerMask.NameToLayer("Totem"));
-
-        var alreadyHit = new System.Collections.Generic.HashSet<GameObject>();
-        float elapsed = 0f;
-
-        while (elapsed < dashDuration)
-        {
-            transform.position += dashDir * dashSpeed * stats.MoveSpeedRatio * Time.deltaTime;
-            elapsed += Time.deltaTime;
-
-            Collider[] hits = Physics.OverlapSphere(transform.position, dashHitRadius, hitMask);
-            foreach (var col in hits)
-            {
-                if (alreadyHit.Contains(col.gameObject)) continue;
-                alreadyHit.Add(col.gameObject);
-
-                var ps = col.GetComponent<PlayerStats>() ?? col.GetComponentInParent<PlayerStats>();
-                if (ps != null && !ps.IsDead) { ps.TakeDamage(stats.Damage * attackDamageScale, health); continue; }
-
-                var hb = col.GetComponent<HealthBase>() ?? col.GetComponentInParent<HealthBase>();
-                if (hb != null && !hb.IsDead) hb.TakeDamage(stats.Damage * attackDamageScale);
-            }
-
-            yield return null;
-        }
-
-        if (agent != null) agent.enabled = true;
-        isDashing = false;
+        StartCoroutine(DashRoutine(dashDir, dashSpeed, dashDuration, dashHitRadius, attackDamageScale, () => isDashing = false));
     }
 
     // Animation Event

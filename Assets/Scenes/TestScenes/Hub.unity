@@ -4277,6 +4277,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Harpy_Normal
       objectReference: {fileID: 0}
+    - target: {fileID: 4095530523079436333, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

@@ -280,6 +280,45 @@ public abstract class EnemyBase : MonoBehaviour
         animator?.SetTrigger("Die");
     }
 
+    protected IEnumerator DashRoutine(Vector3 dir, float speed, float duration, float hitRadius, float damageScale, System.Action onDashEnd)
+    {
+        var agent = movement.GetAgent();
+        if (agent != null && agent.isOnNavMesh) agent.enabled = false;
+
+        LayerMask hitMask = (1 << LayerMask.NameToLayer("Player"))
+                          | (1 << LayerMask.NameToLayer("Summoner"))
+                          | (1 << LayerMask.NameToLayer("Totem"));
+        LayerMask wallMask = (1 << LayerMask.NameToLayer("Wall"))
+                           | (1 << LayerMask.NameToLayer("Barrier"));
+        var alreadyHit = new HashSet<GameObject>();
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            float stepDist = speed * stats.MoveSpeedRatio * Time.deltaTime;
+            if (Physics.Raycast(transform.position, dir, stepDist + 0.1f, wallMask))
+                break;
+
+            transform.position += dir * stepDist;
+            elapsed += Time.deltaTime;
+
+            Collider[] hits = Physics.OverlapSphere(transform.position, hitRadius, hitMask);
+            foreach (var col in hits)
+            {
+                if (alreadyHit.Contains(col.gameObject)) continue;
+                alreadyHit.Add(col.gameObject);
+                var ps = col.GetComponent<PlayerStats>() ?? col.GetComponentInParent<PlayerStats>();
+                if (ps != null && !ps.IsDead) { ps.TakeDamage(stats.Damage * damageScale, health); continue; }
+                var hb = col.GetComponent<HealthBase>() ?? col.GetComponentInParent<HealthBase>();
+                if (hb != null && !hb.IsDead && hb != health) hb.TakeDamage(stats.Damage * damageScale);
+            }
+            yield return null;
+        }
+
+        if (agent != null && !agent.enabled) agent.enabled = true;
+        onDashEnd?.Invoke();
+    }
+
     protected void DealDamageToTarget(float damage, float angle, float range)
     {
         Vector3 attackDir = TargetPosition - transform.position;
