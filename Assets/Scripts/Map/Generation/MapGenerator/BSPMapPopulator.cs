@@ -24,6 +24,17 @@ public class BSPMapPopulator : MonoBehaviour
     public GameObject[] bossPrefabs;
     public GameObject lootPrefab;
 
+    [Header("Props")]
+    public GameObject fountainPrefab;
+    public GameObject cratePrefab;
+    public GameObject statuePrefab;
+
+    [Header("Prop Spawn Chances")]
+    [Tooltip("Chance per eligible cell to spawn a crate (wall-adjacent, non-door).")]
+    [Range(0f, 1f)] public float crateChance  = 0.04f;
+    [Tooltip("Chance per eligible cell to spawn a statue.")]
+    [Range(0f, 1f)] public float statueChance = 0.02f;
+
     [Header("Visual")]
     public Material boundaryMaterial;
 
@@ -49,6 +60,7 @@ public class BSPMapPopulator : MonoBehaviour
         foreach (var node in nodes)
             node.RoomObject = SpawnRoom(node);
 
+        SpawnProps();
         StartCoroutine(BakeNavMeshNextFrame());
     }
 
@@ -68,6 +80,7 @@ public class BSPMapPopulator : MonoBehaviour
         RoomType.Shop     => SpawnEventRoom(node, shopStationPrefab, SetupShop),
         RoomType.RareLoot => SpawnEventRoom(node, lootPrefab, SetupRareLoot),
         RoomType.Merge    => SpawnEventRoom(node, mergeStationPrefab, SetupMerge),
+        RoomType.Fountain => SpawnEventRoom(node, fountainPrefab, SetupFountain),
         _                 => null
     };
 
@@ -156,6 +169,61 @@ public class BSPMapPopulator : MonoBehaviour
         r.node               = ToLegacy(n);
         r.mergeStationPrefab = mergeStationPrefab;
         r.Init(p);
+    }
+
+    void SetupFountain(GameObject o, Transform p, MapNode n)
+    {
+        var r = o.AddComponent<FountainRoom>();
+        r.node           = ToLegacy(n);
+        r.fountainPrefab = fountainPrefab;
+        r.Init(p);
+    }
+
+    void SpawnProps()
+    {
+        var geo     = GetComponent<BSPMapGeometry>();
+        var matrix  = geo.Matrix;
+        var roomMap = geo.RoomMapPublic;
+        int size    = geo.MatrixSize;
+
+        var dirs = new[] { new Vector2Int(1,0), new Vector2Int(-1,0), new Vector2Int(0,1), new Vector2Int(0,-1) };
+
+        for (int x = 0; x < size; x++)
+            for (int z = 0; z < size; z++)
+            {
+                if (matrix[x, z] != Cell.Room) continue;
+                var owner = roomMap[x, z];
+                if (owner == null) continue;
+
+                
+                if ( owner.Type != RoomType.Unmarked) continue;
+
+                
+                //bool nearWall = false;
+                //foreach (var d in dirs)
+                //{
+                //    int nx = x + d.x, nz = z + d.y;
+                //    bool oob = nx < 0 || nz < 0 || nx >= size || nz >= size;
+                //    if (oob || matrix[nx, nz] != Cell.Room) { nearWall = true; break; }
+                //}
+    
+                //if (!nearWall) continue;
+
+
+                float roll = Random.value;
+                if (statuePrefab != null && roll < statueChance)
+                {
+                    Instantiate(statuePrefab,
+                        new Vector3(x + 0.5f, 0f, z + 0.5f),
+                        Quaternion.Euler(0f, Random.Range(0, 4) * 90f, 0f));
+                }
+                else if (cratePrefab != null && roll < statueChance + crateChance)
+                {
+                    Instantiate(cratePrefab,
+                        new Vector3(x + 0.5f, 0f, z + 0.5f),
+                        Quaternion.Euler(0f, Random.Range(0, 4) * 90f, 0f));
+                }
+            }
     }
 
     GameObject MakeRoomObject(MapNode node, string name)

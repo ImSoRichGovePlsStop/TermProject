@@ -1,4 +1,4 @@
-﻿/*
+/*
  * BSPMapGeometry — Office-style dungeon generator
  *
  * Generation pipeline:
@@ -58,6 +58,7 @@ public class BSPMapGeometry : MonoBehaviour
     public float weightShop = 1f;
     public float weightRareLoot = 1f;
     public float weightMerge = 1f;
+    public float weightFountain = 1f;
 
     [Header("Floor-Repeat Penalty")]
     [Range(0f, 1f)] public float repeatPenalty = 0.4f;
@@ -68,6 +69,7 @@ public class BSPMapGeometry : MonoBehaviour
     [Range(0f, 1f)] public float presetChanceShop = 1f;
     [Range(0f, 1f)] public float presetChanceRareLoot = 1f;
     [Range(0f, 1f)] public float presetChanceMerge = 1f;
+    [Range(0f, 1f)] public float presetChanceFountain = 1f;
     [Range(0f, 1f)] public float presetChanceSpawn = 1f;
     [Range(0f, 1f)] public float presetChanceBoss = 1f;
 
@@ -95,6 +97,7 @@ public class BSPMapGeometry : MonoBehaviour
     public byte[,] Matrix => _matrix;
     public int MatrixSize => matrixSize;
     public MapNode[,] RoomMapPublic => _roomMap;
+    public bool[,] IsDoor => _isDoor;
 
     public event Action<IReadOnlyList<MapNode>> OnMapReady;
 
@@ -131,7 +134,7 @@ public class BSPMapGeometry : MonoBehaviour
         SpawnGeometry();
 
         FindFirstObjectByType<MinimapManager>()
-            ?.BuildMinimapFromMatrix(_matrix, matrixSize, ToLegacyRoomNodes(), _edges);
+            ?.BuildMinimapFromMatrix(_matrix, matrixSize, _roomMap, ToLegacyRoomNodes(), _edges);
 
         if (navMeshSurface != null) navMeshSurface.BuildNavMesh();
 
@@ -162,9 +165,10 @@ public class BSPMapGeometry : MonoBehaviour
         float wShop = weightShop * (rm != null && rm.WasMissingLastFloor(RoomType.Shop) ? 1f : repeatPenalty);
         float wRare = weightRareLoot * (rm != null && rm.WasMissingLastFloor(RoomType.RareLoot) ? 1f : repeatPenalty);
         float wMrge = weightMerge * (rm != null && rm.WasMissingLastFloor(RoomType.Merge) ? 1f : repeatPenalty);
+        float wFoun = weightFountain * (rm != null && rm.WasMissingLastFloor(RoomType.Fountain) ? 1f : repeatPenalty);
 
         var placed = new Dictionary<RoomType, int>
-            { { RoomType.Heal, 0 }, { RoomType.Shop, 0 }, { RoomType.RareLoot, 0 }, { RoomType.Merge, 0 } };
+            { { RoomType.Heal, 0 }, { RoomType.Shop, 0 }, { RoomType.RareLoot, 0 }, { RoomType.Merge, 0 }, { RoomType.Fountain, 0 } };
 
         for (int i = 0; i < maxEventCount; i++)
         {
@@ -172,7 +176,8 @@ public class BSPMapGeometry : MonoBehaviour
             float s = placed[RoomType.Shop] > 0 ? 0f : wShop;
             float r = placed[RoomType.RareLoot] > 0 ? 0f : wRare;
             float m = placed[RoomType.Merge] > 0 ? 0f : wMrge;
-            float total = h + s + r + m;
+            float f = placed[RoomType.Fountain] > 0 ? 0f : wFoun;
+            float total = h + s + r + m + f;
             if (total <= 0f) break;
 
             float roll = Random.Range(0f, total);
@@ -180,13 +185,15 @@ public class BSPMapGeometry : MonoBehaviour
             if ((roll -= h) < 0f) chosen = RoomType.Heal;
             else if ((roll -= s) < 0f) chosen = RoomType.Shop;
             else if ((roll -= r) < 0f) chosen = RoomType.RareLoot;
-            else chosen = RoomType.Merge;
+            else if ((roll -= m) < 0f) chosen = RoomType.Merge;
+            else chosen = RoomType.Fountain;
 
             float pChance = chosen switch
             {
                 RoomType.Heal => presetChanceHeal,
                 RoomType.Shop => presetChanceShop,
                 RoomType.RareLoot => presetChanceRareLoot,
+                RoomType.Fountain => presetChanceFountain,
                 _ => presetChanceMerge,
             };
 
@@ -365,6 +372,7 @@ public class BSPMapGeometry : MonoBehaviour
         for (int x = ox; x < ox + sx; x++)
             for (int z = oz; z < oz + sz; z++)
             {
+                // Flip Z so editor row 0 (top) maps to the far edge of the room in world space
                 int presetZ = (sz - 1) - (z - oz);
                 bool isVoid = preset != null && preset.IsVoid(x - ox, presetZ);
                 bool isPillar = preset != null && preset.IsPillar(x - ox, presetZ);
@@ -780,7 +788,7 @@ public class BSPMapGeometry : MonoBehaviour
         var go = new GameObject($"Void_{x}_{z}");
         go.transform.SetParent(parent);
         go.transform.position = new Vector3(x + 0.5f, 0f, z + 0.5f);
-        go.layer = LayerMask.NameToLayer("Barrier");
+        go.layer = LayerMask.NameToLayer("Wall");
         var col = go.AddComponent<BoxCollider>();
         col.center = new Vector3(0f, wallHeight / 2f, 0f);
         col.size = new Vector3(1f, wallHeight * 2f, 1f);
@@ -815,8 +823,8 @@ public class BSPMapGeometry : MonoBehaviour
         pb.ToMesh(); pb.Refresh();
         if (floorMat != null) pb.GetComponent<Renderer>().material = floorMat;
 
-        
-        if (owner != null && (owner.Type == RoomType.Battle || owner.Type == RoomType.Boss))
+        // Only Battle and Boss room floors get a MeshCollider — NavMesh bakes from these
+        if (owner != null && (owner.Type == RoomType.Battle || owner.Type == RoomType.Boss|| owner.Type == RoomType.RareLoot))
         {
             var mc = go.AddComponent<MeshCollider>();
             mc.sharedMesh = pb.GetComponent<MeshFilter>().sharedMesh;
@@ -1016,6 +1024,7 @@ public class BSPMapGeometry : MonoBehaviour
                 RoomType.Merge => Color.cyan,
                 RoomType.Heal => new Color(0.4f, 1f, 0.4f),
                 RoomType.RareLoot => new Color(1f, 0.5f, 0f),
+                RoomType.Fountain => new Color(0.3f, 0.6f, 1f, 1f),
                 RoomType.Unmarked => new Color(0.55f, 0.55f, 0.55f, 0.5f),
                 _ => Color.grey
             };
@@ -1068,6 +1077,7 @@ public class BSPMapGeometry : MonoBehaviour
                             RoomType.Heal => 'h',
                             RoomType.RareLoot => 'r',
                             RoomType.Merge => 'm',
+                            RoomType.Fountain => 'f',
                             RoomType.Unmarked => '.',
                             _ => '?',
                         };

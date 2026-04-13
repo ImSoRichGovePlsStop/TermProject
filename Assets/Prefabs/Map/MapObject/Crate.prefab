@@ -120,11 +120,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29b6e1af46d5f9d42b2e5739796bcff7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Crate
-  goldDropChance: 0.6
+  activateChance: 0.8
   goldMin: 2
   goldMax: 4
-  healthBarHeight: 1.2
-  healthBarScale: {x: 1, y: 1, z: 1}
 --- !u!212 &5314591075604260289
 SpriteRenderer:
   serializedVersion: 2

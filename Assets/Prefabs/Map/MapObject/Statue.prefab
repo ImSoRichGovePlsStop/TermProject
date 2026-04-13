@@ -192,6 +192,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea202ca630347ab47b694339a814bd58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GoldenStatue
-  statBoostChance: 0.75
-  boostPercentMin: 0.01
-  boostPercentMax: 0.03
+  statBoostChance: 0.9
+  boostPercentMin: 0.05
+  boostPercentMax: 0.1
