@@ -52,8 +52,7 @@ public class LootRewardUI : MonoBehaviour
         var inventoryUI = FindFirstObjectByType<InventoryUI>(FindObjectsInactive.Include);
         inventoryUI?.SpawnModule(chosen.Data, chosen.Rarity, chosen.Level);
 
-        if (currentStation != null)
-            Object.Destroy(currentStation.gameObject);
+        currentStation?.OnLootPicked();
 
         var uiManager = FindFirstObjectByType<UIManager>();
         uiManager?.CloseRewardLoot();
