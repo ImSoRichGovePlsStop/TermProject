@@ -1,49 +1,120 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
+using UnityEngine.InputSystem;
 
 public class HubStorageUI : MonoBehaviour
 {
-    [Header("References")]
-    [SerializeField] private GameObject panel;
+    [SerializeField] private GameObject    panel;
     [SerializeField] private StorageItemUI storageItemPrefab;
-    [SerializeField] private Transform content;
-    [SerializeField] private ScrollRect scrollRect;
+
+    private const string LabelToUpgrade = "Upgrade BagGrid";
+    private const string LabelToStorage = "\u25C4  Storage";
 
     public bool IsOpen { get; private set; }
-    private bool pendingScrollReset;
+    private bool _isShowingUpgrade;
+    private bool _pendingScrollReset;
+    private int  _lastSwitchFrame = -1;
+
+    private GameObject       Panel       => transform.Find("StoragePanel")?.gameObject ?? panel;
+    private GameObject       ContentRoot => transform.Find("StoragePanel/StorageContentRoot")?.gameObject;
+    private BagGridUpgradeUI UpgradePanel => transform.Find("StoragePanel/BagGridUpgradePanel")?.GetComponent<BagGridUpgradeUI>();
+    private TextMeshProUGUI  SwitchLabel => transform.Find("StoragePanel/SwitchButton/Label")?.GetComponent<TextMeshProUGUI>();
+    private ScrollRect       Scroll      => GetComponentInChildren<ScrollRect>(true);
+    private Transform        Content     => transform.Find("StoragePanel/StorageContentRoot/Scroll/Viewport/Content");
 
     private void Awake()
     {
-        panel.SetActive(false);
+        Panel?.SetActive(false);
+        UpgradePanel?.gameObject.SetActive(false);
+
+        // Wire button in code so it always calls THIS instance regardless of Inspector setup
+        var sbTf = transform.Find("StoragePanel/SwitchButton");
+        var btn  = sbTf?.GetComponent<Button>();
+        if (btn != null)
+        {
+            btn.onClick.RemoveAllListeners();
+            btn.onClick.AddListener(OnSwitchButtonClicked);
+        }
     }
 
     private void Update()
     {
-        if (!pendingScrollReset) return;
+        if (IsOpen)
+        {
+            var kb = Keyboard.current;
+            if (kb != null)
+            {
+                if (kb.leftArrowKey.wasPressedThisFrame && _isShowingUpgrade)
+                    OnSwitchButtonClicked();
+                else if (kb.rightArrowKey.wasPressedThisFrame && !_isShowingUpgrade)
+                    OnSwitchButtonClicked();
+            }
+        }
+
+        if (!_pendingScrollReset) return;
         Canvas.ForceUpdateCanvases();
-        scrollRect.verticalNormalizedPosition = 1f;
-        pendingScrollReset = false;
+        var sr = Scroll;
+        if (sr != null) sr.verticalNormalizedPosition = 1f;
+        _pendingScrollReset = false;
     }
 
     public void Open()
     {
         IsOpen = true;
-        panel.SetActive(true);
-        Populate();
-        pendingScrollReset = true;
+        Panel?.SetActive(true);
+        ShowStorageView();
+        _pendingScrollReset = true;
     }
 
     public void Close()
     {
         IsOpen = false;
-        panel.SetActive(false);
+        Panel?.SetActive(false);
+        _isShowingUpgrade = false;
+    }
+
+    public void OnSwitchButtonClicked()
+    {
+        if (Time.frameCount == _lastSwitchFrame) return;
+        _lastSwitchFrame = Time.frameCount;
+        if (_isShowingUpgrade) ShowStorageView();
+        else                   ShowUpgradeView();
+    }
+
+    private void ShowStorageView()
+    {
+        _isShowingUpgrade = false;
+        ContentRoot?.SetActive(true);
+        UpgradePanel?.gameObject.SetActive(false);
+        var lbl = SwitchLabel;
+        if (lbl != null) lbl.text = LabelToUpgrade;
+        Populate();
+        _pendingScrollReset = true;
+    }
+
+    private void ShowUpgradeView()
+    {
+        _isShowingUpgrade = true;
+        ContentRoot?.SetActive(false);
+        UpgradePanel?.gameObject.SetActive(true);
+        var lbl = SwitchLabel;
+        if (lbl != null) lbl.text = LabelToStorage;
     }
 
     private void Populate()
     {
-        foreach (Transform child in content)
+        var c = Content;
+        if (c == null) return;
+
+        foreach (Transform child in c)
             Destroy(child.gameObject);
+
         foreach (var kvp in MaterialStorage.Instance.GetAll())
-            Instantiate(storageItemPrefab, content).Init(kvp.Key, kvp.Value);
+        {
+            var item = Instantiate(storageItemPrefab);
+            item.transform.SetParent(c, false);
+            item.Init(kvp.Key, kvp.Value);
+        }
     }
 }

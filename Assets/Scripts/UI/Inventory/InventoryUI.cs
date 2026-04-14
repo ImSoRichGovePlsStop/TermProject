@@ -57,6 +57,7 @@ public class InventoryUI : MonoBehaviour
         bagGridUI.Init(mgr.BagGrid, cellSize, cellSpacing);
 
         weaponGridUI.SetWeaponGridState(mgr.WeaponUnlockedCols, mgr.WeaponUnlockedRows);
+        bagGridUI.SetBagGridState(mgr.BagUnlockedCols, mgr.BagUnlockedRows);
 
         StaticWeaponGridUI = weaponGridUI;
         StaticBagGridUI = bagGridUI;
@@ -124,7 +125,11 @@ public class InventoryUI : MonoBehaviour
         weaponGridUI.SetWeaponGridState(mgr.WeaponUnlockedCols, mgr.WeaponUnlockedRows);
     }
 
-    private void OnBagGridChanged() => bagGridUI.RefreshAll();
+    private void OnBagGridChanged()
+    {
+        var mgr = InventoryManager.Instance;
+        bagGridUI.SetBagGridState(mgr.BagUnlockedCols, mgr.BagUnlockedRows);
+    }
 
     public void RestoreBagItemRefs()
     {

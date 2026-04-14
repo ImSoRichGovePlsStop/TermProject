@@ -451,6 +451,17 @@ public class MaterialItemUI : MonoBehaviour,
             var prevGrid = Instance.CurrentGrid;
             var prevPos = Instance.GridPosition;
 
+            bool bagBlocked = g == BagGridUI
+                && g.Data == InventoryManager.Instance.BagGrid
+                && !InventoryManager.Instance.CanPlaceInBagGrid(Instance, pivot, _dragRotation);
+
+            if (bagBlocked)
+            {
+                SnapToCell(_originGrid, _originCell);
+                DiscardGridUI.Instance?.OnDragEnded();
+                return;
+            }
+
             prevGrid?.Remove(Instance);
             Instance.SetRotation(_dragRotation);
 
