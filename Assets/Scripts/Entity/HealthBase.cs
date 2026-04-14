@@ -29,6 +29,7 @@ public abstract class HealthBase : MonoBehaviour
     private Coroutine flashCoroutine;
     private Coroutine hitFlashCoroutine;
     private Color originalColor;
+    private static readonly int ColorID = Shader.PropertyToID("_Color");
 
     public float CurrentHP => currentHP;
     public float MaxHP => maxHP;
@@ -64,7 +65,7 @@ public abstract class HealthBase : MonoBehaviour
 
         if (spriteRenderer != null)
         {
-            originalColor = spriteRenderer.color;
+            originalColor = spriteRenderer.material.GetColor(ColorID);
             if (flashSpriteRenderer != null)
                 flashSpriteRenderer.color = new Color(1f, 1f, 1f, 0f);
         }
@@ -85,6 +86,7 @@ public abstract class HealthBase : MonoBehaviour
             flashSpriteRenderer.sprite = spriteRenderer.sprite;
             flashSpriteRenderer.flipX = spriteRenderer.flipX;
             flashSpriteRenderer.flipY = spriteRenderer.flipY;
+            flashSpriteRenderer.transform.localScale = spriteRenderer.transform.localScale;
         }
     }
 
@@ -188,9 +190,9 @@ public abstract class HealthBase : MonoBehaviour
 
     private IEnumerator HitFlashRoutine()
     {
-        spriteRenderer.color = flashColor;
+        spriteRenderer.material.SetColor(ColorID, flashColor);
         yield return new WaitForSeconds(flashDuration);
-        spriteRenderer.color = originalColor;
+        spriteRenderer.material.SetColor(ColorID, originalColor);
         hitFlashCoroutine = null;
     }
 

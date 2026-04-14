@@ -27,10 +27,14 @@ public class EnemyMovementBase : MovementBase
     protected override void FaceDirection(Vector3 direction)
     {
         if (spriteRenderer == null) return;
+        Transform spriteTransform = spriteRenderer.transform;
+        Vector3 scale = spriteTransform.localScale;
 
         if (direction.x > 0.05f)
-            spriteRenderer.flipX = flipXByDefault;
+            scale.x = flipXByDefault ? -Mathf.Abs(scale.x) : Mathf.Abs(scale.x);
         else if (direction.x < -0.05f)
-            spriteRenderer.flipX = !flipXByDefault;
+            scale.x = flipXByDefault ? Mathf.Abs(scale.x) : -Mathf.Abs(scale.x);
+
+        spriteTransform.localScale = scale;
     }
 }

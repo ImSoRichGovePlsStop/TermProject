@@ -6693,10 +6693,6 @@ PrefabInstance:
       value: Main Camera
       objectReference: {fileID: 0}
     - target: {fileID: 5143899279005939996, guid: 9088ebf4d76fa9c49a234a6e60bef19e, type: 3}
-      propertyPath: m_ClearFlags
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 5143899279005939996, guid: 9088ebf4d76fa9c49a234a6e60bef19e, type: 3}
       propertyPath: far clip plane
       value: 30
       objectReference: {fileID: 0}
