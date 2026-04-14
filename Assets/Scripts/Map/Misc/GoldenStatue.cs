@@ -5,8 +5,8 @@ public class GoldenStatue : MonoBehaviour
     [Header("Stat Boost Settings")]
     [Range(0f, 1f)]
     [SerializeField] private float statBoostChance = 0.5f;
-    [SerializeField] private float boostPercentMin = 0.01f; 
-    [SerializeField] private float boostPercentMax = 0.03f; 
+    [SerializeField] private float boostPercentMin = 0.01f;
+    [SerializeField] private float boostPercentMax = 0.03f;
 
     private HealthBase health;
 
@@ -37,48 +37,26 @@ public class GoldenStatue : MonoBehaviour
     {
         int statIndex = Random.Range(0, 6);
         string statName;
-
+        string displayValue;
         StatModifier bonus = new StatModifier();
 
         switch (statIndex)
         {
-            case 0:
-                bonus.health = stats.BaseHP * boost;
-                statName = "Max HP";
-                break;
-            case 1:
-                bonus.damage = stats.BaseDMG * boost;
-                statName = "Damage";
-                break;
-            case 2:
-                bonus.attackSpeed = stats.BaseATKSPD * boost;
-                statName = "Attack Speed";
-                break;
-            case 3:
-                bonus.moveSpeed = stats.BaseMOVSPD * boost;
-                statName = "Move Speed";
-                break;
-            case 4:
-                bonus.critChance = stats.BaseCrit * boost;
-                statName = "Crit Chance";
-                break;
-            case 5:
-                bonus.critDamage = stats.BaseCritDMG * boost;
-                statName = "Crit Damage";
-                break;
-            default:
-                statName = "Stat";
-                break;
+            case 0: bonus.health = stats.BaseHP * boost; statName = "Max HP"; displayValue = $"{bonus.health:F1}"; break;
+            case 1: bonus.damage = stats.BaseDMG * boost; statName = "Damage"; displayValue = $"{bonus.damage:F1}"; break;
+            case 2: bonus.attackSpeed = stats.BaseATKSPD * boost; statName = "Attack Speed"; displayValue = $"{bonus.attackSpeed:F1}"; break;
+            case 3: bonus.moveSpeed = stats.BaseMOVSPD * boost; statName = "Move Speed"; displayValue = $"{bonus.moveSpeed:F1}"; break;
+            case 4: bonus.critChance = stats.BaseCrit * boost; statName = "Crit Chance"; displayValue = $"{bonus.critChance:P1}"; break;
+            case 5: bonus.critDamage = stats.BaseCritDMG * boost; statName = "Crit Damage"; displayValue = $"{bonus.critDamage:P1}"; break;
+            default: statName = "Stat"; displayValue = "0"; break;
         }
-
-        stats.AddFlatModifier(bonus);
 
         DamageNumberSpawner.Instance?.SpawnMessage(
             transform.position,
-            $"+{boost:P0} {statName}!",
-            new Color(1f, 0.9f, 0.3f)
-        );
+            $"+{displayValue} {statName}!",
+            new Color(1f, 0.9f, 0.3f));
 
+        stats.AddFlatModifier(bonus);
         Destroy(gameObject);
     }
 }
