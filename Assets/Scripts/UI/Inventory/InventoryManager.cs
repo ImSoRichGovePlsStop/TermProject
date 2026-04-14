@@ -14,8 +14,8 @@ public class InventoryManager : MonoBehaviour
     [SerializeField] private int bagMaxRows = 6;
 
     [Header("Bag Grid — Starting Unlocked Size")]
-    [SerializeField] private int bagStartCols = 8;
-    [SerializeField] private int bagStartRows = 5;
+    [SerializeField] private int bagStartCols = 6;
+    [SerializeField] private int bagStartRows = 4;
 
     public GridData WeaponGrid { get; private set; }
     public GridData BagGrid { get; private set; }
@@ -24,6 +24,7 @@ public class InventoryManager : MonoBehaviour
     public int WeaponUnlockedRows { get; private set; } = 1;
     public int BagUnlockedCols { get; private set; }
     public int BagUnlockedRows { get; private set; }
+    public int BagGridLevel { get; private set; } = 0;
 
     public event System.Action<ModuleInstance> OnModuleEquipped;
     public event System.Action<ModuleInstance> OnModuleUnequipped;
@@ -71,6 +72,7 @@ public class InventoryManager : MonoBehaviour
     {
         BagUnlockedCols = Mathf.Clamp(newUnlockedCols, 1, bagMaxCols);
         BagUnlockedRows = Mathf.Clamp(newUnlockedRows, 1, bagMaxRows);
+        BagGridLevel++;
         OnBagGridChanged?.Invoke();
     }
 
@@ -112,6 +114,16 @@ public class InventoryManager : MonoBehaviour
         foreach (var cell in WeaponGrid.GetAbsoluteCells(inst.Data, pivot, rotation))
             if (!IsWithinWeaponUnlocked(cell)) return false;
         return WeaponGrid.CanPlace(inst, pivot, rotation);
+    }
+
+    public bool IsWithinBagUnlocked(Vector2Int cell)
+        => cell.x < BagUnlockedCols && cell.y < BagUnlockedRows;
+
+    public bool CanPlaceInBagGrid(ModuleInstance inst, Vector2Int pivot, int rotation)
+    {
+        foreach (var cell in BagGrid.GetAbsoluteCells(inst.Data, pivot, rotation))
+            if (!IsWithinBagUnlocked(cell)) return false;
+        return BagGrid.CanPlace(inst, pivot, rotation);
     }
 
     public bool IsModuleEquipped(ModuleData data, ModuleInstance excluding = null)

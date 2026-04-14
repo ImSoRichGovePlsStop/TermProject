@@ -65,6 +65,18 @@ public class GridCellUI : MonoBehaviour
         SetState(State.Empty);
     }
 
+    public void RefreshBag(GridData grid, int unlockedCols, int unlockedRows)
+    {
+        bool unlocked = GridCoord.x < unlockedCols && GridCoord.y < unlockedRows;
+        if (!unlocked) { SetState(State.Locked); return; }
+        if (ModuleItemUI.IsDragging && grid == ModuleItemUI.DraggingGrid)
+        {
+            SetState(ModuleItemUI.DraggingCells.Contains(GridCoord) ? State.Occupied : State.Empty);
+            return;
+        }
+        SetState(State.Empty);
+    }
+
     public void SetColor(Color color)
     {
         if (_img == null) _img = GetComponent<Image>();

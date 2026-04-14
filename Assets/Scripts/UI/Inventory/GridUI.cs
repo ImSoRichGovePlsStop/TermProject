@@ -65,6 +65,21 @@ public class GridUI : MonoBehaviour
         RefreshAll();
     }
 
+    public void SetBagGridState(int unlockedCols, int unlockedRows)
+    {
+        _unlockedCols = unlockedCols;
+        _unlockedRows = unlockedRows;
+        RefreshAll();
+    }
+
+    public void AnchorTopLeft()
+    {
+        var rt = GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0f, 1f);
+        rt.anchorMax = new Vector2(0f, 1f);
+        rt.pivot     = new Vector2(0f, 1f);
+    }
+
     public Vector3 GetCellWorldTopLeft(Vector2Int coord)
     {
         if (_cells == null || !Data.IsInBounds(coord)) return transform.position;
@@ -91,10 +106,14 @@ public class GridUI : MonoBehaviour
     public void HighlightCells(ModuleData data, Vector2Int pivot, bool valid, int rotation = 0)
     {
         RefreshAll();
+        bool isBagWithState = Data != null && !Data.IsWeaponGrid && _unlockedCols != int.MaxValue;
+
         foreach (var c in Data.GetAbsoluteCells(data, pivot, rotation))
         {
             if (!Data.IsInBounds(c)) continue;
-            _cells[c.x, c.y].SetState(valid ? GridCellUI.State.Valid : GridCellUI.State.Invalid);
+            // locked bag cells แสดงเป็น Invalid เสมอ ไม่ว่า valid จะเป็นอะไร
+            bool cellLocked = isBagWithState && (c.x >= _unlockedCols || c.y >= _unlockedRows);
+            _cells[c.x, c.y].SetState((!cellLocked && valid) ? GridCellUI.State.Valid : GridCellUI.State.Invalid);
         }
     }
 
@@ -144,13 +163,16 @@ public class GridUI : MonoBehaviour
     public void RefreshAll()
     {
         if (_cells == null) return;
-        bool isWeapon = Data != null && Data.IsWeaponGrid;
+        bool isWeapon      = Data != null && Data.IsWeaponGrid;
+        bool isBagWithState = !isWeapon && _unlockedCols != int.MaxValue;
 
         for (int col = 0; col < Data.Width; col++)
             for (int row = 0; row < Data.Height; row++)
             {
                 if (isWeapon)
                     _cells[col, row].RefreshWeapon(Data, _unlockedCols, _unlockedRows);
+                else if (isBagWithState)
+                    _cells[col, row].RefreshBag(Data, _unlockedCols, _unlockedRows);
                 else
                     _cells[col, row].Refresh(Data);
             }
