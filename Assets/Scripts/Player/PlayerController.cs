@@ -377,14 +377,18 @@ public class PlayerController : MonoBehaviour
 
     Vector3 GetExactMouseDirection()
     {
+        float groundY = transform.position.y;
+        if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit groundHit, 5f, 1 << LayerMask.NameToLayer("Ground")))
+            groundY = groundHit.point.y;
+
         Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-        Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
+        Plane groundPlane = new Plane(Vector3.up, new Vector3(0, groundY, 0));
         if (groundPlane.Raycast(ray, out float distance))
         {
             Vector3 worldPos = ray.GetPoint(distance);
-            Vector3 dir = (worldPos - transform.position);
+            Vector3 dir = worldPos - transform.position;
             dir.y = 0;
-            return dir.normalized;
+            return dir.sqrMagnitude > 0.001f ? dir.normalized : transform.forward;
         }
         return transform.forward;
     }
