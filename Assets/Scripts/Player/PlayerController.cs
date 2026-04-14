@@ -17,6 +17,7 @@ public class PlayerController : MonoBehaviour
     private WeaponEquip weaponEquip;
     private AttackHitbox attackHitbox;
     private WandAttack wandAttack;
+    private CapsuleCollider capsuleCollider;
 
     private bool isPrimaryAttacking = false;
     private bool isSecondaryAttacking = false;
@@ -32,12 +33,17 @@ public class PlayerController : MonoBehaviour
     private float dashCooldownTimer = 0f;
     private Vector3 dashDirection;
     private DashTrail dashTrail;
+    private bool isBarrierIgnored = false;
 
     [Header("Interaction")]
     public float interactRange = 2f;
     public LayerMask interactableLayer;
     private InteractPromptUI interactPrompt;
     private UIManager uiManager;
+
+    [Header("Dash Barrier")]
+    [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private LayerMask barrierLayer;
 
     void Start()
     {
@@ -47,6 +53,7 @@ public class PlayerController : MonoBehaviour
         weaponEquip = GetComponent<WeaponEquip>();
         attackHitbox = GetComponentInChildren<AttackHitbox>();
         wandAttack = GetComponent<WandAttack>();
+        capsuleCollider = GetComponent<CapsuleCollider>();
         interactPrompt = FindFirstObjectByType<InteractPromptUI>(FindObjectsInactive.Include);
         uiManager = FindFirstObjectByType<UIManager>();
         dashTrail = GetComponentInChildren<DashTrail>();
@@ -75,6 +82,10 @@ public class PlayerController : MonoBehaviour
         else
             dashDirection = new Vector3(lastDir.x, 0, lastDir.y).normalized;
 
+        bool shouldIgnoreBarrier = CanDashThroughBarrier(weapon);
+        if (shouldIgnoreBarrier)
+            SetBarrierIgnore(true);
+
         isDashing = true;
         dashTrail?.StartTrail();
         dashTimer = weapon.dashDuration;
@@ -82,6 +93,35 @@ public class PlayerController : MonoBehaviour
 
         stats.SetInvincible(true);
         anim.SetBool("isDashing", true);
+    }
+
+    private bool CanDashThroughBarrier(WeaponData weapon)
+    {
+        float dashDistance = weapon.dashSpeed * weapon.dashDuration;
+        Vector3 landingPos = transform.position + dashDirection * dashDistance;
+
+        float radius = capsuleCollider != null ? capsuleCollider.radius : 0.3f;
+        Vector3 right = Vector3.Cross(dashDirection, Vector3.up).normalized;
+
+        Vector3 centerPos = landingPos;
+        Vector3 leftPos = landingPos - right * radius;
+        Vector3 rightPos = landingPos + right * radius;
+
+        return HasGround(centerPos) && HasGround(leftPos) && HasGround(rightPos);
+    }
+
+    private bool HasGround(Vector3 pos)
+    {
+        Vector3 origin = pos + Vector3.up * 1f;
+        return Physics.Raycast(origin, Vector3.down, 2f, groundLayer);
+    }
+
+    private void SetBarrierIgnore(bool ignore)
+    {
+        int playerLayer = gameObject.layer;
+        int barrier = (int)Mathf.Log(barrierLayer.value, 2);
+        Physics.IgnoreLayerCollision(playerLayer, barrier, ignore);
+        isBarrierIgnored = ignore;
     }
 
     public void OnPrimaryAttack(InputAction.CallbackContext ctx)
@@ -253,7 +293,13 @@ public class PlayerController : MonoBehaviour
         if (isDashing)
         {
             WeaponData weapon = weaponEquip.GetCurrentWeapon();
-            if (weapon == null) { isDashing = false; stats.SetInvincible(false); return; }
+            if (weapon == null)
+            {
+                isDashing = false;
+                stats.SetInvincible(false);
+                if (isBarrierIgnored) SetBarrierIgnore(false);
+                return;
+            }
             rb.linearVelocity = new Vector3(
                 dashDirection.x * weapon.dashSpeed,
                 rb.linearVelocity.y,
@@ -267,6 +313,7 @@ public class PlayerController : MonoBehaviour
                 dashTrail?.StopTrail();
                 stats.SetInvincible(false);
                 anim.SetBool("isDashing", false);
+                if (isBarrierIgnored) SetBarrierIgnore(false);
             }
 
             return;
