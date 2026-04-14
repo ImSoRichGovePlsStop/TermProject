@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17753b3fe1a458747a53d277163d5177, type: 3}
+  m_Name: BagGridUpgradeConfig
+  m_EditorClassIdentifier: Assembly-CSharp::BagGridUpgradeConfig
+  levels:
+  - cols: 6
+    rows: 4
+    cost: []
+  - cols: 7
+    rows: 4
+    cost:
+    - material: {fileID: 11400000, guid: d1691728feead1440831ad1c54495f58, type: 2}
+      count: 1
+  - cols: 7
+    rows: 5
+    cost:
+    - material: {fileID: 11400000, guid: d1691728feead1440831ad1c54495f58, type: 2}
+      count: 3
+  - cols: 8
+    rows: 5
+    cost:
+    - material: {fileID: 11400000, guid: d1691728feead1440831ad1c54495f58, type: 2}
+      count: 5
+  - cols: 9
+    rows: 5
+    cost:
+    - material: {fileID: 11400000, guid: d1691728feead1440831ad1c54495f58, type: 2}
+      count: 7
+  - cols: 10
+    rows: 6
+    cost:
+    - material: {fileID: 11400000, guid: d1691728feead1440831ad1c54495f58, type: 2}
+      count: 9
