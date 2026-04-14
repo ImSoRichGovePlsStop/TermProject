@@ -95,6 +95,10 @@ public class PassiveLeftPanelUI : MonoBehaviour
 
     private void OnUpgradeClick()
     {
+        Debug.Log($"[Upgrade] currentWeaponData: {currentWeaponData?.name}");
+        Debug.Log($"[Upgrade] UpgradeConfirmPopupUI.Instance: {UpgradeConfirmPopupUI.Instance}");
+        Debug.Log($"[Upgrade] WeaponLevelManager.Instance: {WeaponLevelManager.Instance}");
+
         if (currentWeaponData == null) return;
         int nextLevel = (WeaponLevelManager.Instance?.GetLevel(currentWeaponData) ?? 1) + 1;
 
