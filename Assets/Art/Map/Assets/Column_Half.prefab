@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 7228814648225741804}
   - component: {fileID: 4063078811746431411}
   - component: {fileID: 2265850118114594676}
-  - component: {fileID: 7360651242978728116}
   m_Layer: 12
   m_Name: Column_Half
   m_TagString: Untagged
@@ -114,21 +113,3 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -8642438158314901855, guid: edcc86a903182d0429c0d7b2c727fec0, type: 3}
---- !u!114 &7360651242978728116
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5252582885613049431}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 16287fbee04e1fe448803f3e4d98a0be, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WallTransparency
-  player: {fileID: 0}
-  cam: {fileID: 0}
-  normalMaterial: {fileID: 2100000, guid: d2654b0f80c3fd249afdc51c6d742d79, type: 2}
-  transparentMaterial: {fileID: 2100000, guid: 5e31116e49643be4c977364b452c4c61, type: 2}
-  coneAngle: 30
-  rayCount: 10
