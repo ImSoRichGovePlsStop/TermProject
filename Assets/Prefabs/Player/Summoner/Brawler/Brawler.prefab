@@ -44,7 +44,7 @@ SpriteRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1809955707749603181}
   m_Enabled: 1
-  m_CastShadows: 0
+  m_CastShadows: 1
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
@@ -61,7 +61,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
+  - {fileID: 2100000, guid: 13924b4ec210b1740a9f272378beb0b9, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -249,7 +249,7 @@ NavMeshAgent:
   m_AutoBraking: 1
   m_AutoRepath: 1
   m_Height: 2
-  m_BaseOffset: 0.1
+  m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 0
 --- !u!114 &3781395403263602536
@@ -266,6 +266,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SummonerHealth
   destroyDelay: 2
   spriteRenderer: {fileID: 0}
+  flashSpriteRenderer: {fileID: 0}
   flashColor: {r: 1, g: 0, b: 0, a: 1}
   flashDuration: 0.1
   showHealthBar: 1
@@ -303,6 +304,7 @@ MonoBehaviour:
   baseMoveSpeed: 2
   baseDamage: 6
   baseAttackSpeed: 1
+  baseShield: 0
 --- !u!114 &5090872842714426300
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -325,8 +327,7 @@ MonoBehaviour:
   health: {fileID: 0}
   movement: {fileID: 0}
   stats: {fileID: 0}
-  hpScaleBonus: 0
-  speedScaleBonus: 0
+  tier: 1
   attackRange: 0.5
   attackAngle: 60
   attackCooldown: 1
@@ -348,7 +349,6 @@ MonoBehaviour:
   miniAttackAngleMult: 0.8
   miniAttackCooldownMult: 1.3
   miniSizeMult: 0.7
-  auraPrefab: {fileID: 7865754226137070314, guid: 1a965814780cb5b41a72990ff4fcd8bc, type: 3}
   eliteStatScale:
     hp: 2
     damage: 2
@@ -357,5 +357,4 @@ MonoBehaviour:
   eliteAttackAngleMult: 1.2
   eliteAttackCooldownMult: 0.7
   eliteSizeMult: 1.4
-  damageScaleBonus: 0
-  lightningRod: 0
+  auraPrefab: {fileID: 7865754226137070314, guid: 1a965814780cb5b41a72990ff4fcd8bc, type: 3}
