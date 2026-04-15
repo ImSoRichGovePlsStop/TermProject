@@ -95,7 +95,8 @@ public class DetnationVFX : MonoBehaviour
     private void UpdatePulse(float progress)
     {
         float pulseSpeed = Mathf.Lerp(pulseSpeedMin, pulseSpeedMax, progress * progress);
-        float sin01 = (Mathf.Sin(Time.time * pulseSpeed) + 1f) * 0.5f;
+
+        float sin01 = (Mathf.Sin(_elapsed * pulseSpeed) + 1f) * 0.5f;
 
         float alpha = Mathf.Lerp(alphaMin, alphaMax, sin01);
         Color baseColor = Color.Lerp(auraColorStart, auraColorEnd, progress);

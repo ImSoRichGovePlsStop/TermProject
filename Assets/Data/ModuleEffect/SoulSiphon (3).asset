@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 288890dc3a23e5343b6bd97154c5c01f, type: 3}
+  m_Name: SoulSiphon (3)
+  m_EditorClassIdentifier: Assembly-CSharp::SoulSiphonModule
+  baseAttackBuffPerEnemyPerRarity:
+  - 0.3
+  - 0.35
+  - 0.4
+  - 0.45
+  - 0.5
+  levelMultiplier: 0.1
+  burstRangePerRarity:
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  buffDurationPerRarity:
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  enemyHpDrainPercent: 0.1
+  moduleCooldown: 15
+  siphonVFXPrefab: {fileID: 5700783719476980208, guid: 4bd8c0e08649e9240a47af65dc1f7b48, type: 3}

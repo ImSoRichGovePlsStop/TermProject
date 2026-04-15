@@ -47,16 +47,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DetnationVFX
   auraColorStart: {r: 1, g: 0.35, b: 0, a: 0.2}
   auraColorEnd: {r: 1, g: 0, b: 0, a: 0.45}
-  pulseSpeedMin: 1
-  pulseSpeedMax: 8
+  pulseSpeedMin: 5
+  pulseSpeedMax: 30
   alphaMin: 0.1
   alphaMax: 0.5
   scalePulseMin: 1
   scalePulseMax: 1
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 1024
-  groundOffset: 0.01
 --- !u!1 &9121220186331685810
 GameObject:
   m_ObjectHideFlags: 0
