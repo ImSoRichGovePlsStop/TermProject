@@ -10,7 +10,7 @@ public class ModuleRuntimeState
     public Rarity buffRarity = 0;
 
     //common, uncommon, rare, epic, legendary
-    public int[] baseRarity = {0,0,0,0,0};
+    public int[] baseRarity = { 0, 0, 0, 0, 0 };
 
     //HeavyHit
     public float dmgTaken = 0f;
@@ -25,4 +25,8 @@ public class ModuleRuntimeState
 
     // OnKillAddMaxHp
     public float hpAdded = 0f;
+
+    //siphonlife
+    public float burstRange = 0f;
+    public float duration = 0f;
 }

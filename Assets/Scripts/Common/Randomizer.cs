@@ -60,7 +60,7 @@ public static class Randomizer
 
             if (seen.Contains(data)) continue;
 //            if(currentSet.Any(x => x.moduleName == data.moduleName)) Debug.Log($"Duplicate found: {data.moduleName}");
-            if (!allowDuplicates && currentSet.Any(x => x.moduleName == data.moduleName) && Random.value > currentModuleDupChance)
+            if (!allowDuplicates && currentSet.Any(x => x == data) && Random.value > currentModuleDupChance)
             {
 //                Debug.Log($"Skipping duplicate: {data.moduleName}");
                 continue;
