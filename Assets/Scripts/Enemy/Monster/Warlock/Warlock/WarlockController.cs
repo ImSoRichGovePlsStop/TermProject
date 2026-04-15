@@ -247,5 +247,9 @@ public class WarlockController : EnemyBase
         base.OnDrawGizmosSelected();
         Gizmos.color = Color.magenta;
         Gizmos.DrawWireSphere(transform.position, shootRange);
+        // debug locked target
+        Gizmos.color = Color.red;
+        Gizmos.DrawSphere(lockedTargetPosition, 0.3f);
+        Gizmos.DrawLine(transform.position, lockedTargetPosition);
     }
 }

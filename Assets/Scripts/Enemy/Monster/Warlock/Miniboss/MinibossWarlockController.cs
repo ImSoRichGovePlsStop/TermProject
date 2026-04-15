@@ -1,0 +1,439 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.AI;
+
+[System.Serializable]
+public class WarlockPhaseSettings
+{
+    public int ultimateCircleCountMin = 4;
+    public int ultimateCircleCountMax = 7;
+    public float ultimateMinSpawnDistance = 1f;
+    public int summonCount = 3;
+    [Range(0f, 1f)] public float eliteRatio = 0.33f;
+}
+
+public class MinibossWarlockController : WarlockController
+{
+    [Header("Jump")]
+    [SerializeField] private float jumpTriggerRange = 2f;
+    [SerializeField] private float jumpEscapeCooldown = 8f;
+    [SerializeField] private float jumpCooldownReductionOnHit = 2f;
+    [SerializeField] private float jumpCooldownReductionInterval = 0.2f;
+    [SerializeField] private float jumpRadius = 6f;
+    [SerializeField] private float jumpDuration = 0.5f;
+    [SerializeField] private float jumpPeakHeight = 2f;
+    [SerializeField] private int jumpCandidates = 8;
+
+    [Header("Ultimate")]
+    [SerializeField] private float ultimateDamageScale = 1.5f;
+    [SerializeField] private float ultimateWindUpDuration = 2f;
+    [SerializeField] private float ultimateWarningDuration = 1.5f;
+    [SerializeField] private float ultimateAoeRadius = 2f;
+    [SerializeField] private float ultimateCooldown = 12f;
+    [SerializeField] private float ultimateSpawnRadius = 8f;
+
+    [Header("Summon")]
+    [SerializeField][Range(0f, 1f)] private float arcWarlockRatio = 0.5f;
+    [SerializeField] private float summonCooldown = 20f;
+    [SerializeField] private float summonWindUpDuration = 1.5f;
+    [SerializeField] private float summonMinRadius = 2f;
+    [SerializeField] private float summonRadius = 5f;
+    [SerializeField] private float summonMinSpawnDistance = 1.5f;
+    [SerializeField] private GameObject normalWarlockPrefab;
+    [SerializeField] private GameObject eliteWarlockPrefab;
+    [SerializeField] private GameObject normalArcWarlockPrefab;
+    [SerializeField] private GameObject eliteArcWarlockPrefab;
+
+    [Header("Phase Settings")]
+    [SerializeField] private WarlockPhaseSettings phase1Settings;
+    [SerializeField] private WarlockPhaseSettings phase2Settings;
+
+    [Header("Big Arc Node")]
+    [SerializeField] private GameObject bigArcNodePrefab;
+    [SerializeField] private float bigArcNodeWallOffset = 1f;
+    [SerializeField] private float bigArcNodeDamageScale = 2f;
+    [SerializeField] private float bigArcNodeSlideRange = 5f;
+
+    private WarlockPhaseSettings currentPhaseSettings;
+
+    private bool isJumping;
+    private bool isCastingUltimate;
+    private bool isSummoning;
+    private bool isSmashAnimFinished;
+
+    private float lastJumpEscapeTime;
+    private float lastCooldownReductionTime = -Mathf.Infinity;
+    private float lastUltimateTime = 0f;
+    private float lastSummonTime = 0f;
+
+    private bool IsOccupied => isJumping || isSmashing || isCastingUltimate || isSummoning;
+
+
+    public override bool CanBeInterrupted() => false;
+
+    protected override void Awake()
+    {
+        base.Awake();
+        currentPhaseSettings = phase1Settings;
+        lastJumpEscapeTime = -jumpEscapeCooldown * 0.5f;
+
+        var minibossHealth = GetComponent<MinibossWarlockHealthBase>();
+        if (minibossHealth != null)
+            minibossHealth.OnPhaseTwo += EnterPhaseTwo;
+    }
+
+    private void EnterPhaseTwo()
+    {
+        currentPhaseSettings = phase2Settings;
+        SpawnBigArcNodes();
+    }
+
+    private void SpawnBigArcNodes()
+    {
+        if (bigArcNodePrefab == null) return;
+
+        LayerMask wallMask = 1 << LayerMask.NameToLayer("Wall");
+        Vector3 origin = transform.position;
+
+        var sides = new (Vector3 dir, BigArcNode.WallSide side)[]
+        {
+            (Vector3.forward,  BigArcNode.WallSide.Top),
+            (Vector3.back,     BigArcNode.WallSide.Bottom),
+            (Vector3.left,     BigArcNode.WallSide.Left),
+            (Vector3.right,    BigArcNode.WallSide.Right),
+        };
+
+        foreach (var (dir, side) in sides)
+        {
+            if (!Physics.Raycast(new Vector3(origin.x, origin.y + 0.1f, origin.z), dir, out RaycastHit hit, 100f, wallMask))
+                continue;
+
+            // random position along that wall
+            Vector3 spawnPos = GetRandomPositionOnWall(hit, side, bigArcNodeWallOffset);
+
+            var go = Instantiate(bigArcNodePrefab, spawnPos, Quaternion.identity);
+            var node = go.GetComponent<BigArcNode>();
+            node?.Initialize(side, stats.Damage * bigArcNodeDamageScale, health);
+        }
+    }
+
+    private Vector3 GetRandomPositionOnWall(RaycastHit hit, BigArcNode.WallSide side, float offset)
+    {
+        LayerMask wallMask = 1 << LayerMask.NameToLayer("Wall");
+        Vector3 wallNormal = hit.normal;
+        Vector3 basePos = hit.point + wallNormal * offset;
+        basePos.y = transform.position.y;
+
+        Vector3 slideAxis = (side == BigArcNode.WallSide.Top || side == BigArcNode.WallSide.Bottom)
+            ? Vector3.right
+            : Vector3.forward;
+
+        for (int attempt = 0; attempt < 10; attempt++)
+        {
+            float slide = Random.Range(-bigArcNodeSlideRange, bigArcNodeSlideRange);
+            Vector3 candidate = basePos + slideAxis * slide;
+
+            if (!UnityEngine.AI.NavMesh.SamplePosition(candidate, out UnityEngine.AI.NavMeshHit navHit, 0.5f, UnityEngine.AI.NavMesh.AllAreas))
+                continue;
+
+            // candidate must not be blocked by wall from warlock
+            Vector3 dir = navHit.position - transform.position;
+            dir.y = 0f;
+            float dist = dir.magnitude;
+            if (dist > 0.01f && Physics.Raycast(
+                new Vector3(transform.position.x, transform.position.y + 0.1f, transform.position.z),
+                dir.normalized, dist, wallMask)) continue;
+
+            return navHit.position;
+        }
+
+        return basePos;
+    }
+
+    protected override void UpdateState()
+    {
+        if (IsOccupied || isWindingUp) return;
+
+        if (HasTarget && Vector3.Distance(transform.position, TargetPosition) < jumpTriggerRange && CanEscapeJump())
+        {
+            StartCoroutine(JumpRoutine());
+            return;
+        }
+
+        base.UpdateState();
+    }
+
+    protected override void TickState()
+    {
+        if (IsOccupied) return;
+
+        if (currentState == WarlockState.WindUp && !isWindingUp)
+        {
+            if (TryUltimate()) return;
+            if (TrySummon()) return;
+            if (TrySmash()) return;
+        }
+
+        base.TickState();
+    }
+
+    protected override bool TrySmash()
+    {
+        if (isSmashing) return true;
+        if (Time.time < lastSmashTime + smashCooldown) return false;
+        if (!HasTarget || Vector3.Distance(transform.position, TargetPosition) > smashRange) return false;
+
+        StartCoroutine(EliteSmashRoutine());
+        return true;
+    }
+
+    private IEnumerator EliteSmashRoutine()
+    {
+        isSmashing = true;
+        movement.StopMoving();
+
+        animator?.SetTrigger("SmashWindUp");
+        yield return new WaitForSeconds(smashWindUpDuration);
+
+        SpawnAOEWarning(TargetPosition, smashDamageScale, smashAoeRadius, smashWarningDuration);
+
+        isSmashAnimFinished = false;
+        animator?.SetTrigger("Smash");
+        yield return new WaitUntil(() => isSmashAnimFinished);
+
+        lastSmashTime = Time.time;
+        isSmashing = false;
+        TriggerPostAttackDelay();
+    }
+
+    public void FinishSmash() => isSmashAnimFinished = true;
+
+
+    private bool CanEscapeJump() => !isJumping && Time.time >= lastJumpEscapeTime + jumpEscapeCooldown;
+
+    private Vector3 FindJumpDestination()
+    {
+        Vector3 best = transform.position;
+        float bestDist = -1f;
+        LayerMask wallMask = 1 << LayerMask.NameToLayer("Wall");
+
+        for (int i = 0; i < jumpCandidates; i++)
+        {
+            float angle = i * (360f / jumpCandidates);
+            Vector3 candidate = transform.position + Quaternion.Euler(0f, angle, 0f) * Vector3.forward * jumpRadius * stats.MoveSpeedRatio;
+
+            if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, 2f, NavMesh.AllAreas)) continue;
+
+            Vector3 dir = hit.position - transform.position;
+            dir.y = 0f;
+            float dist = dir.magnitude;
+            if (dist > 0.01f && Physics.Raycast(
+                new Vector3(transform.position.x, transform.position.y + 0.1f, transform.position.z),
+                dir.normalized, dist, wallMask)) continue;
+
+            float d = Vector3.Distance(hit.position, TargetPosition);
+            if (d > bestDist) { bestDist = d; best = hit.position; }
+        }
+
+        return best;
+    }
+
+    private IEnumerator JumpRoutine()
+    {
+        isJumping = true;
+        movement.SetCanMove(false);
+        animator?.SetTrigger("Jump");
+
+        yield return null;
+
+        if (animator != null)
+        {
+            AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(0);
+            if (info.length > 0f) animator.speed = info.length / jumpDuration;
+        }
+
+        Vector3 destination = FindJumpDestination();
+        Vector3 startPos = transform.position;
+        float elapsed = 0f;
+
+        while (elapsed < jumpDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / jumpDuration;
+            transform.position = Vector3.Lerp(startPos, destination, t) + Vector3.up * Mathf.Sin(t * Mathf.PI) * jumpPeakHeight;
+            yield return null;
+        }
+
+        var agent = movement.GetAgent();
+        if (NavMesh.SamplePosition(destination, out NavMeshHit landHit, 2f, NavMesh.AllAreas))
+            destination = landHit.position;
+
+        if (agent != null) agent.Warp(destination);
+        else transform.position = destination;
+
+        if (animator != null) animator.speed = 1f;
+        movement.SetCanMove(true);
+        lastJumpEscapeTime = Time.time;
+        isJumping = false;
+    }
+
+
+    private bool TryUltimate()
+    {
+        if (isCastingUltimate) return true;
+        if (Time.time < lastUltimateTime + ultimateCooldown) return false;
+
+        StartCoroutine(UltimateRoutine());
+        return true;
+    }
+
+    private IEnumerator UltimateRoutine()
+    {
+        isCastingUltimate = true;
+        movement.StopMoving();
+
+        animator?.SetTrigger("SmashWindUp");
+        yield return new WaitForSeconds(ultimateWindUpDuration);
+
+        SpawnUltimateCircles();
+
+        isSmashAnimFinished = false;
+        animator?.SetTrigger("Smash");
+        yield return new WaitUntil(() => isSmashAnimFinished);
+
+        lastUltimateTime = Time.time;
+        isCastingUltimate = false;
+        TriggerPostAttackDelay();
+    }
+
+    private void SpawnUltimateCircles()
+    {
+        int circleCount = Random.Range(currentPhaseSettings.ultimateCircleCountMin, currentPhaseSettings.ultimateCircleCountMax + 1);
+        var spawned = new List<Vector3>();
+        int maxAttempts = circleCount * 5;
+        LayerMask wallMask = 1 << LayerMask.NameToLayer("Wall");
+
+        for (int attempt = 0; attempt < maxAttempts && spawned.Count < circleCount; attempt++)
+        {
+            Vector2 rand = Random.insideUnitCircle * ultimateSpawnRadius;
+            Vector3 candidate = TargetPosition + new Vector3(rand.x, 0f, rand.y);
+
+            if (!NavMesh.SamplePosition(candidate, out NavMeshHit navHit, 1f, NavMesh.AllAreas)) continue;
+
+            Vector3 dir = navHit.position - TargetPosition;
+            dir.y = 0f;
+            float dist = dir.magnitude;
+            if (dist > 0.01f && Physics.Raycast(
+                new Vector3(TargetPosition.x, TargetPosition.y + 0.1f, TargetPosition.z),
+                dir.normalized, dist, wallMask)) continue;
+
+            bool tooClose = false;
+            foreach (var pos in spawned)
+                if (Vector3.Distance(navHit.position, pos) < currentPhaseSettings.ultimateMinSpawnDistance) { tooClose = true; break; }
+            if (tooClose) continue;
+
+            SpawnAOEWarning(navHit.position, ultimateDamageScale, ultimateAoeRadius, ultimateWarningDuration);
+            spawned.Add(navHit.position);
+        }
+    }
+
+
+    private bool TrySummon()
+    {
+        if (isSummoning) return true;
+        if (Time.time < lastSummonTime + summonCooldown) return false;
+
+        StartCoroutine(SummonRoutine());
+        return true;
+    }
+
+    private IEnumerator SummonRoutine()
+    {
+        isSummoning = true;
+        movement.StopMoving();
+
+        animator?.SetTrigger("SmashWindUp");
+        yield return new WaitForSeconds(summonWindUpDuration);
+
+        SpawnSummons();
+
+        isSmashAnimFinished = false;
+        animator?.SetTrigger("Smash");
+        yield return new WaitUntil(() => isSmashAnimFinished);
+
+        lastSummonTime = Time.time;
+        isSummoning = false;
+        TriggerPostAttackDelay();
+    }
+
+    private void SpawnSummons()
+    {
+        var spawned = new List<Vector3>();
+        LayerMask wallMask = 1 << LayerMask.NameToLayer("Wall");
+        int count = currentPhaseSettings.summonCount;
+        int maxAttempts = count * 8;
+        int spawnedCount = 0;
+
+        for (int attempt = 0; attempt < maxAttempts && spawnedCount < count; attempt++)
+        {
+            Vector2 rand = Random.insideUnitCircle.normalized * Random.Range(summonMinRadius, summonRadius);
+            Vector3 candidate = TargetPosition + new Vector3(rand.x, 0f, rand.y);
+
+            if (!NavMesh.SamplePosition(candidate, out NavMeshHit navHit, 1f, NavMesh.AllAreas)) continue;
+
+            Vector3 dir = navHit.position - TargetPosition;
+            dir.y = 0f;
+            float dist = dir.magnitude;
+            if (dist > 0.01f && Physics.Raycast(
+                new Vector3(TargetPosition.x, TargetPosition.y + 0.1f, TargetPosition.z),
+                dir.normalized, dist, wallMask)) continue;
+
+            bool tooClose = false;
+            foreach (var pos in spawned)
+                if (Vector3.Distance(navHit.position, pos) < summonMinSpawnDistance) { tooClose = true; break; }
+            if (tooClose) continue;
+
+            bool isElite = Random.value <= currentPhaseSettings.eliteRatio;
+            bool isArc = Random.value <= arcWarlockRatio;
+
+            GameObject prefab = isElite
+                ? (isArc ? eliteArcWarlockPrefab : eliteWarlockPrefab)
+                : (isArc ? normalArcWarlockPrefab : normalWarlockPrefab);
+
+            if (prefab != null)
+                Instantiate(prefab, navHit.position, Quaternion.identity);
+
+            spawned.Add(navHit.position);
+            spawnedCount++;
+        }
+    }
+
+
+    protected override void OnHurtTriggered()
+    {
+        base.OnHurtTriggered();
+
+        if (Time.time < lastCooldownReductionTime + jumpCooldownReductionInterval) return;
+        lastCooldownReductionTime = Time.time;
+        lastJumpEscapeTime -= jumpCooldownReductionOnHit;
+    }
+
+    public override void OnDeath()
+    {
+        base.OnDeath();
+        StopAllCoroutines();
+        isJumping = false;
+        isCastingUltimate = false;
+        isSummoning = false;
+    }
+
+    protected new void OnDrawGizmosSelected()
+    {
+        base.OnDrawGizmosSelected();
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, smashRange);
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, jumpTriggerRange);
+    }
+}
