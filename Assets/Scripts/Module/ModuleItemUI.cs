@@ -504,7 +504,11 @@ public class ModuleItemUI : MonoBehaviour,
                 && !Instance.Data.allowDuplicate
                 && InventoryManager.Instance.IsModuleEquipped(Instance.Data, excluding: Instance);
 
-            if (weaponBlocked || dupBlocked)
+            bool bagBlocked = targetGrid == BagGridUI
+                && targetGrid.Data == InventoryManager.Instance.BagGrid
+                && !InventoryManager.Instance.CanPlaceInBagGrid(Instance, pivot, _dragRotation);
+
+            if (weaponBlocked || dupBlocked || bagBlocked)
             {
                 Instance.SetRotation(_originRotation);
                 prevGrid?.TryPlace(Instance, prevPos);
