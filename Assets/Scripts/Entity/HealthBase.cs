@@ -38,6 +38,7 @@ public abstract class HealthBase : MonoBehaviour
     public bool IsInvincible { get; set; }
 
     public event Action<float, bool> OnDamageReceived;
+    public event Action<float> OnHealReceived;
     protected void RaiseOnDamageReceived(float damage, bool isCrit) => OnDamageReceived?.Invoke(damage, isCrit);
     public event Action OnDeath;
 
@@ -102,7 +103,10 @@ public abstract class HealthBase : MonoBehaviour
         float actual = Mathf.Min(amount, maxHP - currentHP);
         currentHP += actual;
         if (actual > 0f)
+        {
             DamageNumberSpawner.Instance?.SpawnHealNumber(transform.position, actual);
+            OnHealReceived?.Invoke(actual);
+        }
     }
 
     public virtual void TakeDamage(float damage, bool isCrit = false)

@@ -247,6 +247,12 @@ MonoBehaviour:
   interactableLayer:
     serializedVersion: 2
     m_Bits: 4294967295
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 1024
+  barrierLayer:
+    serializedVersion: 2
+    m_Bits: 8192
 --- !u!54 &2550625429019843902
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -293,10 +299,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.06442419
+  m_Radius: 0.07251239
   m_Height: 0.37702632
   m_Direction: 1
-  m_Center: {x: -0.002236694, y: 0.09494448, z: 0}
+  m_Center: {x: -0.002236694, y: 0.09494448, z: -0.049046278}
 --- !u!114 &6699237877294229590
 MonoBehaviour:
   m_ObjectHideFlags: 0
