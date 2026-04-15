@@ -6,8 +6,6 @@ public class MinibossHarpyController : HarpyController
     public enum AirPhaseState { None, FlyingUp, Hovering, Diving, FlyingUpAfterDive, Landing }
 
     [Header("Air Phase")]
-    [SerializeField] private float airCooldown = 8f;
-    [SerializeField] private float airCooldownEnraged = 4f;
     [SerializeField] private float flyHeight = 3f;
     [SerializeField] private float flySpeed = 5f;
     [SerializeField] private float hoverDuration = 0.5f;
@@ -33,12 +31,39 @@ public class MinibossHarpyController : HarpyController
     [Header("Land")]
     [SerializeField] private float landRadius = 2f;
 
+    [Header("Fire Trail")]
+    [SerializeField] private GameObject fireDropWarningPrefab;
+    [SerializeField] private GameObject fireFieldPrefab;
+    [SerializeField] private float fireTrailDropInterval = 2f;
+    [SerializeField] private float fireDropWarningDuration = 1.5f;
+    [SerializeField] private float fireDropRadius = 1.2f;
+    [SerializeField] private float fireDropDamageScale = 0.8f;
+    [SerializeField] private float fireTrailSpeed = 6f;
+    [SerializeField] private float fireFieldDuration = 4f;
+    [SerializeField] private float fireFieldTickInterval = 0.5f;
+    [SerializeField] private float fireFieldDamageScale = 0.3f;
+
+    [Header("Before Enrage - Air Phase")]
+    [SerializeField] private float airCooldownNormalMin = 6f;
+    [SerializeField] private float airCooldownNormalMax = 10f;
+    [SerializeField][Range(0f, 1f)] private float fireTrailChanceNormal = 0.5f;
+    [SerializeField][Range(0f, 1f)] private float fireTrailChance2Normal = 0.5f;
+    [SerializeField][Range(0f, 1f)] private float diveAfterTrailChanceNormal = 0.5f;
+
+    [Header("After Enrage - Air Phase")]
+    [SerializeField] private float airCooldownEnragedMin = 3f;
+    [SerializeField] private float airCooldownEnragedMax = 6f;
+    [SerializeField][Range(0f, 1f)] private float fireTrailChanceEnraged = 0.7f;
+    [SerializeField][Range(0f, 1f)] private float fireTrailChance2Enraged = 0.7f;
+    [SerializeField][Range(0f, 1f)] private float diveAfterTrailChanceEnraged = 0.7f;
+
     [Header("References")]
     [SerializeField] private Rigidbody rb;
 
     private MinibossHarpyHealthBase eliteHealth;
     private bool isEnraged = false;
     private float lastAirTime = 0f;
+    private float currentAirCooldown;
     private GameObject activeWarning;
     private AirPhaseState airState = AirPhaseState.None;
     private bool diveLandFinished = false;
@@ -66,6 +91,7 @@ public class MinibossHarpyController : HarpyController
     {
         baseY = transform.position.y;
         lastAirTime = Time.time;
+        currentAirCooldown = Random.Range(airCooldownNormalMin, airCooldownNormalMax);
     }
 
     protected override void UpdateState()
@@ -79,7 +105,7 @@ public class MinibossHarpyController : HarpyController
         if (IsInAirPhase) return;
 
         if (HasTarget && !IsAttacking
-            && Time.time >= lastAirTime + (isEnraged ? airCooldownEnraged : airCooldown))
+            && Time.time >= lastAirTime + currentAirCooldown)
         {
             StartCoroutine(AirPhaseRoutine());
             return;
@@ -106,7 +132,31 @@ public class MinibossHarpyController : HarpyController
         airState = AirPhaseState.Hovering;
         yield return new WaitForSeconds(hoverDuration);
 
-        yield return StartCoroutine(DiveRoutine());
+        float trailChance = isEnraged ? fireTrailChanceEnraged : fireTrailChanceNormal;
+        float trail2Chance = isEnraged ? fireTrailChance2Enraged : fireTrailChance2Normal;
+        float diveChance = isEnraged ? diveAfterTrailChanceEnraged : diveAfterTrailChanceNormal;
+
+        bool doFireTrail = Random.value <= trailChance;
+        bool doSecondFireTrail = doFireTrail && Random.value <= trail2Chance;
+        bool doDive = !doFireTrail || Random.value <= diveChance;
+
+        if (doFireTrail)
+        {
+            yield return StartCoroutine(FireTrailRoutine());
+            if (doSecondFireTrail)
+            {
+                airState = AirPhaseState.FlyingUp;
+                yield return StartCoroutine(FlyToHeight(baseY + flyHeight));
+                yield return StartCoroutine(FireTrailRoutine());
+            }
+        }
+
+        if (doDive)
+        {
+            airState = AirPhaseState.FlyingUp;
+            yield return StartCoroutine(FlyToHeight(baseY + flyHeight));
+            yield return StartCoroutine(DiveRoutine());
+        }
 
         airState = AirPhaseState.FlyingUp;
         yield return StartCoroutine(FlyToHeight(baseY + flyHeight));
@@ -123,8 +173,83 @@ public class MinibossHarpyController : HarpyController
         animator?.SetBool("IsFlying", false);
 
         lastAirTime = Time.time;
+        currentAirCooldown = Random.Range(
+            isEnraged ? airCooldownEnragedMin : airCooldownNormalMin,
+            isEnraged ? airCooldownEnragedMax : airCooldownNormalMax);
         airState = AirPhaseState.None;
         TriggerPostAttackDelay();
+    }
+
+    private IEnumerator FireTrailRoutine()
+    {
+        if (playerTarget == null) yield break;
+
+        LayerMask wallMask = 1 << LayerMask.NameToLayer("Wall");
+        LayerMask targetLayers = (1 << LayerMask.NameToLayer("Player"))
+                                | (1 << LayerMask.NameToLayer("Summoner"))
+                                | (1 << LayerMask.NameToLayer("Totem"));
+
+        Vector3 playerPos = playerTarget.transform.position;
+
+        // Find entry and exit points
+        float entryAngle = Random.Range(0f, 360f);
+        float exitAngle = entryAngle + 180f + Random.Range(-10f, 10f);
+
+        Vector3 entryDir = new Vector3(Mathf.Sin(entryAngle * Mathf.Deg2Rad), 0f, Mathf.Cos(entryAngle * Mathf.Deg2Rad));
+        Vector3 exitDir = new Vector3(Mathf.Sin(exitAngle * Mathf.Deg2Rad), 0f, Mathf.Cos(exitAngle * Mathf.Deg2Rad));
+
+        Vector3 entryPoint = playerPos;
+        Vector3 exitPoint = playerPos;
+
+        if (Physics.Raycast(new Vector3(playerPos.x, baseY + 0.1f, playerPos.z), entryDir, out RaycastHit entryHit, 50f, wallMask))
+            entryPoint = new Vector3(entryHit.point.x, baseY + flyHeight, entryHit.point.z);
+        else
+            entryPoint = new Vector3(playerPos.x + entryDir.x * 20f, baseY + flyHeight, playerPos.z + entryDir.z * 20f);
+
+        if (Physics.Raycast(new Vector3(playerPos.x, baseY + 0.1f, playerPos.z), exitDir, out RaycastHit exitHit, 50f, wallMask))
+            exitPoint = new Vector3(exitHit.point.x, baseY + flyHeight, exitHit.point.z);
+        else
+            exitPoint = new Vector3(playerPos.x + exitDir.x * 20f, baseY + flyHeight, playerPos.z + exitDir.z * 20f);
+
+        // Fly to entry point
+        yield return StartCoroutine(FlyToPosition(entryPoint));
+
+        // Fly from entry to exit dropping fire balls
+        Vector3 flyDir = (exitPoint - entryPoint);
+        flyDir.y = 0f;
+        float totalDist = flyDir.magnitude;
+        if (totalDist < 0.01f) yield break;
+        flyDir.Normalize();
+
+        float distTraveled = 0f;
+        float distSinceLastDrop = 0f;
+
+        while (distTraveled < totalDist)
+        {
+            float step = fireTrailSpeed * Time.deltaTime;
+            step = Mathf.Min(step, totalDist - distTraveled);
+
+            transform.position += new Vector3(flyDir.x, 0f, flyDir.z) * step;
+            movement.FaceTarget(transform.position + flyDir);
+            distTraveled += step;
+            distSinceLastDrop += step;
+
+            if (distSinceLastDrop >= fireTrailDropInterval)
+            {
+                distSinceLastDrop = 0f;
+                if (fireDropWarningPrefab != null)
+                {
+                    Vector3 dropPos = new Vector3(transform.position.x, baseY, transform.position.z);
+                    GameObject warning = Instantiate(fireDropWarningPrefab, dropPos, Quaternion.identity);
+                    var w = warning.GetComponent<HarpyFireDropWarning>();
+                    w?.Initialize(stats.Damage * fireDropDamageScale, fireDropRadius,
+                        fireDropWarningDuration, targetLayers, health, fireFieldPrefab,
+                        fireFieldDuration, fireFieldTickInterval, stats.Damage * fireFieldDamageScale);
+                }
+            }
+
+            yield return null;
+        }
     }
 
     private IEnumerator DiveRoutine()

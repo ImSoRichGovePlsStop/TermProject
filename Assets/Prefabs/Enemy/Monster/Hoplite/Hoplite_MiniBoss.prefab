@@ -281,8 +281,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -4.2, y: 2.39, z: 0}
-  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 1.4, y: 1.4, z: 1.4}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 952351392614946854}
   - {fileID: 1487122476698537911}
@@ -414,9 +414,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73a687f9a65ebc34ab8d148f3be77e4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EntityStats
-  baseMaxHP: 400
+  baseMaxHP: 500
   baseMoveSpeed: 3
-  baseDamage: 14
+  baseDamage: 16
   baseAttackSpeed: 1
   baseShield: 0
 --- !u!114 &4861128534556401032
@@ -469,18 +469,19 @@ MonoBehaviour:
     idleTimeMax: 0.8
   attackRange: 3.5
   attackDamageScale: 1
-  attackCooldownMin: 1.5
-  attackCooldownMax: 2.5
+  attackCooldownMin: 2.5
+  attackCooldownMax: 3
   attackDashSpeed: 12
   attackDashDuration: 0.25
   attackDashHitRadius: 0.8
   guardDuration: 2
-  guardCooldown: 12
+  guardCooldown: 15
   chargeRange: 7
   chargeDamageScale: 1.5
-  chargeCooldown: 10
-  chargeWarningDurationMin: 0.8
-  chargeWarningDurationMax: 1.5
+  chargeCooldownMin: 7
+  chargeCooldownMax: 10
+  chargeWarningDurationMin: 1.2
+  chargeWarningDurationMax: 1.8
   chargeSpeed: 25
   chargeDuration: 0.4
   chargeHitRadius: 0.8
@@ -489,7 +490,8 @@ MonoBehaviour:
   guardDome: {fileID: 3476831488111483137}
   spearPrefab: {fileID: 6586537130506963891, guid: 4958cc2a49354e94e83968d79713f79e, type: 3}
   spearRange: 7
-  spearCooldown: 8
+  spearCooldownMin: 6
+  spearCooldownMax: 8
   spearWindupDuration: 0.75
   spearSpawnPoint: {fileID: 6948230557118831844}
 --- !u!114 &3414316426762644326

@@ -11,7 +11,8 @@ public class MinibossHopliteController : HopliteController
     [Header("Charge")]
     [SerializeField] private float chargeRange = 4f;
     [SerializeField] private float chargeDamageScale = 1.5f;
-    [SerializeField] private float chargeCooldown = 6f;
+    [SerializeField] private float chargeCooldownMin = 5f;
+    [SerializeField] private float chargeCooldownMax = 8f;
     [SerializeField] private float chargeWarningDurationMin = 0.8f;
     [SerializeField] private float chargeWarningDurationMax = 1.5f;
     [SerializeField] private float chargeSpeed = 12f;
@@ -26,12 +27,15 @@ public class MinibossHopliteController : HopliteController
     [Header("Spear Throw")]
     [SerializeField] private GameObject spearPrefab;
     [SerializeField] private float spearRange = 7f;
-    [SerializeField] private float spearCooldown = 8f;
+    [SerializeField] private float spearCooldownMin = 6f;
+    [SerializeField] private float spearCooldownMax = 10f;
     [SerializeField] private float spearWindupDuration = 0.5f;
     [SerializeField] private Transform spearSpawnPoint;
 
     private float lastSpearTime = -Mathf.Infinity;
     private bool isThrowing = false;
+    private float currentChargeCooldown;
+    private float currentSpearCooldown;
 
     private float guardTimer = 0f;
     private GameObject activeWarning;
@@ -48,6 +52,8 @@ public class MinibossHopliteController : HopliteController
     {
         base.Awake();
         lastChargeTime = Time.time;
+        currentChargeCooldown = Random.Range(chargeCooldownMin, chargeCooldownMax);
+        currentSpearCooldown = Random.Range(spearCooldownMin, spearCooldownMax);
     }
 
     public bool TryProcGuard()
@@ -84,13 +90,13 @@ public class MinibossHopliteController : HopliteController
         if (!isCharging && !isThrowing && !isAttacking && HasTarget && (currentState == HopliteState.Chase || currentState == HopliteState.Attack))
         {
             float dist = Vector3.Distance(transform.position, TargetPosition);
-            if (dist <= chargeRange && Time.time >= lastChargeTime + chargeCooldown)
+            if (dist <= chargeRange && Time.time >= lastChargeTime + currentChargeCooldown)
             {
                 StartCoroutine(ChargeRoutine());
                 return;
             }
 
-            if (!isThrowing && dist <= spearRange && Time.time >= lastSpearTime + spearCooldown)
+            if (!isThrowing && dist <= spearRange && Time.time >= lastSpearTime + currentSpearCooldown)
             {
                 StartCoroutine(SpearThrowRoutine());
                 return;
@@ -194,6 +200,7 @@ public class MinibossHopliteController : HopliteController
 
         movement.SetCanMove(true);
         lastChargeTime = Time.time;
+        currentChargeCooldown = Random.Range(chargeCooldownMin, chargeCooldownMax);
         lastAttackTime = Time.time;
         currentAttackCooldown = Mathf.Max(2f, currentAttackCooldown);
         isAttacking = false;
@@ -259,6 +266,7 @@ public class MinibossHopliteController : HopliteController
         isAttacking = false;
         movement.SetCanMove(true);
         lastSpearTime = Time.time;
+        currentSpearCooldown = Random.Range(spearCooldownMin, spearCooldownMax);
         isThrowing = false;
         TriggerPostAttackDelay();
     }

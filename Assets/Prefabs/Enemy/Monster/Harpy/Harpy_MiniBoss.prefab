@@ -304,9 +304,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73a687f9a65ebc34ab8d148f3be77e4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EntityStats
-  baseMaxHP: 300
+  baseMaxHP: 450
   baseMoveSpeed: 4
-  baseDamage: 16
+  baseDamage: 20
   baseAttackSpeed: 1
   baseShield: 0
 --- !u!114 &6574624719163675747
@@ -364,8 +364,6 @@ MonoBehaviour:
   attackDashSpeed: 16
   attackDashDuration: 0.2
   attackDashHitRadius: 0.7
-  airCooldown: 12
-  airCooldownEnraged: 8
   flyHeight: 8
   flySpeed: 12
   hoverDuration: 1
@@ -375,13 +373,33 @@ MonoBehaviour:
   diveWarningPrefab: {fileID: 7845990777759493363, guid: 5f5ca432fd1f7c04cad90250c95492fa, type: 3}
   diveWarningRadius: 0.8
   diveWanderDuration: 2
-  diveLockDuration: 0.15
-  diveMoveToPlayerDuration: 0.15
+  diveLockDuration: 0.2
+  diveMoveToPlayerDuration: 0.2
   diveWanderRadius: 2.5
   diveWanderSpeed: 6
   shockwavePrefab: {fileID: 542710960782387923, guid: 80a5637c73398b747a1ad0672a1a13af, type: 3}
   shockwaveDamageScale: 1
   landRadius: 5
+  fireDropWarningPrefab: {fileID: 1294221120889759405, guid: 07cbbfc35730b9149ac96cb252e65e9e, type: 3}
+  fireFieldPrefab: {fileID: 4656409791605185348, guid: 88beeb25fc5143047b29d21ca63f6f04, type: 3}
+  fireTrailDropInterval: 2.5
+  fireDropWarningDuration: 0.8
+  fireDropRadius: 1.5
+  fireDropDamageScale: 0.8
+  fireTrailSpeed: 6
+  fireFieldDuration: 8
+  fireFieldTickInterval: 0.25
+  fireFieldDamageScale: 0.1
+  airCooldownNormalMin: 10
+  airCooldownNormalMax: 15
+  fireTrailChanceNormal: 0.5
+  fireTrailChance2Normal: 0.15
+  diveAfterTrailChanceNormal: 0.7
+  airCooldownEnragedMin: 6
+  airCooldownEnragedMax: 10
+  fireTrailChanceEnraged: 1
+  fireTrailChance2Enraged: 0.4
+  diveAfterTrailChanceEnraged: 1
   rb: {fileID: 749927982167029811}
 --- !u!114 &8102250709167687699
 MonoBehaviour:
