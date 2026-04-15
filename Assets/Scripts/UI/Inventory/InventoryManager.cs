@@ -133,6 +133,14 @@ public class InventoryManager : MonoBehaviour
                 return true;
         return false;
     }
+
+    public bool IsActiveModuleEquipped(ModuleInstance excluding = null)
+    {
+        foreach (var inst in WeaponGrid.GetAllModules())
+            if (inst != excluding && inst.Data.hasActive)
+                return true;
+        return false;
+    }
     public void DeleteModule(ModuleInstance inst)
     {
         WeaponGrid.Remove(inst);

@@ -81,7 +81,7 @@ public class SoulSiphonPassive : MonoBehaviour
             var health = col.GetComponent<HealthBase>();
             if (health == null || health.IsDead) continue;
 
-            float drain = health.MaxHP * Module.enemyHpDrainPercent;
+            float drain = health.CurrentHP * Module.enemyHpDrainPercent;
             health.TakeDamage(drain, false);
             enemiesHit++;
         }

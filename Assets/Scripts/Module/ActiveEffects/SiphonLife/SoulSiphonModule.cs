@@ -15,7 +15,7 @@ public class SoulSiphonModule : ModuleEffect
     [Header("ATK buff duration per Rarity (Common → Legendary)  [seconds]")]
     public float[] buffDurationPerRarity = { 0f, 0f, 5f, 7f, 9f };
 
-    [Header("HP drained from each enemy (% of enemy Max HP, fixed)")]
+    [Header("HP drained from each enemy (% of enemy current HP, fixed)")]
     public float enemyHpDrainPercent = 0.10f;
 
     [Header("Core Settings")]
@@ -138,7 +138,7 @@ public class SoulSiphonModule : ModuleEffect
     public override string GetDescription(Rarity rarity, int level, ModuleRuntimeState state) => null;
 
     public override string PassiveDescription =>
-        $"Press [Q] to siphon {enemyHpDrainPercent * 100f:F0}% Max HP from every enemy in range. " +
+        $"Press [Q] to siphon {enemyHpDrainPercent * 100f:F0}% current HP from every enemy in range. " +
         $"Each enemy siphoned grants a temporary ATK boost. " +
         $"(Cooldown: {moduleCooldown:F0}s)";
 
@@ -158,7 +158,7 @@ public class SoulSiphonModule : ModuleEffect
         {
             new PassiveEntry
             {
-                value         = $"+{effectiveBuffPerEnemy * 100f:F0}% ATK",
+                value         = $"+{effectiveBuffPerEnemy * 100f:F0}%",
                 label         = "Per Enemy Siphoned",
                 sublabel      = "Conditional",
                 isBuffed      = atkBuffed,
