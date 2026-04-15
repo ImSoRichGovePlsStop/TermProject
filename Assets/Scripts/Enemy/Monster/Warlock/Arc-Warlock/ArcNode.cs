@@ -148,12 +148,14 @@ public class ArcNode : MonoBehaviour
         HashSet<ArcNode> segment = GetSegment();
         List<ArcNode> candidates = new List<ArcNode>();
 
+        int wallMask = 1 << LayerMask.NameToLayer("Wall");
         foreach (var node in AllNodes)
         {
             if (node == this) continue;
             if (segment.Contains(node)) continue;
             if (!node.HasFreeSlot()) continue;
             if (!node.initialDelayDone) continue;
+            if (!HasLineOfSight(transform.position, node.transform.position, wallMask)) continue;
             candidates.Add(node);
         }
 
@@ -225,6 +227,15 @@ public class ArcNode : MonoBehaviour
         if (Physics.Raycast(pos + Vector3.up * 5f, Vector3.down, out RaycastHit hit, 20f, groundLayer))
             pos.y = hit.point.y + groundOffset;
         transform.position = pos;
+    }
+
+    private bool HasLineOfSight(Vector3 from, Vector3 to, int wallMask)
+    {
+        Vector3 dir = to - from;
+        dir.y = 0f;
+        float dist = dir.magnitude;
+        if (dist < 0.01f) return true;
+        return !Physics.Raycast(new Vector3(from.x, from.y + 0.1f, from.z), dir.normalized, dist, wallMask);
     }
 
     private void OnDrawGizmosSelected()
