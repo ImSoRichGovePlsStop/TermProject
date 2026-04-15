@@ -493,7 +493,7 @@ GameObject:
   - component: {fileID: 335140722}
   - component: {fileID: 335140721}
   - component: {fileID: 335140727}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Plane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1347,6 +1347,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 67422687661408910, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 184915438686665676, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 184915438686665676, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
+      propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 385220460820318799, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
@@ -2693,7 +2701,7 @@ GameObject:
   - component: {fileID: 1020763307}
   - component: {fileID: 1020763306}
   - component: {fileID: 1020763305}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: Wall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
