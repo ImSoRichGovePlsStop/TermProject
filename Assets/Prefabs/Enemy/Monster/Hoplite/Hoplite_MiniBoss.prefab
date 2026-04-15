@@ -384,7 +384,7 @@ MonoBehaviour:
   healthBarScale: {x: 2, y: 1.5, z: 1}
   tier: 2
   guardHealRatio: 0.3
-  guardProcChance: 0.1
+  guardProcChance: 0.08
   eliteController: {fileID: 4861128534556401032}
 --- !u!114 &5942300544733507474
 MonoBehaviour:
@@ -475,13 +475,13 @@ MonoBehaviour:
   attackDashDuration: 0.25
   attackDashHitRadius: 0.8
   guardDuration: 2
-  guardCooldown: 15
+  guardCooldown: 18
   chargeRange: 7
   chargeDamageScale: 1.5
   chargeCooldownMin: 7
   chargeCooldownMax: 10
-  chargeWarningDurationMin: 1.2
-  chargeWarningDurationMax: 1.8
+  chargeWarningDurationMin: 0.9
+  chargeWarningDurationMax: 1.4
   chargeSpeed: 25
   chargeDuration: 0.4
   chargeHitRadius: 0.8

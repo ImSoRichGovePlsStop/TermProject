@@ -59,8 +59,8 @@ public class HopliteSpearProjectile : EnemyProjectileBase
 
         if (hitTarget != null)
         {
-            DealDamageTo(hitTarget);
             ApplySlow(hitTarget, slowMultiplier, slowDuration);
+            DealDamageTo(hitTarget);
             Destroy(gameObject);
             return;
         }
@@ -88,6 +88,6 @@ public class HopliteSpearProjectile : EnemyProjectileBase
     {
         var ps = col.GetComponent<PlayerStats>() ?? col.GetComponentInParent<PlayerStats>();
         if (ps != null)
-            ps.AddMultiplierModifier(new StatModifier { moveSpeed = multiplier }, duration);
+            ps.TakeDebuffMultiplier(new StatModifier { moveSpeed = multiplier }, duration);
     }
 }
