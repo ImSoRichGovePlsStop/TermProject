@@ -568,7 +568,10 @@ public class MaterialItemUI : MonoBehaviour,
             else
             {
                 var pivot = hoveredCell - _clickedCell;
-                g.HighlightCells(Instance.Data, pivot, g.Data.CanPlace(Instance, pivot, _dragRotation), _dragRotation);
+                bool canPlace = g == BagGridUI
+                    ? InventoryManager.Instance.CanPlaceInBagGrid(Instance, pivot, _dragRotation)
+                    : g.Data.CanPlace(Instance, pivot, _dragRotation);
+                g.HighlightCells(Instance.Data, pivot, canPlace, _dragRotation);
             }
             return;
         }

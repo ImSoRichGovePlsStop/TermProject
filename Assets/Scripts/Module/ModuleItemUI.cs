@@ -499,6 +499,10 @@ public class ModuleItemUI : MonoBehaviour,
                 && targetGrid.Data == InventoryManager.Instance.WeaponGrid
                 && !InventoryManager.Instance.CanPlaceInWeaponGrid(Instance, pivot, _dragRotation);
 
+            bool bagBlocked = targetGrid == BagGridUI
+                && targetGrid.Data == InventoryManager.Instance.BagGrid
+                && !InventoryManager.Instance.CanPlaceInBagGrid(Instance, pivot, _dragRotation);
+
             // Duplicate check: if the module disallows duplicates and an identical module
             // is already in the weapon grid, treat this drop like a material that can't
             // stack — snap back to origin without placing.
@@ -513,7 +517,7 @@ public class ModuleItemUI : MonoBehaviour,
                 && Instance.Data.hasActive
                 && InventoryManager.Instance.IsActiveModuleEquipped(excluding: Instance);
 
-            if (weaponBlocked || dupBlocked || activeBlocked)
+            if (weaponBlocked || bagBlocked || dupBlocked || activeBlocked)
             {
                 Instance.SetRotation(_originRotation);
                 prevGrid?.TryPlace(Instance, prevPos);
@@ -627,6 +631,10 @@ public class ModuleItemUI : MonoBehaviour,
                         && InventoryManager.Instance.IsActiveModuleEquipped(excluding: Instance);
                     canPlace = !dupBlockedHover && !activeBlockedHover
                         && InventoryManager.Instance.CanPlaceInWeaponGrid(Instance, pivot, _dragRotation);
+                }
+                else if (g == BagGridUI)
+                {
+                    canPlace = InventoryManager.Instance.CanPlaceInBagGrid(Instance, pivot, _dragRotation);
                 }
                 else
                 {
