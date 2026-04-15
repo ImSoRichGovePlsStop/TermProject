@@ -287,6 +287,7 @@ Transform:
   - {fileID: 952351392614946854}
   - {fileID: 1487122476698537911}
   - {fileID: 8480775664690678638}
+  - {fileID: 6948230557118831844}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!136 &6483802464156429436
@@ -382,8 +383,8 @@ MonoBehaviour:
   healthBarHeight: 0.5
   healthBarScale: {x: 2, y: 1.5, z: 1}
   tier: 2
-  guardHealRatio: 0.5
-  guardProcChance: 0.2
+  guardHealRatio: 0.3
+  guardProcChance: 0.1
   eliteController: {fileID: 4861128534556401032}
 --- !u!114 &5942300544733507474
 MonoBehaviour:
@@ -474,10 +475,10 @@ MonoBehaviour:
   attackDashDuration: 0.25
   attackDashHitRadius: 0.8
   guardDuration: 2
-  guardCooldown: 10
+  guardCooldown: 12
   chargeRange: 7
   chargeDamageScale: 1.5
-  chargeCooldown: 8
+  chargeCooldown: 10
   chargeWarningDurationMin: 0.8
   chargeWarningDurationMax: 1.5
   chargeSpeed: 25
@@ -486,6 +487,11 @@ MonoBehaviour:
   chargeRotateSpeed: 150
   chargeWarningPrefab: {fileID: 885239749217862817, guid: 94eb01aec598ed34798c99dd8106f458, type: 3}
   guardDome: {fileID: 3476831488111483137}
+  spearPrefab: {fileID: 6586537130506963891, guid: 4958cc2a49354e94e83968d79713f79e, type: 3}
+  spearRange: 7
+  spearCooldown: 8
+  spearWindupDuration: 0.75
+  spearSpawnPoint: {fileID: 6948230557118831844}
 --- !u!114 &3414316426762644326
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -513,6 +519,37 @@ MonoBehaviour:
     maxCount: 0
   maxDropsPerKill: 1
   groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
+--- !u!1 &2977151229816529530
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6948230557118831844}
+  m_Layer: 8
+  m_Name: SpearThrowPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6948230557118831844
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2977151229816529530}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.096, y: 0.116, z: 0.136}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4956095067510546409}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6325103337676188676
 GameObject:
   m_ObjectHideFlags: 0

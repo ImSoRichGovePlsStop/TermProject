@@ -23,6 +23,16 @@ public class MinibossHopliteController : HopliteController
     [Header("Guard Dome")]
     [SerializeField] private GuardDomeVFX guardDome;
 
+    [Header("Spear Throw")]
+    [SerializeField] private GameObject spearPrefab;
+    [SerializeField] private float spearRange = 7f;
+    [SerializeField] private float spearCooldown = 8f;
+    [SerializeField] private float spearWindupDuration = 0.5f;
+    [SerializeField] private Transform spearSpawnPoint;
+
+    private float lastSpearTime = -Mathf.Infinity;
+    private bool isThrowing = false;
+
     private float guardTimer = 0f;
     private GameObject activeWarning;
     private float lastGuardTime = -Mathf.Infinity;
@@ -57,7 +67,7 @@ public class MinibossHopliteController : HopliteController
 
     protected override void UpdateState()
     {
-        if (IsGuarding || isCharging) return;
+        if (IsGuarding || isCharging || isThrowing) return;
         base.UpdateState();
     }
 
@@ -71,7 +81,7 @@ public class MinibossHopliteController : HopliteController
             return;
         }
 
-        if (!isCharging && HasTarget && (currentState == HopliteState.Chase || currentState == HopliteState.Attack))
+        if (!isCharging && !isThrowing && !isAttacking && HasTarget && (currentState == HopliteState.Chase || currentState == HopliteState.Attack))
         {
             float dist = Vector3.Distance(transform.position, TargetPosition);
             if (dist <= chargeRange && Time.time >= lastChargeTime + chargeCooldown)
@@ -79,8 +89,15 @@ public class MinibossHopliteController : HopliteController
                 StartCoroutine(ChargeRoutine());
                 return;
             }
+
+            if (!isThrowing && dist <= spearRange && Time.time >= lastSpearTime + spearCooldown)
+            {
+                StartCoroutine(SpearThrowRoutine());
+                return;
+            }
         }
 
+        if (isCharging || isThrowing) return;
         base.TickState();
     }
 
@@ -179,6 +196,7 @@ public class MinibossHopliteController : HopliteController
         lastChargeTime = Time.time;
         lastAttackTime = Time.time;
         currentAttackCooldown = Mathf.Max(2f, currentAttackCooldown);
+        isAttacking = false;
         isCharging = false;
         TriggerPostAttackDelay();
     }
@@ -210,6 +228,41 @@ public class MinibossHopliteController : HopliteController
         return warning;
     }
 
+    private IEnumerator SpearThrowRoutine()
+    {
+        isThrowing = true;
+        movement.StopMoving();
+        movement.SetCanMove(false);
+        if (HasTarget) movement.FaceTarget(TargetPosition);
+        animator?.SetTrigger("SpearThrow");
+
+        yield return null;
+        while (animator != null && !animator.GetCurrentAnimatorStateInfo(0).IsName("SpearThrow"))
+            yield return null;
+
+        AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(0);
+        if (animator != null && info.length > 0f)
+            animator.speed = info.length / spearWindupDuration;
+
+        yield return new WaitForSeconds(spearWindupDuration);
+
+        if (animator != null) animator.speed = 1f;
+
+        if (HasTarget && spearPrefab != null)
+        {
+            Vector3 spawnPos = spearSpawnPoint != null ? spearSpawnPoint.position : transform.position;
+            GameObject go = Instantiate(spearPrefab, spawnPos, Quaternion.LookRotation(GetFlatDirToTarget()));
+            var spear = go.GetComponent<HopliteSpearProjectile>();
+            spear?.InitSpear(TargetPosition, stats.Damage, health, playerTarget?.transform);
+        }
+
+        isAttacking = false;
+        movement.SetCanMove(true);
+        lastSpearTime = Time.time;
+        isThrowing = false;
+        TriggerPostAttackDelay();
+    }
+
     private void ExitGuard()
     {
         IsGuarding = false;
@@ -226,6 +279,7 @@ public class MinibossHopliteController : HopliteController
             activeWarning = null;
         }
         guardDome?.Hide();
+        isThrowing = false;
         base.OnDeath();
     }
 
