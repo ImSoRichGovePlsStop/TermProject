@@ -75,6 +75,7 @@ public class EndGameUI : MonoBehaviour
             Destroy(RunManager.Instance.gameObject);
         }
         FindFirstObjectByType<CurrencyManager>()?.ResetCoins();
+        RunManager.Instance?.ResetRun();
         FindFirstObjectByType<MinimapManager>()?.Reset();
 
         gameObject.SetActive(false);
