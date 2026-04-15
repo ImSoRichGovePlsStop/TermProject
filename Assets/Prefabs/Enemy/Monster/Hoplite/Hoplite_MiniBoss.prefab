@@ -1,5 +1,111 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &73978749641235
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8480775664690678638}
+  - component: {fileID: 3689085880432017183}
+  - component: {fileID: 8277949484327234363}
+  - component: {fileID: 3476831488111483137}
+  m_Layer: 8
+  m_Name: GuardDome
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8480775664690678638
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 73978749641235}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4956095067510546409}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &3689085880432017183
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 73978749641235}
+  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &8277949484327234363
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 73978749641235}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 23cfec5003f1cea42a8b33dcce3a2779, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &3476831488111483137
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 73978749641235}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a1846f87f9b19d4fb9f9da29d8421ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GuardDomeVFX
+  scaleInDuration: 0.2
+  scaleOutDuration: 0.2
+  targetScale: {x: 1, y: 1, z: 1}
 --- !u!1 &519559176673947
 GameObject:
   m_ObjectHideFlags: 0
@@ -44,7 +150,7 @@ SpriteRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519559176673947}
   m_Enabled: 1
-  m_CastShadows: 0
+  m_CastShadows: 1
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
@@ -61,7 +167,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
+  - {fileID: 2100000, guid: 13924b4ec210b1740a9f272378beb0b9, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -175,10 +281,13 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -4.2, y: 2.39, z: 0}
-  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 1.4, y: 1.4, z: 1.4}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 952351392614946854}
+  - {fileID: 1487122476698537911}
+  - {fileID: 8480775664690678638}
+  - {fileID: 6948230557118831844}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!136 &6483802464156429436
@@ -240,7 +349,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 998253066982403686}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.5
+  m_Radius: 0.1
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
@@ -250,9 +359,9 @@ NavMeshAgent:
   m_AutoBraking: 1
   m_AutoRepath: 1
   m_Height: 2
-  m_BaseOffset: 0.28
+  m_BaseOffset: 0.25
   m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 0
+  m_ObstacleAvoidanceType: 1
 --- !u!114 &-5321815577694969344
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -274,8 +383,8 @@ MonoBehaviour:
   healthBarHeight: 0.5
   healthBarScale: {x: 2, y: 1.5, z: 1}
   tier: 2
-  blockedDamage: 1
-  guardProcChance: 0.2
+  guardHealRatio: 0.3
+  guardProcChance: 0.08
   eliteController: {fileID: 4861128534556401032}
 --- !u!114 &5942300544733507474
 MonoBehaviour:
@@ -292,6 +401,7 @@ MonoBehaviour:
   stopDistance: 0.8
   spriteRenderer: {fileID: 0}
   animator: {fileID: 0}
+  flipXByDefault: 0
 --- !u!114 &-7828810673546042633
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -304,9 +414,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73a687f9a65ebc34ab8d148f3be77e4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EntityStats
-  baseMaxHP: 250
+  baseMaxHP: 500
   baseMoveSpeed: 3
-  baseDamage: 12
+  baseDamage: 16
   baseAttackSpeed: 1
   baseShield: 0
 --- !u!114 &4861128534556401032
@@ -321,10 +431,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e18ad2ec0dc3af48960cabdba840344, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EliteHopliteController
-  detectRange: 6
-  loseTargetRange: 8
-  postAttackDelayMin: 0
-  postAttackDelayMax: 0
+  detectRange: 10
+  loseTargetRange: 15
+  postAttackDelayMin: 0.4
+  postAttackDelayMax: 0.8
   targetPriority:
     playerPriority: 1
     summonerPriority: 1
@@ -340,36 +450,50 @@ MonoBehaviour:
   stats: {fileID: 0}
   animator: {fileID: 0}
   coinDropMin: 50
-  coinDropMax: 80
-  hurtDuration: 0.2
-  postHurtDelayMin: 0.1
-  postHurtDelayMax: 0.3
+  coinDropMax: 70
+  hurtDuration: 0
+  postHurtDelayMin: 0
+  postHurtDelayMax: 0
+  spawnEffectPrefab: {fileID: 0}
+  spawnRiseDistance: 1.5
+  spawnDuration: 1
+  spawnFadeOutDuration: 0.4
+  spawnEffectScale: 1
+  spawnStayDuration: 0.5
   strafe:
-    preferredDistMin: 0
-    preferredDistMax: 0
+    preferredDistMin: 1
+    preferredDistMax: 2
     angleMin: 30
-    angleMax: 90
+    angleMax: 45
     idleTimeMin: 0.3
     idleTimeMax: 0.8
-  attackRange: 1.2
+  attackRange: 3.5
   attackDamageScale: 1
-  attackCooldownMin: 1.5
+  attackCooldownMin: 2.5
   attackCooldownMax: 3
   attackDashSpeed: 12
-  attackDashDuration: 0.15
-  attackDashHitRadius: 0.6
+  attackDashDuration: 0.25
+  attackDashHitRadius: 0.8
   guardDuration: 2
-  guardCooldown: 10
-  chargeRange: 5
-  chargeDamageScale: 2
-  chargeCooldown: 8
-  chargeWarningDurationMin: 0.8
-  chargeWarningDurationMax: 1.5
+  guardCooldown: 18
+  chargeRange: 7
+  chargeDamageScale: 1.5
+  chargeCooldownMin: 7
+  chargeCooldownMax: 10
+  chargeWarningDurationMin: 0.9
+  chargeWarningDurationMax: 1.4
   chargeSpeed: 25
   chargeDuration: 0.4
-  chargeHitRadius: 0.6
+  chargeHitRadius: 0.8
   chargeRotateSpeed: 150
   chargeWarningPrefab: {fileID: 885239749217862817, guid: 94eb01aec598ed34798c99dd8106f458, type: 3}
+  guardDome: {fileID: 3476831488111483137}
+  spearPrefab: {fileID: 6586537130506963891, guid: 4958cc2a49354e94e83968d79713f79e, type: 3}
+  spearRange: 7
+  spearCooldownMin: 6
+  spearCooldownMax: 8
+  spearWindupDuration: 0.75
+  spearSpawnPoint: {fileID: 6948230557118831844}
 --- !u!114 &3414316426762644326
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -397,3 +521,139 @@ MonoBehaviour:
     maxCount: 0
   maxDropsPerKill: 1
   groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
+--- !u!1 &2977151229816529530
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6948230557118831844}
+  m_Layer: 8
+  m_Name: SpearThrowPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6948230557118831844
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2977151229816529530}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.096, y: 0.116, z: 0.136}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4956095067510546409}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6325103337676188676
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1487122476698537911}
+  - component: {fileID: 2056164683788831483}
+  - component: {fileID: 5103328997890057717}
+  m_Layer: 8
+  m_Name: FlashOverlay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1487122476698537911
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6325103337676188676}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4956095067510546409}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!212 &2056164683788831483
+SpriteRenderer:
+  serializedVersion: 2
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6325103337676188676}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: b4b93fecb98c1ee4c89e14792c7579c7, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 1
+  m_MaskInteraction: 0
+  m_Sprite: {fileID: -1238603875, guid: f346d8419876f4b418cba3141d39361f, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 1, y: 1}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_SpriteSortPoint: 0
+--- !u!114 &5103328997890057717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6325103337676188676}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e6d50285b3671548a01de664f2a07da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BillboardSprite
+  isBillboard: 1

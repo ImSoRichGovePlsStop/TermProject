@@ -288,8 +288,9 @@ public abstract class EnemyBase : MonoBehaviour
         LayerMask hitMask = (1 << LayerMask.NameToLayer("Player"))
                           | (1 << LayerMask.NameToLayer("Summoner"))
                           | (1 << LayerMask.NameToLayer("Totem"));
-        LayerMask wallMask = (1 << LayerMask.NameToLayer("Wall"))
-                           | (1 << LayerMask.NameToLayer("Barrier"));
+        LayerMask wallMask = 1 << LayerMask.NameToLayer("Wall");
+        LayerMask barrierMask = 1 << LayerMask.NameToLayer("Barrier");
+        LayerMask groundMask = 1 << LayerMask.NameToLayer("Ground");
         var alreadyHit = new HashSet<GameObject>();
 
         float elapsed = 0f;
@@ -298,6 +299,14 @@ public abstract class EnemyBase : MonoBehaviour
             float stepDist = speed * stats.MoveSpeedRatio * Time.deltaTime;
             if (Physics.Raycast(transform.position, dir, stepDist + 0.1f, wallMask))
                 break;
+
+            if (Physics.Raycast(transform.position, dir, stepDist + 0.1f, barrierMask))
+            {
+                float remaining = (duration - elapsed);
+                Vector3 landingPos = transform.position + dir * (speed * stats.MoveSpeedRatio * remaining);
+                if (!Physics.Raycast(landingPos + Vector3.up, Vector3.down, 2f, groundMask))
+                    break;
+            }
 
             transform.position += dir * stepDist;
             elapsed += Time.deltaTime;

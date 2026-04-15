@@ -3,12 +3,12 @@ using UnityEngine;
 public class HarpyAnimationEvents : MonoBehaviour
 {
     private HarpyController harpy;
-    private EliteHarpyController eliteHarpy;
+    private MinibossHarpyController eliteHarpy;
 
     private void Start()
     {
         harpy = GetComponentInParent<HarpyController>();
-        eliteHarpy = GetComponentInParent<EliteHarpyController>();
+        eliteHarpy = GetComponentInParent<MinibossHarpyController>();
     }
 
     public void DashAttack() => harpy?.DashAttack();

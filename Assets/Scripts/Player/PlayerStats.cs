@@ -220,11 +220,6 @@ public class PlayerStats : MonoBehaviour
         CurrentHealth = Mathf.Clamp(CurrentHealth, 0, MaxHealth);
     }
 
-    public void AddMultiplierModifier(StatModifier bonus, float duration)
-    {
-        StartCoroutine(TimedModifierCoroutine(bonus, duration, true));
-    }
-
     public void AddMultiplierModifier(StatModifier bonus)
     {
         float ratio = CurrentHealth / MaxHealth;
