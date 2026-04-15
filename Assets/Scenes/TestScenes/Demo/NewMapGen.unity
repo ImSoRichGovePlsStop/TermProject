@@ -314,8 +314,8 @@ MonoBehaviour:
   fountainPrefab: {fileID: 2636053173783784693, guid: 3a7cc8a83056bcb4c8d6afc8fe24cb9a, type: 3}
   cratePrefab: {fileID: 4252302106054265251, guid: b645a149dc0bb2842b4a242ce563f039, type: 3}
   statuePrefab: {fileID: 6671577081728210415, guid: e521a7caac72a5c4182828edf4e6d78a, type: 3}
-  crateChance: 0.115
-  statueChance: 0.05
+  crateChance: 0.053
+  statueChance: 0.025
   boundaryMaterial: {fileID: 2100000, guid: b59bfbcef27325640a17d8406da59c7a, type: 2}
   navMeshSurface: {fileID: 2145645486}
   triggerHeight: 3
@@ -341,7 +341,7 @@ MonoBehaviour:
   mergeAreaThreshold: 50
   sealMinWidth: 2
   sealMinArea: 10
-  maxBattleCount: 3
+  maxBattleCount: 0
   maxEventCount: 3
   weightHeal: 4
   weightShop: 2
@@ -349,7 +349,7 @@ MonoBehaviour:
   weightMerge: 1
   weightFountain: 1231241
   repeatPenalty: 0.4
-  presetChanceBattle: 0.48
+  presetChanceBattle: 0.368
   presetChanceHeal: 0
   presetChanceShop: 0
   presetChanceRareLoot: 0
@@ -364,7 +364,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f4601b98d3fefb641baf3c22d4adc523, type: 2}
   doorWidth: 1
   wallHeight: 2
-  wallThickness: 0.05
+  wallThickness: 0.1
   floorThickness: -5
   floorMat: {fileID: 2100000, guid: bc13fd34aabd1de4a8587dbfd164dc30, type: 2}
   wallMat: {fileID: 2100000, guid: b354030ecf56d194aa76bff9eed6802a, type: 2}

@@ -341,4 +341,22 @@ public class MinimapManager : MonoBehaviour
 
     bool IsInBounds(int x, int z) =>
         x >= 0 && z >= 0 && x < _matrixSize && z < _matrixSize;
+
+    public void Reset()
+    {
+        _matrix = null;
+        _roomMap = null;
+        _isDoor = null;
+        _revealed = null;
+        _visitedRooms.Clear();
+        _defeatedBoss.Clear();
+        _playerCell = new(-1, -1);
+        _currentRoom = null;
+
+        if (_tex != null) { Destroy(_tex); _tex = null; }
+        _pixels = null;
+
+        foreach (Transform child in minimapRoot) Destroy(child.gameObject);
+        _rawImage = null;
+    }
 }

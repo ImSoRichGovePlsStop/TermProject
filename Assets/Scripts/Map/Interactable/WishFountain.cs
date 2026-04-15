@@ -113,16 +113,16 @@ public class WishFountain : MonoBehaviour, IInteractable
         float boost = Random.Range(statBoostMin, statBoostMax);
         int statIndex = Random.Range(0, 6);
         var bonus = new StatModifier();
-        string statName;
+       
 
         switch (statIndex)
         {
-            case 0: bonus.health      = stats.BaseHP      * boost; statName = "Max HP";       break;
-            case 1: bonus.damage      = stats.BaseDMG     * boost; statName = "Damage";       break;
-            case 2: bonus.attackSpeed = stats.BaseATKSPD  * boost; statName = "Attack Speed"; break;
-            case 3: bonus.moveSpeed   = stats.BaseMOVSPD  * boost; statName = "Move Speed";   break;
-            case 4: bonus.critChance  = stats.BaseCrit    * boost; statName = "Crit Chance";  break;
-            default: bonus.critDamage = stats.BaseCritDMG * boost; statName = "Crit Damage";  break;
+            case 0: bonus.health      = stats.BaseHP      * boost;       break;
+            case 1: bonus.damage      = stats.BaseDMG     * boost;        break;
+            case 2: bonus.attackSpeed = stats.BaseATKSPD  * boost;  break;
+            case 3: bonus.moveSpeed   = stats.BaseMOVSPD  * boost;   break;
+            case 4: bonus.critChance  = stats.BaseCrit    * boost;  break;
+            default: bonus.critDamage = stats.BaseCritDMG * boost;   break;
         }
 
         stats.AddFlatModifier(bonus);
