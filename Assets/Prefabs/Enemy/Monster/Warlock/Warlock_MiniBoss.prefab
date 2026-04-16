@@ -526,7 +526,7 @@ GameObject:
   - component: {fileID: 5644794410267954326}
   - component: {fileID: 6924083166627370347}
   - component: {fileID: 1875878696231198487}
-  - component: {fileID: 2344630096711186991}
+  - component: {fileID: -2045061280870046310}
   m_Layer: 8
   m_Name: Warlock_MiniBoss
   m_TagString: Enemy
@@ -810,8 +810,9 @@ MonoBehaviour:
   bigArcNodePrefab: {fileID: 8635059489987017166, guid: aca89842aed7dab47b4ee12aec4c7387, type: 3}
   bigArcNodeWallOffset: 1
   bigArcNodeDamageScale: 0.35
+  bigArcNodeHpScale: 0.3
   bigArcNodeSlideRange: 5
---- !u!114 &2344630096711186991
+--- !u!114 &-2045061280870046310
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -824,17 +825,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
   entries:
-  - material: {fileID: 11400000, guid: 639e11b582cd412439c05b679cae9970, type: 2}
-    weight: 60
+  - material: {fileID: 11400000, guid: 6bb7b6cfada68ea46b0e68a11c4e8b39, type: 2}
+    weight: 5
+    minCount: 4
+    maxCount: 6
+  - material: {fileID: 11400000, guid: d526cca1760890744834885573002c5c, type: 2}
+    weight: 15
+    minCount: 2
+    maxCount: 3
+  - material: {fileID: 11400000, guid: 347983e0f419af54aac76500c585630c, type: 2}
+    weight: 80
     minCount: 1
     maxCount: 1
-  - material: {fileID: 11400000, guid: 2d986a1b4e06fd84cbecdbdde14af55f, type: 2}
-    weight: 30
-    minCount: 2
-    maxCount: 4
-  - material: {fileID: 0}
-    weight: 10
-    minCount: 0
-    maxCount: 0
   maxDropsPerKill: 1
   groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}

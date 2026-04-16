@@ -262,7 +262,7 @@ GameObject:
   - component: {fileID: 6538478652053243501}
   - component: {fileID: 7340450773976821250}
   - component: {fileID: -2298872020870864038}
-  - component: {fileID: 473898807585787802}
+  - component: {fileID: 6181566620098023115}
   m_Layer: 8
   m_Name: FireWorm_Normal
   m_TagString: Enemy
@@ -469,7 +469,7 @@ MonoBehaviour:
   maxTrackRotateSpeed: 90
   projectilePrefab: {fileID: 6586537130506963891, guid: e656e07915798994d8eef6f3ddae7d22, type: 3}
   firePoint: {fileID: 4502461783849574649}
---- !u!114 &473898807585787802
+--- !u!114 &6181566620098023115
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -482,14 +482,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
   entries:
-  - material: {fileID: 0}
-    weight: 20
+  - material: {fileID: 11400000, guid: ac531af617b2d024c8d44a59918e7b1d, type: 2}
+    weight: 3
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+    weight: 1
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+    weight: 1
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 399297f3e79be15409f69ab7096a631f, type: 2}
+    weight: 10
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 5abdcea167f2bcd40935a2f6eec2acd0, type: 2}
+    weight: 2
     minCount: 1
     maxCount: 1
   - material: {fileID: 0}
-    weight: 80
-    minCount: 0
-    maxCount: 0
+    weight: 83
+    minCount: 1
+    maxCount: 1
   maxDropsPerKill: 1
   groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
 --- !u!1 &6132403974354570191
