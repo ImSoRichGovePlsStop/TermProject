@@ -1,11 +1,22 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class StartPortal : MonoBehaviour
+public class StartPortal : MonoBehaviour,IInteractable
 {
-    private void OnTriggerEnter(Collider other)
+
+
+
+
+    public void Interact(PlayerController playerController)
     {
-        if (!other.gameObject.CompareTag("Player")) return;
+        var player = GameObject.FindWithTag("Player");
+        if (player == null) { Debug.LogWarning("[PlayerSpawner] Player not found!"); return; }
+        player.transform.position = new Vector3(-200f, -75f, -200f);
         SceneManager.LoadScene(2);
+    }
+
+    string IInteractable.GetPromptText()
+    {
+        return "[E] -> Start";
     }
 }

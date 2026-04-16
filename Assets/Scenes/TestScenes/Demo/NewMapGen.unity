@@ -365,7 +365,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f4601b98d3fefb641baf3c22d4adc523, type: 2}
   doorWidth: 1
   wallPrefab: {fileID: 4780047926931452637, guid: 38d8ad24e9b06be4c80e188bc072b5f3, type: 3}
-  pillarPrefab: {fileID: 5252582885613049431, guid: 22aaab0a7bd241446820c593d2d1071e, type: 3}
+  pillarPrefab: {fileID: 5252582885613049431, guid: 994a8f54789240547be9f61d42127fce, type: 3}
   wallHeight: 2
   wallThickness: 0.1
   floorThickness: -5
@@ -409,5 +409,5 @@ MonoBehaviour:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 2145645483}
   - {fileID: 1679036511}
+  - {fileID: 2145645483}
