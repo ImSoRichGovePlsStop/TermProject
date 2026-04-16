@@ -4,9 +4,6 @@ using UnityEngine.SceneManagement;
 public class StartPortal : MonoBehaviour,IInteractable
 {
 
-
-
-
     public void Interact(PlayerController playerController)
     {
         var player = GameObject.FindWithTag("Player");

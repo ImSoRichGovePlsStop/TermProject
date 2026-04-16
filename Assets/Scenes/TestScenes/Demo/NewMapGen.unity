@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 53e9a18996b83c849bd9763c93a64ad6, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -315,8 +315,8 @@ MonoBehaviour:
   fountainPrefab: {fileID: 2636053173783784693, guid: 3a7cc8a83056bcb4c8d6afc8fe24cb9a, type: 3}
   cratePrefab: {fileID: 4252302106054265251, guid: b645a149dc0bb2842b4a242ce563f039, type: 3}
   statuePrefab: {fileID: 6671577081728210415, guid: e521a7caac72a5c4182828edf4e6d78a, type: 3}
-  crateChance: 0.053
-  statueChance: 0.025
+  crateChance: 0.03
+  statueChance: 0.015
   boundaryMaterial: {fileID: 2100000, guid: b59bfbcef27325640a17d8406da59c7a, type: 2}
   navMeshSurface: {fileID: 2145645486}
   triggerHeight: 3
