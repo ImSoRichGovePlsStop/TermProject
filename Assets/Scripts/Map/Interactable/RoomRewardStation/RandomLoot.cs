@@ -20,6 +20,11 @@ public class RandomLoot : MonoBehaviour, IInteractable
     [SerializeField] private float meanCost = 10f;
     [SerializeField] private float sd = 10f;
 
+    [Header("Mimic")]
+    public bool isMimic = false;
+    [SerializeField] private float mimicChance = 0.20f;
+    public GameObject mimicPrefab;
+
     [Header("Debug")]
     [SerializeField] private bool debugLog = false;
 
@@ -35,6 +40,12 @@ public class RandomLoot : MonoBehaviour, IInteractable
         allowDuplicates = cfg.allowDuplicates;
     }
 
+    /// <summary>Flags this loot chest as a mimic.</summary>
+    public void EnableMimic()
+    {
+        isMimic = true;
+    }
+
     private void Start()
     {
         uiManager = FindFirstObjectByType<UIManager>();
@@ -42,6 +53,20 @@ public class RandomLoot : MonoBehaviour, IInteractable
 
     public void Interact(PlayerController playerController)
     {
+        if (isMimic && Random.value <= mimicChance)
+        {
+            if (debugLog)
+                Debug.Log($"[RandomLoot] {gameObject.name} — mimic triggered!");
+
+            if (mimicPrefab != null)
+                Instantiate(mimicPrefab, transform.position, transform.rotation);
+            else
+                Debug.LogWarning("[RandomLoot] Mimic triggered but mimicPrefab is not assigned.");
+
+            Destroy(gameObject);
+            return;
+        }
+
         if (uiManager == null)
             uiManager = FindFirstObjectByType<UIManager>();
 

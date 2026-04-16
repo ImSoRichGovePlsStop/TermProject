@@ -23,6 +23,7 @@ public class BSPMapPopulator : MonoBehaviour
     [Tooltip("One boss prefab per floor, index 0 = floor 1")]
     public GameObject[] bossPrefabs;
     public GameObject lootPrefab;
+    public GameObject rareLootPrefab;
 
     [Header("Props")]
     public GameObject fountainPrefab;
@@ -78,7 +79,7 @@ public class BSPMapPopulator : MonoBehaviour
         RoomType.Boss     => SpawnBossRoom(node),
         RoomType.Heal     => SpawnEventRoom(node, healStationPrefab, SetupHeal),
         RoomType.Shop     => SpawnEventRoom(node, shopStationPrefab, SetupShop),
-        RoomType.RareLoot => SpawnEventRoom(node, lootPrefab, SetupRareLoot),
+        RoomType.RareLoot => SpawnEventRoom(node, rareLootPrefab, SetupRareLoot),
         RoomType.Merge    => SpawnEventRoom(node, mergeStationPrefab, SetupMerge),
         RoomType.Fountain => SpawnEventRoom(node, fountainPrefab, SetupFountain),
         _                 => null
@@ -158,9 +159,9 @@ public class BSPMapPopulator : MonoBehaviour
     void SetupRareLoot(GameObject o, Transform p, MapNode n)
     {
         var r = o.AddComponent<RareLootRoom>();
-        r.node      = ToLegacy(n);
-        r.lootPrefab = lootPrefab;
-        r.Init(o.transform);
+        r.node       = ToLegacy(n);
+        r.lootPrefab = rareLootPrefab;
+        r.Init(p);
     }
 
     void SetupMerge(GameObject o, Transform p, MapNode n)

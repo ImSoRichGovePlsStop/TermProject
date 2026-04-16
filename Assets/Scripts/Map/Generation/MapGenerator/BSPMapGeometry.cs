@@ -25,6 +25,7 @@ using Unity.AI.Navigation;
 using UnityEngine;
 using UnityEngine.ProBuilder;
 using UnityEngine.ProBuilder.MeshOperations;
+using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
 public class BSPMapGeometry : MonoBehaviour
@@ -80,6 +81,12 @@ public class BSPMapGeometry : MonoBehaviour
     public int doorWidth = 3;
 
     [Header("Walls")]
+    [Tooltip("1×1 wall prefab. If assigned, used instead of ProBuilder quads. " +
+             "Pivot should be at the base-center of the wall face.")]
+    public GameObject wallPrefab;
+    [Tooltip("Decorative pillar placed at every corner where a horizontal and vertical wall intersect. " +
+             "Pivot should be at the base-center of the pillar.")]
+    public GameObject pillarPrefab;
     public float wallHeight = 2f;
     public float wallThickness = 0.01f;
     public float floorThickness = -50f;
@@ -781,6 +788,53 @@ public class BSPMapGeometry : MonoBehaviour
                         SpawnWallQuad(wallP, x, z, d);
                 }
             }
+
+        if (pillarPrefab != null)
+        {
+            var pillarP = new GameObject("Pillars").transform;
+            SpawnPillars(pillarP);
+        }
+    }
+
+    // Places a decorative pillar at every corner where both a horizontal wall (±Z face)
+    // and a vertical wall (±X face) meet.  Corner (cx,cz) sits at world (cx, _, cz).
+    void SpawnPillars(Transform parent)
+    {
+        for (int cx = 0; cx <= matrixSize; cx++)
+        for (int cz = 0; cz <= matrixSize; cz++)
+        {
+            // Wall running perpendicular to X at world X=cx:
+            //   boundary between col (cx-1) and col (cx), either in the row below or above.
+            bool hasXWall = WallBoundaryExists(cx - 1, cz - 1, cx, cz - 1)
+                         || WallBoundaryExists(cx - 1, cz,     cx, cz);
+
+            // Wall running perpendicular to Z at world Z=cz:
+            //   boundary between row (cz-1) and row (cz), either in the col to the left or right.
+            bool hasZWall = WallBoundaryExists(cx - 1, cz - 1, cx - 1, cz)
+                         || WallBoundaryExists(cx,     cz - 1, cx,     cz);
+
+            if (hasXWall && hasZWall)
+                Object.Instantiate(pillarPrefab,
+                    new Vector3(cx, 0f, cz),
+                    Quaternion.identity,
+                    parent);
+        }
+    }
+
+    // Returns true if a wall face exists between two adjacent cells —
+    // i.e. they belong to different spaces (one void/empty, or different rooms).
+    bool WallBoundaryExists(int ax, int az, int bx, int bz)
+    {
+        bool aOccupied = ax >= 0 && az >= 0 && ax < matrixSize && az < matrixSize
+                      && (_matrix[ax, az] == Cell.Room || _matrix[ax, az] == Cell.Occupied);
+        bool bOccupied = bx >= 0 && bz >= 0 && bx < matrixSize && bz < matrixSize
+                      && (_matrix[bx, bz] == Cell.Room || _matrix[bx, bz] == Cell.Occupied);
+
+        if (!aOccupied && !bOccupied) return false;   // both empty — no wall
+        if (aOccupied != bOccupied)   return true;    // solid meets empty — wall
+
+        // Both solid: wall only if they belong to different rooms.
+        return _roomMap[ax, az] != _roomMap[bx, bz];
     }
 
     void SpawnVoidBlocker(Transform parent, int x, int z)
@@ -824,7 +878,7 @@ public class BSPMapGeometry : MonoBehaviour
         if (floorMat != null) pb.GetComponent<Renderer>().material = floorMat;
 
         // Only Battle and Boss room floors get a MeshCollider — NavMesh bakes from these
-        if (owner != null && (owner.Type == RoomType.Battle || owner.Type == RoomType.Boss|| owner.Type == RoomType.RareLoot))
+        if (owner != null && (owner.Type == RoomType.Battle || owner.Type == RoomType.Boss || owner.Type == RoomType.RareLoot))
         {
             var mc = go.AddComponent<MeshCollider>();
             mc.sharedMesh = pb.GetComponent<MeshFilter>().sharedMesh;
@@ -833,6 +887,14 @@ public class BSPMapGeometry : MonoBehaviour
 
     void SpawnWallQuad(Transform parent, int x, int z, Vector2Int facing)
     {
+        // ── Prefab path: tile 1×1 wall objects along the face ────────────────
+        if (wallPrefab != null)
+        {
+            SpawnWallPrefabTile(parent, x, z, facing);
+            return;
+        }
+
+        // ── Fallback: original ProBuilder quad ────────────────────────────────
         float totalH = wallHeight + Mathf.Abs(floorThickness);
         float centerY = floorThickness + totalH / 2f;
         float hh = totalH / 2f;
@@ -854,6 +916,49 @@ public class BSPMapGeometry : MonoBehaviour
         var mc = go.AddComponent<MeshCollider>();
         mc.sharedMesh = pb.GetComponent<MeshFilter>().sharedMesh;
         if (wallMat != null) pb.GetComponent<Renderer>().material = wallMat;
+    }
+
+    // Instantiates stacked 1x1 wall prefab tiles that cover one cell-face.
+    //
+    // Assumptions about your prefab:
+    //   - 1 unit wide (X), 1 unit tall (Y)
+    //   - Visible face points toward +Z in local space
+    //   - Pivot at the base-center of the visible face
+    //
+    // totalHeight = wallHeight + |floorThickness|  (matches the ProBuilder quad)
+    // tiles       = ceil(totalHeight)              (one prefab per unit of height)
+    // Instantiates stacked 1x1 wall prefab tiles that cover one cell-face.
+    //
+    // Assumptions about your prefab:
+    //   - 1 unit wide (X), 1 unit tall (Y)
+    //   - Visible face points toward +Z in local space
+    //   - Pivot at the base-center of the visible face
+    //
+    // totalHeight = wallHeight + |floorThickness|  (matches the ProBuilder quad)
+    // tiles       = ceil(totalHeight)              (one prefab per unit of height)
+    void SpawnWallPrefabTile(Transform parent, int x, int z, Vector2Int facing)
+    {
+        float totalH = wallHeight + Mathf.Abs(floorThickness);
+        int tiles = Mathf.CeilToInt(totalH);
+        float startY = floorThickness;           // bottom of the first tile row
+
+        float faceX = x + 0.5f + facing.x * 0.5f;
+        float faceZ = z + 0.5f + facing.y * 0.5f;
+
+        // Rotate so the prefab +Z (visible face) points outward (away from the room).
+        Quaternion rot = Quaternion.LookRotation(new Vector3(facing.x, 0f, facing.y));
+
+        for (int i = 0; i < tiles; i++)
+        {
+            float tileY = startY + i;            // pivot at base of each tile row
+            var inst = Object.Instantiate(
+                wallPrefab,
+                new Vector3(faceX, tileY, faceZ),
+                rot,
+                parent);
+            inst.name = $"W_{x}_{z}_{facing.x}_{facing.y}_{i}";
+            inst.layer = LayerMask.NameToLayer("Wall");
+        }
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
