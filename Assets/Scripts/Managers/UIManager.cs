@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class UIManager : MonoBehaviour
@@ -14,6 +15,8 @@ public class UIManager : MonoBehaviour
     private UpgradeStationUI _upgradeStationUI;
     private LootRewardUI _lootRewardUI;
     private HubStorageUI _storageUI;
+    private FloorTransitionUI _floorTransitionUI;
+    private EndGameUI _endGameUI;
     private PlayerStats playerStats;
     private bool _upgradeOpen;
 
@@ -57,7 +60,9 @@ public class UIManager : MonoBehaviour
         var shopUI = FindFirstObjectByType<ShopUI>(FindObjectsInactive.Include);
         var mergeUI = FindFirstObjectByType<MergeUI>(FindObjectsInactive.Include);
         var sellUI = FindFirstObjectByType<SellConfirmationUI>(FindObjectsInactive.Include);
-        _storageUI = FindFirstObjectByType<HubStorageUI>(FindObjectsInactive.Include);
+        _storageUI          = FindFirstObjectByType<HubStorageUI>(FindObjectsInactive.Include);
+        _floorTransitionUI  = FindFirstObjectByType<FloorTransitionUI>(FindObjectsInactive.Include);
+        _endGameUI          = FindFirstObjectByType<EndGameUI>(FindObjectsInactive.Include);
 
 
         // Force Awake on all panels, then hide
@@ -322,9 +327,41 @@ public class UIManager : MonoBehaviour
         if (hud != null) hud.SetActive(!hideHUD);
     }
 
-    private void OnPlayerDeath()
+    public void ShowEndGame(bool isWin)
     {
-        var panel = FindFirstObjectByType<EndGameUI>(FindObjectsInactive.Include);
-        panel?.Show(isWin: false);
+        if (_endGameUI == null)
+            _endGameUI = FindFirstObjectByType<EndGameUI>(FindObjectsInactive.Include);
+
+        if (_endGameUI != null)
+            StartCoroutine(ShowEndGameRoutine(isWin));
+        else
+            Debug.LogWarning("[UIManager] EndGameUI not found.");
     }
+
+    private IEnumerator ShowEndGameRoutine(bool isWin)
+    {
+        var cam = CameraController.Instance;
+        if (cam != null)
+            yield return StartCoroutine(cam.EndgameEffect(1f));
+        else
+            yield return new WaitForSecondsRealtime(1f);
+
+        _endGameUI.Show(isWin);
+    }
+
+    public void ShowFloorTransition(int sceneIndex)
+    {
+        if (_floorTransitionUI == null)
+            _floorTransitionUI = FindFirstObjectByType<FloorTransitionUI>(FindObjectsInactive.Include);
+
+        if (_floorTransitionUI != null)
+            StartCoroutine(_floorTransitionUI.TransitionRoutine(sceneIndex));
+        else
+        {
+            Debug.LogWarning("[UIManager] FloorTransitionUI not found — loading scene directly.");
+            UnityEngine.SceneManagement.SceneManager.LoadScene(sceneIndex);
+        }
+    }
+
+    private void OnPlayerDeath() => ShowEndGame(isWin: false);
 }

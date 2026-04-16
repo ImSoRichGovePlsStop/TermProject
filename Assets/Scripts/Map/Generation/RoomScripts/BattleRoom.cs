@@ -11,11 +11,13 @@ public class BattleRoom : MonoBehaviour
     [HideInInspector] public RoomNode node;
 
     [Header("Enemy Spawning")]
-    public GameObject[] enemyPrefabs;
+    public EnemyEntry[] enemyEntries;
     public GameObject   lootPrefab;
     public GameObject   upgradeStationPrefab;
     public int          enemyCount = 3;
     [HideInInspector] public List<Vector3> spawnCells = new();
+
+    public int eliteBudget = 0;
 
     [Header("Enemy Count Scaling")]
     [Tooltip("Area divisor used when scaling enemy count to room size.")]
@@ -150,7 +152,10 @@ public class BattleRoom : MonoBehaviour
         _aliveCount += count;
         for (int i = 0; i < count; i++)
         {
-            var prefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
+            var entry      = enemyEntries[Random.Range(0, enemyEntries.Length)];
+            bool useElite  = eliteBudget > 0 && entry.elite != null;
+            if (useElite) eliteBudget--;
+            var prefab     = useElite ? entry.elite : entry.normal;
             ApplyEnemyScale(Instantiate(prefab, PickSpawnPosition(), Quaternion.identity));
         }
     }
