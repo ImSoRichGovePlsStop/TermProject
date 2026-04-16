@@ -46,7 +46,7 @@ public class BossRoom : BattleRoom
     public override void OnPlayerEnter()
     {
         FindFirstObjectByType<MinimapManager>()?.OnPlayerEnterRoom(node);
-        if (isCleared) return;
+        if (isCleared || isLocked) return;
 
         LockRoom();
         Subscribe();

@@ -191,7 +191,7 @@ public class BattleRoom : MonoBehaviour
     public virtual void OnPlayerEnter()
     {
         FindFirstObjectByType<MinimapManager>()?.OnPlayerEnterRoom(node);
-        if (isCleared) return;
+        if (isCleared || isLocked) return;
 
         LockRoom();
         BuildWaveSizes();
@@ -212,7 +212,8 @@ public class BattleRoom : MonoBehaviour
         isLocked  = false;
         RemoveInvisibleWalls();
 
-        if (Random.value < lootChance)
+        bool firstRoom = (RunManager.Instance?.TotalRoomsCleared ?? 0) == 0;
+        if (firstRoom || Random.value < lootChance)
             SpawnLoot(PickLootPosition());
         else if (upgradeStationPrefab != null)
             Instantiate(upgradeStationPrefab, PickLootPosition(), Quaternion.identity);
