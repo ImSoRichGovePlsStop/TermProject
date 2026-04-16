@@ -9680,9 +9680,21 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1459552652860937313, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
+      propertyPath: fadeSpeed
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1459552652860937313, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
+      propertyPath: opaqueMat
+      value: 
+      objectReference: {fileID: 2100000, guid: d2654b0f80c3fd249afdc51c6d742d79, type: 2}
+    - target: {fileID: 1459552652860937313, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
       propertyPath: sideRayRange
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 1459552652860937313, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
+      propertyPath: transparentMat
+      value: 
+      objectReference: {fileID: 2100000, guid: 5e31116e49643be4c977364b452c4c61, type: 2}
     - target: {fileID: 1459552652860937313, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
       propertyPath: wallLayer.m_Bits
       value: 4096
