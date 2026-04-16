@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -20,21 +21,18 @@ public class EndGameUI : MonoBehaviour
 
     public void Show(bool isWin)
     {
-        won = isWin;
-
+        won            = isWin;
         gameObject.SetActive(true);
-
         titleText.text = isWin ? "Victory!" : "Defeated";
 
         var run = RunManager.Instance;
         if (run != null)
-        {
             floorText.text = $"Floors Cleared: {run.CurrentFloor - 1}";
-        }
     }
 
     private void OnContinue()
     {
+        CameraController.Instance?.RestoreCamera();
         var inv = InventoryManager.Instance;
         if (inv != null)
         {

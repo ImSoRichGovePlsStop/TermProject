@@ -19,10 +19,10 @@ public class MapPopulator : MonoBehaviour
     public GameObject portalFinalPrefab;
 
     [Header("Enemy / Loot")]
-    [Tooltip("Normal enemies — floor 1 uses first 2, floor 4+ uses all")]
-    public GameObject[] normalEnemyPrefabs;
     [Tooltip("One boss prefab per floor, index 0 = floor 1")]
     public GameObject[] bossPrefabs;
+    [Tooltip("Enemies awarded as elites per battle room. 0 = none.")]
+    public int eliteBudget = 0;
     public GameObject lootPrefab;
 
     [Header("Visual")]
@@ -102,13 +102,16 @@ public class MapPopulator : MonoBehaviour
         Vector3 vol = Volume(node);
 
         var room = obj.AddComponent<BattleRoom>();
-        room.node = ToLegacy(node);
-        room.lootPrefab = lootPrefab;
+        room.node                 = ToLegacy(node);
+        room.lootPrefab           = lootPrefab;
         room.upgradeStationPrefab = freeUpgradeStationPrefab;
-        room.boundaryMaterial = boundaryMaterial;
-        room.enemyPrefabs = normalEnemyPrefabs;
+        room.boundaryMaterial     = boundaryMaterial;
+        room.enemyEntries         = EnemyPoolManager.Instance
+                                        ?.GetPoolForFloor(RunManager.Instance?.CurrentFloor ?? 1)
+                                        ?.ToArray() ?? System.Array.Empty<EnemyEntry>();
+        room.eliteBudget          = eliteBudget;
         room.SetRoomSize(vol);
-        room.enemyCount = ScaleEnemyCount(vol);
+        room.enemyCount           = ScaleEnemyCount(vol);
         AddTrigger(obj, vol);
         return obj;
     }
@@ -120,13 +123,16 @@ public class MapPopulator : MonoBehaviour
         Vector3 vol = Volume(node);
 
         var room = obj.AddComponent<BossRoom>();
-        room.node = ToLegacy(node);
-        room.bossPrefab = PickBoss();
-        room.lootPrefab = lootPrefab;
-        room.portalPrefab = portalPrefab;
+        room.node              = ToLegacy(node);
+        room.bossPrefab        = PickBoss();
+        room.lootPrefab        = lootPrefab;
+        room.portalPrefab      = portalPrefab;
         room.portalFinalPrefab = portalFinalPrefab;
-        room.boundaryMaterial = boundaryMaterial;
-        room.enemyPrefabs = normalEnemyPrefabs;
+        room.boundaryMaterial  = boundaryMaterial;
+        room.enemyEntries      = EnemyPoolManager.Instance
+                                     ?.GetPoolForFloor(RunManager.Instance?.CurrentFloor ?? 1)
+                                     ?.ToArray() ?? System.Array.Empty<EnemyEntry>();
+        room.eliteBudget       = eliteBudget;
         room.SetRoomSize(vol);
 
         AddTrigger(obj, vol);
@@ -201,18 +207,6 @@ public class MapPopulator : MonoBehaviour
         return bossPrefabs[idx];
     }
 
-    GameObject[] FloorWeightedEnemyPool()
-    {
-        if (normalEnemyPrefabs == null || normalEnemyPrefabs.Length == 0)
-            return new GameObject[0];
-
-        int floor = Mathf.Clamp(RunManager.Instance?.CurrentFloor ?? 1, 1, 4);
-        int count = floor switch { 1 => 2, 2 => 2, 3 => Mathf.Min(3, normalEnemyPrefabs.Length), _ => Mathf.Min(4, normalEnemyPrefabs.Length) };
-
-        var pool = new GameObject[count];
-        for (int i = 0; i < count; i++) pool[i] = normalEnemyPrefabs[i];
-        return pool;
-    }
 
 
 

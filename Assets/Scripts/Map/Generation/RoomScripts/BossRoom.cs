@@ -19,10 +19,10 @@ public class BossRoom : BattleRoom
     public float bossSpeedMin = 0.9f;
     public float bossSpeedMax = 1.1f;
     public float bossHpPerBossKill = 1.1f;
-    public float bossHpPlayerDmgWeight = 0.05f;
-    public float bossHpEnemyKillPenalty = 0.001f;
+    public float bossHpPlayerDmgWeight = 0.00f;
+    public float bossHpEnemyKillPenalty = 0.000f;
     public float bossDmgPerBossKill = 0.3f;
-    public float bossDmgPlayerHpWeight = 0.05f;
+    public float bossDmgPlayerHpWeight = 0.00f;
 
     [Header("Boss Loot Config")]
     public float bossLootMeanMultiplier = 3f;
@@ -34,7 +34,7 @@ public class BossRoom : BattleRoom
     [Tooltip("Bonus coins awarded on boss clear, scaled same as enemy coin drop.")]
     public int bonusCoinMin = 100;
     public int bonusCoinMax = 300;
-    public int maxFloor = 4;
+    public int maxFloor = 9;
 
     private GameObject _bossInstance;
     private List<GameObject> _normalEnemies = new();
@@ -52,7 +52,7 @@ public class BossRoom : BattleRoom
         Subscribe();
         SpawnBoss();
 
-        if (enemyPrefabs != null && enemyPrefabs.Length > 0)
+        if (enemyEntries != null && enemyEntries.Length > 0)
             _spawnRoutine = StartCoroutine(PeriodicNormalSpawner());
 
         var ui = FindFirstObjectByType<UIManager>();
@@ -127,8 +127,11 @@ public class BossRoom : BattleRoom
             for (int i = 0; i < toSpawn; i++)
             {
                 if (alreadyAlive >= maxAliveNormals) break;
-                var prefab = enemyPrefabs[Random.Range(0, enemyPrefabs.Length)];
-                var enemy = Instantiate(prefab, PickSpawnPosition(), Quaternion.identity);
+                var entry     = enemyEntries[Random.Range(0, enemyEntries.Length)];
+                bool useElite = eliteBudget > 0 && entry.elite != null;
+                if (useElite) eliteBudget--;
+                var enemy = Instantiate(useElite ? entry.elite : entry.normal,
+                                        PickSpawnPosition(), Quaternion.identity);
                 ApplyEnemyScale(enemy);
                 _normalEnemies.Add(enemy);
                 alreadyAlive++;
@@ -151,7 +154,9 @@ public class BossRoom : BattleRoom
         SpawnLoot(PickLootPosition());
 
         int nextFloor = (RunManager.Instance?.CurrentFloor ?? 1) + 1;
-        var portal = nextFloor > maxFloor && portalFinalPrefab != null ? portalFinalPrefab : portalPrefab;
+        var pool = EnemyPoolManager.Instance;
+        int totalFloors = (pool != null) ? pool.segmentCount * pool.floorsPerSegment : maxFloor;
+        var portal = nextFloor > totalFloors && portalFinalPrefab != null ? portalFinalPrefab : portalPrefab;
         Instantiate(portal, transform.position + new Vector3(0f, 0f, PortalOffsetZ), Quaternion.identity);
 
         float floorMult = 1f + ((RunManager.Instance?.CurrentFloor ?? 1) - 1) * coinFloorMultiplier;

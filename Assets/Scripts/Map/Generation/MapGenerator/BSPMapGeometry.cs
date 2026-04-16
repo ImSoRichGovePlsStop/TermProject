@@ -148,7 +148,7 @@ public class BSPMapGeometry : MonoBehaviour
         OnMapReady?.Invoke(_nodes);
     }
 
-    // ── Step 1: Fill Matrix ───────────────────────────────────────────────────
+
 
     void FillMatrix()
     {
@@ -379,15 +379,15 @@ public class BSPMapGeometry : MonoBehaviour
         for (int x = ox; x < ox + sx; x++)
             for (int z = oz; z < oz + sz; z++)
             {
-                // Flip Z so editor row 0 (top) maps to the far edge of the room in world space
+                
                 int presetZ = (sz - 1) - (z - oz);
                 bool isVoid = preset != null && preset.IsVoid(x - ox, presetZ);
                 bool isPillar = preset != null && preset.IsPillar(x - ox, presetZ);
 
                 if (isPillar)
                 {
-                    _matrix[x, z] = Cell.Occupied;  // sealed cube via SpawnGeometry
-                    _roomMap[x, z] = node;            // still belongs to this room
+                    _matrix[x, z] = Cell.Occupied;  
+                    _roomMap[x, z] = node;          
                 }
                 else
                 {
@@ -398,8 +398,7 @@ public class BSPMapGeometry : MonoBehaviour
             }
     }
 
-    // ── Step 2: Seal Narrow Gaps ──────────────────────────────────────────────
-
+    
     void SealNarrowGaps()
     {
         var visited = new bool[matrixSize, matrixSize];
@@ -541,8 +540,7 @@ public class BSPMapGeometry : MonoBehaviour
         return best;
     }
 
-    // ── Step 3: Merge Small Empty Rooms ──────────────────────────────────────
-
+  
     void MergeSmallEmptyRooms()
     {
         bool anyMerged = true;
@@ -593,7 +591,7 @@ public class BSPMapGeometry : MonoBehaviour
         }
     }
 
-    // ── Step 4: Build Connectivity ────────────────────────────────────────────
+
 
     void BuildConnectivity()
     {
@@ -635,7 +633,7 @@ public class BSPMapGeometry : MonoBehaviour
         _sharedCells = pairShared;
     }
 
-    // ── Step 5: Punch Doors ───────────────────────────────────────────────────
+   
 
     void PunchDoors()
     {
@@ -918,39 +916,22 @@ public class BSPMapGeometry : MonoBehaviour
         if (wallMat != null) pb.GetComponent<Renderer>().material = wallMat;
     }
 
-    // Instantiates stacked 1x1 wall prefab tiles that cover one cell-face.
-    //
-    // Assumptions about your prefab:
-    //   - 1 unit wide (X), 1 unit tall (Y)
-    //   - Visible face points toward +Z in local space
-    //   - Pivot at the base-center of the visible face
-    //
-    // totalHeight = wallHeight + |floorThickness|  (matches the ProBuilder quad)
-    // tiles       = ceil(totalHeight)              (one prefab per unit of height)
-    // Instantiates stacked 1x1 wall prefab tiles that cover one cell-face.
-    //
-    // Assumptions about your prefab:
-    //   - 1 unit wide (X), 1 unit tall (Y)
-    //   - Visible face points toward +Z in local space
-    //   - Pivot at the base-center of the visible face
-    //
-    // totalHeight = wallHeight + |floorThickness|  (matches the ProBuilder quad)
-    // tiles       = ceil(totalHeight)              (one prefab per unit of height)
+
     void SpawnWallPrefabTile(Transform parent, int x, int z, Vector2Int facing)
     {
         float totalH = wallHeight + Mathf.Abs(floorThickness);
         int tiles = Mathf.CeilToInt(totalH);
-        float startY = floorThickness;           // bottom of the first tile row
+        float startY = floorThickness;          
 
         float faceX = x + 0.5f + facing.x * 0.5f;
         float faceZ = z + 0.5f + facing.y * 0.5f;
 
-        // Rotate so the prefab +Z (visible face) points outward (away from the room).
+   
         Quaternion rot = Quaternion.LookRotation(new Vector3(facing.x, 0f, facing.y));
 
         for (int i = 0; i < tiles; i++)
         {
-            float tileY = startY + i;            // pivot at base of each tile row
+            float tileY = startY + i;            
             var inst = Object.Instantiate(
                 wallPrefab,
                 new Vector3(faceX, tileY, faceZ),
@@ -961,7 +942,7 @@ public class BSPMapGeometry : MonoBehaviour
         }
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+
 
     bool RectEmpty(int ox, int oz, int sx, int sz)
     {
