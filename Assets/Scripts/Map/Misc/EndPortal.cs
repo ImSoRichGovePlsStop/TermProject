@@ -8,9 +8,7 @@ public class EndPortal : MonoBehaviour, IInteractable
         if (RunManager.Instance != null)
             RunManager.Instance.IsWin = true;
 
-        var panel = FindFirstObjectByType<EndGameUI>(FindObjectsInactive.Include);
-        Debug.Log("interacted");
-        panel?.Show(isWin: true);
+        UIManager.Instance?.ShowEndGame(isWin: true);
     }
 
     string IInteractable.GetPromptText()
