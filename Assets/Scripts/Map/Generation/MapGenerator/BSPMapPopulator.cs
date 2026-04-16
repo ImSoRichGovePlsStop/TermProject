@@ -18,10 +18,10 @@ public class BSPMapPopulator : MonoBehaviour
     public GameObject portalFinalPrefab;
 
     [Header("Enemy / Loot")]
-    [Tooltip("Normal enemies — floor 1 uses first 2, floor 4+ uses all")]
-    public GameObject[] normalEnemyPrefabs;
     [Tooltip("One boss prefab per floor, index 0 = floor 1")]
     public GameObject[] bossPrefabs;
+    [Tooltip("Enemies awarded as elites per battle room. 0 = none.")]
+    public int eliteBudget = 0;
     public GameObject lootPrefab;
     public GameObject rareLootPrefab;
 
@@ -101,7 +101,10 @@ public class BSPMapPopulator : MonoBehaviour
         room.lootPrefab             = lootPrefab;
         room.upgradeStationPrefab   = freeUpgradeStationPrefab;
         room.boundaryMaterial       = boundaryMaterial;
-        room.enemyPrefabs           = normalEnemyPrefabs;
+        room.enemyEntries           = EnemyPoolManager.Instance
+                                          ?.GetPoolForFloor(RunManager.Instance?.CurrentFloor ?? 1)
+                                          ?.ToArray() ?? System.Array.Empty<EnemyEntry>();
+        room.eliteBudget            = eliteBudget;
         room.SetRoomSize(vol);
         room.enemyCount             = room.ScaleEnemyCount(vol);
         room.spawnCells             = CollectSpawnCells(node);
@@ -114,13 +117,17 @@ public class BSPMapPopulator : MonoBehaviour
         var obj  = MakeRoomObject(node, "BossRoom");
         var vol  = Volume(node);
         var room = obj.AddComponent<BossRoom>();
-        room.node             = ToLegacy(node);
-        room.bossPrefab       = PickBoss();
-        room.lootPrefab       = lootPrefab;
-        room.portalPrefab     = portalPrefab;
+        room.node              = ToLegacy(node);
+        room.bossPrefab        = PickBoss();
+        room.lootPrefab        = lootPrefab;
+        room.portalPrefab      = portalPrefab;
         room.portalFinalPrefab = portalFinalPrefab;
-        room.boundaryMaterial = boundaryMaterial;
-        room.spawnCells       = CollectSpawnCells(node);
+        room.boundaryMaterial  = boundaryMaterial;
+        room.spawnCells        = CollectSpawnCells(node);
+        room.enemyEntries      = EnemyPoolManager.Instance
+                                     ?.GetPoolForFloor(RunManager.Instance?.CurrentFloor ?? 1)
+                                     ?.ToArray() ?? System.Array.Empty<EnemyEntry>();
+        room.eliteBudget       = eliteBudget;
         room.SetRoomSize(vol);
         AddTrigger(obj, vol);
         return obj;
