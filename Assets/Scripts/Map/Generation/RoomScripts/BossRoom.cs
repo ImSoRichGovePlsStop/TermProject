@@ -159,6 +159,7 @@ public class BossRoom : BattleRoom
               ?.AddCoins(Mathf.RoundToInt(Random.Range(bonusCoinMin, bonusCoinMax + 1) * floorMult));
 
         RunManager.Instance?.OnBossKilled();
+        HealPlayerAfterRoom();
         FindFirstObjectByType<MinimapManager>()?.OnBossDefeated(node);
     }
 

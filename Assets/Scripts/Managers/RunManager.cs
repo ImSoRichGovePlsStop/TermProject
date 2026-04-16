@@ -5,6 +5,11 @@ public class RunManager : MonoBehaviour
 {
     public static RunManager Instance { get; private set; }
 
+    [Header("Healing")]
+    [Tooltip("% after clearing")]
+    [Range(0f, 1f)]
+    public float HealPerRoom = 0.10f;
+
     [Header("Run Stats")]
     public int CurrentFloor = 1;
     public int TotalEnemyKilled = 0;

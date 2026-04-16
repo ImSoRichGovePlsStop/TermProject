@@ -221,6 +221,7 @@ public class BattleRoom : MonoBehaviour
             SpawnLoot(PickLootPosition());
 
         RunManager.Instance?.OnRoomCleared();
+        HealPlayerAfterRoom();
     }
 
     protected void SpawnLoot(Vector3 position)
@@ -238,6 +239,15 @@ public class BattleRoom : MonoBehaviour
         float mean = lootBaseMean + floor * lootMeanPerFloor + roomsCleared * lootMeanPerRoom + lootMeanFlat;
         float sd   = lootBaseSd  + (floor - 1) * lootSdPerFloor;
         return new LootConfig { optionCount = lootOptionCount, meanCost = mean, sd = sd, allowDuplicates = false };
+    }
+
+    protected void HealPlayerAfterRoom()
+    {
+        float healPercent = RunManager.Instance?.HealPerRoom ?? 0f;
+        if (healPercent <= 0f) return;
+        var player = FindFirstObjectByType<PlayerStats>();
+        player?.HealPercent(healPercent);
+        RunManager.Instance?.OnHealed();
     }
 
     public void SetRoomSize(Vector3 size) => roomSize = size;
