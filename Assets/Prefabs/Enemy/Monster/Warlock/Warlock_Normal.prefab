@@ -157,7 +157,7 @@ GameObject:
   - component: {fileID: 3136113640065723832}
   - component: {fileID: 5806527871803175979}
   - component: {fileID: 5732453335519450507}
-  - component: {fileID: 2878338833426155221}
+  - component: {fileID: 6782566020419149067}
   m_Layer: 8
   m_Name: Warlock_Normal
   m_TagString: Enemy
@@ -374,7 +374,7 @@ MonoBehaviour:
   targetLayers:
     serializedVersion: 2
     m_Bits: 704
---- !u!114 &2878338833426155221
+--- !u!114 &6782566020419149067
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -387,14 +387,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
   entries:
-  - material: {fileID: 11400000, guid: 2d986a1b4e06fd84cbecdbdde14af55f, type: 2}
-    weight: 20
+  - material: {fileID: 11400000, guid: ac531af617b2d024c8d44a59918e7b1d, type: 2}
+    weight: 3
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+    weight: 1
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+    weight: 1
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 6bb7b6cfada68ea46b0e68a11c4e8b39, type: 2}
+    weight: 10
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: d526cca1760890744834885573002c5c, type: 2}
+    weight: 2
     minCount: 1
     maxCount: 1
   - material: {fileID: 0}
-    weight: 80
-    minCount: 0
-    maxCount: 0
+    weight: 83
+    minCount: 1
+    maxCount: 1
   maxDropsPerKill: 1
   groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
 --- !u!1 &5260306688727734516

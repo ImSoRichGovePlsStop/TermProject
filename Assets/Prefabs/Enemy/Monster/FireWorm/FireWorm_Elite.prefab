@@ -293,7 +293,8 @@ GameObject:
   - component: {fileID: 1815503016428338664}
   - component: {fileID: 6239230760734674393}
   - component: {fileID: 8922296207131036815}
-  - component: {fileID: 2393632136227572548}
+  - component: {fileID: -2853455704734597250}
+  - component: {fileID: 157362913709269443}
   m_Layer: 8
   m_Name: FireWorm_Elite
   m_TagString: Enemy
@@ -500,7 +501,21 @@ MonoBehaviour:
   maxTrackRotateSpeed: 120
   projectilePrefab: {fileID: 6586537130506963891, guid: 8a52f545a60e18345bbc037b84a8b7b3, type: 3}
   firePoint: {fileID: 8111458858867451418}
---- !u!114 &2393632136227572548
+--- !u!114 &-2853455704734597250
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9087992749278415251}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b54bac1ba7c05144498fa0d36fdfad73, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyShieldOutline
+  mainSpriteRenderer: {fileID: 6619968300994448295}
+  thickness: 2
+--- !u!114 &157362913709269443
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -513,13 +528,29 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
   entries:
-  - material: {fileID: 0}
+  - material: {fileID: 11400000, guid: ac531af617b2d024c8d44a59918e7b1d, type: 2}
+    weight: 3
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+    weight: 1
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+    weight: 1
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 399297f3e79be15409f69ab7096a631f, type: 2}
+    weight: 10
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 5abdcea167f2bcd40935a2f6eec2acd0, type: 2}
     weight: 20
     minCount: 1
     maxCount: 1
   - material: {fileID: 0}
-    weight: 80
-    minCount: 0
-    maxCount: 0
+    weight: 65
+    minCount: 1
+    maxCount: 1
   maxDropsPerKill: 1
   groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}

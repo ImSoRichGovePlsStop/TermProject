@@ -22,7 +22,7 @@ public class MinibossHopliteController : HopliteController
     [SerializeField] private GameObject chargeWarningPrefab;
 
     [Header("Guard Dome")]
-    [SerializeField] private GuardDomeVFX guardDome;
+    [SerializeField] private BarrierDomeVFX guardDome;
 
     [Header("Spear Throw")]
     [SerializeField] private GameObject spearPrefab;

@@ -49,6 +49,15 @@ public class ArcLine : MonoBehaviour
         if (damageCollider != null) damageCollider.enabled = false;
     }
 
+    private static int wallLayerMask = -1;
+
+    private static int GetWallMask()
+    {
+        if (wallLayerMask == -1)
+            wallLayerMask = 1 << LayerMask.NameToLayer("Wall");
+        return wallLayerMask;
+    }
+
     private void Update()
     {
         if (nodeA == null || nodeB == null)
@@ -59,6 +68,17 @@ public class ArcLine : MonoBehaviour
 
         Vector3 posA = nodeA.transform.position;
         Vector3 posB = nodeB.transform.position;
+
+        Vector3 dir = posB - posA;
+        dir.y = 0f;
+        float dist = dir.magnitude;
+        if (dist > 0.01f && Physics.Raycast(
+            new Vector3(posA.x, posA.y + 0.1f, posA.z),
+            dir.normalized, dist, GetWallMask()))
+        {
+            Destroy(gameObject);
+            return;
+        }
 
         elapsed += Time.deltaTime;
 

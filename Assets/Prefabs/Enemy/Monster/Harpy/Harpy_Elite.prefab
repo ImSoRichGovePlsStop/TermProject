@@ -121,7 +121,7 @@ GameObject:
   - component: {fileID: 4906887245093431030}
   - component: {fileID: 1966715615082487677}
   - component: {fileID: 698571083831935653}
-  - component: {fileID: 6110255856596246464}
+  - component: {fileID: 3680348762124601409}
   - component: {fileID: 8973473230860761026}
   m_Layer: 8
   m_Name: Harpy_Elite
@@ -328,7 +328,7 @@ MonoBehaviour:
   attackDashSpeed: 12
   attackDashDuration: 0.25
   attackDashHitRadius: 0.6
---- !u!114 &6110255856596246464
+--- !u!114 &3680348762124601409
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -341,18 +341,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
   entries:
-  - material: {fileID: 11400000, guid: f0ca83b97b25b5d49a5f13cfa1e2ee1e, type: 2}
+  - material: {fileID: 11400000, guid: ac531af617b2d024c8d44a59918e7b1d, type: 2}
+    weight: 3
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+    weight: 1
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+    weight: 1
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 143d429ad908be14e8eed1214cf168b7, type: 2}
+    weight: 10
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 13a68ddd8fc6f724c960061a5aba1839, type: 2}
     weight: 20
-    minCount: 2
-    maxCount: 3
-  - material: {fileID: 11400000, guid: f0ca83b97b25b5d49a5f13cfa1e2ee1e, type: 2}
-    weight: 50
     minCount: 1
     maxCount: 1
   - material: {fileID: 0}
-    weight: 30
-    minCount: 0
-    maxCount: 0
+    weight: 65
+    minCount: 1
+    maxCount: 1
   maxDropsPerKill: 1
   groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
 --- !u!114 &8973473230860761026

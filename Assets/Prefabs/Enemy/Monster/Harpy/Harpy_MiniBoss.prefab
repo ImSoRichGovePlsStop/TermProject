@@ -157,7 +157,7 @@ GameObject:
   - component: {fileID: 6021029256873973459}
   - component: {fileID: 1725738327197803718}
   - component: {fileID: 6574624719163675747}
-  - component: {fileID: 8102250709167687699}
+  - component: {fileID: 6113458972560351904}
   m_Layer: 8
   m_Name: Harpy_MiniBoss
   m_TagString: Enemy
@@ -401,7 +401,7 @@ MonoBehaviour:
   fireTrailChance2Enraged: 0.4
   diveAfterTrailChanceEnraged: 1
   rb: {fileID: 749927982167029811}
---- !u!114 &8102250709167687699
+--- !u!114 &6113458972560351904
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -414,18 +414,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
   entries:
-  - material: {fileID: 11400000, guid: 3ebaea6ce79161b41a27ab479dae5444, type: 2}
-    weight: 60
+  - material: {fileID: 11400000, guid: 143d429ad908be14e8eed1214cf168b7, type: 2}
+    weight: 5
+    minCount: 4
+    maxCount: 6
+  - material: {fileID: 11400000, guid: 13a68ddd8fc6f724c960061a5aba1839, type: 2}
+    weight: 15
+    minCount: 2
+    maxCount: 3
+  - material: {fileID: 11400000, guid: 83bdbb620c51bdd439fb89c97180137e, type: 2}
+    weight: 80
     minCount: 1
     maxCount: 1
-  - material: {fileID: 11400000, guid: f0ca83b97b25b5d49a5f13cfa1e2ee1e, type: 2}
-    weight: 30
-    minCount: 2
-    maxCount: 4
-  - material: {fileID: 0}
-    weight: 10
-    minCount: 0
-    maxCount: 0
   maxDropsPerKill: 1
   groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
 --- !u!1 &5498976568543535458
