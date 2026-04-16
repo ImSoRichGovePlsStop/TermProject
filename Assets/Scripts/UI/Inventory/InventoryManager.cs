@@ -92,7 +92,11 @@ public class InventoryManager : MonoBehaviour
     {
         for (int row = 0; row < BagUnlockedRows; row++)
             for (int col = 0; col < BagUnlockedCols; col++)
-                if (BagGrid.TryPlace(inst, new Vector2Int(col, row))) return true;
+            {
+                var pivot = new Vector2Int(col, row);
+                if (CanPlaceInBagGrid(inst, pivot, inst.Rotation) && BagGrid.TryPlace(inst, pivot))
+                    return true;
+            }
 
         Debug.LogWarning($"[Inventory] Bag full — {inst.Data.moduleName}");
         return false;
