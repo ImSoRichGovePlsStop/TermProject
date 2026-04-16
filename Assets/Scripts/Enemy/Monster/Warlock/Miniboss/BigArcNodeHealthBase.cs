@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class BigArcNodeHealthBase : HealthBase
 {
-    [SerializeField] private float maxHp = 100f;
 
     public System.Action OnDamaged;
 
@@ -10,7 +9,6 @@ public class BigArcNodeHealthBase : HealthBase
 
     protected override void Awake()
     {
-        maxHP = maxHp;
         base.Awake();
         bigArcNode = GetComponent<BigArcNode>();
         DamageNumberSpawner.Instance?.RegisterEntity(this, healthBarHeight);

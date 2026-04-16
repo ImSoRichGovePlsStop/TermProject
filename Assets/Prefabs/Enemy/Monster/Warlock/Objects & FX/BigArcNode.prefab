@@ -471,15 +471,15 @@ MonoBehaviour:
   regenPercentPerSec: 0.04
   patrolDirMinDuration: 8
   patrolDirMaxDuration: 18
-  patrolSpeedRitualMin: 6
+  patrolSpeedRitualMin: 5
   patrolSpeedRitualMax: 10
   patrolSpeedPhaseThreeMin: 2
   patrolSpeedPhaseThreeMax: 6
   slowDownDuration: 1
   stopDuration: 0.5
   speedUpDuration: 1
-  staggerSpeedRatio: 0.3
-  staggerRecoverDuration: 1
+  staggerSpeedRatio: 0.2
+  staggerRecoverDuration: 1.5
   animator: {fileID: 5800007594866104623}
   barrierVFX: {fileID: 4277657566533639278}
   groundLayer:
@@ -506,4 +506,3 @@ MonoBehaviour:
   showHealthBar: 1
   healthBarHeight: 0.4
   healthBarScale: {x: 1.8, y: 1.5, z: 1}
-  maxHp: 250

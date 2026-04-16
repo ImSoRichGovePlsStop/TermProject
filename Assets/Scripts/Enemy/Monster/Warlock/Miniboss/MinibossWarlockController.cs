@@ -55,10 +55,30 @@ public class MinibossWarlockController : WarlockController
     [SerializeField] private Vector2 ritualPositionNormalized = new Vector2(0.5f, 0.5f);
     [SerializeField] private BarrierDomeVFX warlockBarrier;
 
+    [Header("Ritual Smash")]
+    [SerializeField] private int ritualSmashCount = 4;
+    [SerializeField] private float ritualSmashDamageScale = 1.2f;
+    [SerializeField] private float ritualSmashWarningDurationMin = 0.8f;
+    [SerializeField] private float ritualSmashWarningDurationMax = 1.5f;
+    [SerializeField] private float ritualSmashAoeRadiusMin = 1f;
+    [SerializeField] private float ritualSmashAoeRadiusMax = 2.5f;
+    [SerializeField] private float ritualSmashSpawnInterval = 3f;
+    [SerializeField] private float ritualSmashInitialDelay = 2f;
+
+    [Header("Ritual Lighting")]
+    [SerializeField] private float ritualGlobalLightIntensity = 0.2f;
+    [SerializeField] private float ritualSpotLightIntensity = 3f;
+    [SerializeField] private float ritualSpotLightRange = 20f;
+    [SerializeField] private float ritualSpotLightAngle = 60f;
+    [SerializeField] private float ritualSpotLightInnerAngle = 30f;
+    [SerializeField] private Color ritualSpotLightColor = Color.white;
+    [SerializeField] private float lightTransitionDuration = 1.5f;
+
     [Header("Big Arc Node")]
     [SerializeField] private GameObject bigArcNodePrefab;
     [SerializeField] private float bigArcNodeWallOffset = 1f;
     [SerializeField] private float bigArcNodeDamageScale = 2f;
+    [SerializeField] private float bigArcNodeHpScale = 0.3f;
     [SerializeField] private float bigArcNodeSlideRange = 5f;
 
     private WarlockPhaseSettings currentPhaseSettings;
@@ -84,7 +104,7 @@ public class MinibossWarlockController : WarlockController
         base.Awake();
         currentPhaseSettings = phase1Settings;
         lastJumpEscapeTime = -jumpEscapeCooldown * 0.5f;
-        lastSummonTime = -summonCooldown * 0.8f;
+        lastSummonTime = -summonCooldown * 0.5f;
 
         var minibossHealth = GetComponent<MinibossWarlockHealthBase>();
         if (minibossHealth != null)
@@ -100,6 +120,134 @@ public class MinibossWarlockController : WarlockController
         if (Time.time < lastCooldownReductionTime + jumpCooldownReductionInterval) return;
         lastCooldownReductionTime = Time.time;
         lastJumpEscapeTime -= jumpCooldownReductionOnHit;
+    }
+
+    private Light cachedGlobalLight;
+    private Light ritualSpotLight;
+    private float originalGlobalLightIntensity;
+
+    private void CacheGlobalLight()
+    {
+        if (cachedGlobalLight != null) return;
+        var lights = UnityEngine.Object.FindObjectsByType<Light>(FindObjectsSortMode.None);
+        foreach (var l in lights)
+        {
+            if (l.type == LightType.Directional)
+            {
+                cachedGlobalLight = l;
+                originalGlobalLightIntensity = l.intensity;
+                break;
+            }
+        }
+    }
+
+    private Light SpawnRitualSpotLight(Vector3 position)
+    {
+        var go = new GameObject("RitualSpotLight");
+        go.transform.position = position + Vector3.up * 10f;
+        go.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+
+        var light = go.AddComponent<Light>();
+        light.type = LightType.Spot;
+        light.color = ritualSpotLightColor;
+        light.range = ritualSpotLightRange;
+        light.spotAngle = ritualSpotLightAngle;
+        light.innerSpotAngle = ritualSpotLightInnerAngle;
+        light.intensity = 0f;
+        return light;
+    }
+
+    private IEnumerator TransitionLights(bool ritualOn, Vector3 arenaCenter)
+    {
+        CacheGlobalLight();
+
+        if (ritualOn)
+            ritualSpotLight = SpawnRitualSpotLight(arenaCenter);
+
+        float targetGlobal = ritualOn ? ritualGlobalLightIntensity : originalGlobalLightIntensity;
+        float targetSpot = ritualOn ? ritualSpotLightIntensity : 0f;
+
+        float startGlobal = cachedGlobalLight != null ? cachedGlobalLight.intensity : 0f;
+        float startSpot = ritualSpotLight != null ? ritualSpotLight.intensity : 0f;
+
+        float elapsed = 0f;
+        while (elapsed < lightTransitionDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / lightTransitionDuration);
+            if (cachedGlobalLight != null) cachedGlobalLight.intensity = Mathf.Lerp(startGlobal, targetGlobal, t);
+            if (ritualSpotLight != null) ritualSpotLight.intensity = Mathf.Lerp(startSpot, targetSpot, t);
+            yield return null;
+        }
+
+        if (!ritualOn && ritualSpotLight != null)
+        {
+            UnityEngine.Object.Destroy(ritualSpotLight.gameObject);
+            ritualSpotLight = null;
+        }
+    }
+
+    private IEnumerator RitualSmashRoutine()
+    {
+        yield return new WaitForSeconds(ritualSmashInitialDelay);
+        Debug.Log($"[RitualSmash] Start spawning at Time={Time.time:F2}");
+
+        while (isInRitual)
+        {
+            var spawned = new List<Vector3>();
+            LayerMask wallMask = 1 << LayerMask.NameToLayer("Wall");
+            int maxAttempts = ritualSmashCount * 8;
+
+            for (int attempt = 0; attempt < maxAttempts && spawned.Count < ritualSmashCount; attempt++)
+            {
+                Vector3 candidate = GetRandomRoomPosition();
+                if (candidate == Vector3.zero) continue;
+
+                bool tooClose = false;
+                foreach (var pos in spawned)
+                    if (Vector3.Distance(candidate, pos) < ritualSmashAoeRadiusMin) { tooClose = true; break; }
+                if (tooClose) continue;
+
+                float radius = Random.Range(ritualSmashAoeRadiusMin, ritualSmashAoeRadiusMax);
+                float duration = Random.Range(ritualSmashWarningDurationMin, ritualSmashWarningDurationMax);
+                SpawnAOEWarning(candidate, ritualSmashDamageScale, radius, duration);
+                spawned.Add(candidate);
+            }
+
+            yield return new WaitForSeconds(ritualSmashSpawnInterval);
+            if (!isInRitual) yield break;
+        }
+    }
+
+    private Vector3 GetRandomRoomPosition()
+    {
+        LayerMask wallMask = 1 << LayerMask.NameToLayer("Wall");
+        Vector3 origin = transform.position;
+
+        float left = 0f, right = 0f, back = 0f, forward = 0f;
+        if (Physics.Raycast(origin, Vector3.left, out RaycastHit h, 100f, wallMask)) left = h.distance;
+        if (Physics.Raycast(origin, Vector3.right, out h, 100f, wallMask)) right = h.distance;
+        if (Physics.Raycast(origin, Vector3.back, out h, 100f, wallMask)) back = h.distance;
+        if (Physics.Raycast(origin, Vector3.forward, out h, 100f, wallMask)) forward = h.distance;
+
+        for (int i = 0; i < 10; i++)
+        {
+            float x = Random.Range(origin.x - left, origin.x + right);
+            float z = Random.Range(origin.z - back, origin.z + forward);
+            Vector3 candidate = new Vector3(x, origin.y, z);
+
+            if (!NavMesh.SamplePosition(candidate, out NavMeshHit navHit, 1f, NavMesh.AllAreas)) continue;
+
+            Vector3 dir = navHit.position - origin;
+            dir.y = 0f;
+            float dist = dir.magnitude;
+            if (dist > 0.01f && Physics.Raycast(
+                new Vector3(origin.x, origin.y + 0.1f, origin.z),
+                dir.normalized, dist, wallMask)) continue;
+
+            return navHit.position;
+        }
+        return Vector3.zero;
     }
 
     private void EnterPhaseTwo()
@@ -158,8 +306,12 @@ public class MinibossWarlockController : WarlockController
         // 3. Invincible + barrier for warlock and all nodes
         if (health != null) health.IsInvincible = true;
         warlockBarrier?.Show();
-        foreach (var node in allNodes)
+        foreach (var node in UnityEngine.Object.FindObjectsByType<BigArcNode>(FindObjectsSortMode.None))
             node.SetRitualMode(true);
+
+        // 3b. Light transition in
+        StartCoroutine(TransitionLights(true, GetRitualPosition()));
+        StartCoroutine(RitualSmashRoutine());
 
         // 4. Destroy all BigArcLines -> relink
         var allLines = UnityEngine.Object.FindObjectsByType<BigArcLine>(FindObjectsSortMode.None);
@@ -192,6 +344,9 @@ public class MinibossWarlockController : WarlockController
         foreach (var line in postRitualLines)
             line.SetRitualMode(false);
 
+        // 7b. Light transition out
+        StartCoroutine(TransitionLights(false, Vector3.zero));
+
         // 8. Set post-ritual speed for nodes
         foreach (var node in allNodes)
             node.SetPostRitual();
@@ -200,6 +355,7 @@ public class MinibossWarlockController : WarlockController
         isWindingUp = false;
         isSmashing = false;
         hasFired = false;
+        currentState = WarlockState.Wander;
         movement.SetCanMove(true);
         isInRitual = false;
     }
@@ -229,6 +385,8 @@ public class MinibossWarlockController : WarlockController
 
             var go = Instantiate(bigArcNodePrefab, spawnPos, Quaternion.identity);
             var node = go.GetComponent<BigArcNode>();
+            var nodeHealth = go.GetComponent<BigArcNodeHealthBase>();
+            if (nodeHealth != null) nodeHealth.SetMaxHp(stats.MaxHP * bigArcNodeHpScale);
             node?.Initialize(side, stats.Damage * bigArcNodeDamageScale, health);
         }
     }

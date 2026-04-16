@@ -44490,6 +44490,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1875878696231198487, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
+      propertyPath: ritualSmashCount
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1875878696231198487, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
+      propertyPath: smashWindUpDuration
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1875878696231198487, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
+      propertyPath: bigArcNodeWallOffset
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1875878696231198487, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
+      propertyPath: ultimateWindUpDuration
+      value: 0.7
+      objectReference: {fileID: 0}
     - target: {fileID: 2871061770565427837, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
       propertyPath: m_LocalPosition.x
       value: 18.26
@@ -44532,7 +44548,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6924083166627370347, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
       propertyPath: baseMaxHP
-      value: 400
+      value: 500
       objectReference: {fileID: 0}
     - target: {fileID: 6924083166627370347, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
       propertyPath: baseDamage

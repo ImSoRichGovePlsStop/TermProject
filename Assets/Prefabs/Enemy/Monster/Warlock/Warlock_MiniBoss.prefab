@@ -792,6 +792,21 @@ MonoBehaviour:
   ritualDuration: 15
   ritualPositionNormalized: {x: 0.5, y: 0.7}
   warlockBarrier: {fileID: 1047889849521593786}
+  ritualSmashCount: 5
+  ritualSmashDamageScale: 1
+  ritualSmashWarningDurationMin: 1.2
+  ritualSmashWarningDurationMax: 2
+  ritualSmashAoeRadiusMin: 1
+  ritualSmashAoeRadiusMax: 2
+  ritualSmashSpawnInterval: 1
+  ritualSmashInitialDelay: 2
+  ritualGlobalLightIntensity: 0
+  ritualSpotLightIntensity: 100
+  ritualSpotLightRange: 20
+  ritualSpotLightAngle: 120
+  ritualSpotLightInnerAngle: 80
+  ritualSpotLightColor: {r: 0, g: 0.8842337, b: 1, a: 1}
+  lightTransitionDuration: 2
   bigArcNodePrefab: {fileID: 8635059489987017166, guid: aca89842aed7dab47b4ee12aec4c7387, type: 3}
   bigArcNodeWallOffset: 1
   bigArcNodeDamageScale: 0.35
