@@ -59,10 +59,15 @@ MonoBehaviour:
   yOffset: 0.3
   damageInterval: 0.5
   colliderHeight: 2.5
+  colliderWidth: 0.4
   colliderLengthScale: 0.9
   targetLayers:
     serializedVersion: 2
     m_Bits: 704
+  ritualLengthMultiplier: 1.1
+  ritualDamageMultiplier: 2.5
+  ritualDamageInterval: 1
+  ritualColliderLengthScale: 1.1
 --- !u!120 &477823801728421192
 LineRenderer:
   serializedVersion: 3

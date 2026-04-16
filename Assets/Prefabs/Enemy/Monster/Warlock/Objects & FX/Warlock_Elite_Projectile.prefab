@@ -69,7 +69,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2566100eefbb28d4a8f983b4fa15e3ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WarlockProjectile
-  speed: 12
+  speed: 9
   maxTravelDistance: 15
   targetLayers:
     serializedVersion: 2

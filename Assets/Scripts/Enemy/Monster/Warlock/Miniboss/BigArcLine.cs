@@ -18,12 +18,20 @@ public class BigArcLine : MonoBehaviour
     [SerializeField] private float yOffset = 0.5f;
     [SerializeField] private float damageInterval = 0.5f;
     [SerializeField] private float colliderHeight = 1f;
+    [SerializeField] private float colliderWidth = 0.6f;
     [SerializeField] private float colliderLengthScale = 1f;
     [SerializeField] private LayerMask targetLayers;
+
+    [Header("Ritual Mode")]
+    [SerializeField] private float ritualLengthMultiplier = 1.3f;
+    [SerializeField] private float ritualDamageMultiplier = 2f;
+    [SerializeField] private float ritualDamageInterval = 0.3f;
+    [SerializeField] private float ritualColliderLengthScale = 1.3f;
 
     private BigArcNode nodeA;
     private BigArcNode nodeB;
     private float linkDamage;
+    private float baseDamage;
     private HealthBase attacker;
 
     private float elapsed;
@@ -31,12 +39,24 @@ public class BigArcLine : MonoBehaviour
     private float damageTimer;
     private float scaleX;
     private float scaleZ;
+    private bool isRitual = false;
+
+    private float currentDamageInterval => isRitual ? ritualDamageInterval : damageInterval;
+    private float currentColliderLengthScale => isRitual ? ritualColliderLengthScale : colliderLengthScale;
+    private float currentLengthMultiplier => isRitual ? ritualLengthMultiplier : 1f;
+
+    public void SetRitualMode(bool active)
+    {
+        isRitual = active;
+        linkDamage = active ? baseDamage * ritualDamageMultiplier : baseDamage;
+    }
 
     public void Initialize(BigArcNode a, BigArcNode b, float dmg, HealthBase atk)
     {
         nodeA = a;
         nodeB = b;
         linkDamage = dmg;
+        baseDamage = dmg;
         attacker = atk;
         elapsed = 0f;
         isActive = false;
@@ -137,14 +157,14 @@ public class BigArcLine : MonoBehaviour
         transform.eulerAngles = euler;
 
         float spriteHeight = spriteRenderer.sprite.bounds.size.y;
-        transform.localScale = new Vector3(scaleX, distance / spriteHeight, scaleZ);
+        transform.localScale = new Vector3(scaleX, distance * currentLengthMultiplier / spriteHeight, scaleZ);
     }
 
     private void UpdateCollider(Vector3 posA, Vector3 posB)
     {
         if (damageCollider == null) return;
         float distance = Vector3.Distance(posA, posB);
-        damageCollider.size = new Vector3(0.6f, distance * colliderLengthScale / transform.lossyScale.y, colliderHeight);
+        damageCollider.size = new Vector3(colliderWidth, distance * currentColliderLengthScale / transform.lossyScale.y, colliderHeight);
         damageCollider.center = Vector3.zero;
         Vector3 euler = transform.eulerAngles;
         euler.x = 90f;
@@ -161,7 +181,7 @@ public class BigArcLine : MonoBehaviour
     {
         if (!isActive) return;
         damageTimer += Time.deltaTime;
-        if (damageTimer < damageInterval) return;
+        if (damageTimer < currentDamageInterval) return;
         damageTimer = 0f;
         DealDamage(other);
     }

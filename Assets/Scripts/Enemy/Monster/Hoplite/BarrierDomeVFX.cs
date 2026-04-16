@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public class GuardDomeVFX : MonoBehaviour
+public class BarrierDomeVFX : MonoBehaviour
 {
     [SerializeField] private float scaleInDuration = 0.1f;
     [SerializeField] private float scaleOutDuration = 0.1f;

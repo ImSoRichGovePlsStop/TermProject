@@ -26,9 +26,19 @@ public class BigArcNode : MonoBehaviour
     [Header("Phase 3 - Border Patrol")]
     [SerializeField] private float patrolDirMinDuration = 3f;
     [SerializeField] private float patrolDirMaxDuration = 7f;
+    [SerializeField] private float patrolSpeedRitualMin = 4f;
+    [SerializeField] private float patrolSpeedRitualMax = 6f;
+    [SerializeField] private float patrolSpeedPhaseThreeMin = 2f;
+    [SerializeField] private float patrolSpeedPhaseThreeMax = 3.5f;
+    [SerializeField] private float slowDownDuration = 0.4f;
+    [SerializeField] private float stopDuration = 0.25f;
+    [SerializeField] private float speedUpDuration = 0.4f;
 
-    [Header("References")]
+    [Header("Stagger")]
+    [SerializeField] private float staggerSpeedRatio = 0.5f;
+    [SerializeField] private float staggerRecoverDuration = 1f;
     [SerializeField] private Animator animator;
+    [SerializeField] private BarrierDomeVFX barrierVFX;
 
     [Header("Ground Snap")]
     [SerializeField] private LayerMask groundLayer;
@@ -45,19 +55,37 @@ public class BigArcNode : MonoBehaviour
 
     public WallSide Side { get; private set; }
     public bool IsEnabled { get; private set; } = true;
+    public bool IsPhaseThree => isPhaseThree;
 
     private bool initialDelayDone = false;
     private bool isRegening = false;
     private bool isPhaseThree = false;
+    private bool isPermanentDisabled = false;
+    private bool isInRitualMode = false;
 
     private BigArcNodeHealthBase health;
     private MoveMode moveMode = MoveMode.SideOnly;
     private float moveSpeed;
+    private float currentSpeed;
     private float moveDir = 1f;
+    private Vector3 moveAxis = Vector3.right;
+    private float axisDir = 1f;
+    private bool isClockwise = true;
+    private bool isPostRitual = false;
     private LayerMask wallMask;
+
+    private enum PatrolState { Moving, SlowingDown, Stopped, SpeedingUp }
+    private PatrolState patrolState = PatrolState.Moving;
+    private float patrolStateTimer = 0f;
+    private float targetSpeed = 0f;
+    private float speedAtStateStart = 0f;
 
     private float patrolDirTimer = 0f;
     private float patrolDirDuration = 0f;
+
+    private bool isStaggered = false;
+    private float staggerTimer = 0f;
+    private float staggerFromSpeed = 0f;
 
     public void Initialize(WallSide side, float dmg, HealthBase atk)
     {
@@ -70,10 +98,35 @@ public class BigArcNode : MonoBehaviour
     {
         isPhaseThree = true;
         moveMode = MoveMode.BorderPatrol;
-        moveDir = Random.value < 0.5f ? 1f : -1f;
-        moveSpeed = Random.Range(moveSpeedMin, moveSpeedMax);
+        isClockwise = Random.value < 0.5f;
+        moveSpeed = Random.Range(patrolSpeedRitualMin, patrolSpeedRitualMax);
+        currentSpeed = moveSpeed;
+        patrolState = PatrolState.Moving;
         patrolDirDuration = Random.Range(patrolDirMinDuration, patrolDirMaxDuration);
         patrolDirTimer = 0f;
+        SetMoveVectorForSide(Side, isClockwise);
+    }
+
+    public void SetPostRitual()
+    {
+        isPostRitual = true;
+        moveSpeed = Random.Range(patrolSpeedPhaseThreeMin, patrolSpeedPhaseThreeMax);
+        currentSpeed = moveSpeed;
+    }
+
+    public void SetRitualMode(bool active)
+    {
+        isInRitualMode = active;
+        if (active)
+        {
+            if (health != null) health.SetInvincible(true);
+            barrierVFX?.Show();
+        }
+        else
+        {
+            if (health != null) health.SetInvincible(false);
+            barrierVFX?.Hide();
+        }
     }
 
     public void ForceFullHeal()
@@ -145,7 +198,10 @@ public class BigArcNode : MonoBehaviour
 
         effect?.PlayFadeOut(spawnFadeOutDuration);
 
-        if (health != null) health.SetInvincible(false);
+        if (!isInRitualMode && health != null) health.SetInvincible(false);
+
+        moveSpeed = Random.Range(moveSpeedMin, moveSpeedMax);
+        currentSpeed = moveSpeed;
 
         Invoke(nameof(OnInitialDelayDone), 0f);
     }
@@ -170,12 +226,24 @@ public class BigArcNode : MonoBehaviour
     {
         if (!IsEnabled) return;
 
+        TickStagger();
+
         if (moveMode == MoveMode.SideOnly)
             MoveAlongWall();
         else
             MoveAlongBorder();
 
         SnapToGround();
+    }
+
+    private void TickStagger()
+    {
+        if (!isStaggered) return;
+        staggerTimer += Time.deltaTime;
+        float t = Mathf.Clamp01(staggerTimer / staggerRecoverDuration);
+        currentSpeed = Mathf.Lerp(staggerFromSpeed, moveSpeed, t);
+        if (staggerTimer >= staggerRecoverDuration)
+            isStaggered = false;
     }
 
     private void MoveAlongWall()
@@ -185,34 +253,153 @@ public class BigArcNode : MonoBehaviour
         {
             moveDir *= -1f;
             moveSpeed = Random.Range(moveSpeedMin, moveSpeedMax);
+            if (!isStaggered) currentSpeed = moveSpeed;
             return;
         }
-        transform.position += dir * moveSpeed * Time.deltaTime;
+        Vector3 nextPos = transform.position + dir * currentSpeed * Time.deltaTime;
+        if (!Physics.Raycast(transform.position, dir, currentSpeed * Time.deltaTime, wallMask))
+            transform.position = nextPos;
     }
 
     private void MoveAlongBorder()
     {
+        switch (patrolState)
+        {
+            case PatrolState.Moving:
+                TickMoving();
+                break;
+            case PatrolState.SlowingDown:
+                TickSlowingDown();
+                break;
+            case PatrolState.Stopped:
+                TickStopped();
+                break;
+            case PatrolState.SpeedingUp:
+                TickSpeedingUp();
+                break;
+        }
+    }
+
+    private void TickMoving()
+    {
         patrolDirTimer += Time.deltaTime;
         if (patrolDirTimer >= patrolDirDuration)
         {
-            moveDir *= -1f;
             patrolDirTimer = 0f;
             patrolDirDuration = Random.Range(patrolDirMinDuration, patrolDirMaxDuration);
+            BeginSlowDown();
+            return;
         }
 
-        Vector3 dir = GetSideMoveVector();
+        Vector3 dir = moveAxis * axisDir;
         if (Physics.Raycast(transform.position, dir, 0.5f, wallMask))
         {
-            moveSpeed = Random.Range(moveSpeedMin, moveSpeedMax);
             AdvanceToNextSide();
             return;
         }
-        transform.position += dir * moveSpeed * Time.deltaTime;
+        Vector3 nextPos = transform.position + dir * currentSpeed * Time.deltaTime;
+        if (!Physics.Raycast(transform.position, dir, currentSpeed * Time.deltaTime, wallMask))
+            transform.position = nextPos;
+    }
+
+    private void BeginSlowDown()
+    {
+        patrolState = PatrolState.SlowingDown;
+        patrolStateTimer = 0f;
+        speedAtStateStart = currentSpeed;
+    }
+
+    private void TickSlowingDown()
+    {
+        patrolStateTimer += Time.deltaTime;
+        float t = Mathf.Clamp01(patrolStateTimer / slowDownDuration);
+        currentSpeed = Mathf.Lerp(speedAtStateStart, 0f, t);
+
+        Vector3 dir = moveAxis * axisDir;
+        Vector3 nextPos = transform.position + dir * currentSpeed * Time.deltaTime;
+        if (!Physics.Raycast(transform.position, dir, currentSpeed * Time.deltaTime, wallMask))
+            transform.position = nextPos;
+
+        if (patrolStateTimer >= slowDownDuration)
+        {
+            currentSpeed = 0f;
+            patrolState = PatrolState.Stopped;
+            patrolStateTimer = 0f;
+
+            // change direction while stopped
+            isClockwise = !isClockwise;
+            SetMoveVectorForSide(Side, isClockwise);
+        }
+    }
+
+    private void TickStopped()
+    {
+        patrolStateTimer += Time.deltaTime;
+        if (patrolStateTimer >= stopDuration)
+        {
+            patrolState = PatrolState.SpeedingUp;
+            patrolStateTimer = 0f;
+            targetSpeed = isPostRitual
+                ? Random.Range(patrolSpeedPhaseThreeMin, patrolSpeedPhaseThreeMax)
+                : Random.Range(patrolSpeedRitualMin, patrolSpeedRitualMax);
+            speedAtStateStart = 0f;
+        }
+    }
+
+    private void TickSpeedingUp()
+    {
+        patrolStateTimer += Time.deltaTime;
+        float t = Mathf.Clamp01(patrolStateTimer / speedUpDuration);
+        currentSpeed = Mathf.Lerp(0f, targetSpeed, t);
+
+        Vector3 dir = moveAxis * axisDir;
+        if (Physics.Raycast(transform.position, dir, 0.5f, wallMask))
+        {
+            AdvanceToNextSide();
+            return;
+        }
+        Vector3 nextPos = transform.position + dir * currentSpeed * Time.deltaTime;
+        if (!Physics.Raycast(transform.position, dir, currentSpeed * Time.deltaTime, wallMask))
+            transform.position = nextPos;
+
+        if (patrolStateTimer >= speedUpDuration)
+        {
+            currentSpeed = targetSpeed;
+            moveSpeed = targetSpeed;
+            patrolState = PatrolState.Moving;
+        }
+    }
+
+    private void SetMoveVectorForSide(WallSide side, bool clockwise)
+    {
+        // clockwise: Top(+X), Right(-Z), Bottom(-X), Left(+Z)
+        // counterclockwise: Top(-X), Left(-Z), Bottom(+X), Right(+Z) -- mirror
+        switch (side)
+        {
+            case WallSide.Top:
+                moveAxis = Vector3.right;
+                axisDir = clockwise ? 1f : -1f;
+                break;
+            case WallSide.Right:
+                moveAxis = Vector3.forward;
+                axisDir = clockwise ? -1f : 1f;
+                break;
+            case WallSide.Bottom:
+                moveAxis = Vector3.right;
+                axisDir = clockwise ? -1f : 1f;
+                break;
+            case WallSide.Left:
+                moveAxis = Vector3.forward;
+                axisDir = clockwise ? 1f : -1f;
+                break;
+        }
     }
 
     private void AdvanceToNextSide()
     {
-        if (moveDir > 0f)
+        Vector3 oldMoveDir = moveAxis * axisDir;
+
+        if (isClockwise)
         {
             switch (Side)
             {
@@ -232,6 +419,16 @@ public class BigArcNode : MonoBehaviour
                 case WallSide.Right: Side = WallSide.Top; break;
             }
         }
+
+        SetMoveVectorForSide(Side, isClockwise);
+
+        // push away from old wall only if not crossing a wall
+        Vector3 pushDir = -oldMoveDir;
+        Vector3 pushedPos = transform.position + pushDir * 0.15f;
+        if (!Physics.Raycast(transform.position, pushDir, 0.15f, wallMask))
+            transform.position = pushedPos;
+
+        patrolState = PatrolState.Moving;
     }
 
     private Vector3 GetSideMoveVector()
@@ -248,7 +445,24 @@ public class BigArcNode : MonoBehaviour
 
     private void OnDamaged()
     {
+        // stagger
+        isStaggered = true;
+        staggerTimer = 0f;
+        staggerFromSpeed = moveSpeed * staggerSpeedRatio;
+        currentSpeed = staggerFromSpeed;
+
         if (!IsEnabled || isRegening) return;
+
+        if (isPhaseThree)
+        {
+            if (health.CurrentHP <= 0f && !isPermanentDisabled)
+            {
+                isPermanentDisabled = true;
+                Disable();
+            }
+            return;
+        }
+
         if (health.CurrentHP / health.MaxHP <= disableThreshold)
             StartCoroutine(DisableAndRegenRoutine());
     }
@@ -273,6 +487,7 @@ public class BigArcNode : MonoBehaviour
         IsEnabled = false;
         animator?.SetTrigger("Disable");
         if (health != null) health.SetInvincible(true);
+        if (!isPermanentDisabled) barrierVFX?.Show();
         UnlinkAll();
         OnNodeStateChanged?.Invoke();
     }
@@ -281,7 +496,8 @@ public class BigArcNode : MonoBehaviour
     {
         IsEnabled = true;
         animator?.SetTrigger("Enable");
-        if (health != null) health.SetInvincible(false);
+        if (!isInRitualMode && health != null) health.SetInvincible(false);
+        if (!isInRitualMode) barrierVFX?.Hide();
         TryLink();
         OnNodeStateChanged?.Invoke();
     }
@@ -334,10 +550,7 @@ public class BigArcNode : MonoBehaviour
         if (isPhaseThree)
             return FindBestInCandidates(_ => true, random: true);
 
-        BigArcNode best = FindBestInCandidates(n => n.Side == GetOppositeSide(Side), random: false);
-        if (best != null) return best;
-
-        return FindBestInCandidates(n => n.Side != Side, random: false);
+        return FindBestInCandidates(n => n.Side == GetOppositeSide(Side), random: false);
     }
 
     private BigArcNode FindBestInCandidates(System.Func<BigArcNode, bool> filter, bool random)

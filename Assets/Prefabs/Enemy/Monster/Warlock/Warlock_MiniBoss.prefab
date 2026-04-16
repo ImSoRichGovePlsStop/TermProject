@@ -404,6 +404,112 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BillboardSprite
   isBillboard: 1
+--- !u!1 &7410993705269635470
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8403225375085916266}
+  - component: {fileID: 8566301598616864353}
+  - component: {fileID: 8535483997164013564}
+  - component: {fileID: 1047889849521593786}
+  m_Layer: 8
+  m_Name: BarrierDome
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8403225375085916266
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7410993705269635470}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0.15}
+  m_LocalScale: {x: 1.4, y: 1.4, z: 1.4}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2871061770565427837}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &8566301598616864353
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7410993705269635470}
+  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &8535483997164013564
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7410993705269635470}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 23cfec5003f1cea42a8b33dcce3a2779, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1047889849521593786
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7410993705269635470}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a1846f87f9b19d4fb9f9da29d8421ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GuardDomeVFX
+  scaleInDuration: 0.2
+  scaleOutDuration: 0.2
+  targetScale: {x: 1.6, y: 1.6, z: 1.6}
 --- !u!1 &7665104473517315308
 GameObject:
   m_ObjectHideFlags: 0
@@ -445,6 +551,7 @@ Transform:
   - {fileID: 6512080416870355458}
   - {fileID: 7516824194724891628}
   - {fileID: 8093637372054993530}
+  - {fileID: 8403225375085916266}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!136 &1717007692280781252
@@ -541,6 +648,7 @@ MonoBehaviour:
   healthBarScale: {x: 2, y: 1.5, z: 1}
   tier: 2
   phaseTwoThreshold: 0.7
+  phaseThreeThreshold: 0.3
 --- !u!114 &5644794410267954326
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -569,9 +677,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73a687f9a65ebc34ab8d148f3be77e4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EntityStats
-  baseMaxHP: 500
+  baseMaxHP: 1000
   baseMoveSpeed: 2.5
-  baseDamage: 12
+  baseDamage: 24
   baseAttackSpeed: 1
   baseShield: 0
 --- !u!114 &1875878696231198487
@@ -626,7 +734,7 @@ MonoBehaviour:
   shootCooldown: 3.5
   projectileDamageScale: 1
   spreadAngle: 15
-  maxTrackRotateSpeed: 120
+  maxTrackRotateSpeed: 180
   projectilePrefab: {fileID: 1673625421123493190, guid: c66892180d264fa429b0f975e9a687d5, type: 3}
   firePoint: {fileID: 7516824194724891628}
   smashRange: 10
@@ -639,11 +747,11 @@ MonoBehaviour:
   targetLayers:
     serializedVersion: 2
     m_Bits: 704
-  jumpTriggerRange: 2
-  jumpEscapeCooldown: 15
-  jumpCooldownReductionOnHit: 1
+  jumpTriggerRange: 2.5
+  jumpEscapeCooldown: 12
+  jumpCooldownReductionOnHit: 0.75
   jumpCooldownReductionInterval: 0.1
-  jumpRadius: 7
+  jumpRadius: 8
   jumpDuration: 1
   jumpPeakHeight: 0.5
   jumpCandidates: 12
@@ -653,9 +761,9 @@ MonoBehaviour:
   ultimateAoeRadius: 2
   ultimateCooldown: 15
   ultimateSpawnRadius: 6
-  arcWarlockRatio: 0.4
-  summonCooldown: 20
-  summonWindUpDuration: 1
+  arcWarlockRatio: 0.35
+  summonCooldown: 30
+  summonWindUpDuration: 0.3
   summonMinRadius: 4
   summonRadius: 6
   summonMinSpawnDistance: 1.5
@@ -664,17 +772,26 @@ MonoBehaviour:
   normalArcWarlockPrefab: {fileID: 2267385209059488080, guid: 7b3e637306542674a858675a8eb8614c, type: 3}
   eliteArcWarlockPrefab: {fileID: 8761219684217307977, guid: 81bc309d0cb204a469adc399b7df23fb, type: 3}
   phase1Settings:
-    ultimateCircleCountMin: 3
-    ultimateCircleCountMax: 5
-    ultimateMinSpawnDistance: 1
-    summonCount: 3
+    ultimateCircleCountMin: 4
+    ultimateCircleCountMax: 6
+    ultimateMinSpawnDistance: 2
+    summonCount: 2
     eliteRatio: 0.25
   phase2Settings:
-    ultimateCircleCountMin: 4
+    ultimateCircleCountMin: 5
     ultimateCircleCountMax: 7
-    ultimateMinSpawnDistance: 2
+    ultimateMinSpawnDistance: 3
     summonCount: 3
     eliteRatio: 0.4
+  phase3Settings:
+    ultimateCircleCountMin: 6
+    ultimateCircleCountMax: 8
+    ultimateMinSpawnDistance: 4
+    summonCount: 3
+    eliteRatio: 0.7
+  ritualDuration: 15
+  ritualPositionNormalized: {x: 0.5, y: 0.7}
+  warlockBarrier: {fileID: 1047889849521593786}
   bigArcNodePrefab: {fileID: 8635059489987017166, guid: aca89842aed7dab47b4ee12aec4c7387, type: 3}
   bigArcNodeWallOffset: 1
   bigArcNodeDamageScale: 0.35

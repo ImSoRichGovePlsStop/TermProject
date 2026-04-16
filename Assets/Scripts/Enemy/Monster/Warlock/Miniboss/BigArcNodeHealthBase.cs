@@ -6,12 +6,13 @@ public class BigArcNodeHealthBase : HealthBase
 
     public System.Action OnDamaged;
 
-    private bool isInvincible = false;
+    private BigArcNode bigArcNode;
 
     protected override void Awake()
     {
         maxHP = maxHp;
         base.Awake();
+        bigArcNode = GetComponent<BigArcNode>();
         DamageNumberSpawner.Instance?.RegisterEntity(this, healthBarHeight);
     }
 
@@ -23,18 +24,23 @@ public class BigArcNodeHealthBase : HealthBase
 
     public void SetInvincible(bool value)
     {
-        isInvincible = value;
+        IsInvincible = value;
     }
 
     public override void TakeDamage(float damage, bool isCrit = false)
     {
-        if (isInvincible) return;
+        if (IsInvincible) return;
         base.TakeDamage(damage, isCrit);
         OnDamaged?.Invoke();
     }
 
     protected override void OnDie()
     {
+        if (bigArcNode != null && bigArcNode.IsPhaseThree)
+        {
+            OnDamaged?.Invoke();
+            return;
+        }
         Destroy(gameObject);
     }
 }
