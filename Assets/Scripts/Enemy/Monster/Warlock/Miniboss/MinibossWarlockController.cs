@@ -18,8 +18,6 @@ public class MinibossWarlockController : WarlockController
     [Header("Jump")]
     [SerializeField] private float jumpTriggerRange = 2f;
     [SerializeField] private float jumpEscapeCooldown = 8f;
-    [SerializeField] private float jumpCooldownReductionOnHit = 2f;
-    [SerializeField] private float jumpCooldownReductionInterval = 0.2f;
     [SerializeField] private float jumpRadius = 6f;
     [SerializeField] private float jumpDuration = 0.5f;
     [SerializeField] private float jumpPeakHeight = 2f;
@@ -49,6 +47,21 @@ public class MinibossWarlockController : WarlockController
     [SerializeField] private WarlockPhaseSettings phase1Settings;
     [SerializeField] private WarlockPhaseSettings phase2Settings;
     [SerializeField] private WarlockPhaseSettings phase3Settings;
+
+    [Header("Scatter Shot")]
+    [SerializeField] private GameObject scatterProjectilePrefab;
+    [SerializeField] private GameObject scatterProjectilePrefab2;
+    [SerializeField] private float scatterRange = 4f;
+    [SerializeField] private int scatterCountPerFire = 8;
+    [SerializeField] private float scatterAngle = 120f;
+    [SerializeField] private float scatterDamageScale = 0.6f;
+    [SerializeField] private float scatterFireInterval = 0.4f;
+    [SerializeField] private float scatterDuration = 2f;
+    [SerializeField] private float scatterWindUpDuration = 1f;
+    [SerializeField] private float scatterCooldown = 8f;
+    [SerializeField] private float scatterRotateSpeed = 60f;
+    [SerializeField] private float scatterProximityRequired = 3f;
+    [SerializeField] private float scatterProximityWindow = 5f;
 
     [Header("Ritual Phase")]
     [SerializeField] private float ritualDuration = 15f;
@@ -90,11 +103,16 @@ public class MinibossWarlockController : WarlockController
     private bool isInRitual;
 
     private float lastJumpEscapeTime;
-    private float lastCooldownReductionTime = -Mathf.Infinity;
     private float lastUltimateTime = 0f;
     private float lastSummonTime;
 
-    private bool IsOccupied => isJumping || isSmashing || isCastingUltimate || isSummoning || isInRitual;
+    private bool isScattering;
+    private float lastScatterTime = -Mathf.Infinity;
+    private float proximityTimer = 0f;
+    private bool canScatter = false;
+    private float scatterLockedMagnitude = 5f;
+
+    private bool IsOccupied => isJumping || isSmashing || isCastingUltimate || isSummoning || isInRitual || isScattering;
 
 
     public override bool CanBeInterrupted() => false;
@@ -111,15 +129,7 @@ public class MinibossWarlockController : WarlockController
         {
             minibossHealth.OnPhaseTwo += EnterPhaseTwo;
             minibossHealth.OnPhaseThree += EnterPhaseThree;
-            minibossHealth.OnDamageReceived += OnDamageReceived;
         }
-    }
-
-    private void OnDamageReceived(float damage, bool isCrit)
-    {
-        if (Time.time < lastCooldownReductionTime + jumpCooldownReductionInterval) return;
-        lastCooldownReductionTime = Time.time;
-        lastJumpEscapeTime -= jumpCooldownReductionOnHit;
     }
 
     private Light cachedGlobalLight;
@@ -428,6 +438,14 @@ public class MinibossWarlockController : WarlockController
     {
         if (IsOccupied || isWindingUp) return;
 
+        // proximity tracking for scatter shot
+        if (HasTarget && Vector3.Distance(transform.position, TargetPosition) <= scatterRange)
+            proximityTimer = Mathf.Min(proximityTimer + Time.deltaTime, scatterProximityWindow);
+        else
+            proximityTimer = Mathf.Max(proximityTimer - Time.deltaTime, 0f);
+
+        canScatter = proximityTimer >= scatterProximityRequired;
+
         if (HasTarget && Vector3.Distance(transform.position, TargetPosition) < jumpTriggerRange && CanEscapeJump())
         {
             StartCoroutine(JumpRoutine());
@@ -445,6 +463,7 @@ public class MinibossWarlockController : WarlockController
         {
             if (TryUltimate()) return;
             if (TrySummon()) return;
+            if (TryScatterShot()) return;
             if (TrySmash()) return;
         }
 
@@ -588,6 +607,112 @@ public class MinibossWarlockController : WarlockController
     }
 
 
+    private bool TryScatterShot()
+    {
+        if (isScattering) return true;
+        if (!canScatter) return false;
+        if (Time.time < lastScatterTime + scatterCooldown) return false;
+        if (!HasTarget || Vector3.Distance(transform.position, TargetPosition) > scatterRange) return false;
+
+        StartCoroutine(ScatterRoutine());
+        return true;
+    }
+
+    private IEnumerator ScatterRoutine()
+    {
+        isScattering = true;
+        movement.StopMoving();
+
+        animator?.SetTrigger("ScatterWindUp");
+
+        yield return null;
+        while (animator != null && !animator.GetCurrentAnimatorStateInfo(0).IsName("ScatterWindUp"))
+            yield return null;
+
+        if (animator != null)
+        {
+            AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(0);
+            if (info.length > 0f) animator.speed = info.length / scatterWindUpDuration;
+        }
+
+        yield return new WaitForSeconds(scatterWindUpDuration);
+        if (animator != null) animator.speed = 1f;
+
+        if (HasTarget)
+        {
+            lockedTargetPosition = TargetPosition;
+            scatterLockedMagnitude = Vector3.Distance(transform.position, TargetPosition);
+        }
+        animator?.SetBool("IsScatterFiring", true);
+
+        float elapsed = 0f;
+        float fireTimer = 0f;
+
+        while (elapsed < scatterDuration)
+        {
+            elapsed += Time.deltaTime;
+            fireTimer += Time.deltaTime;
+
+            // rotate toward player slowly - same as fire projectile
+            if (HasTarget)
+            {
+                Vector3 currentDir = lockedTargetPosition - transform.position;
+                Vector3 targetDir = TargetPosition - transform.position;
+                currentDir.y = 0f;
+                targetDir.y = 0f;
+
+                if (currentDir.sqrMagnitude > 0.001f && targetDir.sqrMagnitude > 0.001f)
+                {
+                    float maxDeg = scatterRotateSpeed * Time.deltaTime;
+                    Vector3 newDir = Vector3.RotateTowards(currentDir.normalized, targetDir.normalized, maxDeg * Mathf.Deg2Rad, 0f);
+                    lockedTargetPosition = transform.position + newDir * scatterLockedMagnitude;
+                }
+
+                movement.FaceTarget(lockedTargetPosition);
+            }
+
+            if (fireTimer >= scatterFireInterval)
+            {
+                fireTimer = 0f;
+                FireScatterVolley();
+            }
+
+            yield return null;
+        }
+
+        animator?.SetBool("IsScatterFiring", false);
+        lastScatterTime = Time.time;
+        isScattering = false;
+        canScatter = false;
+        proximityTimer = 0f;
+        TriggerPostAttackDelay();
+    }
+
+    private void FireScatterVolley()
+    {
+        if (scatterProjectilePrefab == null || firePoint == null) return;
+
+        Vector3 baseDir = (lockedTargetPosition - firePoint.position);
+        baseDir.y = 0f;
+        if (baseDir.sqrMagnitude < 0.001f) baseDir = transform.forward;
+        baseDir.Normalize();
+
+        for (int i = 0; i < scatterCountPerFire; i++)
+        {
+            float angle = Random.Range(-scatterAngle * 0.5f, scatterAngle * 0.5f);
+            Vector3 dir = Quaternion.Euler(0f, angle, 0f) * baseDir;
+
+            GameObject prefab = (scatterProjectilePrefab2 != null && Random.value < 0.5f)
+                ? scatterProjectilePrefab2
+                : scatterProjectilePrefab;
+
+            var go = Instantiate(prefab, firePoint.position, prefab.transform.rotation);
+            var proj = go.GetComponent<WarlockProjectile>();
+            if (proj != null)
+                proj.Initialize(firePoint.position + dir * 20f, stats.Damage * scatterDamageScale, health);
+        }
+    }
+
     private bool TryUltimate()
     {
         if (isCastingUltimate) return true;
@@ -726,6 +851,8 @@ public class MinibossWarlockController : WarlockController
         isJumping = false;
         isCastingUltimate = false;
         isSummoning = false;
+        isScattering = false;
+        animator?.SetBool("IsScatterFiring", false);
 
         foreach (var warlock in UnityEngine.Object.FindObjectsByType<WarlockController>(FindObjectsSortMode.None))
         {
