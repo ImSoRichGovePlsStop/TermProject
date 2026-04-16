@@ -4514,7 +4514,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3087691651960519774, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10.16
+      value: 6.22
       objectReference: {fileID: 0}
     - target: {fileID: 3087691651960519774, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
       propertyPath: m_LocalPosition.y
@@ -44482,63 +44482,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1670241129}
   m_Mesh: {fileID: 4406048967734706137, guid: edcc86a903182d0429c0d7b2c727fec0, type: 3}
---- !u!1001 &1676699360
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 2871061770565427837, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 18.26
-      objectReference: {fileID: 0}
-    - target: {fileID: 2871061770565427837, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 10.821
-      objectReference: {fileID: 0}
-    - target: {fileID: 2871061770565427837, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 4.6383963
-      objectReference: {fileID: 0}
-    - target: {fileID: 2871061770565427837, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2871061770565427837, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2871061770565427837, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2871061770565427837, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2871061770565427837, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2871061770565427837, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2871061770565427837, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7665104473517315308, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
-      propertyPath: m_Name
-      value: Warlock_MiniBoss
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
 --- !u!1 &1676784204
 GameObject:
   m_ObjectHideFlags: 0
@@ -55092,4 +55035,3 @@ SceneRoots:
   - {fileID: 212061155}
   - {fileID: 400153477}
   - {fileID: 414975355}
-  - {fileID: 1676699360}
