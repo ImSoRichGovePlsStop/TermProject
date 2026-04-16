@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &498197084
+--- !u!1 &1679036508
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,27 +127,56 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 498197086}
-  - component: {fileID: 498197085}
-  - component: {fileID: 498197087}
+  - component: {fileID: 1679036511}
+  - component: {fileID: 1679036510}
+  - component: {fileID: 1679036509}
   m_Layer: 0
-  m_Name: Directional Light
+  m_Name: 'Directional Light '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!108 &498197085
+--- !u!114 &1679036509
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1679036508}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
+--- !u!108 &1679036510
 Light:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 498197084}
+  m_GameObject: {fileID: 1679036508}
   m_Enabled: 1
   serializedVersion: 12
   m_Type: 1
-  m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
+  m_Color: {r: 0.20754719, g: 0.20754719, b: 0.20754719, a: 0.50980395}
   m_Intensity: 1
   m_Range: 10
   m_SpotAngle: 30
@@ -202,13 +231,13 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
---- !u!4 &498197086
+--- !u!4 &1679036511
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 498197084}
+  m_GameObject: {fileID: 1679036508}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 3, z: 0}
@@ -217,35 +246,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
---- !u!114 &498197087
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 498197084}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
-  m_UsePipelineSettings: 1
-  m_AdditionalLightsShadowResolutionTier: 2
-  m_CustomShadowLayers: 0
-  m_LightCookieSize: {x: 1, y: 1}
-  m_LightCookieOffset: {x: 0, y: 0}
-  m_SoftShadowQuality: 0
-  m_RenderingLayersMask:
-    serializedVersion: 0
-    m_Bits: 1
-  m_ShadowRenderingLayersMask:
-    serializedVersion: 0
-    m_Bits: 1
-  m_Version: 4
-  m_LightLayerMask: 1
-  m_ShadowLayerMask: 1
-  m_RenderingLayers: 1
-  m_ShadowRenderingLayers: 1
 --- !u!1 &2145645482
 GameObject:
   m_ObjectHideFlags: 0
@@ -311,11 +311,12 @@ MonoBehaviour:
   - {fileID: 2371149561134109772, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
   - {fileID: 2371149561134109772, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
   lootPrefab: {fileID: 7487802019810916615, guid: 99d47f9338280df4ca3e55aeb52a23d2, type: 3}
+  rareLootPrefab: {fileID: 7473069894125093457, guid: 6b19d624911a31b47bfe8a8fabbee76e, type: 3}
   fountainPrefab: {fileID: 2636053173783784693, guid: 3a7cc8a83056bcb4c8d6afc8fe24cb9a, type: 3}
   cratePrefab: {fileID: 4252302106054265251, guid: b645a149dc0bb2842b4a242ce563f039, type: 3}
   statuePrefab: {fileID: 6671577081728210415, guid: e521a7caac72a5c4182828edf4e6d78a, type: 3}
-  crateChance: 0.115
-  statueChance: 0.05
+  crateChance: 0.053
+  statueChance: 0.025
   boundaryMaterial: {fileID: 2100000, guid: b59bfbcef27325640a17d8406da59c7a, type: 2}
   navMeshSurface: {fileID: 2145645486}
   triggerHeight: 3
@@ -341,15 +342,15 @@ MonoBehaviour:
   mergeAreaThreshold: 50
   sealMinWidth: 2
   sealMinArea: 10
-  maxBattleCount: 3
+  maxBattleCount: 0
   maxEventCount: 3
   weightHeal: 4
   weightShop: 2
-  weightRareLoot: 3
-  weightMerge: 1
-  weightFountain: 1231241
+  weightRareLoot: 1
+  weightMerge: 2
+  weightFountain: 1
   repeatPenalty: 0.4
-  presetChanceBattle: 0.48
+  presetChanceBattle: 0.368
   presetChanceHeal: 0
   presetChanceShop: 0
   presetChanceRareLoot: 0
@@ -363,10 +364,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 9b87d61227132fb4db164e9a6433e9de, type: 2}
   - {fileID: 11400000, guid: f4601b98d3fefb641baf3c22d4adc523, type: 2}
   doorWidth: 1
+  wallPrefab: {fileID: 4780047926931452637, guid: 38d8ad24e9b06be4c80e188bc072b5f3, type: 3}
+  pillarPrefab: {fileID: 5252582885613049431, guid: 994a8f54789240547be9f61d42127fce, type: 3}
   wallHeight: 2
-  wallThickness: 0.05
+  wallThickness: 0.1
   floorThickness: -5
-  floorMat: {fileID: 2100000, guid: bc13fd34aabd1de4a8587dbfd164dc30, type: 2}
+  floorMat: {fileID: 2100000, guid: 761d8e1f988ed2345a28312145c79c6e, type: 2}
   wallMat: {fileID: 2100000, guid: b354030ecf56d194aa76bff9eed6802a, type: 2}
   sealedMat: {fileID: 2100000, guid: defdb7f80f413dc4491faac396d0fb16, type: 2}
   navMeshSurface: {fileID: 2145645486}
@@ -389,7 +392,7 @@ MonoBehaviour:
   m_Center: {x: 0, y: 2, z: 0}
   m_LayerMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 1024
   m_UseGeometry: 1
   m_DefaultArea: 0
   m_GenerateLinks: 0
@@ -406,5 +409,5 @@ MonoBehaviour:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 498197086}
+  - {fileID: 1679036511}
   - {fileID: 2145645483}

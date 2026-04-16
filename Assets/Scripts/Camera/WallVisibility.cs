@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class WallVisibility : MonoBehaviour
 {
@@ -14,24 +15,14 @@ public class WallVisibility : MonoBehaviour
     [Header("Settings")]
     public LayerMask wallLayer;
     public string wallLayerName = "Wall";
-
-    [Tooltip("How far behind the player (-Z) to raycast for obstruction detection.")]
     public float detectionRange = 2f;
-
-    [Tooltip("How far left/right to raycast to find room X boundaries.")]
     public float sideRayRange = 30f;
-
-    [Tooltip("Fade speed.")]
     public float fadeSpeed = 8f;
 
-    // Per-renderer state
     Dictionary<MeshRenderer, float> _current = new();
     Dictionary<MeshRenderer, float> _target = new();
     Dictionary<MeshRenderer, Material> _original = new();
-
-    // Cached material instances per renderer — created once, reused
     Dictionary<MeshRenderer, Material> _transparentInstance = new();
-
     List<MeshRenderer> _allWalls = new();
     bool _indexed = false;
 
@@ -41,6 +32,37 @@ public class WallVisibility : MonoBehaviour
         if (player == null) player = transform;
         if (wallLayer.value == 0)
             wallLayer = LayerMask.GetMask(wallLayerName);
+    }
+
+    void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        CleanupAll();
+    }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        CleanupAll();
+        _indexed = false;
+        if (cam == null) cam = Camera.main;
+        if (player == null) player = GameObject.FindWithTag("Player")?.transform;
+    }
+
+    void CleanupAll()
+    {
+        foreach (var kvp in _transparentInstance)
+            if (kvp.Value != null) Destroy(kvp.Value);
+
+        _target.Clear();
+        _current.Clear();
+        _original.Clear();
+        _transparentInstance.Clear();
+        _allWalls.Clear();
     }
 
     public void IndexWalls()
@@ -59,7 +81,7 @@ public class WallVisibility : MonoBehaviour
 
         Vector3 origin = player.position + Vector3.up * 0.5f;
         float playerZ = player.position.z;
-        float zMin = playerZ - detectionRange ;  // detection range + 1 metre behind
+        float zMin = playerZ - detectionRange;
 
         bool obstructed = Physics.Raycast(origin, Vector3.back,
                           out RaycastHit _, detectionRange, wallLayer);
@@ -75,7 +97,6 @@ public class WallVisibility : MonoBehaviour
                 xMax = rh.point.x;
         }
 
-        // Mark target alpha for every tracked and newly hit wall
         var wantHidden = new HashSet<MeshRenderer>();
 
         if (obstructed)
@@ -86,13 +107,12 @@ public class WallVisibility : MonoBehaviour
                 float wx = r.transform.position.x;
                 float wz = r.transform.position.z;
                 if (wx < xMin || wx > xMax) continue;
-                if (wz > playerZ + 0.5f) continue;  // in front of player
-                if (wz < zMin) continue;  // beyond detection range + 1m
+                if (wz > playerZ + 0.5f) continue;
+                if (wz < zMin) continue;
                 wantHidden.Add(r);
             }
         }
 
-        // Register new renderers and set targets
         foreach (var r in wantHidden)
         {
             if (!_target.ContainsKey(r))
@@ -100,7 +120,6 @@ public class WallVisibility : MonoBehaviour
                 _current[r] = 1f;
                 _target[r] = 1f;
                 _original[r] = r.sharedMaterial;
-                // Create one transparent instance per renderer — reused every frame
                 var inst = new Material(transparentMat);
                 inst.color = new Color(inst.color.r, inst.color.g, inst.color.b, 1f);
                 _transparentInstance[r] = inst;
@@ -108,12 +127,10 @@ public class WallVisibility : MonoBehaviour
             _target[r] = 0f;
         }
 
-        // Restore targets for walls no longer in the hidden set
         foreach (var r in new List<MeshRenderer>(_target.Keys))
             if (r != null && !wantHidden.Contains(r))
                 _target[r] = 1f;
 
-        // Animate all tracked renderers
         var toRemove = new List<MeshRenderer>();
         foreach (var r in new List<MeshRenderer>(_target.Keys))
         {
@@ -124,7 +141,6 @@ public class WallVisibility : MonoBehaviour
 
             if (next < 1f)
             {
-                // Use the cached instance — no allocation each frame
                 if (_transparentInstance.TryGetValue(r, out var inst))
                 {
                     var col = inst.color;
@@ -135,12 +151,10 @@ public class WallVisibility : MonoBehaviour
             }
             else
             {
-                // Restore original material
                 var orig = _original.TryGetValue(r, out var o) ? o : opaqueMat;
                 r.material = orig;
             }
 
-            // Stop tracking once fully opaque and stable
             if (Mathf.Approximately(next, 1f) && Mathf.Approximately(_target[r], 1f))
                 toRemove.Add(r);
         }
@@ -159,21 +173,5 @@ public class WallVisibility : MonoBehaviour
             _original.Remove(r);
             _transparentInstance.Remove(r);
         }
-    }
-
-    void OnDisable()
-    {
-        foreach (var kvp in _current)
-        {
-            if (kvp.Key == null) continue;
-            var orig = _original.TryGetValue(kvp.Key, out var o) ? o : opaqueMat;
-            kvp.Key.material = orig;
-            if (_transparentInstance.TryGetValue(kvp.Key, out var inst))
-                Destroy(inst);
-        }
-        _target.Clear();
-        _current.Clear();
-        _original.Clear();
-        _transparentInstance.Clear();
     }
 }

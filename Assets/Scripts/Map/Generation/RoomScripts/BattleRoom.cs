@@ -191,7 +191,7 @@ public class BattleRoom : MonoBehaviour
     public virtual void OnPlayerEnter()
     {
         FindFirstObjectByType<MinimapManager>()?.OnPlayerEnterRoom(node);
-        if (isCleared) return;
+        if (isCleared || isLocked) return;
 
         LockRoom();
         BuildWaveSizes();
@@ -212,7 +212,8 @@ public class BattleRoom : MonoBehaviour
         isLocked  = false;
         RemoveInvisibleWalls();
 
-        if (Random.value < lootChance)
+        bool firstRoom = (RunManager.Instance?.TotalRoomsCleared ?? 0) == 0;
+        if (firstRoom || Random.value < lootChance)
             SpawnLoot(PickLootPosition());
         else if (upgradeStationPrefab != null)
             Instantiate(upgradeStationPrefab, PickLootPosition(), Quaternion.identity);
@@ -220,6 +221,7 @@ public class BattleRoom : MonoBehaviour
             SpawnLoot(PickLootPosition());
 
         RunManager.Instance?.OnRoomCleared();
+        HealPlayerAfterRoom();
     }
 
     protected void SpawnLoot(Vector3 position)
@@ -237,6 +239,15 @@ public class BattleRoom : MonoBehaviour
         float mean = lootBaseMean + floor * lootMeanPerFloor + roomsCleared * lootMeanPerRoom + lootMeanFlat;
         float sd   = lootBaseSd  + (floor - 1) * lootSdPerFloor;
         return new LootConfig { optionCount = lootOptionCount, meanCost = mean, sd = sd, allowDuplicates = false };
+    }
+
+    protected void HealPlayerAfterRoom()
+    {
+        float healPercent = RunManager.Instance?.HealPerRoom ?? 0f;
+        if (healPercent <= 0f) return;
+        var player = FindFirstObjectByType<PlayerStats>();
+        player?.HealPercent(healPercent);
+        RunManager.Instance?.OnHealed();
     }
 
     public void SetRoomSize(Vector3 size) => roomSize = size;

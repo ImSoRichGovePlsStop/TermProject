@@ -46,7 +46,7 @@ public class BossRoom : BattleRoom
     public override void OnPlayerEnter()
     {
         FindFirstObjectByType<MinimapManager>()?.OnPlayerEnterRoom(node);
-        if (isCleared) return;
+        if (isCleared || isLocked) return;
 
         LockRoom();
         Subscribe();
@@ -159,6 +159,7 @@ public class BossRoom : BattleRoom
               ?.AddCoins(Mathf.RoundToInt(Random.Range(bonusCoinMin, bonusCoinMax + 1) * floorMult));
 
         RunManager.Instance?.OnBossKilled();
+        HealPlayerAfterRoom();
         FindFirstObjectByType<MinimapManager>()?.OnBossDefeated(node);
     }
 
