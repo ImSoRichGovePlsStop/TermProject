@@ -232,6 +232,7 @@ public class WarlockController : EnemyBase
         isSmashExecuting = false;
         hasFired = false;
         strafe.Reset();
+        health.StopFlashBuildup();
     }
 
     public override void OnDeath()

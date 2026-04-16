@@ -677,9 +677,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73a687f9a65ebc34ab8d148f3be77e4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EntityStats
-  baseMaxHP: 1000
+  baseMaxHP: 500
   baseMoveSpeed: 2.5
-  baseDamage: 24
+  baseDamage: 12
   baseAttackSpeed: 1
   baseShield: 0
 --- !u!114 &1875878696231198487
@@ -739,7 +739,7 @@ MonoBehaviour:
   firePoint: {fileID: 7516824194724891628}
   smashRange: 10
   smashDamageScale: 1.5
-  smashWindUpDuration: 0.5
+  smashWindUpDuration: 0.4
   smashWarningDuration: 1
   smashAoeRadius: 2.5
   smashCooldown: 8
@@ -748,15 +748,13 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 704
   jumpTriggerRange: 2.5
-  jumpEscapeCooldown: 12
-  jumpCooldownReductionOnHit: 0.75
-  jumpCooldownReductionInterval: 0.1
-  jumpRadius: 8
+  jumpEscapeCooldown: 15
+  jumpRadius: 7
   jumpDuration: 1
   jumpPeakHeight: 0.5
   jumpCandidates: 12
   ultimateDamageScale: 1.5
-  ultimateWindUpDuration: 1
+  ultimateWindUpDuration: 0.7
   ultimateWarningDuration: 2
   ultimateAoeRadius: 2
   ultimateCooldown: 15
@@ -789,10 +787,23 @@ MonoBehaviour:
     ultimateMinSpawnDistance: 4
     summonCount: 3
     eliteRatio: 0.7
+  scatterProjectilePrefab: {fileID: 1673625421123493190, guid: 618be95d09704ae418f790f05049192c, type: 3}
+  scatterProjectilePrefab2: {fileID: 1673625421123493190, guid: e544b2477974c214aaf3c6cf75a14c16, type: 3}
+  scatterRange: 3
+  scatterCountPerFire: 16
+  scatterAngle: 90
+  scatterDamageScale: 0.75
+  scatterFireInterval: 0.08
+  scatterDuration: 3
+  scatterWindUpDuration: 2
+  scatterCooldown: 8
+  scatterRotateSpeed: 60
+  scatterProximityRequired: 1.5
+  scatterProximityWindow: 4
   ritualDuration: 15
   ritualPositionNormalized: {x: 0.5, y: 0.7}
   warlockBarrier: {fileID: 1047889849521593786}
-  ritualSmashCount: 5
+  ritualSmashCount: 4
   ritualSmashDamageScale: 1
   ritualSmashWarningDurationMin: 1.2
   ritualSmashWarningDurationMax: 2
@@ -808,7 +819,7 @@ MonoBehaviour:
   ritualSpotLightColor: {r: 0, g: 0.8842337, b: 1, a: 1}
   lightTransitionDuration: 2
   bigArcNodePrefab: {fileID: 8635059489987017166, guid: aca89842aed7dab47b4ee12aec4c7387, type: 3}
-  bigArcNodeWallOffset: 1
+  bigArcNodeWallOffset: 0.5
   bigArcNodeDamageScale: 0.35
   bigArcNodeHpScale: 0.3
   bigArcNodeSlideRange: 5
