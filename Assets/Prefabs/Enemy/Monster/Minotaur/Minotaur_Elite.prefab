@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 58814184261792957}
   - component: {fileID: 8082846175284028864}
   - component: {fileID: 874770342976330651}
+  - component: {fileID: 1851529423118759697}
   - component: {fileID: 1248860886160112724}
   m_Layer: 8
   m_Name: Minotaur_Elite
@@ -222,6 +223,45 @@ MonoBehaviour:
   dashSpeed: 20
   dashDuration: 0.06
   dashHitRadius: 0.7
+--- !u!114 &1851529423118759697
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3834287406817414795}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d4dd2a12fa25f34e925bf8bd905354b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
+  entries:
+  - material: {fileID: 11400000, guid: ac531af617b2d024c8d44a59918e7b1d, type: 2}
+    weight: 3
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+    weight: 1
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+    weight: 1
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 143d429ad908be14e8eed1214cf168b7, type: 2}
+    weight: 10
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 13a68ddd8fc6f724c960061a5aba1839, type: 2}
+    weight: 20
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 0}
+    weight: 65
+    minCount: 1
+    maxCount: 1
+  maxDropsPerKill: 1
+  groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
 --- !u!114 &1248860886160112724
 MonoBehaviour:
   m_ObjectHideFlags: 0

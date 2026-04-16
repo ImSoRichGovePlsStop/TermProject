@@ -121,7 +121,7 @@ GameObject:
   - component: {fileID: 7062301955607013726}
   - component: {fileID: 2830995097563984397}
   - component: {fileID: 5759875468897598146}
-  - component: {fileID: 2322649508239579003}
+  - component: {fileID: -7814168233264629926}
   - component: {fileID: 5369300350261707520}
   m_Layer: 8
   m_Name: Spitter_Elite
@@ -320,7 +320,7 @@ MonoBehaviour:
   spreadAngle: 90
   projectileDamageScale: 1
   projectilePrefab: {fileID: 6586537130506963891, guid: 54b246419ea0dad4b9992556682d84c9, type: 3}
---- !u!114 &2322649508239579003
+--- !u!114 &-7814168233264629926
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -332,7 +332,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d4dd2a12fa25f34e925bf8bd905354b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
-  entries: []
+  entries:
+  - material: {fileID: 11400000, guid: ac531af617b2d024c8d44a59918e7b1d, type: 2}
+    weight: 3
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+    weight: 1
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+    weight: 1
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 399297f3e79be15409f69ab7096a631f, type: 2}
+    weight: 10
+    minCount: 2
+    maxCount: 3
+  - material: {fileID: 11400000, guid: 5abdcea167f2bcd40935a2f6eec2acd0, type: 2}
+    weight: 50
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 0}
+    weight: 35
+    minCount: 1
+    maxCount: 1
   maxDropsPerKill: 1
   groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
 --- !u!114 &5369300350261707520

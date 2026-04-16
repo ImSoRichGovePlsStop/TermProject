@@ -499,16 +499,25 @@ public class ModuleItemUI : MonoBehaviour,
                 && targetGrid.Data == InventoryManager.Instance.WeaponGrid
                 && !InventoryManager.Instance.CanPlaceInWeaponGrid(Instance, pivot, _dragRotation);
 
+            bool bagBlocked = targetGrid == BagGridUI
+                && targetGrid.Data == InventoryManager.Instance.BagGrid
+                && !InventoryManager.Instance.CanPlaceInBagGrid(Instance, pivot, _dragRotation);
+
+            // Duplicate check: if the module disallows duplicates and an identical module
+            // is already in the weapon grid, treat this drop like a material that can't
+            // stack — snap back to origin without placing.
             bool dupBlocked = targetGrid == WeaponGridUI
                 && targetGrid.Data == InventoryManager.Instance.WeaponGrid
                 && !Instance.Data.allowDuplicate
                 && InventoryManager.Instance.IsModuleEquipped(Instance.Data, excluding: Instance);
 
-            bool bagBlocked = targetGrid == BagGridUI
-                && targetGrid.Data == InventoryManager.Instance.BagGrid
-                && !InventoryManager.Instance.CanPlaceInBagGrid(Instance, pivot, _dragRotation);
+            // Active-slot check: only one active module is allowed in the weapon grid.
+            bool activeBlocked = targetGrid == WeaponGridUI
+                && targetGrid.Data == InventoryManager.Instance.WeaponGrid
+                && Instance.Data.hasActive
+                && InventoryManager.Instance.IsActiveModuleEquipped(excluding: Instance);
 
-            if (weaponBlocked || dupBlocked || bagBlocked)
+            if (weaponBlocked || bagBlocked || dupBlocked || activeBlocked)
             {
                 Instance.SetRotation(_originRotation);
                 prevGrid?.TryPlace(Instance, prevPos);
@@ -618,8 +627,14 @@ public class ModuleItemUI : MonoBehaviour,
                 {
                     bool dupBlockedHover = !Instance.Data.allowDuplicate
                         && InventoryManager.Instance.IsModuleEquipped(Instance.Data, excluding: Instance);
-                    canPlace = !dupBlockedHover
+                    bool activeBlockedHover = Instance.Data.hasActive
+                        && InventoryManager.Instance.IsActiveModuleEquipped(excluding: Instance);
+                    canPlace = !dupBlockedHover && !activeBlockedHover
                         && InventoryManager.Instance.CanPlaceInWeaponGrid(Instance, pivot, _dragRotation);
+                }
+                else if (g == BagGridUI)
+                {
+                    canPlace = InventoryManager.Instance.CanPlaceInBagGrid(Instance, pivot, _dragRotation);
                 }
                 else
                 {

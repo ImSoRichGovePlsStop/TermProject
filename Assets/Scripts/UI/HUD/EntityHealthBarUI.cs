@@ -28,6 +28,7 @@ public class EntityHealthBarUI : MonoBehaviour
         entity = healthBase;
         heightOffset = height;
         entity.OnDamageReceived += OnDamageReceived;
+        entity.OnHealReceived += OnHealReceived;
         entity.OnDeath += OnEntityDied;
         transform.localScale = new Vector3(
             transform.localScale.x * scale.x,
@@ -54,6 +55,7 @@ public class EntityHealthBarUI : MonoBehaviour
         if (entity != null)
         {
             entity.OnDamageReceived -= OnDamageReceived;
+            entity.OnHealReceived -= OnHealReceived;
             entity.OnDeath -= OnEntityDied;
         }
         if (enemyHealth != null)
@@ -110,6 +112,14 @@ public class EntityHealthBarUI : MonoBehaviour
     }
 
     private void OnDamageReceived(float damage, bool isCrit)
+    {
+        if (fadeCoroutine != null) StopCoroutine(fadeCoroutine);
+        fadeCoroutine = StartCoroutine(FadeTo(1f));
+        if (hideCoroutine != null) StopCoroutine(hideCoroutine);
+        hideCoroutine = StartCoroutine(HideAfterDelay());
+    }
+
+    private void OnHealReceived(float amount)
     {
         if (fadeCoroutine != null) StopCoroutine(fadeCoroutine);
         fadeCoroutine = StartCoroutine(FadeTo(1f));

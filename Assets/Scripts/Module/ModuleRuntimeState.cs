@@ -8,9 +8,11 @@ public class ModuleRuntimeState
     public float currentStat = 0f;
     public int buffedLevel = 0;
     public Rarity buffRarity = 0;
+    public float duration = 0f;
+    public float hpPercent = 0f;
 
     //common, uncommon, rare, epic, legendary
-    public int[] baseRarity = {0,0,0,0,0};
+    public int[] baseRarity = { 0, 0, 0, 0, 0 };
 
     //HeavyHit
     public float dmgTaken = 0f;
@@ -21,8 +23,13 @@ public class ModuleRuntimeState
 
     // SelfDetonation
     public float attackPercent = 0f;
-    public float hpPercent = 0f;
 
     // OnKillAddMaxHp
     public float hpAdded = 0f;
+
+    //siphonlife
+    public float burstRange = 0f;
+    
+    //Poison
+    public int stacks = 0;
 }

@@ -117,12 +117,26 @@ public class ArcWarlockController : WarlockController
             if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, 2f, NavMesh.AllAreas)) continue;
             Vector3 navPos = hit.position;
 
+            if (!HasLineOfSightToPlayer(navPos)) continue;
+
             float minDist = GetMinDistToExistingNodes(navPos);
             if (minDist >= minNodeDistance) return navPos;
             if (minDist > bestMinDist) { bestMinDist = minDist; bestPos = navPos; }
         }
 
         return bestPos;
+    }
+
+    private bool HasLineOfSightToPlayer(Vector3 from)
+    {
+        if (playerTarget == null) return false;
+        LayerMask wallMask = 1 << LayerMask.NameToLayer("Wall");
+        Vector3 playerPos = playerTarget.transform.position;
+        Vector3 dir = playerPos - from;
+        dir.y = 0f;
+        float dist = dir.magnitude;
+        if (dist < 0.01f) return true;
+        return !Physics.Raycast(new Vector3(from.x, from.y + 0.1f, from.z), dir.normalized, dist, wallMask);
     }
 
     private float GetMinDistToExistingNodes(Vector3 pos)

@@ -24,7 +24,7 @@ public class HopliteController : EnemyBase
     protected bool isAttacking = false;
     public bool IsAttacking => isAttacking;
     protected float lastAttackTime = -Mathf.Infinity;
-    private float currentAttackCooldown = 0f;
+    protected float currentAttackCooldown = 0f;
 
     private bool isDashing = false;
     protected Vector3 lockedAttackDir = Vector3.zero;

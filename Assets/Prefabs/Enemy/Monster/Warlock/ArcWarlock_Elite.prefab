@@ -293,7 +293,7 @@ GameObject:
   - component: {fileID: 6358970966766451939}
   - component: {fileID: 4166328146730196642}
   - component: {fileID: 3988168457867884025}
-  - component: {fileID: 4390107110161921945}
+  - component: {fileID: -3681884835361395791}
   - component: {fileID: 6496302368671246357}
   m_Layer: 8
   m_Name: ArcWarlock_Elite
@@ -524,7 +524,7 @@ MonoBehaviour:
   nodeMoveSpeed: 0.15
   decaySimultaneous: 2
   decayDuration: 8
---- !u!114 &4390107110161921945
+--- !u!114 &-3681884835361395791
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -537,18 +537,30 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
   entries:
-  - material: {fileID: 11400000, guid: 2d986a1b4e06fd84cbecdbdde14af55f, type: 2}
-    weight: 20
-    minCount: 2
-    maxCount: 3
-  - material: {fileID: 11400000, guid: 2d986a1b4e06fd84cbecdbdde14af55f, type: 2}
-    weight: 50
+  - material: {fileID: 11400000, guid: ac531af617b2d024c8d44a59918e7b1d, type: 2}
+    weight: 3
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+    weight: 1
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+    weight: 1
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: 6bb7b6cfada68ea46b0e68a11c4e8b39, type: 2}
+    weight: 15
+    minCount: 1
+    maxCount: 1
+  - material: {fileID: 11400000, guid: d526cca1760890744834885573002c5c, type: 2}
+    weight: 25
     minCount: 1
     maxCount: 1
   - material: {fileID: 0}
-    weight: 30
-    minCount: 0
-    maxCount: 0
+    weight: 55
+    minCount: 1
+    maxCount: 1
   maxDropsPerKill: 1
   groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
 --- !u!114 &6496302368671246357
