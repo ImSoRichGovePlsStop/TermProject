@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class RunManager : MonoBehaviour
 {
@@ -23,21 +25,21 @@ public class RunManager : MonoBehaviour
     [Header("Floor Event Tracking")]
 
     public List<RoomType> PreviousFloorEvents = new();
-    
+
     public List<RoomType> CurrentFloorEvents = new();
 
     [Header("Current Run Tracking")]
 
     public int TotalCoinsCollected = 0;
- 
+
     public float TotalDamageTaken = 0f;
 
     public int TotalHeals = 0;
- 
+
     public int TotalItemsCollected = 0;
- 
+
     public int TotalRoomsCleared = 0;
-   
+
     public int HighestFloorReached = 1;
 
     void Awake()
@@ -47,14 +49,14 @@ public class RunManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
- 
+
     public void RegisterEventRoomPlaced(RoomType type)
     {
         if (!CurrentFloorEvents.Contains(type))
             CurrentFloorEvents.Add(type);
     }
 
-  
+
     void RotateFloorEvents()
     {
         PreviousFloorEvents = new List<RoomType>(CurrentFloorEvents);
@@ -67,7 +69,7 @@ public class RunManager : MonoBehaviour
         return !PreviousFloorEvents.Contains(type);
     }
 
-    
+
 
     public void OnEnemyKilled()
     {
@@ -127,5 +129,18 @@ public class RunManager : MonoBehaviour
         IsWin = false;
         PreviousFloorEvents.Clear();
         CurrentFloorEvents.Clear();
+    }
+
+    public void StartFloorTransition(int sceneIndex)
+    {
+        StartCoroutine(FloorTransitionRoutine(sceneIndex));
+    }
+
+    private IEnumerator FloorTransitionRoutine(int sceneIndex)
+    {
+        var ui = Object.FindFirstObjectByType<FloorTransitionUI>(FindObjectsInactive.Include);
+        if (ui != null)
+            yield return StartCoroutine(ui.PlayTransition());
+        SceneManager.LoadScene(sceneIndex);
     }
 }

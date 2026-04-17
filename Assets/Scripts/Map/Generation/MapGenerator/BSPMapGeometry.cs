@@ -16,7 +16,8 @@
  *
  * Corner assignment:
  *   Spawn → random corner, Boss → different random corner,
- *   remaining 2 corners → Battle rooms, all placed before any random placement
+ *   remaining 2 corners → 1 guaranteed Battle + 1 Battle-or-Event (cornerEventChance),
+ *   Boss gets an adjacent guard room (BattleRoom) that is the ONLY door to boss.
  */
 
 using System;
@@ -53,6 +54,14 @@ public class BSPMapGeometry : MonoBehaviour
     [Header("Room Type Counts")]
     public int maxBattleCount = 10;
     public int maxEventCount = 6;
+    [Tooltip("Minimum battle rooms guaranteed (uses smaller sizes to fit if needed).")]
+    public int minBattleCount = 4;
+    [Tooltip("Minimum distinct event room types guaranteed on each floor.")]
+    public int minEventCount = 2;
+
+    [Header("Corner Rooms")]
+    [Tooltip("Chance the 2nd free corner (not Spawn/Boss) becomes an event room instead of a battle room.")]
+    [Range(0f, 1f)] public float cornerEventChance = 0.5f;
 
     [Header("Event Room Weights")]
     public float weightHeal = 1f;
@@ -118,6 +127,8 @@ public class BSPMapGeometry : MonoBehaviour
 
     Dictionary<(MapNode, MapNode), List<Vector2Int>> _sharedCells;
 
+    MapNode _bossGuardNode;   // battle room directly adjacent to boss, sole door to boss
+
     struct RectResult { public int x, z, width, height; }
 
     static readonly Vector2Int[] Dirs = { new(1, 0), new(-1, 0), new(0, 1), new(0, -1) };
@@ -157,12 +168,20 @@ public class BSPMapGeometry : MonoBehaviour
 
         PlaceTypedRoom(RoomType.Spawn, minBattleRoomSize, maxBattleRoomSize, presetChanceSpawn, spawnCorner);
         PlaceTypedRoom(RoomType.Boss, minBattleRoomSize, maxBattleRoomSize, presetChanceBoss, bossCorner);
-        var usedCorners = new HashSet<int> { spawnCorner, bossCorner };
+
+        var freeCorners = new List<int>();
         for (int ci = 0; ci < 4; ci++)
-            if (!usedCorners.Contains(ci))
-                PlaceTypedRoom(RoomType.Battle, minBattleRoomSize, maxBattleRoomSize, presetChanceBattle, ci);
+            if (ci != spawnCorner && ci != bossCorner) freeCorners.Add(ci);
+        Shuffle(freeCorners);
+        PlaceTypedRoom(RoomType.Battle, minBattleRoomSize, maxBattleRoomSize, presetChanceBattle, freeCorners[0]);
+        if (freeCorners.Count > 1)
+        {
+            if (Random.value < cornerEventChance) PlaceCornerEvent(freeCorners[1]);
+            else PlaceTypedRoom(RoomType.Battle, minBattleRoomSize, maxBattleRoomSize, presetChanceBattle, freeCorners[1]);
+        }
 
         PlaceAdjacentBattle();
+        PlaceBossGuardRoom();     // battle room touching boss — becomes the only door to boss
 
         for (int i = 0; i < maxBattleCount - 1; i++)
             PlaceTypedRoom(RoomType.Battle, minBattleRoomSize, maxBattleRoomSize, presetChanceBattle, -1);
@@ -217,6 +236,31 @@ public class BSPMapGeometry : MonoBehaviour
             if (didPlace) { placed[chosen]++; rm?.RegisterEventRoomPlaced(chosen); }
         }
 
+        int bc = 0;
+        foreach (var n in _nodes) if (n.Type == RoomType.Battle) bc++;
+        for (int i = bc; i < minBattleCount; i++)
+        {
+            if (!TryPlaceRandomRoom(RoomType.Battle, minBattleRoomSize, maxBattleRoomSize, -1))
+                TryPlaceRandomRoom(RoomType.Battle, minBattleRoomSize, minBattleRoomSize + 4, -1);
+        }
+
+        int ec = 0;
+        foreach (var kvp in placed) ec += kvp.Value;
+        if (ec < minEventCount)
+        {
+            var eventOrder = new List<RoomType> { RoomType.Heal, RoomType.Shop, RoomType.RareLoot, RoomType.Merge, RoomType.Fountain };
+            Shuffle(eventOrder);
+            foreach (var et in eventOrder)
+            {
+                if (ec >= minEventCount) break;
+                if (placed[et] > 0) continue;
+                if (TryPlaceRandomRoom(et, minEventRoomSize, maxEventRoomSize, -1))
+                { placed[et]++; ec++; rm?.RegisterEventRoomPlaced(et); }
+            }
+        }
+
+        FillWithSmallTypedRooms(placed);
+
         FillRemaining();
     }
 
@@ -236,21 +280,118 @@ public class BSPMapGeometry : MonoBehaviour
         Shuffle(faces);
 
         foreach (var (fx, fz, dx, dz) in faces)
-            for (int sx = maxBattleRoomSize; sx >= minBattleRoomSize; sx--)
-                for (int sz = maxBattleRoomSize; sz >= minBattleRoomSize; sz--)
-                {
-                    int ox, oz;
-                    if (dx == 1) { ox = spawn.MaxX + 1; oz = spawn.MinZ + (spawn.Depth - sz) / 2; }
-                    else if (dx == -1) { ox = spawn.MinX - sx; oz = spawn.MinZ + (spawn.Depth - sz) / 2; }
-                    else if (dz == 1) { oz = spawn.MaxZ + 1; ox = spawn.MinX + (spawn.Width - sx) / 2; }
-                    else { oz = spawn.MinZ - sz; ox = spawn.MinX + (spawn.Width - sx) / 2; }
+            for (int attempt = 0; attempt < 30; attempt++)
+            {
+                int sx = Random.Range(minBattleRoomSize, maxBattleRoomSize + 1);
+                int sz = Random.Range(minBattleRoomSize, maxBattleRoomSize + 1);
+                int ox, oz;
+                if (dx == 1) { ox = spawn.MaxX + 1; oz = spawn.MinZ + (spawn.Depth - sz) / 2; }
+                else if (dx == -1) { ox = spawn.MinX - sx; oz = spawn.MinZ + (spawn.Depth - sz) / 2; }
+                else if (dz == 1) { oz = spawn.MaxZ + 1; ox = spawn.MinX + (spawn.Width - sx) / 2; }
+                else { oz = spawn.MinZ - sz; ox = spawn.MinX + (spawn.Width - sx) / 2; }
 
-                    ox = Mathf.Clamp(ox, 0, matrixSize - sx);
-                    oz = Mathf.Clamp(oz, 0, matrixSize - sz);
-                    if (!RectEmpty(ox, oz, sx, sz)) continue;
-                    StampRoom(ox, oz, sx, sz, null, RoomType.Battle);
-                    return;
-                }
+                ox = Mathf.Clamp(ox, 0, matrixSize - sx);
+                oz = Mathf.Clamp(oz, 0, matrixSize - sz);
+                if (!RectEmpty(ox, oz, sx, sz)) continue;
+                StampRoom(ox, oz, sx, sz, null, RoomType.Battle);
+                return;
+            }
+    }
+
+    void PlaceBossGuardRoom()
+    {
+        _bossGuardNode = null;
+        MapNode boss = null;
+        foreach (var n in _nodes) if (n.Type == RoomType.Boss) { boss = n; break; }
+        if (boss == null) return;
+
+        var faces = new List<(int dx, int dz)> { (1, 0), (-1, 0), (0, 1), (0, -1) };
+        Shuffle(faces);
+
+        foreach (var (dx, dz) in faces)
+            for (int attempt = 0; attempt < 30; attempt++)
+            {
+                int sx = Random.Range(minBattleRoomSize, maxBattleRoomSize + 1);
+                int sz = Random.Range(minBattleRoomSize, maxBattleRoomSize + 1);
+                int ox, oz;
+                if (dx == 1)       { ox = boss.MaxX + 1; oz = boss.MinZ + (boss.Depth - sz) / 2; }
+                else if (dx == -1) { ox = boss.MinX - sx; oz = boss.MinZ + (boss.Depth - sz) / 2; }
+                else if (dz == 1)  { oz = boss.MaxZ + 1; ox = boss.MinX + (boss.Width - sx) / 2; }
+                else               { oz = boss.MinZ - sz; ox = boss.MinX + (boss.Width - sx) / 2; }
+
+                ox = Mathf.Clamp(ox, 0, matrixSize - sx);
+                oz = Mathf.Clamp(oz, 0, matrixSize - sz);
+                if (!RectEmpty(ox, oz, sx, sz)) continue;
+                StampRoom(ox, oz, sx, sz, null, RoomType.Battle);
+                _bossGuardNode = _nodes[_nodes.Count - 1];
+                return;
+            }
+    }
+
+    void PlaceCornerEvent(int cornerIdx)
+    {
+        var rm = RunManager.Instance;
+        float wH = weightHeal     * (rm != null && rm.WasMissingLastFloor(RoomType.Heal)     ? 1f : repeatPenalty);
+        float wS = weightShop     * (rm != null && rm.WasMissingLastFloor(RoomType.Shop)     ? 1f : repeatPenalty);
+        float wR = weightRareLoot * (rm != null && rm.WasMissingLastFloor(RoomType.RareLoot) ? 1f : repeatPenalty);
+        float wM = weightMerge    * (rm != null && rm.WasMissingLastFloor(RoomType.Merge)    ? 1f : repeatPenalty);
+        float wF = weightFountain * (rm != null && rm.WasMissingLastFloor(RoomType.Fountain) ? 1f : repeatPenalty);
+        float total = wH + wS + wR + wM + wF;
+
+        RoomType chosen = RoomType.Battle;
+        if (total > 0f)
+        {
+            float roll = Random.Range(0f, total);
+            if      ((roll -= wH) < 0f) chosen = RoomType.Heal;
+            else if ((roll -= wS) < 0f) chosen = RoomType.Shop;
+            else if ((roll -= wR) < 0f) chosen = RoomType.RareLoot;
+            else if ((roll -= wM) < 0f) chosen = RoomType.Merge;
+            else                        chosen = RoomType.Fountain;
+        }
+
+        if (chosen == RoomType.Battle)
+        { PlaceTypedRoom(RoomType.Battle, minBattleRoomSize, maxBattleRoomSize, presetChanceBattle, cornerIdx); return; }
+
+        float pChance = chosen switch {
+            RoomType.Heal     => presetChanceHeal,
+            RoomType.Shop     => presetChanceShop,
+            RoomType.RareLoot => presetChanceRareLoot,
+            RoomType.Fountain => presetChanceFountain,
+            _                 => presetChanceMerge,
+        };
+
+        bool placed = false;
+        if (Random.value < pChance && roomPresets != null)
+        {
+            var compat = new List<BSPRoomPreset>();
+            foreach (var p in roomPresets) if (p != null && p.AllowsType(chosen)) compat.Add(p);
+            Shuffle(compat);
+            foreach (var preset in compat)
+                if (TryPlacePresetRoom(chosen, preset, cornerIdx)) { placed = true; break; }
+        }
+        if (!placed) placed = TryPlaceRandomRoom(chosen, minEventRoomSize, maxEventRoomSize, cornerIdx);
+        if (!placed) PlaceTypedRoom(RoomType.Battle, minBattleRoomSize, maxBattleRoomSize, presetChanceBattle, cornerIdx);
+        else rm?.RegisterEventRoomPlaced(chosen);
+    }
+
+    void FillWithSmallTypedRooms(Dictionary<RoomType, int> alreadyPlaced)
+    {
+        int smallBattle = Mathf.Max(minBattleRoomSize, (minBattleRoomSize + maxBattleRoomSize) / 2);
+        int smallEvent  = Mathf.Max(minEventRoomSize,  (minEventRoomSize  + maxEventRoomSize)  / 2);
+
+        for (int i = 0; i < 20; i++)
+            if (!TryPlaceRandomRoom(RoomType.Battle, minBattleRoomSize, smallBattle, -1)) break;
+
+        var rm = RunManager.Instance;
+        var eventTypes = new List<RoomType>
+            { RoomType.Heal, RoomType.Shop, RoomType.RareLoot, RoomType.Merge, RoomType.Fountain };
+        Shuffle(eventTypes);
+        foreach (var et in eventTypes)
+        {
+            if (alreadyPlaced.TryGetValue(et, out int cnt) && cnt > 0) continue;
+            if (TryPlaceRandomRoom(et, minEventRoomSize, smallEvent, -1))
+            { alreadyPlaced[et] = 1; rm?.RegisterEventRoomPlaced(et); }
+        }
     }
 
     void PlaceTypedRoom(RoomType type, int minSz, int maxSz, float presetChance, int cornerIdx)
@@ -640,15 +781,44 @@ public class BSPMapGeometry : MonoBehaviour
         foreach (var kvp in _sharedCells)
         {
             var (a, b) = kvp.Key;
+
+            // Spawn room: only doors to Battle or Boss
             bool involvesSpawn = a.Type == RoomType.Spawn || b.Type == RoomType.Spawn;
             if (involvesSpawn)
             {
                 var other = a.Type == RoomType.Spawn ? b : a;
                 if (other.Type != RoomType.Battle && other.Type != RoomType.Boss) continue;
             }
+
+            // Boss room: only door allowed is to the guard room
+            bool involvesBoss = a.Type == RoomType.Boss || b.Type == RoomType.Boss;
+            if (involvesBoss && _bossGuardNode != null)
+            {
+                var other = a.Type == RoomType.Boss ? b : a;
+                if (other != _bossGuardNode) continue;
+            }
+
             PunchDoor(kvp.Value);
         }
         EnsureCornerRoomHasDoor(RoomType.Spawn);
+        EnsureBossGuardDoor();
+    }
+
+    void EnsureBossGuardDoor()
+    {
+        if (_bossGuardNode == null) return;
+        MapNode boss = null;
+        foreach (var n in _nodes) if (n.Type == RoomType.Boss) { boss = n; break; }
+        if (boss == null) return;
+
+        for (int x = boss.MinX; x <= boss.MaxX; x++)
+            for (int z = boss.MinZ; z <= boss.MaxZ; z++)
+                if (_isDoor[x, z]) return;
+
+        AddEdge(boss, _bossGuardNode);
+        var key = boss.GetHashCode() < _bossGuardNode.GetHashCode()
+            ? (boss, _bossGuardNode) : (_bossGuardNode, boss);
+        if (_sharedCells.TryGetValue(key, out var cells)) PunchDoor(cells);
     }
 
     void EnsureCornerRoomHasDoor(RoomType targetType)

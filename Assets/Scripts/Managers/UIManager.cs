@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -15,7 +15,6 @@ public class UIManager : MonoBehaviour
     private UpgradeStationUI _upgradeStationUI;
     private LootRewardUI _lootRewardUI;
     private HubStorageUI _storageUI;
-    private FloorTransitionUI _floorTransitionUI;
     private EndGameUI _endGameUI;
     private PlayerStats playerStats;
     private bool _upgradeOpen;
@@ -60,10 +59,8 @@ public class UIManager : MonoBehaviour
         var shopUI = FindFirstObjectByType<ShopUI>(FindObjectsInactive.Include);
         var mergeUI = FindFirstObjectByType<MergeUI>(FindObjectsInactive.Include);
         var sellUI = FindFirstObjectByType<SellConfirmationUI>(FindObjectsInactive.Include);
-        _storageUI          = FindFirstObjectByType<HubStorageUI>(FindObjectsInactive.Include);
-        _floorTransitionUI  = FindFirstObjectByType<FloorTransitionUI>(FindObjectsInactive.Include);
-        _endGameUI          = FindFirstObjectByType<EndGameUI>(FindObjectsInactive.Include);
-
+        _storageUI = FindFirstObjectByType<HubStorageUI>(FindObjectsInactive.Include);
+        _endGameUI = FindFirstObjectByType<EndGameUI>(FindObjectsInactive.Include);
 
         // Force Awake on all panels, then hide
         SetActive(inventoryPanel, true);
@@ -81,7 +78,6 @@ public class UIManager : MonoBehaviour
         SetActive(_upgradeStationUI?.gameObject, false);
         SetActive(_lootRewardUI?.gameObject, false);
         SetActive(sellUI?.gameObject, false);
-
     }
 
     private static void SetActive(GameObject go, bool active) { if (go != null) go.SetActive(active); }
@@ -95,14 +91,12 @@ public class UIManager : MonoBehaviour
 
         if (kb[Key.I].wasPressedThisFrame)
         {
-
             if (IsCardPhaseOpen) return;
             if (IsGamblerOpen) CloseGambler();
             else if (IsStorageOpen) CloseStorage();
             else if (!IsPassiveOpen) ToggleInventory();
             else ClosePassive();
         }
-
 
         if (kb[Key.Escape].wasPressedThisFrame)
         {
@@ -140,7 +134,7 @@ public class UIManager : MonoBehaviour
     {
         if (inventoryPanel == null)
         {
-            Debug.LogError("[UIManager] ToggleInventory called but inventoryPanel is null � is the InventoryPanel tag set?");
+            Debug.LogError("[UIManager] ToggleInventory called but inventoryPanel is null — is the InventoryPanel tag set?");
             return;
         }
 
@@ -349,19 +343,9 @@ public class UIManager : MonoBehaviour
         _endGameUI.Show(isWin);
     }
 
-    public void ShowFloorTransition(int sceneIndex)
+    private void OnPlayerDeath()
     {
-        if (_floorTransitionUI == null)
-            _floorTransitionUI = FindFirstObjectByType<FloorTransitionUI>(FindObjectsInactive.Include);
-
-        if (_floorTransitionUI != null)
-            StartCoroutine(_floorTransitionUI.TransitionRoutine(sceneIndex));
-        else
-        {
-            Debug.LogWarning("[UIManager] FloorTransitionUI not found — loading scene directly.");
-            UnityEngine.SceneManagement.SceneManager.LoadScene(sceneIndex);
-        }
+        isInBattle = false;
+        ShowEndGame(false);
     }
-
-    private void OnPlayerDeath() => ShowEndGame(isWin: false);
 }

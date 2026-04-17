@@ -5,17 +5,16 @@ public class NextFloorPortal : MonoBehaviour, IInteractable
 {
     public void Interact(PlayerController playerController)
     {
+        
         var player = GameObject.FindWithTag("Player");
-        if (player == null) { Debug.LogWarning("[NextFloorPortal] Player not found!"); return; }
+        if (player != null) player.transform.position = new Vector3(-200f, -75f, -200f);
 
-        player.transform.position = new Vector3(-200f, -75f, -200f);
+        int sceneIndex = SceneManager.GetActiveScene().buildIndex;
 
-        int nextScene = SceneManager.GetActiveScene().buildIndex;
-
-        if (UIManager.Instance != null)
-            UIManager.Instance.ShowFloorTransition(nextScene);
+        if (RunManager.Instance != null)
+            RunManager.Instance.StartFloorTransition(sceneIndex);
         else
-            SceneManager.LoadScene(nextScene);
+            SceneManager.LoadScene(sceneIndex);
     }
 
     string IInteractable.GetPromptText() => "[E] -> Go to next floor";

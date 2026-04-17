@@ -83,34 +83,25 @@ public class WallVisibility : MonoBehaviour
         float playerZ = player.position.z;
         float zMin = playerZ - detectionRange;
 
-        bool obstructed = Physics.Raycast(origin, Vector3.back,
-                          out RaycastHit _, detectionRange, wallLayer);
-
         float xMin = player.position.x - sideRayRange;
         float xMax = player.position.x + sideRayRange;
 
-        if (obstructed)
-        {
-            if (Physics.Raycast(origin, Vector3.left, out RaycastHit lh, sideRayRange, wallLayer))
-                xMin = lh.point.x;
-            if (Physics.Raycast(origin, Vector3.right, out RaycastHit rh, sideRayRange, wallLayer))
-                xMax = rh.point.x;
-        }
+        if (Physics.Raycast(origin, Vector3.left, out RaycastHit lh, sideRayRange, wallLayer))
+            xMin = lh.point.x;
+        if (Physics.Raycast(origin, Vector3.right, out RaycastHit rh, sideRayRange, wallLayer))
+            xMax = rh.point.x;
 
         var wantHidden = new HashSet<MeshRenderer>();
 
-        if (obstructed)
+        foreach (var r in _allWalls)
         {
-            foreach (var r in _allWalls)
-            {
-                if (r == null) continue;
-                float wx = r.transform.position.x;
-                float wz = r.transform.position.z;
-                if (wx < xMin || wx > xMax) continue;
-                if (wz > playerZ + 0.5f) continue;
-                if (wz < zMin) continue;
-                wantHidden.Add(r);
-            }
+            if (r == null) continue;
+            float wx = r.transform.position.x;
+            float wz = r.transform.position.z;
+            if (wx < xMin || wx > xMax) continue;
+            if (wz > playerZ + 0.5f) continue;
+            if (wz < zMin) continue;
+            wantHidden.Add(r);
         }
 
         foreach (var r in wantHidden)

@@ -5,34 +5,34 @@ using UnityEngine;
 public class BattleRoom : MonoBehaviour
 {
     [Header("State")]
-    public bool isLocked  = false;
+    public bool isLocked = false;
     public bool isCleared = false;
 
     [HideInInspector] public RoomNode node;
 
     [Header("Enemy Spawning")]
     public EnemyEntry[] enemyEntries;
-    public GameObject   lootPrefab;
-    public GameObject   upgradeStationPrefab;
-    public int          enemyCount = 3;
+    public GameObject lootPrefab;
+    public GameObject upgradeStationPrefab;
+    public int enemyCount = 3;
     [HideInInspector] public List<Vector3> spawnCells = new();
 
     public int eliteBudget = 0;
 
     [Header("Enemy Count Scaling")]
     [Tooltip("Area divisor used when scaling enemy count to room size.")]
-    public float enemyAreaDivisor  = 60f;
+    public float enemyAreaDivisor = 60f;
     [Tooltip("How strongly room size scales enemy count beyond the base.")]
-    public float enemyScaleFactor  = 0.3f;
+    public float enemyScaleFactor = 0.3f;
     [Tooltip("Minimum random base enemy count.")]
-    public float enemyCountMin     = 8f;
+    public float enemyCountMin = 8f;
     [Tooltip("Maximum random base enemy count.")]
-    public float enemyCountMax     = 12f;
+    public float enemyCountMax = 12f;
 
     [Header("Waves")]
-    [Range(1, 5)] public int waveCount     = 3;
-    public float             wavePause     = 1f;
-    public int               waveThreshold = 0;
+    [Range(1, 5)] public int waveCount = 3;
+    public float wavePause = 1f;
+    public int waveThreshold = 0;
 
     [Header("Reward")]
     [Tooltip("Chance to spawn loot instead of upgrade station on room clear.")]
@@ -40,40 +40,44 @@ public class BattleRoom : MonoBehaviour
     public float lootChance = 0.5f;
 
     [Header("Loot Config")]
-    public int   lootOptionCount   = 3;
-    public float lootBaseMean      = 50f;
-    public float lootMeanPerFloor  = 30f;
-    public float lootMeanPerRoom   = 5f;
-    public float lootMeanFlat      = 10f;
-    public float lootBaseSd        = 20f;
-    public float lootSdPerFloor    = 3f;
+    public int lootOptionCount = 3;
+    public float lootBaseMean = 50f;
+    public float lootMeanPerFloor = 30f;
+    public float lootMeanPerRoom = 5f;
+    public float lootMeanFlat = 10f;
+    public float lootBaseSd = 20f;
+    public float lootSdPerFloor = 3f;
+
+    [Header("Reward Placement")]
+    [Tooltip("Minimum cell distance from room wall when spawning loot/upgrade rewards.")]
+    public int lootInset = 2;
 
     [Header("Coin Drop Fallback")]
     [Tooltip("Fallback coin min when enemy has no EnemyBase.")]
-    public int   fallbackCoinMin     = 4;
+    public int fallbackCoinMin = 4;
     [Tooltip("Fallback coin max when enemy has no EnemyBase.")]
-    public int   fallbackCoinMax     = 9;
+    public int fallbackCoinMax = 9;
     [Tooltip("Additional coin multiplier per floor beyond floor 1.")]
     public float coinFloorMultiplier = 0.3f;
 
     [Header("Enemy Scaling")]
-    public float enemySpeedMin          = 0.9f;
-    public float enemySpeedMax          = 1.1f;
+    public float enemySpeedMin = 0.9f;
+    public float enemySpeedMax = 1.1f;
     public float enemyProgressBossWeight = 0.3f;
     public float enemyProgressRoomWeight = 0.1f;
-    public float enemyHpPlayerDmgWeight  = 0.15f;
-    public float enemyDmgPlayerHpWeight  = 0.15f;
+    public float enemyHpPlayerDmgWeight = 0.15f;
+    public float enemyDmgPlayerHpWeight = 0.15f;
 
     public Material boundaryMaterial;
 
-    protected Vector3        roomSize;
+    protected Vector3 roomSize;
     protected List<GameObject> invisibleWalls = new();
-    protected int            _aliveCount = 0;
+    protected int _aliveCount = 0;
     protected PlayerCombatContext _combatContext;
-    protected int            _currentWave = 0;
-    protected int[]          _waveSizes;
+    protected int _currentWave = 0;
+    protected int[] _waveSizes;
 
-    const float TriggerInset      = 0.3f;
+    const float TriggerInset = 0.3f;
     const float InvisibleWallThickness = 0.01f;
 
     protected virtual void Start()
@@ -148,14 +152,21 @@ public class BattleRoom : MonoBehaviour
 
     protected virtual void SpawnWave(int waveIndex)
     {
+        if (enemyEntries == null || enemyEntries.Length == 0)
+        {
+            // No enemies assigned — treat wave as instantly cleared to avoid room lock
+            StartCoroutine(OnWaveCleared());
+            return;
+        }
+
         int count = _waveSizes[waveIndex];
         _aliveCount += count;
         for (int i = 0; i < count; i++)
         {
-            var entry      = enemyEntries[Random.Range(0, enemyEntries.Length)];
-            bool useElite  = eliteBudget > 0 && entry.elite != null;
+            var entry = enemyEntries[Random.Range(0, enemyEntries.Length)];
+            bool useElite = eliteBudget > 0 && entry.elite != null;
             if (useElite) eliteBudget--;
-            var prefab     = useElite ? entry.elite : entry.normal;
+            var prefab = useElite ? entry.elite : entry.normal;
             ApplyEnemyScale(Instantiate(prefab, PickSpawnPosition(), Quaternion.identity));
         }
     }
@@ -169,21 +180,35 @@ public class BattleRoom : MonoBehaviour
 
     protected Vector3 PickLootPosition()
     {
-        if (spawnCells != null && spawnCells.Count > 0)
-            return spawnCells[Random.Range(0, spawnCells.Count)];
-        return transform.position;
+        if (spawnCells == null || spawnCells.Count == 0)
+            return transform.position;
+
+        // Only consider cells that are at least lootInset cells away from every wall.
+        float minX = transform.position.x - roomSize.x * 0.5f + lootInset;
+        float maxX = transform.position.x + roomSize.x * 0.5f - lootInset;
+        float minZ = transform.position.z - roomSize.z * 0.5f + lootInset;
+        float maxZ = transform.position.z + roomSize.z * 0.5f - lootInset;
+
+        var interior = new List<Vector3>();
+        foreach (var cell in spawnCells)
+            if (cell.x >= minX && cell.x <= maxX && cell.z >= minZ && cell.z <= maxZ)
+                interior.Add(cell);
+
+        // Fall back to any cell if the room is too small for the inset
+        var pool = interior.Count > 0 ? interior : spawnCells;
+        return pool[Random.Range(0, pool.Count)];
     }
 
     protected void ApplyEnemyScale(GameObject enemy)
     {
         if (!enemy.TryGetComponent<EntityStats>(out var stats)) return;
         var player = FindFirstObjectByType<PlayerStats>();
-        var scale  = new StatScale();
+        var scale = new StatScale();
         float progress = (RunManager.Instance?.TotalBossKilled ?? 0) * enemyProgressBossWeight
                        + (RunManager.Instance?.TotalRoomsCleared ?? 0) * enemyProgressRoomWeight;
         scale.moveSpeed = Random.Range(enemySpeedMin, enemySpeedMax);
-        scale.hp        = 1f + progress + (player.Damage / Mathf.Max(1f, player.BaseDamage)) * enemyHpPlayerDmgWeight;
-        scale.damage    = 1f + progress + (player.MaxHealth / Mathf.Max(1f, player.BaseHealth)) * enemyDmgPlayerHpWeight;
+        scale.hp = 1f + progress + (player.Damage / Mathf.Max(1f, player.BaseDamage)) * enemyHpPlayerDmgWeight;
+        scale.damage = 1f + progress + (player.MaxHealth / Mathf.Max(1f, player.BaseHealth)) * enemyDmgPlayerHpWeight;
         stats.SetStatScale(scale);
     }
 
@@ -201,7 +226,7 @@ public class BattleRoom : MonoBehaviour
         LockRoom();
         BuildWaveSizes();
         _currentWave = 0;
-        _aliveCount  = 0;
+        _aliveCount = 0;
         Subscribe();
         SpawnWave(0);
 
@@ -214,7 +239,7 @@ public class BattleRoom : MonoBehaviour
     protected virtual void ClearRoom()
     {
         isCleared = true;
-        isLocked  = false;
+        isLocked = false;
         RemoveInvisibleWalls();
 
         bool firstRoom = (RunManager.Instance?.TotalRoomsCleared ?? 0) == 0;
@@ -231,7 +256,7 @@ public class BattleRoom : MonoBehaviour
 
     protected void SpawnLoot(Vector3 position)
     {
-        var lootObj    = Instantiate(lootPrefab, position, Quaternion.identity);
+        var lootObj = Instantiate(lootPrefab, position, Quaternion.identity);
         var randomLoot = lootObj.GetComponent<RandomLoot>();
         if (randomLoot != null)
             randomLoot.Configure(BuildLootConfig());
@@ -239,10 +264,10 @@ public class BattleRoom : MonoBehaviour
 
     protected virtual LootConfig BuildLootConfig()
     {
-        int floor        = RunManager.Instance?.CurrentFloor ?? 1;
+        int floor = RunManager.Instance?.CurrentFloor ?? 1;
         int roomsCleared = RunManager.Instance?.TotalRoomsCleared ?? 0;
         float mean = lootBaseMean + floor * lootMeanPerFloor + roomsCleared * lootMeanPerRoom + lootMeanFlat;
-        float sd   = lootBaseSd  + (floor - 1) * lootSdPerFloor;
+        float sd = lootBaseSd + (floor - 1) * lootSdPerFloor;
         return new LootConfig { optionCount = lootOptionCount, meanCost = mean, sd = sd, allowDuplicates = false };
     }
 
@@ -302,7 +327,7 @@ public class BattleRoom : MonoBehaviour
         float inset = TriggerInset;
         while (true)
         {
-            Vector3 flat   = new Vector3(playerTransform.position.x, transform.position.y, playerTransform.position.z);
+            Vector3 flat = new Vector3(playerTransform.position.x, transform.position.y, playerTransform.position.z);
             Vector3 minBnd = transform.position - new Vector3(roomSize.x / 2f - inset, 0, roomSize.z / 2f - inset);
             Vector3 maxBnd = transform.position + new Vector3(roomSize.x / 2f - inset, 0, roomSize.z / 2f - inset);
 
