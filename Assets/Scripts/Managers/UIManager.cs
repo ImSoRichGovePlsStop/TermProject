@@ -15,7 +15,9 @@ public class UIManager : MonoBehaviour
     private UpgradeStationUI _upgradeStationUI;
     private LootRewardUI _lootRewardUI;
     private HubStorageUI _storageUI;
-    private EndGameUI _endGameUI;
+    private EndGameUI        _endGameUI;
+    private FloorTransitionUI _floorTransitionUI;
+    private FloorModifierUI   _floorModifierUI;
     private PlayerStats playerStats;
     private bool _upgradeOpen;
 
@@ -59,8 +61,10 @@ public class UIManager : MonoBehaviour
         var shopUI = FindFirstObjectByType<ShopUI>(FindObjectsInactive.Include);
         var mergeUI = FindFirstObjectByType<MergeUI>(FindObjectsInactive.Include);
         var sellUI = FindFirstObjectByType<SellConfirmationUI>(FindObjectsInactive.Include);
-        _storageUI = FindFirstObjectByType<HubStorageUI>(FindObjectsInactive.Include);
-        _endGameUI = FindFirstObjectByType<EndGameUI>(FindObjectsInactive.Include);
+        _storageUI          = FindFirstObjectByType<HubStorageUI>(FindObjectsInactive.Include);
+        _endGameUI          = FindFirstObjectByType<EndGameUI>(FindObjectsInactive.Include);
+        _floorTransitionUI  = FindFirstObjectByType<FloorTransitionUI>(FindObjectsInactive.Include);
+        _floorModifierUI    = FindFirstObjectByType<FloorModifierUI>(FindObjectsInactive.Include);
 
         // Force Awake on all panels, then hide
         SetActive(inventoryPanel, true);
@@ -341,6 +345,22 @@ public class UIManager : MonoBehaviour
             yield return new WaitForSecondsRealtime(1f);
 
         _endGameUI.Show(isWin);
+    }
+
+    public IEnumerator PlayFloorTransition()
+    {
+        if (_floorTransitionUI == null)
+            _floorTransitionUI = FindFirstObjectByType<FloorTransitionUI>(FindObjectsInactive.Include);
+        if (_floorTransitionUI != null)
+            yield return StartCoroutine(_floorTransitionUI.PlayTransition());
+    }
+
+    public IEnumerator PlayFloorModifierSelection(FloorModifierCard[] cards)
+    {
+        if (_floorModifierUI == null)
+            _floorModifierUI = FindFirstObjectByType<FloorModifierUI>(FindObjectsInactive.Include);
+        if (_floorModifierUI != null && cards != null && cards.Length > 0)
+            yield return StartCoroutine(_floorModifierUI.ShowSelection(cards));
     }
 
     private void OnPlayerDeath()

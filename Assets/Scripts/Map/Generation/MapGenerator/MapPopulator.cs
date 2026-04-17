@@ -111,7 +111,7 @@ public class MapPopulator : MonoBehaviour
                                         ?.ToArray() ?? System.Array.Empty<EnemyEntry>();
         room.eliteBudget          = eliteBudget;
         room.SetRoomSize(vol);
-        room.enemyCount           = ScaleEnemyCount(vol);
+        room.CalculateTotalBudget(vol);
         AddTrigger(obj, vol);
         return obj;
     }

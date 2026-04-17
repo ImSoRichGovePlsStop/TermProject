@@ -106,7 +106,7 @@ public class BSPMapPopulator : MonoBehaviour
                                           ?.ToArray() ?? System.Array.Empty<EnemyEntry>();
         room.eliteBudget            = eliteBudget;
         room.SetRoomSize(vol);
-        room.enemyCount             = room.ScaleEnemyCount(vol);
+        room.CalculateTotalBudget(vol);
         room.spawnCells             = CollectSpawnCells(node);
         AddTrigger(obj, vol);
         return obj;

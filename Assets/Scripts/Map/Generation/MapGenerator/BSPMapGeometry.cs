@@ -240,23 +240,25 @@ public class BSPMapGeometry : MonoBehaviour
             if (didPlace) { placed[chosen]++; rm?.RegisterEventRoomPlaced(chosen); }
         }
 
+        int effectiveMinBattle = minBattleCount + (RunManager.Instance?.EffectiveExtraBattleRoomMin ?? 0);
         int bc = 0;
         foreach (var n in _nodes) if (n.Type == RoomType.Battle) bc++;
-        for (int i = bc; i < minBattleCount; i++)
+        for (int i = bc; i < effectiveMinBattle; i++)
         {
             if (!TryPlaceRandomRoom(RoomType.Battle, minBattleRoomSize, maxBattleRoomSize, -1))
                 TryPlaceRandomRoom(RoomType.Battle, minBattleRoomSize, minBattleRoomSize + 4, -1);
         }
 
+        int effectiveMinEvent = minEventCount + (RunManager.Instance?.EffectiveExtraEventRoomMin ?? 0);
         int ec = 0;
         foreach (var kvp in placed) ec += kvp.Value;
-        if (ec < minEventCount)
+        if (ec < effectiveMinEvent)
         {
             var eventOrder = new List<RoomType> { RoomType.Heal, RoomType.Shop, RoomType.RareLoot, RoomType.Merge, RoomType.Fountain };
             Shuffle(eventOrder);
             foreach (var et in eventOrder)
             {
-                if (ec >= minEventCount) break;
+                if (ec >= effectiveMinEvent) break;
                 if (placed[et] > 0) continue;
                 if (TryPlaceRandomRoom(et, minEventRoomSize, maxEventRoomSize, -1))
                 { placed[et]++; ec++; rm?.RegisterEventRoomPlaced(et); }

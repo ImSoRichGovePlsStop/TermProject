@@ -9,7 +9,7 @@ public class EnemyPoolManager : MonoBehaviour
     [Tooltip("Always present in every floor's pool regardless of segment.")]
     public EnemyEntry universalEnemy;
 
-    [Header("Distributable Enemies (~10, split evenly across segments)")]
+    
     public EnemyEntry[] enemies;
 
     [Header("Segment Settings")]

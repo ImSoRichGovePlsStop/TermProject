@@ -9,4 +9,6 @@ public class EnemyEntry
     [Tooltip("Leave empty if this enemy has no elite variant.")]
     public GameObject elite;
     public EnemyType  type;
+    [Tooltip("Spawn budget cost. Basic enemy = 10, strongest = 20.")]
+    public int cost = 10;
 }
