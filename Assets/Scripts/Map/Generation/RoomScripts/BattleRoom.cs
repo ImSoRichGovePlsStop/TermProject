@@ -10,11 +10,20 @@ public class BattleRoom : MonoBehaviour
 
     [HideInInspector] public RoomNode node;
 
+    [System.Serializable]
+    public struct DoorInfo
+    {
+        public Vector3 worldPosition;
+        public Quaternion rotation;
+    }
+
     [Header("Enemy Spawning")]
     public EnemyEntry[] enemyEntries;
     public GameObject lootPrefab;
     public GameObject upgradeStationPrefab;
+    public GameObject doorPrefab;
     [HideInInspector] public List<Vector3> spawnCells = new();
+    [HideInInspector] public List<DoorInfo> doorInfos = new();
 
     public int eliteBudget = 0;
 
@@ -69,6 +78,7 @@ public class BattleRoom : MonoBehaviour
 
     protected Vector3 roomSize;
     protected List<GameObject> invisibleWalls = new();
+    private List<GameObject> _spawnedDoors = new();
     protected int _aliveCount = 0;
     protected PlayerCombatContext _combatContext;
     protected int _currentWave = 0;
@@ -337,6 +347,33 @@ public class BattleRoom : MonoBehaviour
     {
         isLocked = true;
         CreateInvisibleWalls();
+        SpawnDoors();
+    }
+
+    private void SpawnDoors()
+    {
+        if (doorPrefab == null) return;
+        int wallLayer = LayerMask.NameToLayer("Wall");
+        foreach (var info in doorInfos)
+        {
+            var go = Instantiate(doorPrefab, info.worldPosition, info.rotation);
+            if (wallLayer >= 0) SetLayerRecursive(go, wallLayer);
+            _spawnedDoors.Add(go);
+        }
+    }
+
+    private void RemoveDoors()
+    {
+        foreach (var go in _spawnedDoors)
+            if (go != null) Destroy(go);
+        _spawnedDoors.Clear();
+    }
+
+    static void SetLayerRecursive(GameObject go, int layer)
+    {
+        go.layer = layer;
+        foreach (Transform child in go.transform)
+            SetLayerRecursive(child.gameObject, layer);
     }
 
     protected void CreateInvisibleWalls()
@@ -365,6 +402,7 @@ public class BattleRoom : MonoBehaviour
         foreach (var wall in invisibleWalls)
             if (wall != null) Destroy(wall);
         invisibleWalls.Clear();
+        RemoveDoors();
     }
 
     private void OnTriggerEnter(Collider other)

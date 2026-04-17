@@ -17,6 +17,9 @@ public class BSPMapPopulator : MonoBehaviour
     public GameObject portalPrefab;
     public GameObject portalFinalPrefab;
 
+    [Header("Doors")]
+    public GameObject battleDoorPrefab;
+
     [Header("Enemy / Loot")]
     [Tooltip("One boss prefab per floor, index 0 = floor 1")]
     public GameObject[] bossPrefabs;
@@ -125,9 +128,11 @@ public class BSPMapPopulator : MonoBehaviour
         room.enemyEntries           = EnemyPoolManager.Instance
                                           ?.GetPoolForFloor(RunManager.Instance?.CurrentFloor ?? 1)
                                           ?.ToArray() ?? System.Array.Empty<EnemyEntry>();
+        room.doorPrefab             = battleDoorPrefab;
         room.SetRoomSize(vol);
         room.CalculateTotalBudget(vol);
         room.spawnCells             = CollectSpawnCells(node);
+        room.doorInfos              = CollectDoorInfos(node);
         AddTrigger(obj, vol);
         return obj;
     }
@@ -266,6 +271,79 @@ public class BSPMapPopulator : MonoBehaviour
         }
         obj.name = name;
         return obj;
+    }
+
+    System.Collections.Generic.List<BattleRoom.DoorInfo> CollectDoorInfos(MapNode node)
+    {
+        var result = new System.Collections.Generic.List<BattleRoom.DoorInfo>();
+        var geo     = GetComponent<BSPMapGeometry>();
+        if (geo == null) return result;
+
+        var isDoor  = geo.IsDoor;
+        var roomMap = geo.RoomMapPublic;
+        int size    = geo.MatrixSize;
+
+        var dirs = new[] { new Vector2Int(1,0), new Vector2Int(-1,0), new Vector2Int(0,1), new Vector2Int(0,-1) };
+
+        // For each cell in this room, check every face that borders a different room.
+        // A face is a door if EITHER the room's cell OR the neighbour's cell is marked isDoor —
+        // PunchDoor stamps whichever side it happened to pick, so we must check both.
+        var byDir = new System.Collections.Generic.Dictionary<Vector2Int,
+                        System.Collections.Generic.List<Vector2Int>>();
+
+        for (int x = node.MinX; x <= node.MaxX; x++)
+        for (int z = node.MinZ; z <= node.MaxZ; z++)
+        {
+            if (roomMap[x, z] != node) continue;
+
+            foreach (var d in dirs)
+            {
+                int nx = x + d.x, nz = z + d.y;
+                if (nx < 0 || nz < 0 || nx >= size || nz >= size) continue;
+                var nb = roomMap[nx, nz];
+                if (nb == null || nb == node) continue;
+
+                // Face borders a different room — is it a door on either side?
+                if (!isDoor[x, z] && !isDoor[nx, nz]) continue;
+
+                if (!byDir.ContainsKey(d)) byDir[d] = new();
+                byDir[d].Add(new Vector2Int(x, z));
+            }
+        }
+
+        // Group consecutive cells per direction into individual doorways
+        foreach (var kvp in byDir)
+        {
+            var d     = kvp.Key;
+            var cells = kvp.Value;
+            bool faceX = d.x != 0;
+            cells.Sort((a, b) => faceX ? a.y.CompareTo(b.y) : a.x.CompareTo(b.x));
+
+            var run = new System.Collections.Generic.List<Vector2Int> { cells[0] };
+            for (int i = 1; i < cells.Count; i++)
+            {
+                bool adj = faceX ? cells[i].y == cells[i-1].y + 1
+                                 : cells[i].x == cells[i-1].x + 1;
+                if (adj) { run.Add(cells[i]); }
+                else     { result.Add(RunToDoorInfo(run, d)); run = new() { cells[i] }; }
+            }
+            result.Add(RunToDoorInfo(run, d));
+        }
+
+        return result;
+    }
+
+    static BattleRoom.DoorInfo RunToDoorInfo(System.Collections.Generic.List<Vector2Int> run, Vector2Int dir)
+    {
+        float sumX = 0f, sumZ = 0f;
+        foreach (var c in run) { sumX += c.x; sumZ += c.y; }
+        float cx = sumX / run.Count + 0.5f + dir.x * 0.5f;
+        float cz = sumZ / run.Count + 0.5f + dir.y * 0.5f;
+        return new BattleRoom.DoorInfo
+        {
+            worldPosition = new Vector3(cx, 0f, cz),
+            rotation      = Quaternion.LookRotation(new Vector3(dir.x, 0f, dir.y))
+        };
     }
 
     System.Collections.Generic.List<Vector3> CollectSpawnCells(MapNode node)

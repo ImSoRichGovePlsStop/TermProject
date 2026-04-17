@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using Unity.AI.Navigation;
 using UnityEngine;
 using UnityEngine.ProBuilder;
+using UnityEngine.AI;
 using UnityEngine.ProBuilder.MeshOperations;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
@@ -158,7 +159,16 @@ public class BSPMapGeometry : MonoBehaviour
         FindFirstObjectByType<MinimapManager>()
             ?.BuildMinimapFromMatrix(_matrix, matrixSize, _roomMap, ToLegacyRoomNodes(), _edges);
 
-        if (navMeshSurface != null) navMeshSurface.BuildNavMesh();
+        if (navMeshSurface != null)
+        {
+            // Use physics colliders so wall MeshColliders block the bake without needing render meshes
+            navMeshSurface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
+            // Ensure the Wall layer is included so NavMeshModifier markers on wall objects are respected
+            int wallLayer = LayerMask.NameToLayer("Wall");
+            if (wallLayer >= 0)
+                navMeshSurface.layerMask |= 1 << wallLayer;
+            navMeshSurface.BuildNavMesh();
+        }
 
         OnMapReady?.Invoke(_nodes);
     }
@@ -868,7 +878,11 @@ public class BSPMapGeometry : MonoBehaviour
                     bool diff = !oob && !nonRoom && !voidNb && _roomMap[nx, nz] != owner;
                     bool door = (_isDoor[x, z] || (!oob && !nonRoom && _isDoor[nx, nz])) && diff;
 
-                    if (!door && (oob || nonRoom || diff || (voidNb && !voidSameOwner)))
+                    // Only spawn the shared wall from the positive-direction side to avoid duplicates.
+                    // The neighbour cell will handle it from its own (negative) direction pass.
+                    bool skipDiff = diff && !door && (d.x < 0 || (d.x == 0 && d.y < 0));
+
+                    if (!skipDiff && !door && (oob || nonRoom || diff || (voidNb && !voidSameOwner)))
                         SpawnWallQuad(wallP, x, z, d);
                 }
             }
@@ -1002,6 +1016,10 @@ public class BSPMapGeometry : MonoBehaviour
         var mc = go.AddComponent<MeshCollider>();
         mc.sharedMesh = pb.GetComponent<MeshFilter>().sharedMesh;
         if (wallMat != null) pb.GetComponent<Renderer>().material = wallMat;
+
+        var mod = go.AddComponent<NavMeshModifier>();
+        mod.overrideArea = true;
+        mod.area = NavMesh.GetAreaFromName("Not Walkable");
     }
 
 
@@ -1027,6 +1045,9 @@ public class BSPMapGeometry : MonoBehaviour
                 parent);
             inst.name = $"W_{x}_{z}_{facing.x}_{facing.y}_{i}";
             inst.layer = LayerMask.NameToLayer("Wall");
+            var mod = inst.AddComponent<NavMeshModifier>();
+            mod.overrideArea = true;
+            mod.area = NavMesh.GetAreaFromName("Not Walkable");
         }
     }
 
