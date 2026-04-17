@@ -200,7 +200,13 @@ public class BSPMapGeometry : MonoBehaviour
         var placed = new Dictionary<RoomType, int>
             { { RoomType.Heal, 0 }, { RoomType.Shop, 0 }, { RoomType.RareLoot, 0 }, { RoomType.Merge, 0 }, { RoomType.Fountain, 0 } };
 
-        for (int i = 0; i < maxEventCount; i++)
+        foreach (var n in _nodes)
+            if (placed.ContainsKey(n.Type)) placed[n.Type]++;
+
+        int preExisting = 0;
+        foreach (var kvp in placed) preExisting += kvp.Value;
+
+        for (int i = preExisting; i < maxEventCount; i++)
         {
             float h = placed[RoomType.Heal] > 0 ? 0f : wHeal;
             float s = placed[RoomType.Shop] > 0 ? 0f : wShop;
@@ -265,7 +271,7 @@ public class BSPMapGeometry : MonoBehaviour
             }
         }
 
-        FillWithSmallTypedRooms(placed);
+        FillWithSmallTypedRooms(placed, maxEventCount);
 
         FillRemaining();
     }
@@ -380,12 +386,14 @@ public class BSPMapGeometry : MonoBehaviour
         else rm?.RegisterEventRoomPlaced(chosen);
     }
 
-    void FillWithSmallTypedRooms(Dictionary<RoomType, int> alreadyPlaced)
+    void FillWithSmallTypedRooms(Dictionary<RoomType, int> alreadyPlaced, int eventCap)
     {
         int smallBattle = Mathf.Max(minBattleRoomSize, (minBattleRoomSize + maxBattleRoomSize) / 2);
         int smallEvent  = Mathf.Max(minEventRoomSize,  (minEventRoomSize  + maxEventRoomSize)  / 2);
 
-        for (int i = 0; i < 20; i++)
+        int bc = 0;
+        foreach (var n in _nodes) if (n.Type == RoomType.Battle) bc++;
+        for (int i = bc; i < maxBattleCount; i++)
             if (!TryPlaceRandomRoom(RoomType.Battle, minBattleRoomSize, smallBattle, -1)) break;
 
         var rm = RunManager.Instance;
@@ -394,6 +402,10 @@ public class BSPMapGeometry : MonoBehaviour
         Shuffle(eventTypes);
         foreach (var et in eventTypes)
         {
+            int currentTotal = 0;
+            foreach (var kvp in alreadyPlaced) currentTotal += kvp.Value;
+            if (currentTotal >= eventCap) break;
+
             if (alreadyPlaced.TryGetValue(et, out int cnt) && cnt > 0) continue;
             if (TryPlaceRandomRoom(et, minEventRoomSize, smallEvent, -1))
             { alreadyPlaced[et] = 1; rm?.RegisterEventRoomPlaced(et); }

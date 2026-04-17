@@ -74,6 +74,7 @@ public class BattleRoom : MonoBehaviour
     protected int _currentWave = 0;
     protected int _totalBudget;
     protected int[] _waveBudgets;
+    protected int[] _eliteBudgetsPerWave;
 
     const float TriggerInset = 0.3f;
     const float InvisibleWallThickness = 0.01f;
@@ -147,6 +148,10 @@ public class BattleRoom : MonoBehaviour
         int remainder      = _totalBudget % waveCount;
         for (int i = 0; i < waveCount; i++)
             _waveBudgets[i] = baseWaveBudget + (i < remainder ? 1 : 0);
+
+        _eliteBudgetsPerWave = new int[waveCount];
+        for (int i = 0; i < eliteBudget; i++)
+            _eliteBudgetsPerWave[Random.Range(0, waveCount)]++;
     }
 
     protected virtual void SpawnWave(int waveIndex)
@@ -176,8 +181,8 @@ public class BattleRoom : MonoBehaviour
             if (affordable.Count == 0) break; // nothing fits
 
             var entry = affordable[Random.Range(0, affordable.Count)];
-            bool useElite = eliteBudget > 0 && entry.elite != null;
-            if (useElite) eliteBudget--;
+            bool useElite = _eliteBudgetsPerWave[waveIndex] > 0 && entry.elite != null;
+            if (useElite) _eliteBudgetsPerWave[waveIndex]--;
             var prefab = useElite ? entry.elite : entry.normal;
             budget -= Mathf.Max(1, entry.cost);
             spawned++;

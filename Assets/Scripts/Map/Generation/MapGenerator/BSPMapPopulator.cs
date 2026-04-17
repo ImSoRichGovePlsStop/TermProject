@@ -20,8 +20,8 @@ public class BSPMapPopulator : MonoBehaviour
     [Header("Enemy / Loot")]
     [Tooltip("One boss prefab per floor, index 0 = floor 1")]
     public GameObject[] bossPrefabs;
-    [Tooltip("Enemies awarded as elites per battle room. 0 = none.")]
-    public int eliteBudget = 0;
+    [Tooltip("Average elite enemies per battle room added each floor. Floor 1 = 0, floor 2 = ~1 per room, etc.")]
+    public float elitePerRoomPerFloor = 1f;
     public GameObject lootPrefab;
     public GameObject rareLootPrefab;
 
@@ -58,11 +58,32 @@ public class BSPMapPopulator : MonoBehaviour
 
     void PopulateRooms(System.Collections.Generic.IReadOnlyList<MapNode> nodes)
     {
-        foreach (var node in nodes)
-            node.RoomObject = SpawnRoom(node);
+        var battleRooms = new System.Collections.Generic.List<BattleRoom>();
 
+        foreach (var node in nodes)
+        {
+            node.RoomObject = SpawnRoom(node);
+            if (node.Type == RoomType.Battle && node.RoomObject != null)
+            {
+                var br = node.RoomObject.GetComponent<BattleRoom>();
+                if (br != null) battleRooms.Add(br);
+            }
+        }
+
+        DistributeEliteBudget(battleRooms);
         SpawnProps();
         StartCoroutine(BakeNavMeshNextFrame());
+    }
+
+    void DistributeEliteBudget(System.Collections.Generic.List<BattleRoom> rooms)
+    {
+        if (rooms.Count == 0) return;
+        int floor = RunManager.Instance?.CurrentFloor ?? 1;
+        int total = Mathf.RoundToInt(Mathf.Max(0f, floor - 1) * rooms.Count * elitePerRoomPerFloor);
+
+        foreach (var r in rooms) r.eliteBudget = 0;
+        for (int i = 0; i < total; i++)
+            rooms[Random.Range(0, rooms.Count)].eliteBudget++;
     }
 
     System.Collections.IEnumerator BakeNavMeshNextFrame()
@@ -104,7 +125,6 @@ public class BSPMapPopulator : MonoBehaviour
         room.enemyEntries           = EnemyPoolManager.Instance
                                           ?.GetPoolForFloor(RunManager.Instance?.CurrentFloor ?? 1)
                                           ?.ToArray() ?? System.Array.Empty<EnemyEntry>();
-        room.eliteBudget            = eliteBudget;
         room.SetRoomSize(vol);
         room.CalculateTotalBudget(vol);
         room.spawnCells             = CollectSpawnCells(node);
@@ -127,7 +147,6 @@ public class BSPMapPopulator : MonoBehaviour
         room.enemyEntries      = EnemyPoolManager.Instance
                                      ?.GetPoolForFloor(RunManager.Instance?.CurrentFloor ?? 1)
                                      ?.ToArray() ?? System.Array.Empty<EnemyEntry>();
-        room.eliteBudget       = eliteBudget;
         room.SetRoomSize(vol);
         AddTrigger(obj, vol);
         return obj;
