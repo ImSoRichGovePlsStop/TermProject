@@ -8,9 +8,11 @@ public class LootRewardUI : MonoBehaviour
     [SerializeField] private Transform topRow;
     [SerializeField] private Transform bottomRow;
     [SerializeField] private ItemCardUI optionPrefab;
+    [SerializeField] private Button rerollButton;
 
     private List<ModuleInstance> rolledOptions = new List<ModuleInstance>();
     private RandomLoot currentStation;
+    private bool _hasRerolled;
 
     private static (int top, int bot) GetLayout(int total) => total switch
     {
@@ -25,6 +27,20 @@ public class LootRewardUI : MonoBehaviour
     public void Open(RandomLoot station, List<TestModuleEntry> rolled)
     {
         currentStation = station;
+
+        _hasRerolled = false;
+        if (rerollButton != null)
+        {
+            rerollButton.onClick.RemoveAllListeners();
+            rerollButton.onClick.AddListener(OnReroll);
+            rerollButton.interactable = RunManager.Instance == null || RunManager.Instance.AllowReroll;
+        }
+
+        RepopulateCards(rolled);
+    }
+
+    private void RepopulateCards(List<TestModuleEntry> rolled)
+    {
         rolledOptions.Clear();
 
         foreach (Transform child in topRow) Destroy(child.gameObject);
@@ -45,6 +61,18 @@ public class LootRewardUI : MonoBehaviour
         }
 
         bottomRow.gameObject.SetActive(botCount > 0);
+    }
+
+    private void OnReroll()
+    {
+        if (currentStation == null) return;
+        if (_hasRerolled) return;
+        if (RunManager.Instance != null && !RunManager.Instance.AllowReroll) return;
+
+        _hasRerolled = true;
+        if (rerollButton != null) rerollButton.interactable = false;
+
+        RepopulateCards(currentStation.RollNewOptions());
     }
 
     public void OnOptionSelected(ModuleInstance chosen)

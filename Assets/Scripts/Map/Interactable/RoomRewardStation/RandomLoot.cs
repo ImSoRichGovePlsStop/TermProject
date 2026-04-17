@@ -84,6 +84,11 @@ public class RandomLoot : MonoBehaviour, IInteractable
         uiManager?.OpenRewardLoot(this, rolled);
     }
 
+    public List<TestModuleEntry> RollNewOptions()
+    {
+        return Randomizer.Roll(optionCount, optionCount, meanCost, sd, allowDuplicates);
+    }
+
     public virtual void OnLootPicked()
     {
         Destroy(gameObject);

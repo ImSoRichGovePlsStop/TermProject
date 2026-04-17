@@ -10,6 +10,9 @@ public class RunManager : MonoBehaviour
     [Range(0f, 1f)]
     public float HealPerRoom = 0.10f;
 
+    [Header("Reroll")]
+    public bool AllowReroll = true;
+
     [Header("Run Stats")]
     public int CurrentFloor = 1;
     public int TotalEnemyKilled = 0;

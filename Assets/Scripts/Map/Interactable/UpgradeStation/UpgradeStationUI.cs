@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UpgradeStationUI : MonoBehaviour
 {
@@ -7,8 +8,10 @@ public class UpgradeStationUI : MonoBehaviour
     [SerializeField] private Transform topRow;
     [SerializeField] private Transform bottomRow;
     [SerializeField] private ItemCardUI optionPrefab;
+    [SerializeField] private Button rerollButton;
 
     private UpgradeStation _currentStation;
+    private bool _hasRerolled;
 
     private static (int top, int bot) GetLayout(int total) => total switch
     {
@@ -23,6 +26,25 @@ public class UpgradeStationUI : MonoBehaviour
     public void Open(UpgradeStation station)
     {
         _currentStation = station;
+        PopulateOptions();
+
+        _hasRerolled = false;
+        if (rerollButton != null)
+        {
+            rerollButton.onClick.RemoveAllListeners();
+            rerollButton.onClick.AddListener(OnReroll);
+            rerollButton.interactable = RunManager.Instance == null || RunManager.Instance.AllowReroll;
+        }
+    }
+
+    private void OnReroll()
+    {
+        if (_hasRerolled) return;
+        if (RunManager.Instance != null && !RunManager.Instance.AllowReroll) return;
+
+        _hasRerolled = true;
+        if (rerollButton != null) rerollButton.interactable = false;
+
         PopulateOptions();
     }
 
