@@ -48,10 +48,12 @@ public static class Randomizer
         var currentSet = new HashSet<ModuleData>();
         var mgr = InventoryManager.Instance;
         if (mgr != null)
+        {
             foreach (var m in mgr.BagGrid.GetAllModules())
                 if (m.Data != null) currentSet.Add(m.Data);
             foreach (var m in mgr.WeaponGrid.GetAllModules())
                 if (m.Data != null) currentSet.Add(m.Data);
+        }
 
         for (int i = 0; i < candidateCount; i++)
         {

@@ -150,39 +150,50 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyPoolManager
   universalEnemy:
     normal: {fileID: 7238543708409638561, guid: dd9f068c973098c498dd3e59894d0504, type: 3}
-    elite: {fileID: 8805386968970093899, guid: 50c6759638da1cc4abc5850a98be209c, type: 3}
+    elite: {fileID: 7238543708409638561, guid: dd9f068c973098c498dd3e59894d0504, type: 3}
     type: 0
+    cost: 1
   enemies:
   - normal: {fileID: 4095530523079436333, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
     elite: {fileID: 1645718517242866656, guid: 4d707ab07e2f23145a5141504c5339ec, type: 3}
     type: 0
+    cost: 10
   - normal: {fileID: 1157175084331872940, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
     elite: {fileID: 1060975140864471490, guid: b5960ad6efa2b9242821cc82c52983d9, type: 3}
     type: 0
+    cost: 10
   - normal: {fileID: 5839215875902021053, guid: b8fa95d5ac88f5b4193dfa62f91f9de1, type: 3}
     elite: {fileID: 9087992749278415251, guid: 6be267183c2a64840a00f60936ce465c, type: 3}
     type: 1
+    cost: 10
   - normal: {fileID: 4019581818599759367, guid: 751746504bef682459646dc23543729b, type: 3}
     elite: {fileID: 329313551566827528, guid: 0c33d48a1e3192144ae46557065cc2b6, type: 3}
     type: 0
+    cost: 10
   - normal: {fileID: 1157175084331872940, guid: 858921bbf0e0f074f83a6736a3b86d98, type: 3}
     elite: {fileID: 7425926837719396271, guid: c379bb763df3f384fa49f34d8f1fb9d3, type: 3}
     type: 0
+    cost: 10
   - normal: {fileID: 3306226684668820766, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
     elite: {fileID: 1114252921136705347, guid: ab36f5d1120c5e744a0d484a9b51b3bd, type: 3}
     type: 1
+    cost: 10
   - normal: {fileID: 5014756994894003621, guid: 42d280777b1172b42b5854270bfec4c2, type: 3}
     elite: {fileID: 7143792438297347694, guid: b5df83872bee4564aa94454221001c13, type: 3}
     type: 1
+    cost: 10
   - normal: {fileID: 2267385209059488080, guid: 7b3e637306542674a858675a8eb8614c, type: 3}
     elite: {fileID: 8761219684217307977, guid: 81bc309d0cb204a469adc399b7df23fb, type: 3}
     type: 1
+    cost: 10
   - normal: {fileID: 8539526641393661164, guid: 32b91b5443ad0c24b8ea62e63e8dac77, type: 3}
     elite: {fileID: 1838274674139453816, guid: fe856f31459158b48add8b3a8494e44a, type: 3}
     type: 0
+    cost: 10
   - normal: {fileID: 8370733333136472846, guid: 79fb2ac4a6080584db5cc99f39449607, type: 3}
     elite: {fileID: 3834287406817414795, guid: bac1411c507bffb4081e5efa9dc4bad7, type: 3}
     type: 0
+    cost: 10
   segmentCount: 3
   floorsPerSegment: 3
 --- !u!4 &1152646693
@@ -381,12 +392,13 @@ MonoBehaviour:
   mergeStationPrefab: {fileID: 106242591161022991, guid: fa2d894cb67834243979d6236231c48c, type: 3}
   portalPrefab: {fileID: 8261454306142249107, guid: 323db3c7dad372342aed4732f194c622, type: 3}
   portalFinalPrefab: {fileID: 2217644600164415563, guid: ffaead280080565408dde90a744f411c, type: 3}
+  battleDoorPrefab: {fileID: 5070826795163406018, guid: bcdf5e0cb51e1ba468319322ffd7f17b, type: 3}
   bossPrefabs:
   - {fileID: 2371149561134109772, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
   - {fileID: 2371149561134109772, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
   - {fileID: 2371149561134109772, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
   - {fileID: 2371149561134109772, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
-  eliteBudget: 0
+  elitePerRoomPerFloor: 1
   lootPrefab: {fileID: 7487802019810916615, guid: 99d47f9338280df4ca3e55aeb52a23d2, type: 3}
   rareLootPrefab: {fileID: 7473069894125093457, guid: 6b19d624911a31b47bfe8a8fabbee76e, type: 3}
   fountainPrefab: {fileID: 2636053173783784693, guid: 3a7cc8a83056bcb4c8d6afc8fe24cb9a, type: 3}
@@ -415,13 +427,13 @@ MonoBehaviour:
   minEventRoomSize: 6
   maxEventRoomSize: 7
   minEmptyRoomSize: 3
-  maxEmptyRoomSize: 10
+  maxEmptyRoomSize: 30
   mergeAreaThreshold: 50
   sealMinWidth: 2
   sealMinArea: 10
-  maxBattleCount: 3
+  maxBattleCount: 20
   maxEventCount: 3
-  minBattleCount: 2
+  minBattleCount: 4
   minEventCount: 2
   cornerEventChance: 0.5
   weightHeal: 4
