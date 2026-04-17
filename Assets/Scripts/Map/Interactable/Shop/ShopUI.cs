@@ -12,11 +12,12 @@ public class ShopUI : MonoBehaviour
     [SerializeField] private Transform bottomRow;
     [SerializeField] private ItemCardUI shopItemPrefab;
     [SerializeField] private SellConfirmationUI sellConfirmationUI;
-
+    [SerializeField] private Button rerollButton;
 
     private ShopInteractable _currentInteractable;
     private TestModuleEntry[] _currentEntries;
     private InventoryUI _inventoryUI;
+    private bool _hasRerolled;
 
     private void Awake()
     {
@@ -104,6 +105,19 @@ public class ShopUI : MonoBehaviour
         _currentInteractable = interactable;
         _currentEntries = entries;
 
+        _hasRerolled = false;
+        if (rerollButton != null)
+        {
+            rerollButton.onClick.RemoveAllListeners();
+            rerollButton.onClick.AddListener(OnReroll);
+            rerollButton.interactable = RunManager.Instance == null || RunManager.Instance.AllowReroll;
+        }
+
+        RepopulateCards(entries, soldIndices);
+    }
+
+    private void RepopulateCards(TestModuleEntry[] entries, HashSet<int> soldIndices)
+    {
         foreach (Transform child in topRow) Destroy(child.gameObject);
         foreach (Transform child in bottomRow) Destroy(child.gameObject);
 
@@ -126,6 +140,20 @@ public class ShopUI : MonoBehaviour
         }
 
         bottomRow.gameObject.SetActive(botCount > 0);
+    }
+
+    private void OnReroll()
+    {
+        if (_currentInteractable == null) return;
+        if (_hasRerolled) return;
+        if (RunManager.Instance != null && !RunManager.Instance.AllowReroll) return;
+
+        _hasRerolled = true;
+        if (rerollButton != null) rerollButton.interactable = false;
+
+        _currentInteractable.Regenerate();
+        _currentEntries = _currentInteractable.GeneratedEntries;
+        RepopulateCards(_currentEntries, _currentInteractable.SoldIndices);
     }
 
     private int GetSortPriority(int index, HashSet<int> soldIndices)

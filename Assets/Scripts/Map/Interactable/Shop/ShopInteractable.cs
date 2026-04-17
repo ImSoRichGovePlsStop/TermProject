@@ -66,6 +66,9 @@ public class ShopInteractable : MonoBehaviour, IInteractable
         GenerateEntries();
     }
 
+    public TestModuleEntry[] GeneratedEntries => _generatedEntries;
+    public HashSet<int> SoldIndices => _soldIndices;
+
     private void GenerateEntries()
     {
         if (useRandomizer)

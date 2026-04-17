@@ -330,16 +330,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BSPMapGeometry
   matrixSize: 35
-  minBattleRoomSize: 8
+  minBattleRoomSize: 6
   maxBattleRoomSize: 13
   minEventRoomSize: 6
   maxEventRoomSize: 7
   minEmptyRoomSize: 3
-  maxEmptyRoomSize: 14
+  maxEmptyRoomSize: 10
   mergeAreaThreshold: 50
   sealMinWidth: 2
   sealMinArea: 10
-  maxBattleCount: 0
+  maxBattleCount: 2
   maxEventCount: 3
   weightHeal: 4
   weightShop: 2
@@ -347,7 +347,7 @@ MonoBehaviour:
   weightMerge: 2
   weightFountain: 1
   repeatPenalty: 0.4
-  presetChanceBattle: 0.241
+  presetChanceBattle: 0.478
   presetChanceHeal: 0
   presetChanceShop: 0
   presetChanceRareLoot: 0
