@@ -257,7 +257,7 @@ Light:
   m_Enabled: 1
   serializedVersion: 12
   m_Type: 1
-  m_Color: {r: 0.59607846, g: 0.59607846, b: 0.59607846, a: 1}
+  m_Color: {r: 0.8773585, g: 0.7474641, b: 0.64146495, a: 1}
   m_Intensity: 2
   m_Range: 10
   m_SpotAngle: 30
@@ -419,8 +419,11 @@ MonoBehaviour:
   mergeAreaThreshold: 50
   sealMinWidth: 2
   sealMinArea: 10
-  maxBattleCount: 2
+  maxBattleCount: 3
   maxEventCount: 3
+  minBattleCount: 2
+  minEventCount: 2
+  cornerEventChance: 0.5
   weightHeal: 4
   weightShop: 2
   weightRareLoot: 1
@@ -446,7 +449,7 @@ MonoBehaviour:
   wallHeight: 2
   wallThickness: 0.1
   floorThickness: -5
-  floorMat: {fileID: 2100000, guid: 761d8e1f988ed2345a28312145c79c6e, type: 2}
+  floorMat: {fileID: 2100000, guid: 08a4a7f11deb9dd45aabfd25f05485e6, type: 2}
   wallMat: {fileID: 2100000, guid: b354030ecf56d194aa76bff9eed6802a, type: 2}
   sealedMat: {fileID: 2100000, guid: defdb7f80f413dc4491faac396d0fb16, type: 2}
   navMeshSurface: {fileID: 2145645486}

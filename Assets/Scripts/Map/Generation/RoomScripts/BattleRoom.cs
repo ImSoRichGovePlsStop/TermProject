@@ -48,6 +48,10 @@ public class BattleRoom : MonoBehaviour
     public float lootBaseSd = 20f;
     public float lootSdPerFloor = 3f;
 
+    [Header("Reward Placement")]
+    [Tooltip("Minimum cell distance from room wall when spawning loot/upgrade rewards.")]
+    public int lootInset = 2;
+
     [Header("Coin Drop Fallback")]
     [Tooltip("Fallback coin min when enemy has no EnemyBase.")]
     public int fallbackCoinMin = 4;
@@ -176,9 +180,23 @@ public class BattleRoom : MonoBehaviour
 
     protected Vector3 PickLootPosition()
     {
-        if (spawnCells != null && spawnCells.Count > 0)
-            return spawnCells[Random.Range(0, spawnCells.Count)];
-        return transform.position;
+        if (spawnCells == null || spawnCells.Count == 0)
+            return transform.position;
+
+        // Only consider cells that are at least lootInset cells away from every wall.
+        float minX = transform.position.x - roomSize.x * 0.5f + lootInset;
+        float maxX = transform.position.x + roomSize.x * 0.5f - lootInset;
+        float minZ = transform.position.z - roomSize.z * 0.5f + lootInset;
+        float maxZ = transform.position.z + roomSize.z * 0.5f - lootInset;
+
+        var interior = new List<Vector3>();
+        foreach (var cell in spawnCells)
+            if (cell.x >= minX && cell.x <= maxX && cell.z >= minZ && cell.z <= maxZ)
+                interior.Add(cell);
+
+        // Fall back to any cell if the room is too small for the inset
+        var pool = interior.Count > 0 ? interior : spawnCells;
+        return pool[Random.Range(0, pool.Count)];
     }
 
     protected void ApplyEnemyScale(GameObject enemy)
