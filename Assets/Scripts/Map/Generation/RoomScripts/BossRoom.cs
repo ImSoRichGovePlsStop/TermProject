@@ -127,7 +127,7 @@ public class BossRoom : BattleRoom
             for (int i = 0; i < toSpawn; i++)
             {
                 if (alreadyAlive >= maxAliveNormals) break;
-                var entry     = enemyEntries[Random.Range(0, enemyEntries.Length)];
+                var entry = enemyEntries[Random.Range(0, enemyEntries.Length)];
                 bool useElite = eliteBudget > 0 && entry.elite != null;
                 if (useElite) eliteBudget--;
                 var enemy = Instantiate(useElite ? entry.elite : entry.normal,

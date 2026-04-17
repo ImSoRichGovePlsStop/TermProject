@@ -119,6 +119,87 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &1152646691
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1152646693}
+  - component: {fileID: 1152646692}
+  m_Layer: 0
+  m_Name: EnemyPool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1152646692
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1152646691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b43598fd72959d4c9a3bfa8f1f4f705, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyPoolManager
+  universalEnemy:
+    normal: {fileID: 7238543708409638561, guid: dd9f068c973098c498dd3e59894d0504, type: 3}
+    elite: {fileID: 8805386968970093899, guid: 50c6759638da1cc4abc5850a98be209c, type: 3}
+    type: 0
+  enemies:
+  - normal: {fileID: 4095530523079436333, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
+    elite: {fileID: 1645718517242866656, guid: 4d707ab07e2f23145a5141504c5339ec, type: 3}
+    type: 0
+  - normal: {fileID: 1157175084331872940, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
+    elite: {fileID: 1060975140864471490, guid: b5960ad6efa2b9242821cc82c52983d9, type: 3}
+    type: 0
+  - normal: {fileID: 5839215875902021053, guid: b8fa95d5ac88f5b4193dfa62f91f9de1, type: 3}
+    elite: {fileID: 9087992749278415251, guid: 6be267183c2a64840a00f60936ce465c, type: 3}
+    type: 1
+  - normal: {fileID: 4019581818599759367, guid: 751746504bef682459646dc23543729b, type: 3}
+    elite: {fileID: 329313551566827528, guid: 0c33d48a1e3192144ae46557065cc2b6, type: 3}
+    type: 0
+  - normal: {fileID: 1157175084331872940, guid: 858921bbf0e0f074f83a6736a3b86d98, type: 3}
+    elite: {fileID: 7425926837719396271, guid: c379bb763df3f384fa49f34d8f1fb9d3, type: 3}
+    type: 0
+  - normal: {fileID: 3306226684668820766, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
+    elite: {fileID: 1114252921136705347, guid: ab36f5d1120c5e744a0d484a9b51b3bd, type: 3}
+    type: 1
+  - normal: {fileID: 5014756994894003621, guid: 42d280777b1172b42b5854270bfec4c2, type: 3}
+    elite: {fileID: 7143792438297347694, guid: b5df83872bee4564aa94454221001c13, type: 3}
+    type: 1
+  - normal: {fileID: 2267385209059488080, guid: 7b3e637306542674a858675a8eb8614c, type: 3}
+    elite: {fileID: 8761219684217307977, guid: 81bc309d0cb204a469adc399b7df23fb, type: 3}
+    type: 1
+  - normal: {fileID: 8539526641393661164, guid: 32b91b5443ad0c24b8ea62e63e8dac77, type: 3}
+    elite: {fileID: 1838274674139453816, guid: fe856f31459158b48add8b3a8494e44a, type: 3}
+    type: 0
+  - normal: {fileID: 8370733333136472846, guid: 79fb2ac4a6080584db5cc99f39449607, type: 3}
+    elite: {fileID: 3834287406817414795, guid: bac1411c507bffb4081e5efa9dc4bad7, type: 3}
+    type: 0
+  segmentCount: 3
+  floorsPerSegment: 3
+--- !u!4 &1152646693
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1152646691}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 22.84393, y: 0, z: 18.99647}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1679036508
 GameObject:
   m_ObjectHideFlags: 0
@@ -258,7 +339,6 @@ GameObject:
   - component: {fileID: 2145645485}
   - component: {fileID: 2145645484}
   - component: {fileID: 2145645486}
-  - component: {fileID: 2145645487}
   m_Layer: 0
   m_Name: MapGenerator
   m_TagString: Untagged
@@ -402,58 +482,10 @@ MonoBehaviour:
   m_MinRegionArea: 2
   m_NavMeshData: {fileID: 0}
   m_BuildHeightMesh: 0
---- !u!114 &2145645487
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2145645482}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5b43598fd72959d4c9a3bfa8f1f4f705, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyPoolManager
-  universalEnemy:
-    normal: {fileID: 7238543708409638561, guid: dd9f068c973098c498dd3e59894d0504, type: 3}
-    elite: {fileID: 4486403295936832633, guid: d6e18d1daf7f36046a37dc3527ba6515, type: 3}
-    type: 0
-  enemies:
-  - normal: {fileID: 4095530523079436333, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
-    elite: {fileID: 1645718517242866656, guid: 4d707ab07e2f23145a5141504c5339ec, type: 3}
-    type: 0
-  - normal: {fileID: 1157175084331872940, guid: 87ff742a4903e98488d661b95b2e3bb5, type: 3}
-    elite: {fileID: 1060975140864471490, guid: b5960ad6efa2b9242821cc82c52983d9, type: 3}
-    type: 0
-  - normal: {fileID: 5839215875902021053, guid: b8fa95d5ac88f5b4193dfa62f91f9de1, type: 3}
-    elite: {fileID: 9087992749278415251, guid: 6be267183c2a64840a00f60936ce465c, type: 3}
-    type: 1
-  - normal: {fileID: 4019581818599759367, guid: 751746504bef682459646dc23543729b, type: 3}
-    elite: {fileID: 329313551566827528, guid: 0c33d48a1e3192144ae46557065cc2b6, type: 3}
-    type: 0
-  - normal: {fileID: 1157175084331872940, guid: 858921bbf0e0f074f83a6736a3b86d98, type: 3}
-    elite: {fileID: 7425926837719396271, guid: c379bb763df3f384fa49f34d8f1fb9d3, type: 3}
-    type: 0
-  - normal: {fileID: 3306226684668820766, guid: 3cd0c2cce4771024da6c0e9cf1fb5b96, type: 3}
-    elite: {fileID: 1114252921136705347, guid: ab36f5d1120c5e744a0d484a9b51b3bd, type: 3}
-    type: 1
-  - normal: {fileID: 5014756994894003621, guid: 42d280777b1172b42b5854270bfec4c2, type: 3}
-    elite: {fileID: 7143792438297347694, guid: b5df83872bee4564aa94454221001c13, type: 3}
-    type: 1
-  - normal: {fileID: 2267385209059488080, guid: 7b3e637306542674a858675a8eb8614c, type: 3}
-    elite: {fileID: 8761219684217307977, guid: 81bc309d0cb204a469adc399b7df23fb, type: 3}
-    type: 1
-  - normal: {fileID: 8539526641393661164, guid: 32b91b5443ad0c24b8ea62e63e8dac77, type: 3}
-    elite: {fileID: 1838274674139453816, guid: fe856f31459158b48add8b3a8494e44a, type: 3}
-    type: 0
-  - normal: {fileID: 8370733333136472846, guid: 79fb2ac4a6080584db5cc99f39449607, type: 3}
-    elite: {fileID: 3834287406817414795, guid: bac1411c507bffb4081e5efa9dc4bad7, type: 3}
-    type: 0
-  segmentCount: 3
-  floorsPerSegment: 3
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1679036511}
   - {fileID: 2145645483}
+  - {fileID: 1152646693}

@@ -12,7 +12,7 @@ public class FloorTransitionUI : MonoBehaviour
 
     [Header("Timing")]
     [Tooltip("Minimum seconds the transition screen is visible before the scene loads.")]
-    [SerializeField] private float minDuration  = 3f;
+    [SerializeField] private float minDuration     = 3f;
     [Tooltip("Seconds the text takes to fade in.")]
     [SerializeField] private float fadeInDuration  = 0.8f;
     [Tooltip("Seconds the text takes to fade out before the scene loads.")]
@@ -23,17 +23,24 @@ public class FloorTransitionUI : MonoBehaviour
         panel.SetActive(false);
     }
 
+    void OnEnable()  { SceneManager.sceneLoaded += OnSceneLoaded; }
+    void OnDisable() { SceneManager.sceneLoaded -= OnSceneLoaded; }
 
-    public IEnumerator TransitionRoutine(int sceneIndex)
-        => TransitionRoutine(BuildFloorLabel(), sceneIndex);
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (panel != null) panel.SetActive(false);
+    }
 
-    public IEnumerator TransitionRoutine(string label, int sceneIndex)
+    // Visual-only: fades in label, holds, fades out. Caller (RunManager) loads the scene.
+    public IEnumerator PlayTransition() => PlayTransition(BuildFloorLabel());
+
+    public IEnumerator PlayTransition(string label)
     {
         floorLabel.text  = label;
         floorLabel.alpha = 0f;
         panel.SetActive(true);
 
-
+        // Fade in
         float elapsed = 0f;
         while (elapsed < fadeInDuration)
         {
@@ -43,11 +50,11 @@ public class FloorTransitionUI : MonoBehaviour
         }
         floorLabel.alpha = 1f;
 
-
+        // Hold
         float holdTime = Mathf.Max(0f, minDuration - fadeInDuration - fadeOutDuration);
         yield return new WaitForSecondsRealtime(holdTime);
 
-
+        // Fade out
         elapsed = 0f;
         while (elapsed < fadeOutDuration)
         {
@@ -56,17 +63,7 @@ public class FloorTransitionUI : MonoBehaviour
             yield return null;
         }
         floorLabel.alpha = 0f;
-
-        SceneManager.sceneLoaded += OnSceneLoaded;
-        SceneManager.LoadScene(sceneIndex);
     }
-
-    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-        panel.SetActive(false);
-    }
-
 
     public static string BuildFloorLabel()
     {
