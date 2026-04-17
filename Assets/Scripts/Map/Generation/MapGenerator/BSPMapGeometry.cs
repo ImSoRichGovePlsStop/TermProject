@@ -2,12 +2,13 @@
  * BSPMapGeometry — Office-style dungeon generator
  *
  * Generation pipeline:
- *   1. FillMatrix        — place all typed rooms (corners first, then battle, event, fill)
- *   2. SealNarrowGaps    — flood-fill empty regions and Unmarked room nodes; seal thin ones
- *   3. MergeSmallRooms   — merge Unmarked rooms below mergeAreaThreshold into neighbours
- *   4. BuildConnectivity — scan adjacency, build MST + all-pairs edges, store shared cells
- *   5. PunchDoors        — for each edge punch a door opening; Spawn restricted to Battle/Boss
- *   6. SpawnGeometry     — floor quads, wall quads (2-layer), void blockers, sealed cubes
+ *   1. FillMatrix        — place all typed rooms (corners first, then battle, event, fill);
+ *                          FillRemaining uses FindLargestRectangle on all remaining empty cells:
+ *                          large enough rect → Unmarked room, too small/narrow → Cell.Occupied seal
+ *   2. MergeSmallRooms   — merge Unmarked rooms below mergeAreaThreshold into neighbours
+ *   3. BuildConnectivity — scan adjacency, build MST + all-pairs edges, store shared cells
+ *   4. PunchDoors        — for each edge punch a door opening; Spawn/Boss restricted
+ *   5. SpawnGeometry     — floor quads, wall quads (2-layer), void blockers, sealed cubes
  *
  * Room types:
  *   Marked   = Spawn | Boss | Battle | event types
@@ -129,7 +130,9 @@ public class BSPMapGeometry : MonoBehaviour
 
     MapNode _bossGuardNode;   // battle room directly adjacent to boss, sole door to boss
 
-    struct RectResult { public int x, z, width, height; }
+    // Debug: rectangles produced by FillRemaining — stamped rooms vs sealed gaps
+    readonly List<RectResult> _fillStamped = new();
+    readonly List<RectResult> _fillSealed  = new();
 
     static readonly Vector2Int[] Dirs = { new(1, 0), new(-1, 0), new(0, 1), new(0, -1) };
 
@@ -143,9 +146,10 @@ public class BSPMapGeometry : MonoBehaviour
         _isDoor = new bool[matrixSize, matrixSize];
         _nodes.Clear();
         _edges.Clear();
+        _fillStamped.Clear();
+        _fillSealed.Clear();
 
         FillMatrix();
-        SealNarrowGaps();
         MergeSmallEmptyRooms();
         BuildConnectivity();
         PunchDoors();
@@ -468,38 +472,35 @@ public class BSPMapGeometry : MonoBehaviour
 
     void FillRemaining()
     {
-        for (int minSz = minEmptyRoomSize; minSz >= 1; minSz--)
+        while (true)
         {
-            for (int pass = 0; pass < matrixSize * matrixSize; pass++)
+            // Collect every remaining empty cell
+            var empty = new HashSet<Vector2Int>();
+            for (int x = 0; x < matrixSize; x++)
+                for (int z = 0; z < matrixSize; z++)
+                    if (_matrix[x, z] == Cell.Empty)
+                        empty.Add(new Vector2Int(x, z));
+
+            if (empty.Count == 0) break;
+
+            var rect = FindLargestRectangle(empty);
+            if (rect.width <= 0 || rect.height <= 0) break;   // safety — should never happen
+
+            // Too narrow or too small → seal every cell in the rectangle
+            if (rect.width < sealMinWidth || rect.height < sealMinWidth || rect.width * rect.height < sealMinArea)
             {
-                var cell = FindEmptyCell();
-                if (!cell.HasValue) break;
-
-                int ox = cell.Value.x, oz = cell.Value.y;
-                int bestW = 1, bestH = 1;
-
-                for (int w = 1; w <= Mathf.Min(maxEmptyRoomSize, matrixSize - ox); w++)
-                {
-                    if (_matrix[ox + w - 1, oz] != Cell.Empty) break;
-                    for (int h = 1; h <= Mathf.Min(maxEmptyRoomSize, matrixSize - oz); h++)
-                    {
-                        if (!RowEmpty(ox, oz + h - 1, w)) break;
-                        bestW = w; bestH = h;
-                    }
-                }
-
-                if (bestW < minSz || bestH < minSz)
-                {
-                    if (minSz == 1)
-                        for (int fx = ox; fx < ox + bestW; fx++)
-                            for (int fz = oz; fz < oz + bestH; fz++)
-                                if (_matrix[fx, fz] == Cell.Empty) _matrix[fx, fz] = Cell.Occupied;
-                    continue;
-                }
-
-                int sw = Mathf.Min(bestW, Mathf.Max(minSz, Random.Range(minEmptyRoomSize, maxEmptyRoomSize + 1)));
-                int sh = Mathf.Min(bestH, Mathf.Max(minSz, Random.Range(minEmptyRoomSize, maxEmptyRoomSize + 1)));
-                StampRoom(ox, oz, sw, sh, null, RoomType.Unmarked);
+                for (int x = rect.x; x < rect.x + rect.width; x++)
+                    for (int z = rect.z; z < rect.z + rect.height; z++)
+                        _matrix[x, z] = Cell.Occupied;
+                _fillSealed.Add(rect);
+            }
+            else
+            {
+                // Pick a random size within the found rectangle (capped at inspector maxima)
+                int sw = Mathf.Min(rect.width,  Random.Range(minEmptyRoomSize, maxEmptyRoomSize + 1));
+                int sh = Mathf.Min(rect.height, Random.Range(minEmptyRoomSize, maxEmptyRoomSize + 1));
+                _fillStamped.Add(new RectResult { x = rect.x, z = rect.z, width = sw, height = sh });
+                StampRoom(rect.x, rect.z, sw, sh, null, RoomType.Unmarked);
             }
         }
     }
@@ -539,106 +540,7 @@ public class BSPMapGeometry : MonoBehaviour
             }
     }
 
-    
-    void SealNarrowGaps()
-    {
-        var visited = new bool[matrixSize, matrixSize];
-        for (int sx = 0; sx < matrixSize; sx++)
-            for (int sz = 0; sz < matrixSize; sz++)
-            {
-                if (visited[sx, sz]) continue;
-                byte v = _matrix[sx, sz];
-                if (v != Cell.Empty && v != Cell.Occupied) continue;
-
-                var region = new List<Vector2Int>();
-                var queue = new Queue<Vector2Int>();
-                queue.Enqueue(new Vector2Int(sx, sz));
-                visited[sx, sz] = true;
-                int minX = sx, maxX = sx, minZ = sz, maxZ = sz;
-
-                while (queue.Count > 0)
-                {
-                    var cur = queue.Dequeue();
-                    region.Add(cur);
-                    if (cur.x < minX) minX = cur.x; if (cur.x > maxX) maxX = cur.x;
-                    if (cur.y < minZ) minZ = cur.y; if (cur.y > maxZ) maxZ = cur.y;
-                    foreach (var d in Dirs)
-                    {
-                        int nx = cur.x + d.x, nz = cur.y + d.y;
-                        if (nx < 0 || nz < 0 || nx >= matrixSize || nz >= matrixSize) continue;
-                        if (visited[nx, nz]) continue;
-                        byte nv = _matrix[nx, nz];
-                        if (nv != Cell.Empty && nv != Cell.Occupied) continue;
-                        visited[nx, nz] = true;
-                        queue.Enqueue(new Vector2Int(nx, nz));
-                    }
-                }
-
-                if (maxX - minX + 1 < minEmptyRoomSize || maxZ - minZ + 1 < minEmptyRoomSize)
-                    foreach (var c in region) _matrix[c.x, c.y] = Cell.Occupied;
-            }
-
-        var vis2 = new bool[matrixSize, matrixSize];
-        for (int sx = 0; sx < matrixSize; sx++)
-            for (int sz = 0; sz < matrixSize; sz++)
-            {
-                if (vis2[sx, sz]) continue;
-                var owner = _roomMap[sx, sz];
-                if (owner == null || owner.Type != RoomType.Unmarked) continue;
-
-                var region = new HashSet<Vector2Int>();
-                var regionNodes = new HashSet<MapNode>();
-                var queue = new Queue<Vector2Int>();
-                queue.Enqueue(new Vector2Int(sx, sz));
-                vis2[sx, sz] = true;
-
-                while (queue.Count > 0)
-                {
-                    var cur = queue.Dequeue();
-                    region.Add(cur);
-                    var co = _roomMap[cur.x, cur.y];
-                    if (co != null) regionNodes.Add(co);
-                    foreach (var d in Dirs)
-                    {
-                        int nx = cur.x + d.x, nz = cur.y + d.y;
-                        if (nx < 0 || nz < 0 || nx >= matrixSize || nz >= matrixSize) continue;
-                        if (vis2[nx, nz]) continue;
-                        var nb = _roomMap[nx, nz];
-                        if (nb == null || nb.Type != RoomType.Unmarked) continue;
-                        vis2[nx, nz] = true;
-                        queue.Enqueue(new Vector2Int(nx, nz));
-                    }
-                }
-
-                var remaining = new HashSet<Vector2Int>(region);
-                var toSeal = new List<Vector2Int>();
-
-                while (remaining.Count > 0)
-                {
-                    var best = FindLargestRectangle(remaining);
-                    for (int x = best.x; x < best.x + best.width; x++)
-                        for (int z = best.z; z < best.z + best.height; z++)
-                            remaining.Remove(new Vector2Int(x, z));
-
-                    if (best.width < sealMinWidth || best.height < sealMinWidth || best.width * best.height < sealMinArea)
-                        for (int x = best.x; x < best.x + best.width; x++)
-                            for (int z = best.z; z < best.z + best.height; z++)
-                                toSeal.Add(new Vector2Int(x, z));
-                }
-                foreach (var c in remaining) toSeal.Add(c);
-
-                foreach (var c in toSeal) { _matrix[c.x, c.y] = Cell.Occupied; _roomMap[c.x, c.y] = null; }
-
-                foreach (var node in regionNodes)
-                {
-                    bool anyLeft = false;
-                    for (int x = node.MinX; x <= node.MaxX && !anyLeft; x++)
-                        for (int z = node.MinZ; z <= node.MaxZ && !anyLeft; z++)
-                            if (_roomMap[x, z] == node) anyLeft = true;
-                    if (!anyLeft) _nodes.Remove(node);
-                }
-            }
-    }
+    struct RectResult { public int x, z, width, height; }
 
     RectResult FindLargestRectangle(HashSet<Vector2Int> cells)
     {
@@ -1308,6 +1210,20 @@ public class BSPMapGeometry : MonoBehaviour
             for (int z = 0; z < matrixSize; z++)
                 if (_isDoor[x, z])
                     Gizmos.DrawCube(new Vector3(x + 0.5f, 1f, z + 0.5f), Vector3.one * 0.5f);
+
+        // FillRemaining debug: stamped Unmarked rooms (cyan) and sealed gaps (red)
+        const float gizY = 2f;
+        Gizmos.color = new Color(0f, 1f, 1f, 0.55f);
+        foreach (var r in _fillStamped)
+            Gizmos.DrawWireCube(
+                new Vector3(r.x + r.width  * 0.5f, gizY, r.z + r.height * 0.5f),
+                new Vector3(r.width, 0.15f, r.height));
+
+        Gizmos.color = new Color(1f, 0.2f, 0.2f, 0.7f);
+        foreach (var r in _fillSealed)
+            Gizmos.DrawWireCube(
+                new Vector3(r.x + r.width  * 0.5f, gizY, r.z + r.height * 0.5f),
+                new Vector3(r.width, 0.15f, r.height));
     }
 
     [ContextMenu("Print Matrix Debug")]

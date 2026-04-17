@@ -414,8 +414,8 @@ MonoBehaviour:
   maxBattleRoomSize: 13
   minEventRoomSize: 6
   maxEventRoomSize: 7
-  minEmptyRoomSize: 3
-  maxEmptyRoomSize: 10
+  minEmptyRoomSize: 2
+  maxEmptyRoomSize: 28
   mergeAreaThreshold: 50
   sealMinWidth: 2
   sealMinArea: 10
