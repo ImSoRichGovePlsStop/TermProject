@@ -989,6 +989,9 @@ public class BSPMapGeometry : MonoBehaviour
         }
     }
 
+    MapNode EffectiveRoom(int x, int z)
+        => _roomMap[x, z] ?? _voidOwnerMap[x, z];
+
     // Returns true if a wall face exists between two adjacent cells —
     // i.e. they belong to different spaces (one void/empty, or different rooms).
     bool WallBoundaryExists(int ax, int az, int bx, int bz)
@@ -1001,8 +1004,7 @@ public class BSPMapGeometry : MonoBehaviour
         if (!aOccupied && !bOccupied) return false;   // both empty — no wall
         if (aOccupied != bOccupied)   return true;    // solid meets empty — wall
 
-        // Both solid: wall only if they belong to different rooms.
-        return _roomMap[ax, az] != _roomMap[bx, bz];
+        return EffectiveRoom(ax, az) != EffectiveRoom(bx, bz);
     }
 
     void SpawnVoidBlocker(Transform parent, int x, int z)
