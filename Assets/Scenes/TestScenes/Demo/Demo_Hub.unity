@@ -14790,6 +14790,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5851368216106796546, guid: 99d47f9338280df4ca3e55aeb52a23d2, type: 3}
+      propertyPath: meanCost
+      value: 278
+      objectReference: {fileID: 0}
     - target: {fileID: 7487802019810916615, guid: 99d47f9338280df4ca3e55aeb52a23d2, type: 3}
       propertyPath: m_Name
       value: GroundLoot
@@ -42488,6 +42492,10 @@ PrefabInstance:
     - target: {fileID: 4684014522672617624, guid: 99d47f9338280df4ca3e55aeb52a23d2, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5851368216106796546, guid: 99d47f9338280df4ca3e55aeb52a23d2, type: 3}
+      propertyPath: meanCost
+      value: 1272.91
       objectReference: {fileID: 0}
     - target: {fileID: 7487802019810916615, guid: 99d47f9338280df4ca3e55aeb52a23d2, type: 3}
       propertyPath: m_Name

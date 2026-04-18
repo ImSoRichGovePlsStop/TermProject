@@ -24,7 +24,7 @@ public class SkullGroup : MonoBehaviour, IGroupSpawner
     private int _resolvedCount;
     private bool _hasStatScale;
     private StatScale _statScale;
-
+    private System.Action<int> _onMissed;
 
     public int GetSpawnCount() => _resolvedCount;
 
@@ -34,6 +34,10 @@ public class SkullGroup : MonoBehaviour, IGroupSpawner
         _hasStatScale = true;
     }
 
+    public void SetMissCallback(System.Action<int> onMissed)
+    {
+        _onMissed = onMissed;
+    }
 
     private void Awake()
     {
@@ -48,6 +52,7 @@ public class SkullGroup : MonoBehaviour, IGroupSpawner
     private IEnumerator SpawnRoutine()
     {
         var spawnedPositions = new List<Vector3>();
+        int actualSpawned = 0;
 
         for (int i = 0; i < _resolvedCount; i++)
         {
@@ -55,11 +60,15 @@ public class SkullGroup : MonoBehaviour, IGroupSpawner
             if (pos == Vector3.zero) continue;
 
             spawnedPositions.Add(pos);
+            actualSpawned++;
             var skull = Instantiate(skullPrefab, pos, Quaternion.identity);
 
             if (_hasStatScale && skull.TryGetComponent<EntityStats>(out var stats))
                 stats.SetStatScale(_statScale);
         }
+
+        int missed = _resolvedCount - actualSpawned;
+        if (missed > 0) _onMissed?.Invoke(missed);
 
         if (spawnEffectPrefab != null)
         {

@@ -172,20 +172,23 @@ public class BattleRoom : MonoBehaviour
             return;
         }
 
-        int budget = _waveBudgets[waveIndex];
+        int spawned = SpawnBudgetFill(_waveBudgets[waveIndex], waveIndex);
+        _aliveCount += spawned;
+        if (spawned == 0)
+            StartCoroutine(OnWaveCleared());
+    }
+
+    protected int SpawnBudgetFill(int budget, int waveIndex)
+    {
         int spawned = 0;
         int safetyLimit = 200;
 
         while (budget > 0 && safetyLimit-- > 0)
         {
-            // Filter entries that fit in remaining budget
             var affordable = new List<EnemyEntry>();
-            int cheapest = int.MaxValue;
             foreach (var e in enemyEntries)
             {
-                int c = Mathf.Max(1, e.cost);
-                if (c < cheapest) cheapest = c;
-                if (c <= budget) affordable.Add(e);
+                if (Mathf.Max(1, e.cost) <= budget) affordable.Add(e);
             }
 
             if (affordable.Count == 0)
@@ -201,19 +204,7 @@ public class BattleRoom : MonoBehaviour
                 {
                     bool fillerElite = _eliteBudgetsPerWave[waveIndex] > 0 && cheapestEntry.elite != null;
                     if (fillerElite) _eliteBudgetsPerWave[waveIndex]--;
-                    var filler = Instantiate(fillerElite ? cheapestEntry.elite : cheapestEntry.normal,
-                                            PickSpawnPosition(), Quaternion.identity);
-                    var fillerSpawner = filler.GetComponent<IGroupSpawner>();
-                    if (fillerSpawner != null)
-                    {
-                        spawned += fillerSpawner.GetSpawnCount();
-                        fillerSpawner.SetGroupStatScale(ComputeStatScale());
-                    }
-                    else
-                    {
-                        spawned++;
-                        ApplyEnemyScale(filler);
-                    }
+                    spawned += SpawnEnemyPrefab(fillerElite ? cheapestEntry.elite : cheapestEntry.normal);
                 }
                 break;
             }
@@ -221,26 +212,32 @@ public class BattleRoom : MonoBehaviour
             var entry = affordable[Random.Range(0, affordable.Count)];
             bool useElite = _eliteBudgetsPerWave[waveIndex] > 0 && entry.elite != null;
             if (useElite) _eliteBudgetsPerWave[waveIndex]--;
-            var prefab = useElite ? entry.elite : entry.normal;
             budget -= Mathf.Max(1, entry.cost);
-
-            var go = Instantiate(prefab, PickSpawnPosition(), Quaternion.identity);
-
-            var groupSpawner = go.GetComponent<IGroupSpawner>();
-            if (groupSpawner != null)
-            {
-                spawned += groupSpawner.GetSpawnCount();
-                groupSpawner.SetGroupStatScale(ComputeStatScale());
-            }
-            else
-            {
-                spawned++;
-                ApplyEnemyScale(go);
-            }
+            spawned += SpawnEnemyPrefab(useElite ? entry.elite : entry.normal);
         }
 
-        _aliveCount += spawned;
-        if (spawned == 0)
+        return spawned;
+    }
+
+    protected int SpawnEnemyPrefab(GameObject prefab)
+    {
+        var go = Instantiate(prefab, PickSpawnPosition(), Quaternion.identity);
+        var groupSpawner = go.GetComponent<IGroupSpawner>();
+        if (groupSpawner != null)
+        {
+            groupSpawner.SetGroupStatScale(ComputeStatScale());
+            groupSpawner.SetMissCallback(HandleGroupMiss);
+            return groupSpawner.GetSpawnCount();
+        }
+        ApplyEnemyScale(go);
+        return 1;
+    }
+
+    protected void HandleGroupMiss(int missed)
+    {
+        if (missed <= 0) return;
+        _aliveCount = Mathf.Max(0, _aliveCount - missed);
+        if (isLocked && !isCleared && _aliveCount <= waveThreshold)
             StartCoroutine(OnWaveCleared());
     }
 
@@ -427,6 +424,7 @@ public class BattleRoom : MonoBehaviour
 
     protected void CreateInvisibleWalls()
     {
+        int wallLayer = LayerMask.NameToLayer("Wall");
         float t = InvisibleWallThickness;
         (Vector3 pos, Vector3 size)[] configs =
         {
@@ -439,6 +437,7 @@ public class BattleRoom : MonoBehaviour
         foreach (var (localPos, size) in configs)
         {
             var wall = new GameObject("InvisibleWall");
+            if (wallLayer >= 0) wall.layer = wallLayer;
             wall.transform.SetParent(transform);
             wall.transform.localPosition = localPos;
             wall.AddComponent<BoxCollider>().size = size;
