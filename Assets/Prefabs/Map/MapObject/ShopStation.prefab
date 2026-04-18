@@ -42,7 +42,7 @@ SpriteRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 182310643900062507}
   m_Enabled: 1
-  m_CastShadows: 0
+  m_CastShadows: 1
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
@@ -59,7 +59,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
+  - {fileID: -876546973899608171, guid: 8746ad3b42b400b41a87a802ef7079ce, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -174,10 +174,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ShopInteractable
   shopEntries: []
   useRandomizer: 1
-  minCount: 6
-  maxCount: 6
-  meanCost: 100
-  sd: 30
+  count: 3
+  midCost: 100
+  cheapSd: 30
+  expensiveSd: 30
   allowDuplicates: 0
+  currentModuleDupChance: 0.1
   shopUI: {fileID: 0}
   uiManager: {fileID: 0}

@@ -25,9 +25,7 @@ using System;
 using System.Collections.Generic;
 using Unity.AI.Navigation;
 using UnityEngine;
-using UnityEngine.ProBuilder;
 using UnityEngine.AI;
-using UnityEngine.ProBuilder.MeshOperations;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
@@ -130,6 +128,10 @@ public class BSPMapGeometry : MonoBehaviour
     Dictionary<(MapNode, MapNode), List<Vector2Int>> _sharedCells;
 
     MapNode _bossGuardNode;   // battle room directly adjacent to boss, sole door to boss
+
+    // Shared meshes created once at geometry build time — reused by every floor/wall quad
+    Mesh _sharedFloorMesh;
+    Mesh _sharedWallMesh;
 
     // Debug: rectangles produced by FillRemaining — stamped rooms vs sealed gaps
     readonly List<RectResult> _fillStamped = new();
@@ -839,6 +841,30 @@ public class BSPMapGeometry : MonoBehaviour
 
     void SpawnGeometry()
     {
+        // ── Shared meshes (built once, reused for every quad) ─────────────────
+        _sharedFloorMesh = new Mesh { name = "SharedFloor" };
+        _sharedFloorMesh.vertices  = new[] {
+            new Vector3(-0.5f, 0f,  0.5f), new Vector3(0.5f, 0f,  0.5f),
+            new Vector3( 0.5f, 0f, -0.5f), new Vector3(-0.5f, 0f, -0.5f)
+        };
+        _sharedFloorMesh.triangles = new[] { 0, 1, 2, 0, 2, 3 };
+        _sharedFloorMesh.uv        = new[] { new Vector2(0,1), new Vector2(1,1), new Vector2(1,0), new Vector2(0,0) };
+        _sharedFloorMesh.RecalculateNormals();
+        _sharedFloorMesh.RecalculateBounds();
+
+        float totalH = wallHeight + Mathf.Abs(floorThickness);
+        float hh     = totalH * 0.5f;
+        _sharedWallMesh = new Mesh { name = "SharedWall" };
+        _sharedWallMesh.vertices  = new[] {
+            new Vector3(-0.5f, -hh, 0f), new Vector3(0.5f, -hh, 0f),
+            new Vector3( 0.5f,  hh, 0f), new Vector3(-0.5f,  hh, 0f)
+        };
+        _sharedWallMesh.triangles = new[] { 0, 1, 2, 0, 2, 3 };
+        _sharedWallMesh.uv        = new[] { new Vector2(0,0), new Vector2(1,0), new Vector2(1,1), new Vector2(0,1) };
+        _sharedWallMesh.RecalculateNormals();
+        _sharedWallMesh.RecalculateBounds();
+        // ─────────────────────────────────────────────────────────────────────
+
         var floorP = new GameObject("Floors").transform;
         var wallP = new GameObject("Walls").transform;
         var voidP = new GameObject("VoidBlockers").transform;
@@ -892,6 +918,11 @@ public class BSPMapGeometry : MonoBehaviour
             var pillarP = new GameObject("Pillars").transform;
             SpawnPillars(pillarP);
         }
+
+        // ── Static batching — collapses same-material renderers to 1 draw call each ──
+        StaticBatchingUtility.Combine(floorP.gameObject);
+        StaticBatchingUtility.Combine(wallP.gameObject);
+        StaticBatchingUtility.Combine(sealedP.gameObject);
     }
 
     // Places a decorative pillar at every corner where both a horizontal wall (±Z face)
@@ -955,8 +986,9 @@ public class BSPMapGeometry : MonoBehaviour
         go.transform.position = new Vector3(x + 0.5f, wallHeight * 0.5f, z + 0.5f);
         go.transform.localScale = new Vector3(1f, wallHeight, 1f);
         go.layer = LayerMask.NameToLayer("Wall");
+        go.isStatic = true;
         go.AddComponent<MeshFilter>().sharedMesh = Resources.GetBuiltinResource<Mesh>("Cube.fbx");
-        go.AddComponent<MeshRenderer>().material = sealedMat;
+        go.AddComponent<MeshRenderer>().sharedMaterial = sealedMat;
         go.AddComponent<BoxCollider>();
     }
 
@@ -966,22 +998,17 @@ public class BSPMapGeometry : MonoBehaviour
         go.transform.SetParent(parent);
         go.transform.position = new Vector3(x + 0.5f, 0f, z + 0.5f);
         go.layer = LayerMask.NameToLayer("Ground");
+        go.isStatic = true;
 
-        var pb = go.AddComponent<ProBuilderMesh>();
-        var poly = go.AddComponent<PolyShape>();
-        poly.SetControlPoints(new Vector3[] {
-            new(-0.5f,0f,0.5f), new(0.5f,0f,0.5f), new(0.5f,0f,-0.5f), new(-0.5f,0f,-0.5f)
-        });
-        poly.extrude = floorThickness; poly.flipNormals = false;
-        pb.CreateShapeFromPolygon(poly.controlPoints, poly.extrude, poly.flipNormals);
-        pb.ToMesh(); pb.Refresh();
-        if (floorMat != null) pb.GetComponent<Renderer>().material = floorMat;
+        go.AddComponent<MeshFilter>().sharedMesh = _sharedFloorMesh;
+        var mr = go.AddComponent<MeshRenderer>();
+        mr.sharedMaterial = floorMat;
 
-        // Only Battle and Boss room floors get a MeshCollider — NavMesh bakes from these
+        // Only Battle, Boss, and RareLoot room floors get a collider — NavMesh bakes from these
         if (owner != null && (owner.Type == RoomType.Battle || owner.Type == RoomType.Boss || owner.Type == RoomType.RareLoot))
         {
             var mc = go.AddComponent<MeshCollider>();
-            mc.sharedMesh = pb.GetComponent<MeshFilter>().sharedMesh;
+            mc.sharedMesh = _sharedFloorMesh;
         }
     }
 
@@ -994,28 +1021,24 @@ public class BSPMapGeometry : MonoBehaviour
             return;
         }
 
-        // ── Fallback: original ProBuilder quad ────────────────────────────────
-        float totalH = wallHeight + Mathf.Abs(floorThickness);
-        float centerY = floorThickness + totalH / 2f;
-        float hh = totalH / 2f;
+        // ── Fallback: plain mesh quad ─────────────────────────────────────────
+        float totalH  = wallHeight + Mathf.Abs(floorThickness);
+        float centerY = floorThickness + totalH * 0.5f;
 
         var go = new GameObject($"W_{x}_{z}_{facing.x}_{facing.y}");
         go.transform.SetParent(parent);
         go.transform.position = new Vector3(x + 0.5f + facing.x * 0.5f, centerY, z + 0.5f + facing.y * 0.5f);
         go.transform.rotation = Quaternion.LookRotation(new Vector3(-facing.x, 0, -facing.y));
         go.layer = LayerMask.NameToLayer("Wall");
+        go.isStatic = true;
 
-        var pb = go.AddComponent<ProBuilderMesh>();
-        var poly = go.AddComponent<PolyShape>();
-        poly.SetControlPoints(new Vector3[] {
-            new(-0.5f,-hh,0f), new(0.5f,-hh,0f), new(0.5f,hh,0f), new(-0.5f,hh,0f)
-        });
-        poly.extrude = wallThickness; poly.flipNormals = false;
-        pb.CreateShapeFromPolygon(poly.controlPoints, poly.extrude, poly.flipNormals);
-        pb.ToMesh(); pb.Refresh();
-        var mc = go.AddComponent<MeshCollider>();
-        mc.sharedMesh = pb.GetComponent<MeshFilter>().sharedMesh;
-        if (wallMat != null) pb.GetComponent<Renderer>().material = wallMat;
+        go.AddComponent<MeshFilter>().sharedMesh = _sharedWallMesh;
+        var mr = go.AddComponent<MeshRenderer>();
+        mr.sharedMaterial = wallMat;
+
+        // BoxCollider gives actual volume — more reliable for physics and NavMesh than a flat MeshCollider
+        var bc = go.AddComponent<BoxCollider>();
+        bc.size = new Vector3(1f, totalH, Mathf.Max(0.05f, wallThickness));
 
         var mod = go.AddComponent<NavMeshModifier>();
         mod.overrideArea = true;
