@@ -67,6 +67,18 @@ public class RunManager : MonoBehaviour
     public int   EffectiveExtraBattleRoomMin => PermanentMods.extraBattleRoomMin     + NextFloorMods.extraBattleRoomMin;
     public float EffectiveHealPerRoomBonus   => PermanentMods.healPerRoomBonus       + NextFloorMods.healPerRoomBonus;
     public int   EffectiveBonusCoinsOnEntry  => PermanentMods.bonusCoinsOnFloorEntry + NextFloorMods.bonusCoinsOnFloorEntry;
+    public float EffectiveLootChanceBias     => PermanentMods.lootChanceBias         + NextFloorMods.lootChanceBias;
+    public float EffectiveSellMultiplier        => PermanentMods.sellPriceMultiplier   * NextFloorMods.sellPriceMultiplier;
+    public float EffectiveShopDiscount          => Mathf.Clamp01(PermanentMods.shopDiscount     + NextFloorMods.shopDiscount);
+    public float EffectiveUpgradeDiscount       => Mathf.Clamp01(PermanentMods.upgradeDiscount  + NextFloorMods.upgradeDiscount);
+    public float EffectiveHealDiscount          => Mathf.Clamp01(PermanentMods.healDiscount     + NextFloorMods.healDiscount);
+    public float EffectiveEnemyHpMultiplier     => PermanentMods.enemyHpMultiplier     * NextFloorMods.enemyHpMultiplier;
+    public float EffectiveEnemyDamageMultiplier => PermanentMods.enemyDamageMultiplier * NextFloorMods.enemyDamageMultiplier;
+    public float EffectiveEnemySpeedMultiplier  => PermanentMods.enemySpeedMultiplier  * NextFloorMods.enemySpeedMultiplier;
+    public float EffectiveMergeValueMultiplier  => PermanentMods.mergeValueMultiplier  * NextFloorMods.mergeValueMultiplier;
+    public float EffectiveMergeSpreadMultiplier => PermanentMods.mergeSpreadMultiplier * NextFloorMods.mergeSpreadMultiplier;
+    public bool  EffectiveMergeGuaranteeSameRarity => PermanentMods.mergeGuaranteeSameRarity || NextFloorMods.mergeGuaranteeSameRarity;
+    public int   EffectiveMergeRarityBonus      => PermanentMods.mergeRarityBonus      + NextFloorMods.mergeRarityBonus;
 
     // ────────────────────────────────────────────────────────────────────────
 

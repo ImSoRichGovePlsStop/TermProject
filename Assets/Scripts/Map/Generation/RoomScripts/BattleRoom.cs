@@ -236,12 +236,15 @@ public class BattleRoom : MonoBehaviour
     {
         if (!enemy.TryGetComponent<EntityStats>(out var stats)) return;
         var player = FindFirstObjectByType<PlayerStats>();
+        var rm = RunManager.Instance;
         var scale = new StatScale();
-        float progress = (RunManager.Instance?.TotalBossKilled ?? 0) * enemyProgressBossWeight
-                       + (RunManager.Instance?.TotalRoomsCleared ?? 0) * enemyProgressRoomWeight;
-        scale.moveSpeed = Random.Range(enemySpeedMin, enemySpeedMax);
-        scale.hp = 1f + progress + (player.Damage / Mathf.Max(1f, player.BaseDamage)) * enemyHpPlayerDmgWeight;
-        scale.damage = 1f + progress + (player.MaxHealth / Mathf.Max(1f, player.BaseHealth)) * enemyDmgPlayerHpWeight;
+        float progress = (rm?.TotalBossKilled ?? 0) * enemyProgressBossWeight
+                       + (rm?.TotalRoomsCleared ?? 0) * enemyProgressRoomWeight;
+        scale.moveSpeed = Random.Range(enemySpeedMin, enemySpeedMax) * (rm?.EffectiveEnemySpeedMultiplier ?? 1f);
+        scale.hp        = (1f + progress + (player.Damage / Mathf.Max(1f, player.BaseDamage)) * enemyHpPlayerDmgWeight)
+                          * (rm?.EffectiveEnemyHpMultiplier ?? 1f);
+        scale.damage    = (1f + progress + (player.MaxHealth / Mathf.Max(1f, player.BaseHealth)) * enemyDmgPlayerHpWeight)
+                          * (rm?.EffectiveEnemyDamageMultiplier ?? 1f);
         stats.SetStatScale(scale);
     }
 
@@ -300,7 +303,8 @@ public class BattleRoom : MonoBehaviour
         RemoveInvisibleWalls();
 
         bool firstRoom = (RunManager.Instance?.TotalRoomsCleared ?? 0) == 0;
-        if (firstRoom || Random.value < lootChance)
+        float effectiveLootChance = Mathf.Clamp01(lootChance + (RunManager.Instance?.EffectiveLootChanceBias ?? 0f));
+        if (firstRoom || Random.value < effectiveLootChance)
             SpawnLoot(PickLootPosition());
         else if (upgradeStationPrefab != null)
             Instantiate(upgradeStationPrefab, PickLootPosition(), Quaternion.identity);

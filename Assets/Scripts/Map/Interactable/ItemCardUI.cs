@@ -69,7 +69,9 @@ public class ItemCardUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
         _inst = new ModuleInstance(entry.data, entry.rarity, entry.level);
         _shopUI = shopUI;
         _entryIndex = entryIndex;
-        _price = entry.data.cost[(int)entry.rarity];
+        int baseCost = entry.data.cost[(int)entry.rarity];
+        float discount = RunManager.Instance != null ? RunManager.Instance.EffectiveShopDiscount : 0f;
+        _price = Mathf.RoundToInt(baseCost * (1f - discount));
 
         if (statusText != null) statusText.gameObject.SetActive(false);
 
@@ -78,7 +80,9 @@ public class ItemCardUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
         if (priceText != null)
         {
             priceText.gameObject.SetActive(true);
-            priceText.text = $"{_price} coins";
+            priceText.text = discount > 0f
+                ? $"<s>{baseCost}</s> {_price} coins"
+                : $"{_price} coins";
         }
 
         if (buyButton != null)

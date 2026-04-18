@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +13,8 @@ public class MergeUI : MonoBehaviour
 
     [Header("UI")]
     [SerializeField] private Button mergeButton;
+    [SerializeField] private TextMeshProUGUI totalCostText;
+    [SerializeField] private TextMeshProUGUI outputRangeText;
 
     [Header("Prefabs")]
     [SerializeField] private ModuleItemUI moduleItemPrefab;
@@ -23,6 +26,7 @@ public class MergeUI : MonoBehaviour
     private MergeStation _currentStation = null;
     private Canvas _canvas;
     private InventoryUI _inventoryUI;
+    private Coroutine _rollDisplayCoroutine;
 
     public static bool IsMergeOpen { get; private set; }
 
@@ -44,6 +48,8 @@ public class MergeUI : MonoBehaviour
         outputGridUI.Init(_outputGrid, cellSize, cellSpacing);
 
         _outputGrid.OnModuleRemoved += OnOutputRemoved;
+        _inputGrid.OnModulePlaced  += _ => RefreshCostDisplay();
+        _inputGrid.OnModuleRemoved += _ => RefreshCostDisplay();
         mergeButton.onClick.AddListener(OnMergeClicked);
         _initialized = true;
     }
@@ -71,6 +77,7 @@ public class MergeUI : MonoBehaviour
         ModuleTooltipUI.Instance?.Hide();
         bagGridUI.ClearHighlights();
         bagGridUI.ClearBuffHighlights();
+        RefreshCostDisplay();
     }
 
     public void Open(MergeStation station)
@@ -169,16 +176,33 @@ public class MergeUI : MonoBehaviour
         var inputModules = new List<ModuleInstance>(_inputGrid.GetAllModules());
         if (inputModules.Count == 0) { Debug.LogWarning("[MergeUI] No input items!"); return; }
 
-        int totalCost = 0;
-        foreach (var inst in inputModules)
+        int totalCost = CalculateTotalInputCost(inputModules);
+
+        var run = RunManager.Instance;
+        float valueMult  = run != null ? run.EffectiveMergeValueMultiplier  : 1f;
+        float spreadMult = run != null ? run.EffectiveMergeSpreadMultiplier : 1f;
+        int   minRarity  = 0;
+        if (run != null)
         {
-            var cost = inst.Data.cost;
-            int rarityIdx = Mathf.Clamp((int)inst.Rarity, 0, cost.Length - 1);
-            totalCost += cost[rarityIdx];
+            if (run.EffectiveMergeGuaranteeSameRarity)
+                minRarity = CalcAvgRarityIndex(inputModules);
+            minRarity = Mathf.Clamp(minRarity + run.EffectiveMergeRarityBonus, 0, 4);
         }
 
-        var rolled = Randomizer.Roll(1, 1, totalCost * 0.75f, totalCost * 0.2f);
-        if (rolled.Count == 0) { Debug.LogWarning("[MergeUI] Randomizer returned no results!"); return; }
+        float mean = totalCost * 0.75f * valueMult;
+        float sd   = totalCost * 0.1f  * spreadMult;
+        float low  = Mathf.Max(0, mean - 2f * sd);
+        float high = mean + 2f * sd;
+
+        var entry = Randomizer.RollInRange(low, high, minRarityIndex: minRarity);
+        float step = totalCost * 0.1f;
+        while (entry.data == null && (high - low) < totalCost * 4f)
+        {
+            low  = Mathf.Max(0, low  - step);
+            high = high + step;
+            entry = Randomizer.RollInRange(low, high, minRarityIndex: minRarity);
+        }
+        if (entry.data == null) { Debug.LogWarning("[MergeUI] No module found in pool!"); return; }
 
         foreach (var inst in inputModules)
         {
@@ -187,7 +211,6 @@ public class MergeUI : MonoBehaviour
             if (inst.UIElement is MaterialItemUI matUI) Destroy(matUI.gameObject);
         }
 
-        var entry = rolled[0];
         var outInst = new ModuleInstance(entry.data, entry.rarity, entry.level);
         _currentStation.CachedOutput = outInst;
 
@@ -317,5 +340,78 @@ public class MergeUI : MonoBehaviour
         Canvas.ForceUpdateCanvases();
         ui.SnapToCell(gridUI, cell);
         ui.GetComponent<CanvasGroup>().alpha = 1f;
+    }
+
+    private static int CalcAvgRarityIndex(List<ModuleInstance> modules)
+    {
+        int total = 0, count = 0;
+        foreach (var inst in modules)
+        {
+            if (inst is MaterialInstance) continue;
+            total += (int)inst.Rarity;
+            count++;
+        }
+        return count > 0 ? Mathf.RoundToInt((float)total / count) : 0;
+    }
+
+    private static int CalculateTotalInputCost(List<ModuleInstance> modules)
+    {
+        int total = 0;
+        foreach (var inst in modules)
+        {
+            if (inst is MaterialInstance matInst)
+                total += matInst.Cost * matInst.StackCount;
+            else
+            {
+                var cost = inst.Data.cost;
+                int idx = Mathf.Clamp((int)inst.Rarity, 0, cost.Length - 1);
+                total += cost[idx];
+            }
+        }
+        return total;
+    }
+
+    private void RefreshCostDisplay()
+    {
+        if (!_initialized) return;
+        var modules = new List<ModuleInstance>(_inputGrid.GetAllModules());
+        int totalCost = CalculateTotalInputCost(modules);
+        bool hasInput = modules.Count > 0;
+
+        if (totalCostText != null)
+            totalCostText.text = hasInput ? $"Value: {totalCost}" : "";
+
+        if (_rollDisplayCoroutine != null)
+        {
+            StopCoroutine(_rollDisplayCoroutine);
+            _rollDisplayCoroutine = null;
+        }
+
+        if (!hasInput)
+        {
+            if (outputRangeText != null) outputRangeText.text = "";
+            return;
+        }
+
+        var run = RunManager.Instance;
+        float valueMult  = run != null ? run.EffectiveMergeValueMultiplier  : 1f;
+        float spreadMult = run != null ? run.EffectiveMergeSpreadMultiplier : 1f;
+        _rollDisplayCoroutine = StartCoroutine(RollDisplayCoroutine(totalCost, valueMult, spreadMult));
+    }
+
+    private IEnumerator RollDisplayCoroutine(int totalCost, float valueMult, float spreadMult)
+    {
+        float mean = totalCost * 0.75f * valueMult;
+        float sd   = totalCost * 0.1f  * spreadMult;
+        float low  = Mathf.Max(0, mean - 4f * sd);
+        float high = mean + 4f * sd;
+
+        while (true)
+        {
+            if (outputRangeText != null)
+                outputRangeText.text = $"Value: ~{Mathf.RoundToInt(Random.Range(low, high))}";
+
+            yield return new WaitForSeconds(Random.Range(0.08f, 0.18f));
+        }
     }
 }
