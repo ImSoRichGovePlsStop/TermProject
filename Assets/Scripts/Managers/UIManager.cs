@@ -19,6 +19,7 @@ public class UIManager : MonoBehaviour
     private FloorTransitionUI _floorTransitionUI;
     private FloorModifierUI   _floorModifierUI;
     private HealthStationUpgradeUI _healthStationUI;
+    private LuckStationUpgradeUI   _luckStationUI;
     private PlayerStats playerStats;
     private bool _upgradeOpen;
 
@@ -33,6 +34,7 @@ public class UIManager : MonoBehaviour
     public bool IsUpgradeOpen => _upgradeOpen;
     public bool IsStorageOpen => _storageUI != null && _storageUI.IsOpen;
     public bool IsHealthStationOpen => _healthStationUI != null && _healthStationUI.IsOpen;
+    public bool IsLuckStationOpen   => _luckStationUI   != null && _luckStationUI.IsOpen;
 
     public PassiveScreenUI GetPassiveScreen() => passiveScreenUI;
     public GamblerScreenUI GetGamblerScreen() => gamblerScreenUI;
@@ -68,6 +70,7 @@ public class UIManager : MonoBehaviour
         _floorTransitionUI  = FindFirstObjectByType<FloorTransitionUI>(FindObjectsInactive.Include);
         _floorModifierUI    = FindFirstObjectByType<FloorModifierUI>(FindObjectsInactive.Include);
         _healthStationUI    = FindFirstObjectByType<HealthStationUpgradeUI>(FindObjectsInactive.Include);
+        _luckStationUI      = FindFirstObjectByType<LuckStationUpgradeUI>(FindObjectsInactive.Include);
 
         // Force Awake on all panels, then hide
         SetActive(inventoryPanel, true);
@@ -77,6 +80,7 @@ public class UIManager : MonoBehaviour
         SetActive(_lootRewardUI?.gameObject, true);
         SetActive(sellUI?.gameObject, true);
         SetActive(_healthStationUI?.gameObject, true);
+        SetActive(_luckStationUI?.gameObject, true);
 
         Canvas.ForceUpdateCanvases();
 
@@ -87,6 +91,7 @@ public class UIManager : MonoBehaviour
         SetActive(_lootRewardUI?.gameObject, false);
         SetActive(sellUI?.gameObject, false);
         SetActive(_healthStationUI?.gameObject, false);
+        SetActive(_luckStationUI?.gameObject, false);
     }
 
     private static void SetActive(GameObject go, bool active) { if (go != null) go.SetActive(active); }
@@ -115,6 +120,7 @@ public class UIManager : MonoBehaviour
             else if (IsStorageOpen) CloseStorage();
             else if (_upgradeOpen) return;
             else if (IsHealthStationOpen) CloseHealthStation();
+            else if (IsLuckStationOpen)   CloseLuckStation();
             else if (IsMergeOpen) { CloseMerge(); CloseInventoryImmediate(); }
             else if (IsShopOpen) { CloseShop(); CloseInventoryImmediate(); }
             else if (IsInventoryOpen) ToggleInventory();
@@ -241,7 +247,7 @@ public class UIManager : MonoBehaviour
         UpdatePanelVisibility();
     }
 
-    public void OpenRewardLoot(RandomLoot station, System.Collections.Generic.List<TestModuleEntry> rolled)
+    public void OpenRewardLoot(LootConfig config, System.Collections.Generic.List<TestModuleEntry> rolled)
     {
         if (_lootRewardUI == null)
             _lootRewardUI = FindFirstObjectByType<LootRewardUI>(FindObjectsInactive.Include);
@@ -249,7 +255,7 @@ public class UIManager : MonoBehaviour
 
         _lootRewardUI.gameObject.SetActive(true);
         DiscardGridUI.Instance?.ForceHide();
-        _lootRewardUI.Open(station, rolled);
+        _lootRewardUI.Open(config, rolled);
         UpdatePanelVisibility();
     }
 
@@ -329,6 +335,22 @@ public class UIManager : MonoBehaviour
         UpdatePanelVisibility();
     }
 
+    public void OpenLuckStation()
+    {
+        if (_luckStationUI == null)
+            _luckStationUI = FindFirstObjectByType<LuckStationUpgradeUI>(FindObjectsInactive.Include);
+        if (_luckStationUI == null) { Debug.LogError("[UIManager] LuckStationUpgradeUI not found!"); return; }
+
+        _luckStationUI.Open();
+        UpdatePanelVisibility();
+    }
+
+    public void CloseLuckStation()
+    {
+        _luckStationUI?.Close();
+        UpdatePanelVisibility();
+    }
+
     private void UpdatePanelVisibility()
     {
         bool anyRightPanelOpen = IsShopOpen || IsMergeOpen || _upgradeOpen
@@ -343,7 +365,7 @@ public class UIManager : MonoBehaviour
         }
 
         bool hideHUD = IsInventoryOpen || IsShopOpen || IsMergeOpen || _upgradeOpen
-                    || IsPassiveOpen || IsGamblerOpen || IsStorageOpen || IsHealthStationOpen;
+                    || IsPassiveOpen || IsGamblerOpen || IsStorageOpen || IsHealthStationOpen || IsLuckStationOpen;
 
         if (hud != null) hud.SetActive(!hideHUD);
     }

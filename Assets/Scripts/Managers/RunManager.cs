@@ -15,7 +15,7 @@ public class RunManager : MonoBehaviour
     public float HealPerRoom = 0.10f;
 
     [Header("Reroll")]
-    public bool AllowReroll = true;
+    public bool AllowReroll = false;
 
     [Header("Run Stats")]
     public int CurrentFloor = 1;
@@ -176,6 +176,7 @@ public class RunManager : MonoBehaviour
         NextFloorMods  = new RunModifiers();
         _pickedCardIds.Clear();
         HealthStationManager.Instance?.ResetRun();
+        LuckStationManager.Instance?.ResetRun();
     }
 
     // ── Floor modifier card logic ────────────────────────────────────────────
