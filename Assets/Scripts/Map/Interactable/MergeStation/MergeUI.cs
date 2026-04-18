@@ -26,6 +26,7 @@ public class MergeUI : MonoBehaviour
     private MergeStation _currentStation = null;
     private Canvas _canvas;
     private InventoryUI _inventoryUI;
+    private Coroutine _rollDisplayCoroutine;
 
     public static bool IsMergeOpen { get; private set; }
 
@@ -182,7 +183,14 @@ public class MergeUI : MonoBehaviour
         float high = mean + 2f * sd;
 
         var entry = Randomizer.RollInRange(low, high);
-        if (entry.data == null) { Debug.LogWarning("[MergeUI] No module found in cost range!"); return; }
+        float step = totalCost * 0.1f;
+        while (entry.data == null && (high - low) < totalCost * 4f)
+        {
+            low  = Mathf.Max(0, low  - step);
+            high = high + step;
+            entry = Randomizer.RollInRange(low, high);
+        }
+        if (entry.data == null) { Debug.LogWarning("[MergeUI] No module found in pool!"); return; }
 
         foreach (var inst in inputModules)
         {
@@ -347,28 +355,37 @@ public class MergeUI : MonoBehaviour
         bool hasInput = modules.Count > 0;
 
         if (totalCostText != null)
-            totalCostText.text = hasInput ? $"Input Value: {totalCost}" : "";
+            totalCostText.text = hasInput ? $"Value: {totalCost}" : "";
 
-        if (outputRangeText != null)
+        if (_rollDisplayCoroutine != null)
         {
-            if (!hasInput)
-            {
-                outputRangeText.text = "";
-            }
-            else
-            {
-                float mean = totalCost * 0.75f;
-                float sd   = totalCost * 0.1f;
-                int   low  = Mathf.Max(0, Mathf.RoundToInt(mean - 2f * sd));
-                int   high = Mathf.RoundToInt(mean + 2f * sd);
+            StopCoroutine(_rollDisplayCoroutine);
+            _rollDisplayCoroutine = null;
+        }
 
-                var (rarMin, rarMax) = Randomizer.GetRarityRange(low, high);
-                string rarStr = rarMin == rarMax
-                    ? rarMin.ToString()
-                    : $"{rarMin} \u2013 {rarMax}";
+        if (!hasInput)
+        {
+            if (outputRangeText != null) outputRangeText.text = "";
+            return;
+        }
 
-                outputRangeText.text = $"Output: {low} \u2013 {high}  [{rarStr}]";
-            }
+        _rollDisplayCoroutine = StartCoroutine(RollDisplayCoroutine(totalCost));
+    }
+
+    private IEnumerator RollDisplayCoroutine(int totalCost)
+    {
+        float mean = totalCost * 0.75f;
+        float sd   = totalCost * 0.1f;
+        // Expand display range by 2 extra steps for visual variety
+        float low  = Mathf.Max(0, mean - 4f * sd);
+        float high = mean + 4f * sd;
+
+        while (true)
+        {
+            if (outputRangeText != null)
+                outputRangeText.text = $"Value: ~{Mathf.RoundToInt(Random.Range(low, high))}";
+
+            yield return new WaitForSeconds(Random.Range(0.08f, 0.18f));
         }
     }
 }
