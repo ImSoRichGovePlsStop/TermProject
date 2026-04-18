@@ -8,6 +8,8 @@ public class UpgradeStation : MonoBehaviour, IInteractable
 
     public virtual string GetPromptText() => "[ E ]  Upgrade Your Modules";
 
+    public virtual void OnUpgradeClosed() { }
+
     private void Start()
     {
         _uiManager = FindFirstObjectByType<UIManager>();

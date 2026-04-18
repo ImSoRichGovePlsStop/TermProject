@@ -523,7 +523,14 @@ public class MaterialItemUI : MonoBehaviour,
 
         Instance.RemoveStack();
         var ui = InventoryUI.SpawnSplitMaterial(Instance.MaterialData, BagGridUI);
-        if (ui == null) Instance.AddStack();
+        if (ui == null)
+        {
+            Instance.AddStack();
+            return;
+        }
+
+        if (MergeUI.IsMergeOpen)
+            ui.InputGridUI = InputGridUI;
     }
 
     public void OnPointerEnter(PointerEventData e)

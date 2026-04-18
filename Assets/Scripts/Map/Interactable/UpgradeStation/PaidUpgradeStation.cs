@@ -3,8 +3,8 @@ using UnityEngine;
 
 public class PaidUpgradeStation : UpgradeStation, IInteractable
 {
-
     private int upgradeCost = 50;
+    private bool _isOpen = false;
 
     public override string GetPromptText() => $"[ E ] Upgrade Modules ({upgradeCost} Gold)";
 
@@ -14,8 +14,11 @@ public class PaidUpgradeStation : UpgradeStation, IInteractable
         upgradeCost = RunManager.Instance.TotalBossKilled * 25 + 50;
     }
 
+    public override void OnUpgradeClosed() => _isOpen = false;
+
     public override void Interact(PlayerController playerController)
     {
+        if (_isOpen) return;
 
         var mgr = InventoryManager.Instance;
         var candidates = new List<ModuleInstance>();
@@ -50,6 +53,7 @@ public class PaidUpgradeStation : UpgradeStation, IInteractable
         }
 
         if (_uiManager == null) { Debug.LogError("[UpgradeStation] UIManager not found!"); return; }
+        _isOpen = true;
         _uiManager.OpenUpgrade(this);
         upgradeCost = upgradeCost * 2;
 

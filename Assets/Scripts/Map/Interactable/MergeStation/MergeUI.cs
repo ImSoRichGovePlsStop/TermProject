@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +13,8 @@ public class MergeUI : MonoBehaviour
 
     [Header("UI")]
     [SerializeField] private Button mergeButton;
+    [SerializeField] private TextMeshProUGUI totalCostText;
+    [SerializeField] private TextMeshProUGUI outputRangeText;
 
     [Header("Prefabs")]
     [SerializeField] private ModuleItemUI moduleItemPrefab;
@@ -44,6 +47,8 @@ public class MergeUI : MonoBehaviour
         outputGridUI.Init(_outputGrid, cellSize, cellSpacing);
 
         _outputGrid.OnModuleRemoved += OnOutputRemoved;
+        _inputGrid.OnModulePlaced  += _ => RefreshCostDisplay();
+        _inputGrid.OnModuleRemoved += _ => RefreshCostDisplay();
         mergeButton.onClick.AddListener(OnMergeClicked);
         _initialized = true;
     }
@@ -71,6 +76,7 @@ public class MergeUI : MonoBehaviour
         ModuleTooltipUI.Instance?.Hide();
         bagGridUI.ClearHighlights();
         bagGridUI.ClearBuffHighlights();
+        RefreshCostDisplay();
     }
 
     public void Open(MergeStation station)
@@ -169,15 +175,9 @@ public class MergeUI : MonoBehaviour
         var inputModules = new List<ModuleInstance>(_inputGrid.GetAllModules());
         if (inputModules.Count == 0) { Debug.LogWarning("[MergeUI] No input items!"); return; }
 
-        int totalCost = 0;
-        foreach (var inst in inputModules)
-        {
-            var cost = inst.Data.cost;
-            int rarityIdx = Mathf.Clamp((int)inst.Rarity, 0, cost.Length - 1);
-            totalCost += cost[rarityIdx];
-        }
+        int totalCost = CalculateTotalInputCost(inputModules);
 
-        var rolled = Randomizer.Roll(1, 1, totalCost * 0.75f, totalCost * 0.2f);
+        var rolled = Randomizer.Roll(1, 1, totalCost * 0.75f, totalCost * 0.1f);
         if (rolled.Count == 0) { Debug.LogWarning("[MergeUI] Randomizer returned no results!"); return; }
 
         foreach (var inst in inputModules)
@@ -317,5 +317,49 @@ public class MergeUI : MonoBehaviour
         Canvas.ForceUpdateCanvases();
         ui.SnapToCell(gridUI, cell);
         ui.GetComponent<CanvasGroup>().alpha = 1f;
+    }
+
+    private static int CalculateTotalInputCost(List<ModuleInstance> modules)
+    {
+        int total = 0;
+        foreach (var inst in modules)
+        {
+            if (inst is MaterialInstance matInst)
+                total += matInst.Cost * matInst.StackCount;
+            else
+            {
+                var cost = inst.Data.cost;
+                int idx = Mathf.Clamp((int)inst.Rarity, 0, cost.Length - 1);
+                total += cost[idx];
+            }
+        }
+        return total;
+    }
+
+    private void RefreshCostDisplay()
+    {
+        if (!_initialized) return;
+        var modules = new List<ModuleInstance>(_inputGrid.GetAllModules());
+        int totalCost = CalculateTotalInputCost(modules);
+        bool hasInput = modules.Count > 0;
+
+        if (totalCostText != null)
+            totalCostText.text = hasInput ? $"Input: {totalCost}" : "";
+
+        if (outputRangeText != null)
+        {
+            if (!hasInput)
+            {
+                outputRangeText.text = "";
+            }
+            else
+            {
+                float mean = totalCost * 0.75f;
+                float sd   = totalCost * 0.1f;
+                int   low  = Mathf.Max(0, Mathf.RoundToInt(mean - 2f * sd));
+                int   high = Mathf.RoundToInt(mean + 2f * sd);
+                outputRangeText.text = $"Output: ~{low} \u2013 {high}";
+            }
+        }
     }
 }

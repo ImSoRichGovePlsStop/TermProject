@@ -600,9 +600,14 @@ public class ModuleItemUI : MonoBehaviour,
     public void OnPointerClick(PointerEventData e)
     {
         if (e.button != PointerEventData.InputButton.Right) return;
-        if (!allowSell) return;
-        if (Instance.CurrentGrid != InventoryManager.Instance.BagGrid) return;
-        SellConfirmationUI?.Show(Instance, e.position);
+        if (!ShopUI.IsOpen) return;
+
+        var currentGrid = Instance.CurrentGrid;
+        bool inSellableGrid = currentGrid == InventoryManager.Instance.BagGrid
+                           || currentGrid == InventoryManager.Instance.WeaponGrid;
+        if (!inSellableGrid) return;
+
+        SellConfirmationUI.Instance?.Show(Instance, e.position);
     }
 
     private void UpdateHighlight(PointerEventData e) => UpdateHighlightInternal();

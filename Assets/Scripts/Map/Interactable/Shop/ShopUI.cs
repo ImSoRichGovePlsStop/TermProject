@@ -14,6 +14,8 @@ public class ShopUI : MonoBehaviour
     [SerializeField] private SellConfirmationUI sellConfirmationUI;
     [SerializeField] private Button rerollButton;
 
+    public static bool IsOpen { get; private set; }
+
     private ShopInteractable _currentInteractable;
     private TestModuleEntry[] _currentEntries;
     private InventoryUI _inventoryUI;
@@ -23,6 +25,9 @@ public class ShopUI : MonoBehaviour
     {
         _inventoryUI = FindFirstObjectByType<InventoryUI>(FindObjectsInactive.Include);
     }
+
+    private void OnEnable()  => IsOpen = true;
+    private void OnDisable() => IsOpen = false;
 
     public void OnOpened() => SetBagItemRefsForShop();
 
