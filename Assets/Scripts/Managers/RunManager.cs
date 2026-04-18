@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -99,9 +100,13 @@ public class RunManager : MonoBehaviour
 
 
 
-    public void OnEnemyKilled()
+    public static event Action OnRoomClearedEvent;
+    public static event Action<EnemyTier> OnEnemyKilledWithTierEvent;
+
+    public void OnEnemyKilled(EnemyTier tier = EnemyTier.Normal)
     {
         TotalEnemyKilled++;
+        OnEnemyKilledWithTierEvent?.Invoke(tier);
     }
 
     public void OnEventRoomEntered()
@@ -112,6 +117,7 @@ public class RunManager : MonoBehaviour
     public void OnRoomCleared()
     {
         TotalRoomsCleared++;
+        OnRoomClearedEvent?.Invoke();
     }
 
     public void OnBossKilled()

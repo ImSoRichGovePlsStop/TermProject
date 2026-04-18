@@ -118,7 +118,9 @@ public class BattleRoom : MonoBehaviour
         if (!isLocked || isCleared) return;
         _aliveCount = Mathf.Max(0, _aliveCount - 1);
 
-        RunManager.Instance?.OnEnemyKilled();
+        var enemyHealth = enemy.GetComponent<EnemyHealthBase>();
+        EnemyTier tier = enemyHealth != null ? enemyHealth.Tier : EnemyTier.Normal;
+        RunManager.Instance?.OnEnemyKilled(tier);
         var enemyBase = enemy.GetComponent<EnemyBase>();
         int coinMin = enemyBase != null ? enemyBase.coinDropMin : fallbackCoinMin;
         int coinMax = enemyBase != null ? enemyBase.coinDropMax : fallbackCoinMax;
