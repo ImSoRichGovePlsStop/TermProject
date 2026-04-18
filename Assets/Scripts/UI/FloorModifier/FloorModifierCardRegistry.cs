@@ -144,6 +144,65 @@ public static class FloorModifierCardRegistry
             ModifierScope.NextFloorOnly,
             m => { m.extraWaves = 2; m.coinMultiplier = 1.5f; }));
 
+        // ── Enemy stats ──────────────────────────────────────────────────────
+
+        cards.Add(Make("ironhide_pact", "Ironhide Pact",
+            "Enemies have 40% more HP. Enemies drop 30% more coins.",
+            ModifierScope.WholeRun,
+            m => { m.enemyHpMultiplier = 1.4f; m.coinMultiplier = 1.3f; }));
+
+        cards.Add(Make("frenzy_pact", "Frenzy Pact",
+            "Enemies move 30% faster. Loot rewards are worth more.",
+            ModifierScope.WholeRun,
+            m => { m.enemySpeedMultiplier = 1.3f; m.lootMeanBonus = 50f; }));
+
+        cards.Add(Make("pain_covenant", "Pain Covenant",
+            "Enemies deal 35% more damage. Recover more HP after each battle room.",
+            ModifierScope.WholeRun,
+            m => { m.enemyDamageMultiplier = 1.35f; m.healPerRoomBonus = 0.12f; }));
+
+        cards.Add(Make("glass_cannon", "Glass Cannon",
+            "Enemies have 45% less HP but deal 70% more damage. Gain 60 bonus coins at the start of each floor.",
+            ModifierScope.WholeRun,
+            m => { m.enemyHpMultiplier = 0.55f; m.enemyDamageMultiplier = 1.7f; m.bonusCoinsOnFloorEntry = 60; }));
+
+        cards.Add(Make("juggernaut_pact", "Juggernaut Pact",
+            "Enemies have 40% more HP and deal 20% more damage. Enemies drop 40% more coins and loot rewards are worth more.",
+            ModifierScope.WholeRun,
+            m => { m.enemyHpMultiplier = 1.4f; m.enemyDamageMultiplier = 1.2f; m.coinMultiplier = 1.4f; m.lootMeanBonus = 40f; }));
+
+        cards.Add(Make("trial_by_fire", "Trial by Fire",
+            "Enemies on the next floor have 50% more HP and deal 30% more damage. Loot is exceptional and enemies drop far more coins.",
+            ModifierScope.NextFloorOnly,
+            m => { m.enemyHpMultiplier = 1.5f; m.enemyDamageMultiplier = 1.3f; m.lootMeanBonus = 100f; m.coinMultiplier = 1.3f; }));
+
+        cards.Add(Make("weakened_patrol", "Weakened Patrol",
+            "Enemies on the next floor have 40% less HP. They also drop fewer coins.",
+            ModifierScope.NextFloorOnly,
+            m => { m.enemyHpMultiplier = 0.6f; m.coinMultiplier = 0.7f; }));
+
+        // ── Reward type bias ─────────────────────────────────────────────────
+
+        cards.Add(Make("scavengers_eye", "Scavenger's Eye",
+            "Battle rooms are more likely to drop loot instead of an upgrade station.",
+            ModifierScope.WholeRun,
+            m => m.lootChanceBias = 0.35f));
+
+        cards.Add(Make("armory_access", "Armory Access",
+            "Battle rooms are more likely to spawn an upgrade station instead of loot.",
+            ModifierScope.WholeRun,
+            m => m.lootChanceBias = -0.35f));
+
+        cards.Add(Make("loot_frenzy", "Loot Frenzy",
+            "Battle rooms always drop loot on the next floor.",
+            ModifierScope.NextFloorOnly,
+            m => m.lootChanceBias = 1.0f));
+
+        cards.Add(Make("forge_night", "Forge Night",
+            "Battle rooms always spawn an upgrade station on the next floor.",
+            ModifierScope.NextFloorOnly,
+            m => m.lootChanceBias = -1.0f));
+
         // ── Sell value ───────────────────────────────────────────────────────
 
         cards.Add(Make("sell_boost_s", "Shrewd Trader",

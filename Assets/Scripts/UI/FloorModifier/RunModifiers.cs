@@ -17,6 +17,9 @@ public class RunModifiers
     public int   extraLootOptions      = 0;
     public int   bonusCoinsOnFloorEntry = 0;
 
+    [Tooltip("Additive bias to loot-vs-upgrade chance after clearing a room. Positive = more loot, negative = more upgrades. Clamped to [0,1].")]
+    public float lootChanceBias        = 0f;
+
     [Header("Map Generation")]
     public int extraEventRoomMin  = 0;
     public int extraBattleRoomMin = 0;
@@ -41,6 +44,16 @@ public class RunModifiers
     [Range(0f, 1f)]
     public float healDiscount = 0f;
 
+    [Header("Enemy Stats")]
+    [Tooltip("Multiplies all enemy HP. 1 = normal, 1.4 = 40% more HP.")]
+    public float enemyHpMultiplier = 1f;
+
+    [Tooltip("Multiplies all enemy damage. 1 = normal, 1.35 = 35% more damage.")]
+    public float enemyDamageMultiplier = 1f;
+
+    [Tooltip("Multiplies all enemy move speed. 1 = normal, 1.3 = 30% faster.")]
+    public float enemySpeedMultiplier = 1f;
+
     [Header("Merge")]
     [Tooltip("Multiplies the target output value (mean). 1 = normal, 1.3 = 30% higher value.")]
     public float mergeValueMultiplier = 1f;
@@ -63,6 +76,7 @@ public class RunModifiers
         lootMeanBonus             += other.lootMeanBonus;
         extraLootOptions          += other.extraLootOptions;
         bonusCoinsOnFloorEntry    += other.bonusCoinsOnFloorEntry;
+        lootChanceBias            += other.lootChanceBias;
         extraEventRoomMin         += other.extraEventRoomMin;
         extraBattleRoomMin        += other.extraBattleRoomMin;
         healPerRoomBonus          += other.healPerRoomBonus;
@@ -70,6 +84,9 @@ public class RunModifiers
         shopDiscount              += other.shopDiscount;
         upgradeDiscount           += other.upgradeDiscount;
         healDiscount              += other.healDiscount;
+        enemyHpMultiplier         *= other.enemyHpMultiplier;
+        enemyDamageMultiplier     *= other.enemyDamageMultiplier;
+        enemySpeedMultiplier      *= other.enemySpeedMultiplier;
         mergeValueMultiplier      *= other.mergeValueMultiplier;
         mergeSpreadMultiplier     *= other.mergeSpreadMultiplier;
         mergeGuaranteeSameRarity  |= other.mergeGuaranteeSameRarity;
