@@ -88,10 +88,18 @@ public class UIManager : MonoBehaviour
 
     private void Update()
     {
-        if (isInBattle) return;
-
         var kb = Keyboard.current;
         if (kb == null) return;
+
+        if (isInBattle)
+        {
+            if (IsInventoryOpen &&
+                (kb[Key.Escape].wasPressedThisFrame || kb[Key.I].wasPressedThisFrame))
+            {
+                CloseInventoryImmediate();
+            }
+            return;
+        }
 
         if (kb[Key.I].wasPressedThisFrame)
         {
@@ -111,7 +119,7 @@ public class UIManager : MonoBehaviour
             else if (_upgradeOpen) return;
             else if (IsMergeOpen) { CloseMerge(); CloseInventoryImmediate(); }
             else if (IsShopOpen) { CloseShop(); CloseInventoryImmediate(); }
-            else if (IsInventoryOpen) ToggleInventory();
+            else ToggleInventory();
         }
 
         if (IsInventoryOpen && inventoryUI != null)
