@@ -176,9 +176,13 @@ public class MergeUI : MonoBehaviour
         if (inputModules.Count == 0) { Debug.LogWarning("[MergeUI] No input items!"); return; }
 
         int totalCost = CalculateTotalInputCost(inputModules);
+        float mean = totalCost * 0.75f;
+        float sd   = totalCost * 0.1f;
+        float low  = Mathf.Max(0, mean - 2f * sd);
+        float high = mean + 2f * sd;
 
-        var rolled = Randomizer.Roll(1, 1, totalCost * 0.75f, totalCost * 0.1f);
-        if (rolled.Count == 0) { Debug.LogWarning("[MergeUI] Randomizer returned no results!"); return; }
+        var entry = Randomizer.RollInRange(low, high);
+        if (entry.data == null) { Debug.LogWarning("[MergeUI] No module found in cost range!"); return; }
 
         foreach (var inst in inputModules)
         {
@@ -187,7 +191,6 @@ public class MergeUI : MonoBehaviour
             if (inst.UIElement is MaterialItemUI matUI) Destroy(matUI.gameObject);
         }
 
-        var entry = rolled[0];
         var outInst = new ModuleInstance(entry.data, entry.rarity, entry.level);
         _currentStation.CachedOutput = outInst;
 
@@ -344,7 +347,7 @@ public class MergeUI : MonoBehaviour
         bool hasInput = modules.Count > 0;
 
         if (totalCostText != null)
-            totalCostText.text = hasInput ? $"Input: {totalCost}" : "";
+            totalCostText.text = hasInput ? $"Input Value: {totalCost}" : "";
 
         if (outputRangeText != null)
         {
@@ -358,7 +361,13 @@ public class MergeUI : MonoBehaviour
                 float sd   = totalCost * 0.1f;
                 int   low  = Mathf.Max(0, Mathf.RoundToInt(mean - 2f * sd));
                 int   high = Mathf.RoundToInt(mean + 2f * sd);
-                outputRangeText.text = $"Output: ~{low} \u2013 {high}";
+
+                var (rarMin, rarMax) = Randomizer.GetRarityRange(low, high);
+                string rarStr = rarMin == rarMax
+                    ? rarMin.ToString()
+                    : $"{rarMin} \u2013 {rarMax}";
+
+                outputRangeText.text = $"Output: {low} \u2013 {high}  [{rarStr}]";
             }
         }
     }
