@@ -43995,6 +43995,382 @@ PrefabInstance:
       propertyPath: m_Name
       value: LasherReaver_Miniboss
       objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashWeight
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorMoveSpeed
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorSlowRadius
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashCooldownMax
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashCooldownMin
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorAttackRange
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorCooldownMax
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorCooldownMin
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashPostDelayMax
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashPostDelayMin
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashZoomDuration
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorPostDelayMax
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorPostDelayMin
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorPredictScale
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorSlowDuration
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashZoomOutAmount
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: ritualSpotLightAngle
+      value: 120
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashShockwavePrefab
+      value: 
+      objectReference: {fileID: 575652732540652510, guid: 1b487df38b8121f47a6a5e28414ba549, type: 3}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorShockwavePrefab
+      value: 
+      objectReference: {fileID: 7054419061288264857, guid: 711175bf4cbb73443923bc705e25bc0a, type: 3}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorArcRotationScale
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorProjectilePrefab
+      value: 
+      objectReference: {fileID: 1673625421123493190, guid: 2eae2b76514341848b74fb272a786a6f, type: 3}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: ritualSpotLightColor.b
+      value: 0.5294118
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: ritualSpotLightColor.g
+      value: 0.5686275
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: ritualSpotLightColor.r
+      value: 0.019607844
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: lightTransitionDuration
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorProjectileDuration
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: ritualSpotLightIntensity
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: ritualSpotLightInnerAngle
+      value: 80
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorProjectilePeakHeight
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorShockwaveDamageScale
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: ritualGlobalLightIntensity
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: cameraLockPositionNormalized.y
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[0].riseHeight
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[1].riseHeight
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[2].riseHeight
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[3].riseHeight
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[4].riseHeight
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[0].fallTrigger
+      value: SmashFall
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[0].riseTrigger
+      value: FirstSmashRise
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[0].stayTrigger
+      value: FirstSmashStay
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[1].fallTrigger
+      value: SmashFall
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[1].riseTrigger
+      value: SmashRise
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[1].stayTrigger
+      value: SmashStay
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[2].fallTrigger
+      value: SmashFall
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[2].riseTrigger
+      value: SmashRise
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[2].stayTrigger
+      value: SmashStay
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[3].stayTrigger
+      value: SmashStay
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[4].stayTrigger
+      value: SmashStay
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[0].fallDuration
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[0].riseDuration
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[0].stayDuration
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[1].fallDuration
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[1].riseDuration
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[1].stayDuration
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[2].fallDuration
+      value: 0.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[2].riseDuration
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[2].stayDuration
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[3].fallDuration
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[3].riseDuration
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[3].stayDuration
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[4].fallDuration
+      value: 0.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[4].riseDuration
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[4].stayDuration
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[0].fallDurationMax
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[0].fallDurationMin
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[0].riseDurationMax
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[0].riseDurationMin
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[0].stayDurationMax
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[0].stayDurationMin
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[1].fallDurationMax
+      value: 0.21
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[1].fallDurationMin
+      value: 0.16
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[1].riseDurationMax
+      value: 0.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[1].riseDurationMin
+      value: 0.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[1].stayDurationMax
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[1].stayDurationMin
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[2].fallDurationMax
+      value: 0.17
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[2].fallDurationMin
+      value: 0.03
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[2].riseDurationMax
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[2].riseDurationMin
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[2].stayDurationMax
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[2].stayDurationMin
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[3].fallDurationMax
+      value: 0.13
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[3].fallDurationMin
+      value: 0.03
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[3].riseDurationMax
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[3].riseDurationMin
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[3].stayDurationMax
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[3].stayDurationMin
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[4].fallDurationMax
+      value: 0.09
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[4].fallDurationMin
+      value: 0.03
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[4].riseDurationMax
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[4].riseDurationMin
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[4].stayDurationMax
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: smashConfigs.Array.data[4].stayDurationMin
+      value: 0.1
+      objectReference: {fileID: 0}
     - target: {fileID: 7630140604952283917, guid: 082c796765a59534587cd77babf0844d, type: 3}
       propertyPath: tier
       value: 2

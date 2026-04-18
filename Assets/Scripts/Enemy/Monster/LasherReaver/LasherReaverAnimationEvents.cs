@@ -25,6 +25,11 @@ public class LasherReaverAnimationEvents : MonoBehaviour
     public void Hit4StopMoving() => controller?.Hit4StopMoving();
     public void Hit4LashHit() => controller?.Hit4LashHit();
 
+    // Lasher Anchor
+    public void AnchorTrackStart() => controller?.AnchorTrackStart();
+    public void AnchorLockTarget() => controller?.AnchorLockTarget();
+    public void AnchorThrow() => controller?.AnchorThrow();
+
     // Reaver Form
     public void ReaverDashAttack() => controller?.ReaverDashAttack();
     public void StartCharge() => controller?.StartCharge();

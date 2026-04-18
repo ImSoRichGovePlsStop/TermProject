@@ -3,6 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+[System.Serializable]
+public class SmashConfig
+{
+    public float riseHeight;
+    public float riseDurationMin;
+    public float riseDurationMax;
+    public float stayDurationMin;
+    public float stayDurationMax;
+    public float fallDurationMin;
+    public float fallDurationMax;
+}
+
 public class LasherReaverController : EnemyBase
 {
     public enum LasherReaverForm { Lasher, Reaver }
@@ -58,12 +70,61 @@ public class LasherReaverController : EnemyBase
     [SerializeField] private float lashFieldFadeInDuration = 0.25f;
     [SerializeField] private float lashFieldStayDuration = 0.1f;
     [SerializeField] private float lashFieldFadeOutDuration = 0.2f;
+
+    [Header("Lasher Combo Post Delay")]
     [SerializeField] private float combo2PostDelayMin = 0.4f;
     [SerializeField] private float combo2PostDelayMax = 0.8f;
     [SerializeField] private float combo3PostDelayMin = 0.4f;
     [SerializeField] private float combo3PostDelayMax = 0.8f;
     [SerializeField] private float combo4PostDelayMin = 0.4f;
     [SerializeField] private float combo4PostDelayMax = 0.8f;
+
+    [Header("Lasher Anchor")]
+    [SerializeField] private GameObject anchorProjectilePrefab;
+    [SerializeField] private float anchorAttackRange = 8f;
+    [SerializeField] private float anchorCooldownMin = 6f;
+    [SerializeField] private float anchorCooldownMax = 10f;
+    [SerializeField] private float anchorMoveSpeed = 12f;
+    [SerializeField] private float anchorArrivalRange = 0.3f;
+    [SerializeField] private float anchorShockwaveDamageScale = 1.5f;
+    [SerializeField] private GameObject anchorShockwavePrefab;
+    [SerializeField] private float anchorProjectileDuration = 0.6f;
+    [SerializeField] private float anchorProjectilePeakHeight = 2f;
+    [SerializeField] private float anchorSlowRadius = 2f;
+    [Range(0f, 1f)]
+    [SerializeField] private float anchorSlowAmount = 0.35f;
+    [SerializeField] private float anchorSlowDuration = 2f;
+    [SerializeField] private float anchorPostDelayMin = 0.8f;
+    [SerializeField] private float anchorPostDelayMax = 1.2f;
+    [Range(0f, 1f)]
+    [SerializeField] private float anchorWeight = 0.4f;
+    [SerializeField] private float anchorPredictScale = 1f;
+
+    [Header("Lasher Smash Ritual")]
+    [SerializeField] private Vector2 ritualPositionNormalized = new Vector2(0.5f, 0.6f);
+    [SerializeField] private Vector2 cameraLockPositionNormalized = new Vector2(0.5f, 0.5f);
+    [SerializeField] private SmashConfig[] smashConfigs = new SmashConfig[3];
+    [SerializeField] private float smashLandPauseDuration = 0.5f;
+    [SerializeField] private float smashShockwaveDamageScale = 1.5f;
+    [SerializeField] private GameObject smashShockwavePrefab;
+    [SerializeField] private float smashCooldownMin = 15f;
+    [SerializeField] private float smashCooldownMax = 25f;
+    [SerializeField] private float smashPostDelayMin = 1f;
+    [SerializeField] private float smashPostDelayMax = 1.5f;
+    [SerializeField][Range(0f, 1f)] private float smashWeight = 0.3f;
+
+    [Header("Lasher Smash Ritual Camera")]
+    [SerializeField] private float smashZoomOutAmount = 2f;
+    [SerializeField] private float smashZoomDuration = 0.5f;
+
+    [Header("Lasher Smash Ritual Lighting")]
+    [SerializeField] private float ritualGlobalLightIntensity = 0.2f;
+    [SerializeField] private float ritualSpotLightIntensity = 3f;
+    [SerializeField] private float ritualSpotLightRange = 20f;
+    [SerializeField] private float ritualSpotLightAngle = 60f;
+    [SerializeField] private float ritualSpotLightInnerAngle = 30f;
+    [SerializeField] private Color ritualSpotLightColor = Color.white;
+    [SerializeField] private float lightTransitionDuration = 1.5f;
 
     // Reaver Form
     [Header("Reaver Dash")]
@@ -120,6 +181,20 @@ public class LasherReaverController : EnemyBase
     // Cooldowns (global, never reset on switch)
     private float lastLasherComboTime = -Mathf.Infinity;
     private float currentLasherCooldown = 0f;
+    private float lastLasherSmashTime = -Mathf.Infinity;
+    private float currentLasherSmashCooldown = 0f;
+    private bool isSmashRitual = false;
+
+    private const string SmashRiseTrigger = "SmashRise";
+    private const string SmashStayTrigger = "SmashStay";
+    private const string SmashFallTrigger = "SmashFall";
+    private const string SmashLandTrigger = "SmashLand";
+    private float lastLasherAnchorTime = -Mathf.Infinity;
+    private float currentLasherAnchorCooldown = 0f;
+
+    private Vector3 anchorTargetPosition = Vector3.zero;
+    private Vector3 anchorTrackStartPosition = Vector3.zero;
+    private float anchorTrackStartTime = 0f;
     private float lastReaverDashTime = -Mathf.Infinity;
     private float currentReaverDashCooldown = 0f;
     private float lastReaverChargeTime = -Mathf.Infinity;
@@ -133,9 +208,11 @@ public class LasherReaverController : EnemyBase
         base.Awake();
         movement.SetStopDistance(0.1f);
 
-        currentForm = Random.value < 0.5f ? LasherReaverForm.Lasher : LasherReaverForm.Reaver;
+        currentForm = LasherReaverForm.Lasher;
 
         currentLasherCooldown = Random.Range(lasherCooldownMin, lasherCooldownMax);
+        currentLasherAnchorCooldown = Random.Range(anchorCooldownMin, anchorCooldownMax);
+        currentLasherSmashCooldown = Random.Range(smashCooldownMin, smashCooldownMax);
         currentReaverDashCooldown = Random.Range(reaverDashCooldownMin, reaverDashCooldownMax);
         currentReaverChargeCooldown = Random.Range(reaverChargeCooldownMin, reaverChargeCooldownMax);
 
@@ -186,7 +263,12 @@ public class LasherReaverController : EnemyBase
     private bool CanAttackNow(float dist)
     {
         if (currentForm == LasherReaverForm.Lasher)
-            return Time.time >= lastLasherComboTime + currentLasherCooldown && dist <= lasherAttackRange;
+        {
+            bool canCombo = Time.time >= lastLasherComboTime + currentLasherCooldown && dist <= lasherAttackRange;
+            bool canAnchor = Time.time >= lastLasherAnchorTime + currentLasherAnchorCooldown && dist <= anchorAttackRange;
+            bool canSmash = Time.time >= lastLasherSmashTime + currentLasherSmashCooldown;
+            return canCombo || canAnchor || canSmash;
+        }
 
         bool canDash = Time.time >= lastReaverDashTime + currentReaverDashCooldown && dist <= reaverDashAttackRange;
         bool canCharge = Time.time >= lastReaverChargeTime + currentReaverChargeCooldown && dist <= chargeAttackRange;
@@ -225,6 +307,8 @@ public class LasherReaverController : EnemyBase
 
     private void HandleAttackMovement()
     {
+        if (isSmashRitual) return;
+
         if (currentForm == LasherReaverForm.Reaver)
         {
             if (currentReaverAttack == ReaverAttackType.Charge && isCharging && !isStunned)
@@ -258,12 +342,42 @@ public class LasherReaverController : EnemyBase
 
     private void TryLasherAttack()
     {
-        if (Time.time < lastLasherComboTime + currentLasherCooldown) return;
         float dist = Vector3.Distance(transform.position, TargetPosition);
-        if (dist > lasherAttackRange) return;
+        bool canCombo = Time.time >= lastLasherComboTime + currentLasherCooldown && dist <= lasherAttackRange;
+        bool canAnchor = Time.time >= lastLasherAnchorTime + currentLasherAnchorCooldown && dist <= anchorAttackRange;
+        bool canSmash = Time.time >= lastLasherSmashTime + currentLasherSmashCooldown;
+
+        if (!canCombo && !canAnchor && !canSmash) return;
 
         isAttacking = true;
+
+        // Build list of available attacks with weights
+        float totalWeight = 0f;
+        if (canCombo) totalWeight += 1f - anchorWeight - smashWeight;
+        if (canAnchor) totalWeight += anchorWeight;
+        if (canSmash) totalWeight += smashWeight;
+
+        float roll = Random.value * totalWeight;
+        float cumulative = 0f;
+
+        if (canSmash) { cumulative += smashWeight; if (roll < cumulative) { StartSmashRitual(); return; } }
+        if (canAnchor) { cumulative += anchorWeight; if (roll < cumulative) { StartAnchorAttack(); return; } }
+        if (canCombo) { StartComboAttack(); return; }
+
+        // Fallback
+        if (canCombo) StartComboAttack();
+        else if (canAnchor) StartAnchorAttack();
+        else StartSmashRitual();
+    }
+
+    private void StartComboAttack()
+    {
         animator?.SetTrigger("LasherAttack1Dash1");
+    }
+
+    private void StartAnchorAttack()
+    {
+        animator?.SetTrigger("LasherAnchorThrow");
     }
 
     private void TryReaverAttack()
@@ -344,6 +458,8 @@ public class LasherReaverController : EnemyBase
         isHit4Active = false;
         isHit4Phase = false;
         pendingHit4WasFromHit3 = false;
+        anchorTargetPosition = Vector3.zero;
+        isSmashRitual = false;
         lockedAttackDir = Vector3.zero;
 
 
@@ -582,6 +698,313 @@ public class LasherReaverController : EnemyBase
         if (lashAoeFieldPrefab == null) return;
         var go = Instantiate(lashAoeFieldPrefab, pos, Quaternion.identity);
         go.GetComponent<LashAoeField>()?.Initialize(radius, damage, startDelay, lashFieldFadeInDuration, lashFieldStayDuration, lashFieldFadeOutDuration, targetLayers, health, lashAoeVFX, lashVFXBaseRadius, lashVFXOffsetY, lashVFXOffsetZMult);
+    }
+
+    // Animation Events Lasher Anchor
+    public void AnchorTrackStart()
+    {
+        if (!HasTarget) return;
+        anchorTrackStartPosition = TargetPosition;
+        anchorTrackStartPosition.y = transform.position.y;
+        anchorTrackStartTime = Time.time;
+    }
+
+    public void AnchorLockTarget()
+    {
+        if (!HasTarget)
+        {
+            anchorTargetPosition = transform.position + transform.forward * 2f;
+            return;
+        }
+
+        Vector3 currentPos = TargetPosition;
+        currentPos.y = transform.position.y;
+
+        float elapsed = Time.time - anchorTrackStartTime;
+        Vector3 trackedVelocity = elapsed > 0f
+            ? (currentPos - anchorTrackStartPosition) / elapsed
+            : Vector3.zero;
+
+        Vector3 predicted = currentPos + trackedVelocity * anchorProjectileDuration * anchorPredictScale;
+        predicted.y = transform.position.y;
+
+        LayerMask wallMask = 1 << LayerMask.NameToLayer("Wall");
+        Vector3 dir = predicted - currentPos;
+        if (dir.sqrMagnitude > 0.001f && Physics.Raycast(currentPos, dir.normalized, out RaycastHit hit, dir.magnitude, wallMask))
+            predicted = hit.point - dir.normalized * 0.5f;
+
+        anchorTargetPosition = predicted;
+    }
+
+    public void AnchorThrow()
+    {
+        if (anchorProjectilePrefab == null) return;
+        var go = Instantiate(anchorProjectilePrefab, transform.position, Quaternion.identity);
+        var proj = go.GetComponent<LasherReaverAnchorProjectile>();
+        proj?.Initialize(transform.position, anchorTargetPosition, anchorProjectileDuration, anchorProjectilePeakHeight, anchorSlowRadius, anchorSlowAmount, anchorSlowDuration, OnAnchorLanded);
+    }
+
+    private void OnAnchorLanded()
+    {
+        StartCoroutine(AnchorRunRoutine());
+    }
+
+    private IEnumerator AnchorRunRoutine()
+    {
+        var agent = movement.GetAgent();
+        if (agent != null && agent.isOnNavMesh) agent.enabled = false;
+
+        animator?.SetTrigger("LasherAnchorRun");
+
+        while (true)
+        {
+            Vector3 dir = anchorTargetPosition - transform.position;
+            dir.y = 0f;
+            float dist = dir.magnitude;
+
+            if (dist <= anchorArrivalRange) break;
+
+            transform.position += dir.normalized * anchorMoveSpeed * stats.MoveSpeedRatio * Time.deltaTime;
+            movement.FaceTarget(anchorTargetPosition);
+            yield return null;
+        }
+
+        if (agent != null) agent.enabled = true;
+        AnchorShockwave();
+        FinishAnchorAttack();
+    }
+
+    public void AnchorShockwave()
+    {
+        if (anchorShockwavePrefab == null) return;
+        var go = Instantiate(anchorShockwavePrefab, anchorTargetPosition, Quaternion.identity);
+        go.GetComponent<Shockwave>()?.Init(stats.Damage * anchorShockwaveDamageScale, health);
+    }
+
+    public void FinishAnchorAttack()
+    {
+        isAttacking = false;
+        anchorTargetPosition = Vector3.zero;
+        lastLasherAnchorTime = Time.time;
+        currentLasherAnchorCooldown = Random.Range(anchorCooldownMin, anchorCooldownMax);
+        postAttackDelayMin = anchorPostDelayMin;
+        postAttackDelayMax = anchorPostDelayMax;
+
+        if (currentForm == LasherReaverForm.Lasher)
+            animator?.SetTrigger("LasherBackToIdle");
+
+        strafe.Reset();
+        TriggerPostAttackDelay();
+    }
+
+    // Lasher Smash Ritual
+    private Light cachedGlobalLight;
+    private Light ritualSpotLight;
+    private float originalGlobalLightIntensity;
+
+    private void StartSmashRitual()
+    {
+        isSmashRitual = true;
+        StartCoroutine(SmashRitualRoutine());
+    }
+
+    private Vector3 GetNormalizedRoomPosition(Vector2 normalized)
+    {
+        LayerMask wallMask = 1 << LayerMask.NameToLayer("Wall");
+        Vector3 origin = transform.position;
+
+        float left = 0f, right = 0f, back = 0f, forward = 0f;
+        if (Physics.Raycast(origin, Vector3.left, out RaycastHit h, 100f, wallMask)) left = h.distance;
+        if (Physics.Raycast(origin, Vector3.right, out h, 100f, wallMask)) right = h.distance;
+        if (Physics.Raycast(origin, Vector3.back, out h, 100f, wallMask)) back = h.distance;
+        if (Physics.Raycast(origin, Vector3.forward, out h, 100f, wallMask)) forward = h.distance;
+
+        float x = Mathf.Lerp(origin.x - left, origin.x + right, normalized.x);
+        float z = Mathf.Lerp(origin.z - back, origin.z + forward, normalized.y);
+        return new Vector3(x, origin.y, z);
+    }
+
+    private Vector3 GetSmashRitualPosition()
+    {
+        Vector3 target = GetNormalizedRoomPosition(ritualPositionNormalized);
+        if (UnityEngine.AI.NavMesh.SamplePosition(target, out UnityEngine.AI.NavMeshHit navHit, 2f, UnityEngine.AI.NavMesh.AllAreas))
+            return navHit.position;
+        return transform.position;
+    }
+
+    private IEnumerator SmashRitualRoutine()
+    {
+        // 1. Move to ritual position via NavMesh
+        Vector3 ritualPos = GetSmashRitualPosition();
+        movement.MoveToTarget(ritualPos);
+        while (Vector3.Distance(new Vector3(transform.position.x, 0f, transform.position.z),
+                                new Vector3(ritualPos.x, 0f, ritualPos.z)) > 0.3f)
+            yield return null;
+
+        movement.StopMoving();
+        movement.SetCanMove(false);
+        var smashAgent = movement.GetAgent();
+        if (smashAgent != null && smashAgent.isOnNavMesh) smashAgent.enabled = false;
+
+        // 2. Invincible + lights + zoom + camera lock
+        health.IsInvincible = true;
+        StartCoroutine(TransitionLights(true));
+        if (CameraController.Instance != null)
+        {
+            Vector3 camLockPos = GetNormalizedRoomPosition(cameraLockPositionNormalized);
+            StartCoroutine(CameraController.Instance.LockToPositionSmooth(camLockPos, smashZoomDuration));
+            StartCoroutine(CameraController.Instance.ZoomOut(smashZoomOutAmount, smashZoomDuration));
+        }
+
+        // 3. Smash loop
+        Vector3 groundPos = transform.position;
+
+        for (int i = 0; i < smashConfigs.Length; i++)
+        {
+            var config = smashConfigs[i];
+            float riseDuration = Random.Range(config.riseDurationMin, config.riseDurationMax);
+            float stayDuration = Random.Range(config.stayDurationMin, config.stayDurationMax);
+            float fallDuration = Random.Range(config.fallDurationMin, config.fallDurationMax);
+            Vector3 risePos = groundPos + Vector3.up * config.riseHeight;
+
+            // Rise
+            animator?.SetTrigger(SmashRiseTrigger);
+
+            float elapsed = 0f;
+            while (elapsed < riseDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / riseDuration);
+                transform.position = Vector3.Lerp(groundPos, risePos, t);
+                yield return null;
+            }
+            transform.position = risePos;
+
+            // Stay
+            animator?.SetTrigger(SmashStayTrigger);
+            yield return new WaitForSeconds(stayDuration);
+
+            // Fall
+            animator?.SetTrigger(SmashFallTrigger);
+
+            yield return null;
+            while (animator != null && !animator.GetCurrentAnimatorStateInfo(0).IsTag("SmashFall"))
+                yield return null;
+
+            if (animator != null)
+            {
+                AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(0);
+                if (info.length > 0f) animator.speed = info.length / fallDuration;
+            }
+
+            elapsed = 0f;
+            while (elapsed < fallDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / fallDuration);
+                transform.position = Vector3.Lerp(risePos, groundPos, t);
+                yield return null;
+            }
+            transform.position = groundPos;
+            if (animator != null) animator.speed = 1f;
+
+            // Land - shockwave + land animation
+            SpawnSmashShockwave();
+            animator?.SetTrigger(SmashLandTrigger);
+
+            // Open invincible window for player to hit
+            health.IsInvincible = false;
+            yield return new WaitForSeconds(smashLandPauseDuration);
+
+            // Close invincible again if not last smash
+            if (i < smashConfigs.Length - 1)
+                health.IsInvincible = true;
+        }
+
+        // 4. End
+        StartCoroutine(TransitionLights(false));
+        if (CameraController.Instance != null)
+        {
+            StartCoroutine(CameraController.Instance.UnlockTargetSmooth(smashZoomDuration));
+            StartCoroutine(CameraController.Instance.ZoomRestore(smashZoomDuration));
+        }
+        if (smashAgent != null && !smashAgent.enabled) smashAgent.enabled = true;
+        movement.SetCanMove(true);
+        isSmashRitual = false;
+        lastLasherSmashTime = Time.time;
+        currentLasherSmashCooldown = Random.Range(smashCooldownMin, smashCooldownMax);
+        isAttacking = false;
+        postAttackDelayMin = smashPostDelayMin;
+        postAttackDelayMax = smashPostDelayMax;
+        animator?.SetTrigger("LasherBackToIdle");
+        strafe.Reset();
+        TriggerPostAttackDelay();
+    }
+
+    private void SpawnSmashShockwave()
+    {
+        if (smashShockwavePrefab == null) return;
+        var go = Instantiate(smashShockwavePrefab, transform.position, Quaternion.identity);
+        go.GetComponent<Shockwave>()?.Init(stats.Damage * smashShockwaveDamageScale, health);
+    }
+
+    private void CacheGlobalLight()
+    {
+        if (cachedGlobalLight != null) return;
+        var lights = UnityEngine.Object.FindObjectsByType<Light>(FindObjectsSortMode.None);
+        foreach (var l in lights)
+        {
+            if (l.type == LightType.Directional)
+            {
+                cachedGlobalLight = l;
+                originalGlobalLightIntensity = l.intensity;
+                break;
+            }
+        }
+    }
+
+    private Light SpawnRitualSpotLight()
+    {
+        var go = new GameObject("SmashRitualSpotLight");
+        go.transform.position = transform.position + Vector3.up * 10f;
+        go.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+        var light = go.AddComponent<Light>();
+        light.type = LightType.Spot;
+        light.color = ritualSpotLightColor;
+        light.range = ritualSpotLightRange;
+        light.spotAngle = ritualSpotLightAngle;
+        light.innerSpotAngle = ritualSpotLightInnerAngle;
+        light.intensity = 0f;
+        return light;
+    }
+
+    private IEnumerator TransitionLights(bool ritualOn)
+    {
+        CacheGlobalLight();
+
+        if (ritualOn)
+            ritualSpotLight = SpawnRitualSpotLight();
+
+        float targetGlobal = ritualOn ? ritualGlobalLightIntensity : originalGlobalLightIntensity;
+        float targetSpot = ritualOn ? ritualSpotLightIntensity : 0f;
+        float startGlobal = cachedGlobalLight != null ? cachedGlobalLight.intensity : 0f;
+        float startSpot = ritualSpotLight != null ? ritualSpotLight.intensity : 0f;
+
+        float elapsed = 0f;
+        while (elapsed < lightTransitionDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / lightTransitionDuration);
+            if (cachedGlobalLight != null) cachedGlobalLight.intensity = Mathf.Lerp(startGlobal, targetGlobal, t);
+            if (ritualSpotLight != null) ritualSpotLight.intensity = Mathf.Lerp(startSpot, targetSpot, t);
+            yield return null;
+        }
+
+        if (!ritualOn && ritualSpotLight != null)
+        {
+            UnityEngine.Object.Destroy(ritualSpotLight.gameObject);
+            ritualSpotLight = null;
+        }
     }
 
     // Animation Events Reaver
