@@ -417,6 +417,7 @@ public class PlayerController : MonoBehaviour
         return uiManager.IsInventoryOpen
             || uiManager.IsShopOpen
             || uiManager.IsStorageOpen
+            || uiManager.IsHealthStationOpen
             || (uiManager.GetPassiveScreen()?.IsOpen ?? false)
             || (uiManager.GetGamblerScreen()?.IsOpen ?? false);
     }

@@ -18,6 +18,7 @@ public class UIManager : MonoBehaviour
     private EndGameUI        _endGameUI;
     private FloorTransitionUI _floorTransitionUI;
     private FloorModifierUI   _floorModifierUI;
+    private HealthStationUpgradeUI _healthStationUI;
     private PlayerStats playerStats;
     private bool _upgradeOpen;
 
@@ -31,6 +32,7 @@ public class UIManager : MonoBehaviour
     public bool IsMergeOpen => _activeMergeUI != null && _activeMergeUI.gameObject.activeSelf;
     public bool IsUpgradeOpen => _upgradeOpen;
     public bool IsStorageOpen => _storageUI != null && _storageUI.IsOpen;
+    public bool IsHealthStationOpen => _healthStationUI != null && _healthStationUI.IsOpen;
 
     public PassiveScreenUI GetPassiveScreen() => passiveScreenUI;
     public GamblerScreenUI GetGamblerScreen() => gamblerScreenUI;
@@ -65,6 +67,7 @@ public class UIManager : MonoBehaviour
         _endGameUI          = FindFirstObjectByType<EndGameUI>(FindObjectsInactive.Include);
         _floorTransitionUI  = FindFirstObjectByType<FloorTransitionUI>(FindObjectsInactive.Include);
         _floorModifierUI    = FindFirstObjectByType<FloorModifierUI>(FindObjectsInactive.Include);
+        _healthStationUI    = FindFirstObjectByType<HealthStationUpgradeUI>(FindObjectsInactive.Include);
 
         // Force Awake on all panels, then hide
         SetActive(inventoryPanel, true);
@@ -73,6 +76,7 @@ public class UIManager : MonoBehaviour
         SetActive(_upgradeStationUI?.gameObject, true);
         SetActive(_lootRewardUI?.gameObject, true);
         SetActive(sellUI?.gameObject, true);
+        SetActive(_healthStationUI?.gameObject, true);
 
         Canvas.ForceUpdateCanvases();
 
@@ -82,6 +86,7 @@ public class UIManager : MonoBehaviour
         SetActive(_upgradeStationUI?.gameObject, false);
         SetActive(_lootRewardUI?.gameObject, false);
         SetActive(sellUI?.gameObject, false);
+        SetActive(_healthStationUI?.gameObject, false);
     }
 
     private static void SetActive(GameObject go, bool active) { if (go != null) go.SetActive(active); }
@@ -109,6 +114,7 @@ public class UIManager : MonoBehaviour
             else if (IsGamblerOpen) CloseGambler();
             else if (IsStorageOpen) CloseStorage();
             else if (_upgradeOpen) return;
+            else if (IsHealthStationOpen) CloseHealthStation();
             else if (IsMergeOpen) { CloseMerge(); CloseInventoryImmediate(); }
             else if (IsShopOpen) { CloseShop(); CloseInventoryImmediate(); }
             else if (IsInventoryOpen) ToggleInventory();
@@ -307,9 +313,26 @@ public class UIManager : MonoBehaviour
         UpdatePanelVisibility();
     }
 
+    public void OpenHealthStation()
+    {
+        if (_healthStationUI == null)
+            _healthStationUI = FindFirstObjectByType<HealthStationUpgradeUI>(FindObjectsInactive.Include);
+        if (_healthStationUI == null) { Debug.LogError("[UIManager] HealthStationUpgradeUI not found!"); return; }
+
+        _healthStationUI.Open();
+        UpdatePanelVisibility();
+    }
+
+    public void CloseHealthStation()
+    {
+        _healthStationUI?.Close();
+        UpdatePanelVisibility();
+    }
+
     private void UpdatePanelVisibility()
     {
-        bool anyRightPanelOpen = IsShopOpen || IsMergeOpen || _upgradeOpen || (_lootRewardUI != null && _lootRewardUI.gameObject.activeSelf);
+        bool anyRightPanelOpen = IsShopOpen || IsMergeOpen || _upgradeOpen
+            || (_lootRewardUI != null && _lootRewardUI.gameObject.activeSelf);
         IsRightPanelOpen = anyRightPanelOpen;
 
         if (anyRightPanelOpen && !IsInventoryOpen && inventoryPanel != null)
@@ -320,7 +343,7 @@ public class UIManager : MonoBehaviour
         }
 
         bool hideHUD = IsInventoryOpen || IsShopOpen || IsMergeOpen || _upgradeOpen
-                    || IsPassiveOpen || IsGamblerOpen || IsStorageOpen;
+                    || IsPassiveOpen || IsGamblerOpen || IsStorageOpen || IsHealthStationOpen;
 
         if (hud != null) hud.SetActive(!hideHUD);
     }
