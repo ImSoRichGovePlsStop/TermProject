@@ -79,7 +79,12 @@ public class PaidHealObject : MonoBehaviour, IInteractable
 
 
     int CurrentFloor() => RunManager.Instance?.CurrentFloor ?? 1;
-    int CurrentCost() => baseCost + Mathf.Max(0, CurrentFloor() - 1) * costPerFloor;
+    int CurrentCost()
+    {
+        int raw = baseCost + Mathf.Max(0, CurrentFloor() - 1) * costPerFloor;
+        float discount = RunManager.Instance != null ? RunManager.Instance.EffectiveHealDiscount : 0f;
+        return Mathf.RoundToInt(raw * (1f - discount));
+    }
     int CurrentFlatHeal() => baseHeal + Mathf.Max(0, CurrentFloor() - 1) * healPerFloor;
 
     PlayerStats FindStats()

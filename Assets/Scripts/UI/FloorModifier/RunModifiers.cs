@@ -25,17 +25,54 @@ public class RunModifiers
     [Range(0f, 1f)]
     public float healPerRoomBonus = 0f;
 
+    [Header("Sell / Discount")]
+    [Tooltip("Multiplier applied to sell price (1 = no bonus, 1.5 = 50% more).")]
+    public float sellPriceMultiplier = 1f;
+
+    [Tooltip("Fraction discount at the shop (0 = full price, 0.2 = 20% off).")]
+    [Range(0f, 1f)]
+    public float shopDiscount = 0f;
+
+    [Tooltip("Fraction discount on paid upgrade cost (0 = full price, 0.2 = 20% off).")]
+    [Range(0f, 1f)]
+    public float upgradeDiscount = 0f;
+
+    [Tooltip("Fraction discount on paid heal cost (0 = full price, 0.2 = 20% off).")]
+    [Range(0f, 1f)]
+    public float healDiscount = 0f;
+
+    [Header("Merge")]
+    [Tooltip("Multiplies the target output value (mean). 1 = normal, 1.3 = 30% higher value.")]
+    public float mergeValueMultiplier = 1f;
+
+    [Tooltip("Multiplies the spread/SD of merge output. <1 = tighter, >1 = wilder.")]
+    public float mergeSpreadMultiplier = 1f;
+
+    [Tooltip("If true, merge output rarity is guaranteed to be at least the average input rarity.")]
+    public bool mergeGuaranteeSameRarity = false;
+
+    [Tooltip("Flat bonus added to the minimum output rarity index (0=Common … 4=GOD). Stacks with mergeGuaranteeSameRarity.")]
+    public int mergeRarityBonus = 0;
+
     public void Add(RunModifiers other)
     {
-        eliteBudgetBonus       += other.eliteBudgetBonus;
-        enemyCountMultiplier   *= other.enemyCountMultiplier;
-        extraWaves             += other.extraWaves;
-        coinMultiplier         *= other.coinMultiplier;
-        lootMeanBonus          += other.lootMeanBonus;
-        extraLootOptions       += other.extraLootOptions;
-        bonusCoinsOnFloorEntry += other.bonusCoinsOnFloorEntry;
-        extraEventRoomMin      += other.extraEventRoomMin;
-        extraBattleRoomMin     += other.extraBattleRoomMin;
-        healPerRoomBonus       += other.healPerRoomBonus;
+        eliteBudgetBonus          += other.eliteBudgetBonus;
+        enemyCountMultiplier      *= other.enemyCountMultiplier;
+        extraWaves                += other.extraWaves;
+        coinMultiplier            *= other.coinMultiplier;
+        lootMeanBonus             += other.lootMeanBonus;
+        extraLootOptions          += other.extraLootOptions;
+        bonusCoinsOnFloorEntry    += other.bonusCoinsOnFloorEntry;
+        extraEventRoomMin         += other.extraEventRoomMin;
+        extraBattleRoomMin        += other.extraBattleRoomMin;
+        healPerRoomBonus          += other.healPerRoomBonus;
+        sellPriceMultiplier       *= other.sellPriceMultiplier;
+        shopDiscount              += other.shopDiscount;
+        upgradeDiscount           += other.upgradeDiscount;
+        healDiscount              += other.healDiscount;
+        mergeValueMultiplier      *= other.mergeValueMultiplier;
+        mergeSpreadMultiplier     *= other.mergeSpreadMultiplier;
+        mergeGuaranteeSameRarity  |= other.mergeGuaranteeSameRarity;
+        mergeRarityBonus          += other.mergeRarityBonus;
     }
 }

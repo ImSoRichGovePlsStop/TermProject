@@ -518,6 +518,14 @@ public class MaterialItemUI : MonoBehaviour,
     public void OnPointerClick(PointerEventData e)
     {
         if (e.button != PointerEventData.InputButton.Right) return;
+
+        if (ShopUI.IsOpen)
+        {
+            if (Instance.CurrentGrid != InventoryManager.Instance.BagGrid) return;
+            SellConfirmationUI.Instance?.Show(Instance, e.position);
+            return;
+        }
+
         if (Instance.StackCount <= 1) return;
         if (InventoryUI == null) return;
 

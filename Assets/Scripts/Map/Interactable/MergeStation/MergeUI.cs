@@ -177,18 +177,30 @@ public class MergeUI : MonoBehaviour
         if (inputModules.Count == 0) { Debug.LogWarning("[MergeUI] No input items!"); return; }
 
         int totalCost = CalculateTotalInputCost(inputModules);
-        float mean = totalCost * 0.75f;
-        float sd   = totalCost * 0.1f;
+
+        var run = RunManager.Instance;
+        float valueMult  = run != null ? run.EffectiveMergeValueMultiplier  : 1f;
+        float spreadMult = run != null ? run.EffectiveMergeSpreadMultiplier : 1f;
+        int   minRarity  = 0;
+        if (run != null)
+        {
+            if (run.EffectiveMergeGuaranteeSameRarity)
+                minRarity = CalcAvgRarityIndex(inputModules);
+            minRarity = Mathf.Clamp(minRarity + run.EffectiveMergeRarityBonus, 0, 4);
+        }
+
+        float mean = totalCost * 0.75f * valueMult;
+        float sd   = totalCost * 0.1f  * spreadMult;
         float low  = Mathf.Max(0, mean - 2f * sd);
         float high = mean + 2f * sd;
 
-        var entry = Randomizer.RollInRange(low, high);
+        var entry = Randomizer.RollInRange(low, high, minRarityIndex: minRarity);
         float step = totalCost * 0.1f;
         while (entry.data == null && (high - low) < totalCost * 4f)
         {
             low  = Mathf.Max(0, low  - step);
             high = high + step;
-            entry = Randomizer.RollInRange(low, high);
+            entry = Randomizer.RollInRange(low, high, minRarityIndex: minRarity);
         }
         if (entry.data == null) { Debug.LogWarning("[MergeUI] No module found in pool!"); return; }
 
@@ -330,6 +342,18 @@ public class MergeUI : MonoBehaviour
         ui.GetComponent<CanvasGroup>().alpha = 1f;
     }
 
+    private static int CalcAvgRarityIndex(List<ModuleInstance> modules)
+    {
+        int total = 0, count = 0;
+        foreach (var inst in modules)
+        {
+            if (inst is MaterialInstance) continue;
+            total += (int)inst.Rarity;
+            count++;
+        }
+        return count > 0 ? Mathf.RoundToInt((float)total / count) : 0;
+    }
+
     private static int CalculateTotalInputCost(List<ModuleInstance> modules)
     {
         int total = 0;
@@ -369,14 +393,16 @@ public class MergeUI : MonoBehaviour
             return;
         }
 
-        _rollDisplayCoroutine = StartCoroutine(RollDisplayCoroutine(totalCost));
+        var run = RunManager.Instance;
+        float valueMult  = run != null ? run.EffectiveMergeValueMultiplier  : 1f;
+        float spreadMult = run != null ? run.EffectiveMergeSpreadMultiplier : 1f;
+        _rollDisplayCoroutine = StartCoroutine(RollDisplayCoroutine(totalCost, valueMult, spreadMult));
     }
 
-    private IEnumerator RollDisplayCoroutine(int totalCost)
+    private IEnumerator RollDisplayCoroutine(int totalCost, float valueMult, float spreadMult)
     {
-        float mean = totalCost * 0.75f;
-        float sd   = totalCost * 0.1f;
-        // Expand display range by 2 extra steps for visual variety
+        float mean = totalCost * 0.75f * valueMult;
+        float sd   = totalCost * 0.1f  * spreadMult;
         float low  = Mathf.Max(0, mean - 4f * sd);
         float high = mean + 4f * sd;
 

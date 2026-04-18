@@ -6,7 +6,13 @@ public class PaidUpgradeStation : UpgradeStation, IInteractable
     private int upgradeCost = 50;
     private bool _isOpen = false;
 
-    public override string GetPromptText() => $"[ E ] Upgrade Modules ({upgradeCost} Gold)";
+    private int EffectiveCost()
+    {
+        float discount = RunManager.Instance != null ? RunManager.Instance.EffectiveUpgradeDiscount : 0f;
+        return Mathf.RoundToInt(upgradeCost * (1f - discount));
+    }
+
+    public override string GetPromptText() => $"[ E ] Upgrade Modules ({EffectiveCost()} Gold)";
 
     private void Start()
     {
@@ -43,11 +49,12 @@ public class PaidUpgradeStation : UpgradeStation, IInteractable
             return;
         }
 
-        if (!CurrencyManager.Instance.TrySpend(upgradeCost))
+        int cost = EffectiveCost();
+        if (!CurrencyManager.Instance.TrySpend(cost))
         {
             DamageNumberSpawner.Instance?.SpawnMessage(
                 transform.position,
-                $"Need {upgradeCost} coins!",
+                $"Need {cost} coins!",
                 new Color(1f, 0.35f, 0.35f));
             return;
         }

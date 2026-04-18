@@ -160,7 +160,7 @@ public static class Randomizer
         return (cheap, mid, expensive);
     }
 
-    public static TestModuleEntry RollInRange(float minCost, float maxCost, bool allowDuplicates = false)
+    public static TestModuleEntry RollInRange(float minCost, float maxCost, bool allowDuplicates = false, int minRarityIndex = 0)
     {
         var pool = GetPool();
         float mean = (minCost + maxCost) * 0.5f;
@@ -196,6 +196,7 @@ public static class Randomizer
             }
 
             if (bestRarity == -1) continue;
+            if (bestRarity < minRarityIndex) continue;
 
             float weight = 1f / (bestDelta + 1f);
             candidates.Add((new TestModuleEntry { data = data, rarity = IndexToRarity(bestRarity) }, weight));
