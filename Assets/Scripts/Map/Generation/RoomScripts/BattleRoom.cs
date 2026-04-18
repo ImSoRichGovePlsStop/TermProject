@@ -195,8 +195,20 @@ public class BattleRoom : MonoBehaviour
             if (useElite) _eliteBudgetsPerWave[waveIndex]--;
             var prefab = useElite ? entry.elite : entry.normal;
             budget -= Mathf.Max(1, entry.cost);
-            spawned++;
-            ApplyEnemyScale(Instantiate(prefab, PickSpawnPosition(), Quaternion.identity));
+
+            var go = Instantiate(prefab, PickSpawnPosition(), Quaternion.identity);
+
+            var groupSpawner = go.GetComponent<IGroupSpawner>();
+            if (groupSpawner != null)
+            {
+                spawned += groupSpawner.GetSpawnCount();
+                groupSpawner.SetGroupStatScale(ComputeStatScale());
+            }
+            else
+            {
+                spawned++;
+                ApplyEnemyScale(go);
+            }
         }
 
         _aliveCount += spawned;
@@ -232,9 +244,8 @@ public class BattleRoom : MonoBehaviour
         return pool[Random.Range(0, pool.Count)];
     }
 
-    protected void ApplyEnemyScale(GameObject enemy)
+    protected StatScale ComputeStatScale()
     {
-        if (!enemy.TryGetComponent<EntityStats>(out var stats)) return;
         var player = FindFirstObjectByType<PlayerStats>();
         var rm = RunManager.Instance;
         var scale = new StatScale();
@@ -245,7 +256,13 @@ public class BattleRoom : MonoBehaviour
                           * (rm?.EffectiveEnemyHpMultiplier ?? 1f);
         scale.damage    = (1f + progress + (player.MaxHealth / Mathf.Max(1f, player.BaseHealth)) * enemyDmgPlayerHpWeight)
                           * (rm?.EffectiveEnemyDamageMultiplier ?? 1f);
-        stats.SetStatScale(scale);
+        return scale;
+    }
+
+    protected void ApplyEnemyScale(GameObject enemy)
+    {
+        if (!enemy.TryGetComponent<EntityStats>(out var stats)) return;
+        stats.SetStatScale(ComputeStatScale());
     }
 
     public void CalculateTotalBudget(Vector3 vol)

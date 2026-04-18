@@ -149,10 +149,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyPoolManager
   universalEnemy:
-    normal: {fileID: 7238543708409638561, guid: dd9f068c973098c498dd3e59894d0504, type: 3}
-    elite: {fileID: 7238543708409638561, guid: dd9f068c973098c498dd3e59894d0504, type: 3}
+    normal: {fileID: 552654457627548230, guid: 964689666864db3418c9c891df898dcc, type: 3}
+    elite: {fileID: 552654457627548230, guid: 964689666864db3418c9c891df898dcc, type: 3}
     type: 0
-    cost: 1
+    cost: 7
   enemies:
   - normal: {fileID: 4095530523079436333, guid: 553eef5ba573e9541b5e760ac99ea17f, type: 3}
     elite: {fileID: 1645718517242866656, guid: 4d707ab07e2f23145a5141504c5339ec, type: 3}

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class SkullGroup : MonoBehaviour
+public class SkullGroup : MonoBehaviour, IGroupSpawner
 {
     [Header("Skull")]
     [SerializeField] private GameObject skullPrefab;
@@ -21,6 +21,25 @@ public class SkullGroup : MonoBehaviour
     [SerializeField] private float spawnDuration = 1f;
     [SerializeField] private float spawnFadeOutDuration = 0.4f;
 
+    private int _resolvedCount;
+    private bool _hasStatScale;
+    private StatScale _statScale;
+
+
+    public int GetSpawnCount() => _resolvedCount;
+
+    public void SetGroupStatScale(StatScale scale)
+    {
+        _statScale    = scale;
+        _hasStatScale = true;
+    }
+
+
+    private void Awake()
+    {
+        _resolvedCount = Random.Range(spawnCountMin, spawnCountMax + 1);
+    }
+
     private void Start()
     {
         StartCoroutine(SpawnRoutine());
@@ -28,16 +47,18 @@ public class SkullGroup : MonoBehaviour
 
     private IEnumerator SpawnRoutine()
     {
-        int count = Random.Range(spawnCountMin, spawnCountMax + 1);
         var spawnedPositions = new List<Vector3>();
 
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < _resolvedCount; i++)
         {
             Vector3 pos = FindSpawnPosition(spawnedPositions);
             if (pos == Vector3.zero) continue;
 
             spawnedPositions.Add(pos);
-            Instantiate(skullPrefab, pos, Quaternion.identity);
+            var skull = Instantiate(skullPrefab, pos, Quaternion.identity);
+
+            if (_hasStatScale && skull.TryGetComponent<EntityStats>(out var stats))
+                stats.SetStatScale(_statScale);
         }
 
         if (spawnEffectPrefab != null)
