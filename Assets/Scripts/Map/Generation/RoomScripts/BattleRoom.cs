@@ -188,7 +188,35 @@ public class BattleRoom : MonoBehaviour
                 if (c <= budget) affordable.Add(e);
             }
 
-            if (affordable.Count == 0) break; // nothing fits
+            if (affordable.Count == 0)
+            {
+                EnemyEntry cheapestEntry = null;
+                int lowestCost = int.MaxValue;
+                foreach (var e in enemyEntries)
+                {
+                    int c = Mathf.Max(1, e.cost);
+                    if (c < lowestCost) { lowestCost = c; cheapestEntry = e; }
+                }
+                if (cheapestEntry != null)
+                {
+                    bool fillerElite = _eliteBudgetsPerWave[waveIndex] > 0 && cheapestEntry.elite != null;
+                    if (fillerElite) _eliteBudgetsPerWave[waveIndex]--;
+                    var filler = Instantiate(fillerElite ? cheapestEntry.elite : cheapestEntry.normal,
+                                            PickSpawnPosition(), Quaternion.identity);
+                    var fillerSpawner = filler.GetComponent<IGroupSpawner>();
+                    if (fillerSpawner != null)
+                    {
+                        spawned += fillerSpawner.GetSpawnCount();
+                        fillerSpawner.SetGroupStatScale(ComputeStatScale());
+                    }
+                    else
+                    {
+                        spawned++;
+                        ApplyEnemyScale(filler);
+                    }
+                }
+                break;
+            }
 
             var entry = affordable[Random.Range(0, affordable.Count)];
             bool useElite = _eliteBudgetsPerWave[waveIndex] > 0 && entry.elite != null;
