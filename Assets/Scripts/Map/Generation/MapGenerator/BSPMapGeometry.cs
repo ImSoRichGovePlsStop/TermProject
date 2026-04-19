@@ -191,12 +191,14 @@ public class BSPMapGeometry : MonoBehaviour
             if (ci != spawnCorner && ci != bossCorner) freeCorners.Add(ci);
         Shuffle(freeCorners);
 
-        int cornerEventsPlaced = 0;
-        if (cornerEventsPlaced < effectiveMaxEvent && PlaceCornerEvent(freeCorners[0])) cornerEventsPlaced++;
+        PlaceCornerEventOfType(RoomType.Shop, freeCorners[0]);
+
         if (freeCorners.Count > 1)
         {
-            if (cornerEventsPlaced < effectiveMaxEvent && PlaceCornerEvent(freeCorners[1])) cornerEventsPlaced++;
-            else PlaceTypedRoom(RoomType.Battle, minBattleRoomSize, maxBattleRoomSize, presetChanceBattle, freeCorners[1]);
+            var cycleTypes = new[] { RoomType.RareLoot, RoomType.Merge, RoomType.Heal, RoomType.Fountain };
+            int curFloor   = rm?.CurrentFloor ?? 1;
+            RoomType cycleType = cycleTypes[(curFloor - 1) % cycleTypes.Length];
+            PlaceCornerEventOfType(cycleType, freeCorners[1]);
         }
 
         PlaceAdjacentBattle();
@@ -370,31 +372,10 @@ public class BSPMapGeometry : MonoBehaviour
             }
     }
 
-    bool PlaceCornerEvent(int cornerIdx)
+    void PlaceCornerEventOfType(RoomType type, int cornerIdx)
     {
-        var cRm = RunManager.Instance;
-        float wH = weightHeal     * (cRm != null && cRm.WasMissingLastFloor(RoomType.Heal)     ? 1f : repeatPenalty);
-        float wS = weightShop     * (cRm != null && cRm.WasMissingLastFloor(RoomType.Shop)     ? 1f : repeatPenalty);
-        float wR = weightRareLoot * (cRm != null && cRm.WasMissingLastFloor(RoomType.RareLoot) ? 1f : repeatPenalty);
-        float wM = weightMerge    * (cRm != null && cRm.WasMissingLastFloor(RoomType.Merge)    ? 1f : repeatPenalty);
-        float wF = weightFountain * (cRm != null && cRm.WasMissingLastFloor(RoomType.Fountain) ? 1f : repeatPenalty);
-        float total = wH + wS + wR + wM + wF;
-
-        RoomType chosen = RoomType.Battle;
-        if (total > 0f)
+        float pChance = type switch
         {
-            float roll = Random.Range(0f, total);
-            if      ((roll -= wH) < 0f) chosen = RoomType.Heal;
-            else if ((roll -= wS) < 0f) chosen = RoomType.Shop;
-            else if ((roll -= wR) < 0f) chosen = RoomType.RareLoot;
-            else if ((roll -= wM) < 0f) chosen = RoomType.Merge;
-            else                        chosen = RoomType.Fountain;
-        }
-
-        if (chosen == RoomType.Battle)
-        { PlaceTypedRoom(RoomType.Battle, minBattleRoomSize, maxBattleRoomSize, presetChanceBattle, cornerIdx); return false; }
-
-        float pChance = chosen switch {
             RoomType.Heal     => presetChanceHeal,
             RoomType.Shop     => presetChanceShop,
             RoomType.RareLoot => presetChanceRareLoot,
@@ -406,15 +387,14 @@ public class BSPMapGeometry : MonoBehaviour
         if (Random.value < pChance && roomPresets != null)
         {
             var compat = new List<BSPRoomPreset>();
-            foreach (var p in roomPresets) if (p != null && p.AllowsType(chosen)) compat.Add(p);
+            foreach (var p in roomPresets) if (p != null && p.AllowsType(type)) compat.Add(p);
             Shuffle(compat);
             foreach (var preset in compat)
-                if (TryPlacePresetRoom(chosen, preset, cornerIdx)) { didPlace = true; break; }
+                if (TryPlacePresetRoom(type, preset, cornerIdx)) { didPlace = true; break; }
         }
-        if (!didPlace) didPlace = TryPlaceRandomRoom(chosen, minEventRoomSize, maxEventRoomSize, cornerIdx);
+        if (!didPlace) didPlace = TryPlaceRandomRoom(type, minEventRoomSize, maxEventRoomSize, cornerIdx);
         if (!didPlace) PlaceTypedRoom(RoomType.Battle, minBattleRoomSize, maxBattleRoomSize, presetChanceBattle, cornerIdx);
-        else cRm?.RegisterEventRoomPlaced(chosen);
-        return didPlace;
+        else RunManager.Instance?.RegisterEventRoomPlaced(type);
     }
 
     void FillWithSmallTypedRooms(Dictionary<RoomType, int> alreadyPlaced, int eventCap)
