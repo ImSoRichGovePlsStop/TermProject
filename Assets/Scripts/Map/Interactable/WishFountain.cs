@@ -23,11 +23,6 @@ public class WishFountain : MonoBehaviour, IInteractable
     private UIManager _uiManager;
 
 
-    private class FountainLootCarrier : RandomLoot
-    {
-        public override void OnLootPicked() { }
-    }
-
     public string GetPromptText() => $"[ E ]  {cost} Gold to make a wish";
 
     private void Start()
@@ -95,16 +90,8 @@ public class WishFountain : MonoBehaviour, IInteractable
         var rolled = Randomizer.Roll(1, 1, wishMeanCost, wishSd, allowDuplicates);
         if (rolled == null || rolled.Count == 0) return;
 
-        var carrier = gameObject.AddComponent<FountainLootCarrier>();
-        carrier.Configure(new LootConfig
-        {
-            optionCount     = 1,
-            meanCost        = wishMeanCost,
-            sd              = wishSd,
-            allowDuplicates = allowDuplicates,
-        });
-
-        _uiManager.OpenRewardLoot(carrier, rolled);
+        var cfg = new LootConfig { optionCount = 1, meanCost = wishMeanCost, sd = wishSd, allowDuplicates = allowDuplicates };
+        _uiManager.OpenRewardLoot(cfg, rolled);
     }
 
     private void ApplyStatBlessing(PlayerStats stats)

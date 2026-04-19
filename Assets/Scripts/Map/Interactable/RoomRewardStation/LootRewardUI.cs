@@ -11,7 +11,7 @@ public class LootRewardUI : MonoBehaviour
     [SerializeField] private Button rerollButton;
 
     private List<ModuleInstance> rolledOptions = new List<ModuleInstance>();
-    private RandomLoot currentStation;
+    private LootConfig _config;
     private bool _hasRerolled;
 
     private static (int top, int bot) GetLayout(int total) => total switch
@@ -24,9 +24,9 @@ public class LootRewardUI : MonoBehaviour
         _ => (3, 3),
     };
 
-    public void Open(RandomLoot station, List<TestModuleEntry> rolled)
+    public void Open(LootConfig config, List<TestModuleEntry> rolled)
     {
-        currentStation = station;
+        _config = config;
 
         _hasRerolled = false;
         if (rerollButton != null)
@@ -65,22 +65,20 @@ public class LootRewardUI : MonoBehaviour
 
     private void OnReroll()
     {
-        if (currentStation == null) return;
         if (_hasRerolled) return;
         if (RunManager.Instance != null && !RunManager.Instance.AllowReroll) return;
 
         _hasRerolled = true;
         if (rerollButton != null) rerollButton.interactable = false;
 
-        RepopulateCards(currentStation.RollNewOptions());
+        var newRolled = Randomizer.Roll(_config.optionCount, _config.optionCount, _config.meanCost, _config.sd, _config.allowDuplicates);
+        RepopulateCards(newRolled);
     }
 
     public void OnOptionSelected(ModuleInstance chosen)
     {
         var inventoryUI = FindFirstObjectByType<InventoryUI>(FindObjectsInactive.Include);
         inventoryUI?.SpawnModule(chosen.Data, chosen.Rarity, chosen.Level);
-
-        currentStation?.OnLootPicked();
 
         var uiManager = FindFirstObjectByType<UIManager>();
         uiManager?.CloseRewardLoot();
