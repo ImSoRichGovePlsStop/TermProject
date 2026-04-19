@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,10 +12,10 @@ public class RunManager : MonoBehaviour
     [Header("Healing")]
     [Tooltip("% after clearing")]
     [Range(0f, 1f)]
-    public float HealPerRoom = 0.10f;
+    public float HealPerRoom = 0f;
 
     [Header("Reroll")]
-    public bool AllowReroll = true;
+    public bool AllowReroll = false;
 
     [Header("Run Stats")]
     public int CurrentFloor = 1;
@@ -63,22 +64,19 @@ public class RunManager : MonoBehaviour
     public int   EffectiveExtraWaves         => PermanentMods.extraWaves             + NextFloorMods.extraWaves;
     public float EffectiveLootMeanBonus      => PermanentMods.lootMeanBonus          + NextFloorMods.lootMeanBonus;
     public int   EffectiveExtraLootOptions   => PermanentMods.extraLootOptions       + NextFloorMods.extraLootOptions;
+    public int  EffectiveShopPool => PermanentMods.extraShopPool + NextFloorMods.extraShopPool;
     public int   EffectiveExtraEventRoomMin  => PermanentMods.extraEventRoomMin      + NextFloorMods.extraEventRoomMin;
     public int   EffectiveExtraBattleRoomMin => PermanentMods.extraBattleRoomMin     + NextFloorMods.extraBattleRoomMin;
-    public float EffectiveHealPerRoomBonus   => PermanentMods.healPerRoomBonus       + NextFloorMods.healPerRoomBonus;
-    public int   EffectiveBonusCoinsOnEntry  => PermanentMods.bonusCoinsOnFloorEntry + NextFloorMods.bonusCoinsOnFloorEntry;
-    public float EffectiveLootChanceBias     => PermanentMods.lootChanceBias         + NextFloorMods.lootChanceBias;
-    public float EffectiveSellMultiplier        => PermanentMods.sellPriceMultiplier   * NextFloorMods.sellPriceMultiplier;
-    public float EffectiveShopDiscount          => Mathf.Clamp01(PermanentMods.shopDiscount     + NextFloorMods.shopDiscount);
-    public float EffectiveUpgradeDiscount       => Mathf.Clamp01(PermanentMods.upgradeDiscount  + NextFloorMods.upgradeDiscount);
-    public float EffectiveHealDiscount          => Mathf.Clamp01(PermanentMods.healDiscount     + NextFloorMods.healDiscount);
-    public float EffectiveEnemyHpMultiplier     => PermanentMods.enemyHpMultiplier     * NextFloorMods.enemyHpMultiplier;
-    public float EffectiveEnemyDamageMultiplier => PermanentMods.enemyDamageMultiplier * NextFloorMods.enemyDamageMultiplier;
-    public float EffectiveEnemySpeedMultiplier  => PermanentMods.enemySpeedMultiplier  * NextFloorMods.enemySpeedMultiplier;
-    public float EffectiveMergeValueMultiplier  => PermanentMods.mergeValueMultiplier  * NextFloorMods.mergeValueMultiplier;
-    public float EffectiveMergeSpreadMultiplier => PermanentMods.mergeSpreadMultiplier * NextFloorMods.mergeSpreadMultiplier;
+    public float EffectiveHealPerRoomBonus        => PermanentMods.healPerRoomBonus       + NextFloorMods.healPerRoomBonus;
+    public int   EffectiveBonusCoinsOnEntry        => PermanentMods.bonusCoinsOnFloorEntry + NextFloorMods.bonusCoinsOnFloorEntry;
+    public float EffectiveSellMultiplier           => PermanentMods.sellPriceMultiplier    * NextFloorMods.sellPriceMultiplier;
+    public float EffectiveShopDiscount             => Mathf.Clamp01(PermanentMods.shopDiscount      + NextFloorMods.shopDiscount);
+    public float EffectiveUpgradeDiscount          => Mathf.Clamp01(PermanentMods.upgradeDiscount   + NextFloorMods.upgradeDiscount);
+    public float EffectiveHealDiscount             => Mathf.Clamp01(PermanentMods.healDiscount      + NextFloorMods.healDiscount);
+    public float EffectiveMergeValueMultiplier     => PermanentMods.mergeValueMultiplier   * NextFloorMods.mergeValueMultiplier;
+    public float EffectiveMergeSpreadMultiplier    => PermanentMods.mergeSpreadMultiplier  * NextFloorMods.mergeSpreadMultiplier;
     public bool  EffectiveMergeGuaranteeSameRarity => PermanentMods.mergeGuaranteeSameRarity || NextFloorMods.mergeGuaranteeSameRarity;
-    public int   EffectiveMergeRarityBonus      => PermanentMods.mergeRarityBonus      + NextFloorMods.mergeRarityBonus;
+    public int   EffectiveMergeRarityBonus         => PermanentMods.mergeRarityBonus       + NextFloorMods.mergeRarityBonus;
 
     // ────────────────────────────────────────────────────────────────────────
 
@@ -111,9 +109,13 @@ public class RunManager : MonoBehaviour
 
 
 
-    public void OnEnemyKilled()
+    public static event Action OnRoomClearedEvent;
+    public static event Action<EnemyTier> OnEnemyKilledWithTierEvent;
+
+    public void OnEnemyKilled(EnemyTier tier = EnemyTier.Normal)
     {
         TotalEnemyKilled++;
+        OnEnemyKilledWithTierEvent?.Invoke(tier);
     }
 
     public void OnEventRoomEntered()
@@ -124,6 +126,7 @@ public class RunManager : MonoBehaviour
     public void OnRoomCleared()
     {
         TotalRoomsCleared++;
+        OnRoomClearedEvent?.Invoke();
     }
 
     public void OnBossKilled()
@@ -173,6 +176,8 @@ public class RunManager : MonoBehaviour
         PermanentMods  = new RunModifiers();
         NextFloorMods  = new RunModifiers();
         _pickedCardIds.Clear();
+        HealthStationManager.Instance?.ResetRun();
+        LuckStationManager.Instance?.ResetRun();
     }
 
     // ── Floor modifier card logic ────────────────────────────────────────────

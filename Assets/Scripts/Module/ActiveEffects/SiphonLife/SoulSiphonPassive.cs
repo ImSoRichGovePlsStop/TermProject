@@ -7,9 +7,7 @@ public class SoulSiphonPassive : MonoBehaviour
     public SoulSiphonModule Module;
 
     public float attackBuffPerEnemy { get; set; }
-
     public float burstRange { get; set; }
-
     public float buffDuration { get; set; }
 
     private PlayerStats _stats;
@@ -17,6 +15,8 @@ public class SoulSiphonPassive : MonoBehaviour
 
     private float _cooldownTimer = 0f;
     private Coroutine _buffCoroutine;
+
+    private GameObject _activeIndicator;
 
     public void Init(PlayerStats playerStats, LayerMask layerMask)
     {
@@ -30,6 +30,15 @@ public class SoulSiphonPassive : MonoBehaviour
             _cooldownTimer -= Time.deltaTime;
 
         HandleInput();
+    }
+
+    private void OnDisable()
+    {
+        if (_activeIndicator != null)
+        {
+            Destroy(_activeIndicator);
+            _activeIndicator = null;
+        }
     }
 
     private void HandleInput()
@@ -89,30 +98,45 @@ public class SoulSiphonPassive : MonoBehaviour
         if (enemiesHit > 0)
         {
             float totalBuff = attackBuffPerEnemy * enemiesHit;
-            ApplyAttackBuff(totalBuff);
+            ApplyAttackBuff(totalBuff, enemiesHit);
         }
 
         yield return null;
     }
 
-    private void ApplyAttackBuff(float buffPercent)
+    private void ApplyAttackBuff(float buffPercent, int enemiesHit)
     {
         if (_buffCoroutine != null)
             StopCoroutine(_buffCoroutine);
 
-        _buffCoroutine = StartCoroutine(BuffCoroutine(buffPercent));
+        _buffCoroutine = StartCoroutine(BuffCoroutine(buffPercent, enemiesHit));
     }
 
-    private IEnumerator BuffCoroutine(float buffPercent)
+    private IEnumerator BuffCoroutine(float buffPercent, int enemiesHit)
     {
         _stats.AddMultiplierModifier(new StatModifier { damage = buffPercent });
+
+        if (_activeIndicator != null)
+            Destroy(_activeIndicator);
+
+        if (Module.buffIndicatorPrefab != null)
+        {
+            _activeIndicator = Instantiate(
+                Module.buffIndicatorPrefab,
+                transform.position,
+                Quaternion.identity,
+                transform
+            );
+            _activeIndicator.GetComponent<SiphonBuffIndicator>()?.Init(enemiesHit, buffDuration);
+        }
 
         yield return new WaitForSeconds(buffDuration);
 
         _stats.RemoveMultiplierModifier(new StatModifier { damage = buffPercent });
+
+        _activeIndicator = null;
         _buffCoroutine = null;
     }
-
 
     private void OnDrawGizmosSelected()
     {

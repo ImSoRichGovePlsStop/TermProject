@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8571a3493c7cd2843894dd9e0f22a584, type: 3}
+  m_Name: HealthStationUpgradeConfig
+  m_EditorClassIdentifier: Assembly-CSharp::HealthStationUpgradeConfig
+  levels:
+  - description: On room clear heal 20% missing hp
+    upgradeCost:
+    - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+      count: 1
+  - description: +40 max hp
+    upgradeCost:
+    - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+      count: 3
+  - description: +5 Max Hp on room clear
+    upgradeCost:
+    - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+      count: 1
+    - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+      count: 1
+  - description: Every 10 kill heal 5% max hp , elite kill heal 5% max hp, miniboss
+      kill heal 35% max hp
+    upgradeCost:
+    - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+      count: 1
+    - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+      count: 1
+  - description: 'Allow 1 revive with 50% max hp '
+    upgradeCost:
+    - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+      count: 1
+    - material: {fileID: 0}
+      count: 1

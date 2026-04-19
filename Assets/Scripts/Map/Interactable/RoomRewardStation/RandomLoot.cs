@@ -81,7 +81,8 @@ public class RandomLoot : MonoBehaviour, IInteractable
             return;
         }
 
-        uiManager?.OpenRewardLoot(this, rolled);
+        var cfg = new LootConfig { optionCount = optionCount, meanCost = meanCost, sd = sd, allowDuplicates = allowDuplicates };
+        uiManager?.OpenRewardLoot(cfg, rolled);
         Destroy(gameObject);
     }
 
