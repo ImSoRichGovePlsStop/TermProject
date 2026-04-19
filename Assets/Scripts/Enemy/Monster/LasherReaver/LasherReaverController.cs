@@ -136,6 +136,7 @@ public class LasherReaverController : EnemyBase
     [SerializeField] private float anchorSpinSpeed = 1f;
     [SerializeField] private float anchorCurveWidth = 0.5f;
     [SerializeField] private float anchorProjectileSpeed = 8f;
+    [SerializeField] private float anchorWindUpRotateSpeed = 180f;
     [SerializeField] private float anchorPostDelayMin = 0.8f;
     [SerializeField] private float anchorPostDelayMax = 1.2f;
     [Range(0f, 1f)]
@@ -150,6 +151,7 @@ public class LasherReaverController : EnemyBase
     [SerializeField] private GameObject smashShockwavePrefab;
     private float smashCooldownMin = 15f;
     private float smashCooldownMax = 25f;
+    [SerializeField] private float smashRitualMoveSpeedMultiplier = 1f;
     [SerializeField] private float smashPostDelayMin = 1f;
     [SerializeField] private float smashPostDelayMax = 1.5f;
     [SerializeField][Range(0f, 1f)] private float smashWeight = 0.3f;
@@ -175,6 +177,7 @@ public class LasherReaverController : EnemyBase
     [SerializeField] private float reaverProjectileCooldownMax = 8f;
     [SerializeField] private float reaverProjectileDamageScale = 1f;
     [Header("Reaver Dash Combo")]
+    [SerializeField][Range(0f, 1f)] private float anchorLastPositionChance = 0.5f;
     private float comboDashProjChance = 0.5f;
     private float comboDashAnchorChance = 0.3f;
     private float comboDashJumpChance = 0.3f;
@@ -296,6 +299,7 @@ public class LasherReaverController : EnemyBase
     private float currentLasherAnchorCooldown = 0f;
 
     private Vector3 anchorTargetPosition = Vector3.zero;
+    private Vector3 anchorTrackingDir = Vector3.zero;
     private LasherReaverAnchorProjectile activeAnchor = null;
     private float lastReaverDashTime = 0f;
     private float currentReaverDashCooldown = 0f;
@@ -431,6 +435,18 @@ public class LasherReaverController : EnemyBase
     {
         if (isSmashRitual) return;
 
+        // Anchor wind-up tracking
+        if (isAnchorWindUp && anchorTargetPosition == Vector3.zero && HasTarget)
+        {
+            Vector3 toTarget = TargetPosition - transform.position;
+            toTarget.y = 0f;
+            if (toTarget.sqrMagnitude > 0.001f)
+            {
+                anchorTrackingDir = Vector3.RotateTowards(anchorTrackingDir.normalized, toTarget.normalized, anchorWindUpRotateSpeed * Mathf.Deg2Rad * Time.deltaTime, 0f);
+                movement.FaceTarget(transform.position + anchorTrackingDir);
+            }
+        }
+
         if (currentForm == LasherReaverForm.Reaver)
         {
             if (currentReaverAttack == ReaverAttackType.Charge && isCharging && !isStunned)
@@ -497,8 +513,16 @@ public class LasherReaverController : EnemyBase
         animator?.SetTrigger("LasherAttack1Dash1");
     }
 
+    private bool isAnchorWindUp = false;
+
     private void StartAnchorAttack()
     {
+        isAnchorWindUp = true;
+        anchorTrackingDir = HasTarget
+            ? (TargetPosition - transform.position).normalized
+            : transform.forward;
+        anchorTrackingDir.y = 0f;
+        if (anchorTrackingDir.sqrMagnitude < 0.001f) anchorTrackingDir = Vector3.forward;
         animator?.SetTrigger("LasherAnchorThrow");
     }
 
@@ -548,7 +572,8 @@ public class LasherReaverController : EnemyBase
         switchTimerRemain = Random.Range(switchIntervalMin, switchIntervalMax);
         while (switchTimerRemain > 0f)
         {
-            switchTimerRemain -= Time.deltaTime;
+            if (!isSmashRitual)
+                switchTimerRemain -= Time.deltaTime;
             yield return null;
         }
         switchTimerRemain = 0f;
@@ -608,6 +633,8 @@ public class LasherReaverController : EnemyBase
         pendingReaverProjectile = false;
         pendingHit4AfterProjectile = false;
         anchorTargetPosition = Vector3.zero;
+        anchorTrackingDir = Vector3.zero;
+        isAnchorWindUp = false;
         isSmashRitual = false;
         // smashEnabled and jumpEnabled are phase-driven, don't reset
         lockedAttackDir = Vector3.zero;
@@ -671,7 +698,13 @@ public class LasherReaverController : EnemyBase
                     var actions = new List<string>();
                     if (doProj) actions.Add("Proj");
                     if (doJump) actions.Add("Jump");
-                    if (doAnchor) actions.Insert(Random.Range(0, actions.Count + 1), "Anchor");
+                    if (doAnchor)
+                    {
+                        int insertIdx = (actions.Count == 0 || Random.value < anchorLastPositionChance)
+                            ? actions.Count
+                            : Random.Range(0, actions.Count);
+                        actions.Insert(insertIdx, "Anchor");
+                    }
 
                     foreach (var a in actions)
                         dashComboQueue.Enqueue(a);
@@ -973,19 +1006,19 @@ public class LasherReaverController : EnemyBase
     // Animation Events Lasher Anchor
     public void AnchorLockTarget()
     {
-        if (!HasTarget)
-        {
-            anchorTargetPosition = transform.position + transform.forward * anchorMinRange;
-            anchorTargetPosition.y = transform.position.y;
-            return;
-        }
-
-        Vector3 dir = TargetPosition - transform.position;
+        isAnchorWindUp = false;
+        // Use tracked direction
+        Vector3 dir = anchorTrackingDir.sqrMagnitude > 0.001f ? anchorTrackingDir.normalized : transform.forward;
         dir.y = 0f;
-        float dist = Mathf.Clamp(dir.magnitude, anchorMinRange, anchorAttackRange);
-        anchorTargetPosition = transform.position + dir.normalized * dist;
+        if (dir.sqrMagnitude < 0.001f) dir = Vector3.forward;
+
+        float dist = HasTarget
+            ? Mathf.Clamp(Vector3.Distance(transform.position, TargetPosition), anchorMinRange, anchorAttackRange)
+            : anchorMinRange;
+
+        anchorTargetPosition = transform.position + dir * dist;
         anchorTargetPosition.y = transform.position.y;
-        movement.FaceTarget(anchorTargetPosition);
+
     }
 
     public void AnchorThrow()
@@ -1019,6 +1052,8 @@ public class LasherReaverController : EnemyBase
         if (isComboAnchorPhase) return;
         isAttacking = false;
         anchorTargetPosition = Vector3.zero;
+        anchorTrackingDir = Vector3.zero;
+        isAnchorWindUp = false;
         activeAnchor = null;
         lastLasherAnchorTime = Time.time;
         currentLasherAnchorCooldown = Random.Range(anchorCooldownMin, anchorCooldownMax);
@@ -1070,11 +1105,14 @@ public class LasherReaverController : EnemyBase
     {
         // 1. Move to ritual position via NavMesh
         Vector3 ritualPos = GetSmashRitualPosition();
+        var smashSpeedMod = new EntityStatModifier { moveSpeed = smashRitualMoveSpeedMultiplier };
+        stats.AddMultiplierModifier(smashSpeedMod);
         movement.MoveToTarget(ritualPos);
         while (Vector3.Distance(new Vector3(transform.position.x, 0f, transform.position.z),
                                 new Vector3(ritualPos.x, 0f, ritualPos.z)) > 0.3f)
             yield return null;
 
+        stats.RemoveMultiplierModifier(smashSpeedMod);
         movement.StopMoving();
         movement.SetCanMove(false);
         var smashAgent = movement.GetAgent();
@@ -1319,8 +1357,11 @@ public class LasherReaverController : EnemyBase
         animator?.SetTrigger("LasherBackToIdle");
         yield return null;
 
-        // Lock target and throw anchor
-        AnchorLockTarget();
+        // Start tracking player, then throw anchor
+        isAnchorWindUp = true;
+        anchorTrackingDir = HasTarget ? (TargetPosition - transform.position).normalized : transform.forward;
+        anchorTrackingDir.y = 0f;
+        if (anchorTrackingDir.sqrMagnitude < 0.001f) anchorTrackingDir = Vector3.forward;
         animator?.SetTrigger("LasherAnchorThrow");
     }
 

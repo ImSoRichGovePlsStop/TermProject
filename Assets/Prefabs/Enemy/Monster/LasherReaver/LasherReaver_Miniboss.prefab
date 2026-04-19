@@ -326,8 +326,8 @@ MonoBehaviour:
     anchorCooldownMax: 12
     smashEnabled: 0
     smashCount: 3
-    smashCooldownMin: 30
-    smashCooldownMax: 40
+    smashCooldownMin: 50
+    smashCooldownMax: 60
     comboDashProjChance: 0.35
     comboDashAnchorChance: 0
     comboDashJumpChance: 0
@@ -344,8 +344,8 @@ MonoBehaviour:
     anchorCooldownMax: 10
     smashEnabled: 1
     smashCount: 3
-    smashCooldownMin: 30
-    smashCooldownMax: 40
+    smashCooldownMin: 50
+    smashCooldownMax: 60
     comboDashProjChance: 0.5
     comboDashAnchorChance: 0
     comboDashJumpChance: 0.35
@@ -362,8 +362,8 @@ MonoBehaviour:
     anchorCooldownMax: 9
     smashEnabled: 1
     smashCount: 5
-    smashCooldownMin: 30
-    smashCooldownMax: 40
+    smashCooldownMin: 50
+    smashCooldownMax: 60
     comboDashProjChance: 0.5
     comboDashAnchorChance: 0.35
     comboDashJumpChance: 0.5
@@ -380,8 +380,8 @@ MonoBehaviour:
     anchorCooldownMax: 9
     smashEnabled: 1
     smashCount: 5
-    smashCooldownMin: 24
-    smashCooldownMax: 30
+    smashCooldownMin: 35
+    smashCooldownMax: 50
     comboDashProjChance: 0.75
     comboDashAnchorChance: 0.75
     comboDashJumpChance: 0.75
@@ -446,6 +446,7 @@ MonoBehaviour:
   anchorSpinSpeed: 10
   anchorCurveWidth: 0.6
   anchorProjectileSpeed: 8
+  anchorWindUpRotateSpeed: 120
   anchorPostDelayMin: 1.5
   anchorPostDelayMax: 2
   anchorWeight: 0.4
@@ -490,6 +491,7 @@ MonoBehaviour:
   smashLandPauseDuration: 0.5
   smashShockwaveDamageScale: 1.5
   smashShockwavePrefab: {fileID: 575652732540652510, guid: 1b487df38b8121f47a6a5e28414ba549, type: 3}
+  smashRitualMoveSpeedMultiplier: 1
   smashPostDelayMin: 2
   smashPostDelayMax: 3
   smashWeight: 1
@@ -547,7 +549,7 @@ MonoBehaviour:
   jumpRiseDuration: 0.5
   jumpFallDuration: 0.3
   jumpDamageScale: 3
-  jumpLandRadius: 1.2
+  jumpLandRadius: 1.75
   jumpTipCount: 3
   jumpTipBaseDelay: 0.5
   jumpTipBaseDistance: 2
