@@ -50,6 +50,24 @@ public class UIManager : MonoBehaviour
         Instance = this;
     }
 
+    private void OnEnable()  { UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded; }
+    private void OnDisable() { UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded; }
+
+    private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        ResetPanelState();
+    }
+
+    public void ResetPanelState()
+    {
+        IsInventoryOpen  = false;
+        IsRightPanelOpen = false;
+        isInBattle       = false;
+        _upgradeOpen     = false;
+        inventoryPanel?.SetActive(false);
+        if (hud != null) hud.SetActive(true);
+    }
+
     private void Start()
     {
         playerStats = FindFirstObjectByType<PlayerStats>();

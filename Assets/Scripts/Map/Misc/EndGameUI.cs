@@ -21,7 +21,7 @@ public class EndGameUI : MonoBehaviour
 
     public void Show(bool isWin)
     {
-        won            = isWin;
+        won = isWin;
         gameObject.SetActive(true);
         titleText.text = isWin ? "Victory!" : "Defeated";
 
@@ -32,50 +32,59 @@ public class EndGameUI : MonoBehaviour
 
     private void OnContinue()
     {
+        // ── 1. Camera ───────────────────────────────────────────────────────
         CameraController.Instance?.RestoreCamera();
+
+        // ── 2. Close all open UI panels FIRST so they can return items ──────
+        //      (MergeUI.OnDisable returns merge input/output back to the bag)
+        var ui = UIManager.Instance;
+        if (ui != null)
+        {
+            if (ui.IsMergeOpen) ui.CloseMerge();
+            if (ui.IsShopOpen) ui.CloseShop();
+            if (ui.IsInventoryOpen) ui.ToggleInventory();
+            ui.isInBattle = false;
+        }
+        ModuleTooltipUI.Instance?.Hide();
+        DiscardGridUI.Instance?.ForceHide();
+
+        // ── 3. Clear inventory — bag first (materials → storage), then weapon ─
         var inv = InventoryManager.Instance;
         if (inv != null)
         {
-            var bagModules = inv.BagGrid.GetAllModules().ToList();
-            foreach (var module in bagModules)
+            foreach (var module in inv.BagGrid.GetAllModules().ToList())
             {
                 if (module is MaterialInstance mat)
-                    MaterialStorage.Instance.Add(mat.MaterialData, mat.StackCount);
-                inv.BagGrid.Remove(module);
+                    MaterialStorage.Instance?.Add(mat.MaterialData, mat.StackCount);
+                inv.DeleteModule(module);
             }
 
             foreach (var module in inv.WeaponGrid.GetAllModules().ToList())
-                inv.WeaponGrid.Remove(module);
-
-            inv.UpgradeWeaponGrid(1, 1);
+                inv.DeleteModule(module);
         }
 
-        var weaponEquip = FindFirstObjectByType<WeaponEquip>();
-        weaponEquip?.Unequip();
-
+        // ── 4. Reset player state ───────────────────────────────────────────
         var playerStats = FindFirstObjectByType<PlayerStats>();
         if (playerStats != null)
         {
             playerStats.SetInvincible(false);
             playerStats.ResetModifiers();
-            playerStats.ApplyDefault();
             playerStats.ClearAllShields();
         }
 
-        // reset currency
-        var wallet = FindFirstObjectByType<CurrencyManager>();
-        wallet?.ResetCoins();
+        // Re-equip starting weapon — calls ApplyWeapon internally which properly
+        // resets stats, animator override, passives, and weapon grid size.
+        FindFirstObjectByType<WeaponEquip>()?.ResetToCurrentWeapon();
 
-        // reset and destroy run manager
-        if (RunManager.Instance != null)
-        {
-            RunManager.Instance.ResetRun();
-            Destroy(RunManager.Instance.gameObject);
-        }
+        // ── 5. Reset persistent managers ────────────────────────────────────
         FindFirstObjectByType<CurrencyManager>()?.ResetCoins();
-        RunManager.Instance?.ResetRun();
         FindFirstObjectByType<MinimapManager>()?.Reset();
+        RunManager.Instance?.ResetRun();   // also resets HealthStation & LuckStation internally
 
+        // ── 6. Force-clear any stale UI panel state before scene load ────────
+        UIManager.Instance?.ResetPanelState();
+
+        // ── 7. Go back to hub scene ─────────────────────────────────────────
         gameObject.SetActive(false);
         SceneManager.LoadScene(1);
     }
