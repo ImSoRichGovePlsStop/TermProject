@@ -1,0 +1,914 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1291011370142096435
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1794809046235261274}
+  - component: {fileID: 4462245697994848664}
+  - component: {fileID: 6505135335492769908}
+  m_Layer: 8
+  m_Name: FlashOverlay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1794809046235261274
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1291011370142096435}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 969129990054429136}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!212 &4462245697994848664
+SpriteRenderer:
+  serializedVersion: 2
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1291011370142096435}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: b4b93fecb98c1ee4c89e14792c7579c7, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 1
+  m_MaskInteraction: 0
+  m_Sprite: {fileID: -80377193, guid: 83fa485c851a87f4d80bf2bec9d8f786, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 1, y: 1}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_SpriteSortPoint: 0
+--- !u!114 &6505135335492769908
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1291011370142096435}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e6d50285b3671548a01de664f2a07da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BillboardSprite
+  isBillboard: 1
+--- !u!1 &3833017404443964105
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 969129990054429136}
+  - component: {fileID: 7475736422937822063}
+  - component: {fileID: 3898448489552516333}
+  - component: {fileID: 935449537486469998}
+  - component: {fileID: 7630140604952283917}
+  - component: {fileID: 3772710423183095178}
+  - component: {fileID: 4133946173858578466}
+  - component: {fileID: 4352790168215606185}
+  - component: {fileID: 1595102670700126107}
+  m_Layer: 8
+  m_Name: LasherReaver_Miniboss
+  m_TagString: Enemy
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &969129990054429136
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3833017404443964105}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 5.097297, y: 10.849, z: 4.919653}
+  m_LocalScale: {x: 1.4, y: 1.4, z: 1.4}
+  m_ConstrainProportionsScale: 1
+  m_Children:
+  - {fileID: 761593304690808989}
+  - {fileID: 1794809046235261274}
+  - {fileID: 8471210098864295566}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &7475736422937822063
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3833017404443964105}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.1889472
+  m_Height: 0.9587479
+  m_Direction: 1
+  m_Center: {x: -0.05240178, y: 0.025757045, z: -0.0045046806}
+--- !u!54 &3898448489552516333
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3833017404443964105}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!195 &935449537486469998
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3833017404443964105}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.1
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0.3
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 1
+--- !u!114 &7630140604952283917
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3833017404443964105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32eaf01db9a392c4b85b729fd2680ad3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LasherReaverHealthBase
+  destroyDelay: 2
+  spriteRenderer: {fileID: 0}
+  flashSpriteRenderer: {fileID: 0}
+  flashColor: {r: 1, g: 0, b: 0, a: 1}
+  flashDuration: 0.1
+  showHealthBar: 1
+  healthBarHeight: 0.6
+  healthBarScale: {x: 2, y: 1.5, z: 1}
+  tier: 2
+  phaseTwoThreshold: 0.8
+  phaseThreeThreshold: 0.6
+  phaseFourThreshold: 0.4
+--- !u!114 &3772710423183095178
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3833017404443964105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9e571eb8f155da40b866c5257e1571b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyMovementBase
+  stopDistance: 0.8
+  spriteRenderer: {fileID: 0}
+  animator: {fileID: 0}
+  flipXByDefault: 0
+--- !u!114 &4133946173858578466
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3833017404443964105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 73a687f9a65ebc34ab8d148f3be77e4c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EntityStats
+  baseMaxHP: 2000
+  baseMoveSpeed: 2.5
+  baseDamage: 8
+  baseAttackSpeed: 1
+  baseShield: 0
+--- !u!114 &4352790168215606185
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3833017404443964105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10672e01e49b3a94eb404ab670f44401, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LasherReaverController
+  detectRange: 15
+  loseTargetRange: 25
+  postAttackDelayMin: 0.4
+  postAttackDelayMax: 0.8
+  targetPriority:
+    playerPriority: 1
+    summonerPriority: 1
+    totemPriority: 1
+  wander:
+    mode: 2
+    wanderRadius: 3
+    wanderSpeedMultiplier: 0.5
+    idleTimeMin: 0.5
+    idleTimeMax: 1.5
+  health: {fileID: 0}
+  movement: {fileID: 0}
+  stats: {fileID: 0}
+  animator: {fileID: 0}
+  coinDropMin: 400
+  coinDropMax: 600
+  hurtDuration: 0.2
+  postHurtDelayMin: 0.1
+  postHurtDelayMax: 0.3
+  spawnEffectPrefab: {fileID: 0}
+  spawnRiseDistance: 1.5
+  spawnDuration: 1
+  spawnFadeOutDuration: 0.4
+  spawnEffectScale: 1
+  spawnStayDuration: 0.5
+  phase1Settings:
+    comboExtend3Chance: 0.35
+    comboExtend4Chance: 0.35
+    comboReaverProjectileChance: 0
+    lashLineCount: 1
+    anchorCooldownMin: 9
+    anchorCooldownMax: 12
+    smashEnabled: 0
+    smashCount: 3
+    smashCooldownMin: 50
+    smashCooldownMax: 60
+    comboDashProjChance: 0.35
+    comboDashAnchorChance: 0
+    comboDashJumpChance: 0
+    jumpEnabled: 0
+    jumpChanceAfterProjectile: 0
+    redirectChance: 0.4
+    maxRedirectCount: 1
+  phase2Settings:
+    comboExtend3Chance: 0.5
+    comboExtend4Chance: 0.5
+    comboReaverProjectileChance: 0
+    lashLineCount: 3
+    anchorCooldownMin: 7
+    anchorCooldownMax: 10
+    smashEnabled: 1
+    smashCount: 3
+    smashCooldownMin: 50
+    smashCooldownMax: 60
+    comboDashProjChance: 0.5
+    comboDashAnchorChance: 0
+    comboDashJumpChance: 0.35
+    jumpEnabled: 1
+    jumpChanceAfterProjectile: 0.35
+    redirectChance: 0.6
+    maxRedirectCount: 1
+  phase3Settings:
+    comboExtend3Chance: 0.5
+    comboExtend4Chance: 0.5
+    comboReaverProjectileChance: 0.35
+    lashLineCount: 3
+    anchorCooldownMin: 6
+    anchorCooldownMax: 9
+    smashEnabled: 1
+    smashCount: 5
+    smashCooldownMin: 50
+    smashCooldownMax: 60
+    comboDashProjChance: 0.5
+    comboDashAnchorChance: 0.35
+    comboDashJumpChance: 0.5
+    jumpEnabled: 1
+    jumpChanceAfterProjectile: 0.5
+    redirectChance: 0.6
+    maxRedirectCount: 2
+  phase4Settings:
+    comboExtend3Chance: 0.75
+    comboExtend4Chance: 0.75
+    comboReaverProjectileChance: 0.75
+    lashLineCount: 3
+    anchorCooldownMin: 6
+    anchorCooldownMax: 9
+    smashEnabled: 1
+    smashCount: 5
+    smashCooldownMin: 35
+    smashCooldownMax: 50
+    comboDashProjChance: 0.75
+    comboDashAnchorChance: 0.75
+    comboDashJumpChance: 0.75
+    jumpEnabled: 1
+    jumpChanceAfterProjectile: 0.5
+    redirectChance: 0.65
+    maxRedirectCount: 3
+  lasherFormChance: 0.5
+  switchIntervalMin: 12
+  switchIntervalMax: 20
+  switchVFXPrefab: {fileID: 6375145438201293164, guid: 1393cd58ba6cf814d838e7d3e19e82d5, type: 3}
+  switchVFXDelay: 0.3
+  strafe:
+    preferredDistMin: 2
+    preferredDistMax: 3
+    angleMin: 30
+    angleMax: 90
+    idleTimeMin: 0.3
+    idleTimeMax: 0.8
+  lasherScale: {x: 1.5, y: 1.5, z: 1.5}
+  reaverScale: {x: 1.3, y: 1.3, z: 1.3}
+  lasherAttackRange: 2.5
+  lasherCooldownMin: 1.75
+  lasherCooldownMax: 2.5
+  comboDashSpeed: 20
+  comboDashDuration: 0.1
+  comboDashHitRadius: 0.75
+  comboDamageScale: 1
+  comboMaxRedirectAngle: 105
+  comboExtendMaxRedirectAngle: 75
+  lashHitOffset: 1
+  lashHitRadius: 1.2
+  lashDamageScale: 1.2
+  lashTipDelay: 0.3
+  lashTipOffset: 2
+  lashTipCount: 3
+  lashTipRadius: 1.2
+  lashTipDamageScale: 1.2
+  lashLineAngleStep: 45
+  lashAoeVFX: {fileID: 245339282735500823, guid: 5292192e29d6a1447bdf673f3227f4a1, type: 3}
+  lashVFXBaseRadius: 0.25
+  lashVFXOffsetY: 0.5
+  lashVFXOffsetZMult: 0.3
+  lashAoeFieldPrefab: {fileID: 3132944589323993650, guid: e05e31c4e3f36bf40b3b6ea1a1d4dbb4, type: 3}
+  lashFieldFadeInDuration: 0.4
+  lashFieldStayDuration: 0.4
+  lashFieldFadeOutDuration: 0.25
+  combo2PostDelayMin: 0.6
+  combo2PostDelayMax: 0.8
+  combo3PostDelayMin: 1
+  combo3PostDelayMax: 1.2
+  combo4PostDelayMin: 1.6
+  combo4PostDelayMax: 2.2
+  combo5PostDelayMin: 2.4
+  combo5PostDelayMax: 3
+  anchorProjectilePrefab: {fileID: 1673625421123493190, guid: 2eae2b76514341848b74fb272a786a6f, type: 3}
+  anchorAttackRange: 10
+  anchorMinRange: 4
+  anchorHitRadius: 1
+  anchorDamageScale: 1.5
+  anchorHitInterval: 0.5
+  anchorSpinSpeed: 10
+  anchorCurveWidth: 0.6
+  anchorProjectileSpeed: 8
+  anchorWindUpRotateSpeed: 120
+  anchorPostDelayMin: 1.5
+  anchorPostDelayMax: 2
+  anchorWeight: 0.4
+  ritualPositionNormalized: {x: 0.5, y: 0.6}
+  cameraLockPositionNormalized: {x: 0.5, y: 0.4}
+  smashConfigs:
+  - riseHeight: 1.5
+    riseDurationMin: 1.2
+    riseDurationMax: 1.6
+    stayDurationMin: 1.2
+    stayDurationMax: 1.6
+    fallDurationMin: 0.2
+    fallDurationMax: 0.25
+  - riseHeight: 1.5
+    riseDurationMin: 0.7
+    riseDurationMax: 0.9
+    stayDurationMin: 0.6
+    stayDurationMax: 1
+    fallDurationMin: 0.16
+    fallDurationMax: 0.21
+  - riseHeight: 1.5
+    riseDurationMin: 0.4
+    riseDurationMax: 0.6
+    stayDurationMin: 0.3
+    stayDurationMax: 0.8
+    fallDurationMin: 0.03
+    fallDurationMax: 0.17
+  - riseHeight: 1.5
+    riseDurationMin: 0.4
+    riseDurationMax: 0.6
+    stayDurationMin: 0.1
+    stayDurationMax: 0.8
+    fallDurationMin: 0.03
+    fallDurationMax: 0.13
+  - riseHeight: 2
+    riseDurationMin: 0.4
+    riseDurationMax: 0.6
+    stayDurationMin: 0.1
+    stayDurationMax: 0.8
+    fallDurationMin: 0.03
+    fallDurationMax: 0.09
+  smashLandPauseDuration: 0.5
+  smashShockwaveDamageScale: 1.5
+  smashShockwavePrefab: {fileID: 575652732540652510, guid: 1b487df38b8121f47a6a5e28414ba549, type: 3}
+  smashRitualMoveSpeedMultiplier: 1
+  smashPostDelayMin: 2
+  smashPostDelayMax: 3
+  smashWeight: 1
+  smashZoomOutAmount: 3
+  smashZoomDuration: 1
+  ritualGlobalLightIntensity: 0
+  ritualSpotLightIntensity: 100
+  ritualSpotLightRange: 20
+  ritualSpotLightAngle: 120
+  ritualSpotLightInnerAngle: 80
+  ritualSpotLightColor: {r: 0.019607844, g: 0.5686275, b: 0.5294118, a: 1}
+  lightTransitionDuration: 3
+  reaverProjectilePrefab: {fileID: 3391258929950527744, guid: be24a26faf5353e45ac968aedda019f1, type: 3}
+  reaverProjectileAttackRange: 7
+  reaverProjectileMinRange: 4
+  reaverProjectileCooldownMin: 7
+  reaverProjectileCooldownMax: 10
+  reaverProjectileDamageScale: 1.8
+  anchorLastPositionChance: 0.5
+  reaverProjectilePostDelayMin: 0.8
+  reaverProjectilePostDelayMax: 1.2
+  reaverDashAttackRange: 3
+  reaverDashCooldownMin: 2.5
+  reaverDashCooldownMax: 3
+  reaverDashSpeed: 10
+  reaverDashDuration: 0.18
+  reaverDashHitRadius: 0.9
+  reaverDashDamageScale: 1.5
+  reaverDashPostDelayMin: 0.5
+  reaverDashPostDelayMax: 0.6
+  chargeWarningPrefab: {fileID: 3021588917348942916, guid: 25dd7453603477c4a95228b244f64ae6, type: 3}
+  chargeWarningOffset: 1.25
+  chargeWarningOffsetZ: 0.3
+  chargeAttackRange: 7
+  reaverChargeCooldownMin: 5
+  reaverChargeCooldownMax: 8
+  chargeSpeed: 16
+  chargeWindUpDuration: 0.8
+  windUpRotateSpeed: 180
+  chargeHitRadius: 0.7
+  chargeDamageScale: 1.8
+  chargeRotateSpeed: 30
+  chargeWallDetectRange: 0.5
+  chargeStunnedDuration: 2.5
+  reaverChargePostDelayMin: 0
+  reaverChargePostDelayMax: 0
+  missDetectAngle: 120
+  missDetectDuration: 0.1
+  brakeDuration: 0.4
+  redirectWindUpDuration: 0.4
+  jumpAttackRange: 8
+  jumpAttackMinRange: 6
+  jumpAttackCooldownMin: 12
+  jumpAttackCooldownMax: 16
+  jumpRiseHeight: 2
+  jumpRiseDuration: 0.5
+  jumpFallDuration: 0.3
+  jumpDamageScale: 3
+  jumpLandRadius: 1.75
+  jumpTipCount: 3
+  jumpTipBaseDelay: 0.5
+  jumpTipBaseDistance: 2
+  jumpTipDistanceStep: 0.75
+  jumpTipBaseRadius: 0.6
+  jumpTipRadiusStep: 0.3
+  jumpTipDamageScale: 1.5
+  jumpAoeVFX: {fileID: 245339282735500823, guid: 5292192e29d6a1447bdf673f3227f4a1, type: 3}
+  jumpVFXBaseRadius: 0.25
+  jumpVFXOffsetY: 0.5
+  jumpVFXOffsetZMult: 0.3
+  jumpAoeFieldPrefab: {fileID: 3132944589323993650, guid: e05e31c4e3f36bf40b3b6ea1a1d4dbb4, type: 3}
+  jumpFieldFadeInDuration: 0.1
+  jumpFieldStayDuration: 0.4
+  jumpFieldFadeOutDuration: 0.25
+  jumpTargetRandomOffset: 0.25
+  jumpLandTriggerHeight: 1
+  jumpLandFinishDelay: 0.5
+  jumpPostDelayMin: 2
+  jumpPostDelayMax: 3
+  jumpWeight: 1
+--- !u!114 &1595102670700126107
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3833017404443964105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d4dd2a12fa25f34e925bf8bd905354b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
+  entries:
+  - items:
+    - material: {fileID: 11400000, guid: 0e055652656be514d8c06906bd86a13e, type: 2}
+      minCount: 7
+      maxCount: 10
+    weight: 5
+  - items:
+    - material: {fileID: 11400000, guid: 0e055652656be514d8c06906bd86a13e, type: 2}
+      minCount: 4
+      maxCount: 6
+    - material: {fileID: 11400000, guid: a7f0ae0d573fda242bf1ee3eba5f0133, type: 2}
+      minCount: 2
+      maxCount: 3
+    weight: 5
+  - items:
+    - material: {fileID: 11400000, guid: 0e055652656be514d8c06906bd86a13e, type: 2}
+      minCount: 2
+      maxCount: 3
+    - material: {fileID: 11400000, guid: a7f0ae0d573fda242bf1ee3eba5f0133, type: 2}
+      minCount: 1
+      maxCount: 2
+    - material: {fileID: 11400000, guid: 7ba20a670b80b744c82f719a8118b50c, type: 2}
+      minCount: 1
+      maxCount: 1
+    weight: 15
+  - items:
+    - material: {fileID: 11400000, guid: 0e055652656be514d8c06906bd86a13e, type: 2}
+      minCount: 2
+      maxCount: 3
+    - material: {fileID: 11400000, guid: a7f0ae0d573fda242bf1ee3eba5f0133, type: 2}
+      minCount: 1
+      maxCount: 2
+    - material: {fileID: 11400000, guid: f30e2ab00b19af944acc9c7fd574283a, type: 2}
+      minCount: 1
+      maxCount: 1
+    weight: 15
+  - items:
+    - material: {fileID: 11400000, guid: f30e2ab00b19af944acc9c7fd574283a, type: 2}
+      minCount: 1
+      maxCount: 1
+    - material: {fileID: 11400000, guid: 7ba20a670b80b744c82f719a8118b50c, type: 2}
+      minCount: 1
+      maxCount: 1
+    weight: 60
+  maxDropsPerKill: 1
+  groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
+--- !u!1 &6805230779249563792
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 761593304690808989}
+  - component: {fileID: 253557138536703271}
+  - component: {fileID: 4855097561999134915}
+  - component: {fileID: 8752167183860360250}
+  - component: {fileID: 8825249873614259489}
+  m_Layer: 8
+  m_Name: Visual
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &761593304690808989
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6805230779249563792}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 969129990054429136}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!212 &253557138536703271
+SpriteRenderer:
+  serializedVersion: 2
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6805230779249563792}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 13924b4ec210b1740a9f272378beb0b9, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_Sprite: {fileID: 21300000, guid: 9c527ca6794837a47b0ffd28532b331f, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 1, y: 1}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_SpriteSortPoint: 0
+--- !u!95 &4855097561999134915
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6805230779249563792}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 25db4f2d5d1b757479b6d8b1326eb69f, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &8752167183860360250
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6805230779249563792}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e6d50285b3671548a01de664f2a07da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BillboardSprite
+  isBillboard: 1
+--- !u!114 &8825249873614259489
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6805230779249563792}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d98103aaed166a4cb942ceb94e5447b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LasherReaverAnimationEvents
+--- !u!1 &7133017770055473056
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8471210098864295566}
+  - component: {fileID: 6232708249402643417}
+  - component: {fileID: 6992687739081953442}
+  - component: {fileID: 566851753928508371}
+  m_Layer: 8
+  m_Name: Point Light
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8471210098864295566
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7133017770055473056}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.264, z: 0.044}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 969129990054429136}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!108 &6232708249402643417
+Light:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7133017770055473056}
+  m_Enabled: 1
+  serializedVersion: 12
+  m_Type: 2
+  m_Color: {r: 0.019607844, g: 0.5686275, b: 0.5294118, a: 1}
+  m_Intensity: 0.75
+  m_Range: 10
+  m_SpotAngle: 30
+  m_InnerSpotAngle: 21.80208
+  m_CookieSize2D: {x: 0.5, y: 0.5}
+  m_Shadows:
+    m_Type: 0
+    m_Resolution: -1
+    m_CustomResolution: -1
+    m_Strength: 1
+    m_Bias: 0.05
+    m_NormalBias: 0.4
+    m_NearPlane: 0.2
+    m_CullingMatrixOverride:
+      e00: 1
+      e01: 0
+      e02: 0
+      e03: 0
+      e10: 0
+      e11: 1
+      e12: 0
+      e13: 0
+      e20: 0
+      e21: 0
+      e22: 1
+      e23: 0
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 1
+    m_UseCullingMatrixOverride: 0
+  m_Cookie: {fileID: 0}
+  m_DrawHalo: 0
+  m_Flare: {fileID: 0}
+  m_RenderMode: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingLayerMask: 1
+  m_Lightmapping: 4
+  m_LightShadowCasterMode: 0
+  m_AreaSize: {x: 1, y: 1}
+  m_BounceIntensity: 1
+  m_ColorTemperature: 6570
+  m_UseColorTemperature: 0
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_UseBoundingSphereOverride: 0
+  m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
+  m_ShadowRadius: 0
+  m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
+--- !u!114 &6992687739081953442
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7133017770055473056}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
+--- !u!114 &566851753928508371
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7133017770055473056}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1ba85da51f741e42b3284b8419ad958, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DisableOnEnemyDeath
+  fadeOutDuration: 1

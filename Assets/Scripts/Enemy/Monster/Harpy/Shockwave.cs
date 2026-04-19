@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HarpyShockwave : MonoBehaviour
+public class Shockwave : MonoBehaviour
 {
     [SerializeField] private float startRadius = 0.5f;
     [SerializeField] private float maxRadius = 4f;
