@@ -344,7 +344,7 @@ MonoBehaviour:
   lashHitOffset: 1
   lashHitRadius: 1.2
   lashDamageScale: 1.2
-  lashTipDelay: 0.25
+  lashTipDelay: 0.3
   lashTipOffset: 2
   lashTipCount: 3
   lashTipRadius: 1.2
@@ -356,8 +356,8 @@ MonoBehaviour:
   lashVFXOffsetY: 0.5
   lashVFXOffsetZMult: 0.3
   lashAoeFieldPrefab: {fileID: 3132944589323993650, guid: e05e31c4e3f36bf40b3b6ea1a1d4dbb4, type: 3}
-  lashFieldFadeInDuration: 0.1
-  lashFieldStayDuration: 0.5
+  lashFieldFadeInDuration: 0.4
+  lashFieldStayDuration: 0.4
   lashFieldFadeOutDuration: 0.25
   combo2PostDelayMin: 0.6
   combo2PostDelayMax: 0.8
@@ -452,6 +452,9 @@ MonoBehaviour:
   reaverDashDamageScale: 1.25
   reaverDashPostDelayMin: 0.5
   reaverDashPostDelayMax: 0.6
+  chargeWarningPrefab: {fileID: 3021588917348942916, guid: 25dd7453603477c4a95228b244f64ae6, type: 3}
+  chargeWarningOffset: 1.25
+  chargeWarningOffsetZ: 0.3
   chargeAttackRange: 7
   reaverChargeCooldownMin: 5
   reaverChargeCooldownMax: 8
@@ -471,6 +474,38 @@ MonoBehaviour:
   brakeDuration: 0.5
   redirectWindUpDuration: 0.4
   maxRedirectCount: 1
+  jumpAttackRange: 8
+  jumpAttackMinRange: 6
+  jumpAttackCooldownMin: 12
+  jumpAttackCooldownMax: 16
+  jumpRiseHeight: 2
+  jumpRiseDuration: 0.5
+  jumpFallDuration: 0.3
+  jumpDamageScale: 1.5
+  jumpLandRadius: 1.2
+  jumpTipCount: 3
+  jumpTipBaseDelay: 0.5
+  jumpTipBaseDistance: 2
+  jumpTipDistanceStep: 0.75
+  jumpTipBaseRadius: 0.6
+  jumpTipRadiusStep: 0.3
+  jumpTipDamageScale: 0.8
+  jumpAoeVFX: {fileID: 245339282735500823, guid: 5292192e29d6a1447bdf673f3227f4a1, type: 3}
+  jumpVFXBaseRadius: 0.25
+  jumpVFXOffsetY: 0.5
+  jumpVFXOffsetZMult: 0.3
+  jumpAoeFieldPrefab: {fileID: 3132944589323993650, guid: e05e31c4e3f36bf40b3b6ea1a1d4dbb4, type: 3}
+  jumpFieldFadeInDuration: 0.2
+  jumpFieldStayDuration: 0.4
+  jumpFieldFadeOutDuration: 0.25
+  jumpLandTriggerHeight: 1
+  jumpLandFinishDelay: 0.5
+  jumpPostDelayMin: 2
+  jumpPostDelayMax: 3
+  jumpWeight: 1
+  jumpChanceAfterDash: 0.3
+  jumpChanceAfterDashProjectile: 0.2
+  jumpChanceAfterProjectile: 0.5
 --- !u!114 &1595102670700126107
 MonoBehaviour:
   m_ObjectHideFlags: 0

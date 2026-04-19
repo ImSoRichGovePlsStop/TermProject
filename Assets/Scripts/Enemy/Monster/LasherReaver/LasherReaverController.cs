@@ -18,7 +18,7 @@ public class SmashConfig
 public class LasherReaverController : EnemyBase
 {
     public enum LasherReaverForm { Lasher, Reaver }
-    public enum ReaverAttackType { None, Dash, Charge, Projectile }
+    public enum ReaverAttackType { None, Dash, Charge, Projectile, Jump }
 
     // Form Switch
     [Header("Form")]
@@ -174,6 +174,40 @@ public class LasherReaverController : EnemyBase
     [SerializeField] private float redirectWindUpDuration = 0.5f;
     [SerializeField] private int maxRedirectCount = 1;
 
+    [Header("Reaver Jump Attack")]
+    [SerializeField] private float jumpAttackRange = 6f;
+    [SerializeField] private float jumpAttackMinRange = 2f;
+    [SerializeField] private float jumpAttackCooldownMin = 8f;
+    [SerializeField] private float jumpAttackCooldownMax = 14f;
+    [SerializeField] private float jumpRiseHeight = 3f;
+    [SerializeField] private float jumpRiseDuration = 0.5f;
+    [SerializeField] private float jumpFallDuration = 0.3f;
+    [SerializeField] private float jumpDamageScale = 1.5f;
+    [SerializeField] private float jumpLandRadius = 1.5f;
+    [SerializeField] private int jumpTipCount = 3;
+    [SerializeField] private float jumpTipBaseDelay = 0.15f;
+    [SerializeField] private float jumpTipBaseDistance = 1.5f;
+    [SerializeField] private float jumpTipDistanceStep = 1f;
+    [SerializeField] private float jumpTipBaseRadius = 0.8f;
+    [SerializeField] private float jumpTipRadiusStep = 0.3f;
+    [SerializeField] private float jumpTipDamageScale = 0.8f;
+    [SerializeField] private GameObject jumpAoeVFX;
+    [SerializeField] private float jumpVFXBaseRadius = 1f;
+    [SerializeField] private float jumpVFXOffsetY = 0f;
+    [SerializeField] private float jumpVFXOffsetZMult = 0f;
+    [SerializeField] private GameObject jumpAoeFieldPrefab;
+    [SerializeField] private float jumpFieldFadeInDuration = 0.25f;
+    [SerializeField] private float jumpFieldStayDuration = 0.1f;
+    [SerializeField] private float jumpFieldFadeOutDuration = 0.2f;
+    [SerializeField] private float jumpLandTriggerHeight = 0.5f;
+    [SerializeField] private float jumpLandFinishDelay = 0.5f;
+    [SerializeField] private float jumpPostDelayMin = 0.5f;
+    [SerializeField] private float jumpPostDelayMax = 1f;
+    [SerializeField][Range(0f, 1f)] private float jumpWeight = 0.3f;
+    [SerializeField][Range(0f, 1f)] private float jumpChanceAfterDash = 0.3f;
+    [SerializeField][Range(0f, 1f)] private float jumpChanceAfterDashProjectile = 0.4f;
+    [SerializeField][Range(0f, 1f)] private float jumpChanceAfterProjectile = 0.3f;
+
     // Runtime State
     private LasherReaverForm currentForm;
     private bool isAttacking = false;
@@ -186,6 +220,10 @@ public class LasherReaverController : EnemyBase
     private ReaverAttackType currentReaverAttack = ReaverAttackType.None;
     private bool isDashing = false;
     private bool isReaverProjectilePhase = false;
+    private bool isJumpAttackPhase = false;
+    private Vector3 jumpTargetPosition = Vector3.zero;
+    private float lastReaverJumpTime = 0f;
+    private float currentReaverJumpCooldown = 0f;
     private float lastReaverProjectileTime = 0f;
     private float currentReaverProjectileCooldown = 0f;
     private bool isCharging = false;
@@ -231,6 +269,7 @@ public class LasherReaverController : EnemyBase
         currentReaverDashCooldown = Random.Range(reaverDashCooldownMin, reaverDashCooldownMax);
         currentReaverChargeCooldown = Random.Range(reaverChargeCooldownMin, reaverChargeCooldownMax);
         currentReaverProjectileCooldown = Random.Range(reaverProjectileCooldownMin, reaverProjectileCooldownMax);
+        currentReaverJumpCooldown = Random.Range(jumpAttackCooldownMin, jumpAttackCooldownMax);
 
         // Combo and dash ready immediately, anchor and charge start at half cooldown
         lastLasherComboTime = -currentLasherCooldown;
@@ -238,6 +277,7 @@ public class LasherReaverController : EnemyBase
         lastLasherAnchorTime = -currentLasherAnchorCooldown * 0.5f;
         lastReaverChargeTime = -currentReaverChargeCooldown * 0.5f;
         lastReaverProjectileTime = -currentReaverProjectileCooldown * 0.5f;
+        lastReaverJumpTime = -currentReaverJumpCooldown * 2f;
 
         float attackRange = currentForm == LasherReaverForm.Lasher ? lasherAttackRange : reaverDashAttackRange;
         strafe.Init(attackRange);
@@ -296,7 +336,8 @@ public class LasherReaverController : EnemyBase
         bool canDash = Time.time >= lastReaverDashTime + currentReaverDashCooldown && dist <= reaverDashAttackRange;
         bool canCharge = Time.time >= lastReaverChargeTime + currentReaverChargeCooldown && dist <= chargeAttackRange;
         bool canProjectile = Time.time >= lastReaverProjectileTime + currentReaverProjectileCooldown && dist >= reaverProjectileMinRange && dist <= reaverProjectileAttackRange && reaverProjectilePrefab != null;
-        return canDash || canCharge || canProjectile;
+        bool canJump = Time.time >= lastReaverJumpTime + currentReaverJumpCooldown && dist >= jumpAttackMinRange && dist <= jumpAttackRange;
+        return canDash || canCharge || canProjectile || canJump;
     }
 
     protected override void TickState()
@@ -410,23 +451,39 @@ public class LasherReaverController : EnemyBase
         bool canDash = Time.time >= lastReaverDashTime + currentReaverDashCooldown && dist <= reaverDashAttackRange;
         bool canCharge = Time.time >= lastReaverChargeTime + currentReaverChargeCooldown && dist <= chargeAttackRange;
         bool canProjectile = Time.time >= lastReaverProjectileTime + currentReaverProjectileCooldown && dist >= reaverProjectileMinRange && dist <= reaverProjectileAttackRange && reaverProjectilePrefab != null;
+        bool canJump = Time.time >= lastReaverJumpTime + currentReaverJumpCooldown && dist >= jumpAttackMinRange && dist <= jumpAttackRange;
 
-        if (!canDash && !canCharge && !canProjectile) return;
+        if (!canDash && !canCharge && !canProjectile && !canJump) return;
 
         isAttacking = true;
 
-        var available = new System.Collections.Generic.List<ReaverAttackType>();
-        if (canDash) available.Add(ReaverAttackType.Dash);
-        if (canCharge) available.Add(ReaverAttackType.Charge);
-        if (canProjectile) available.Add(ReaverAttackType.Projectile);
-        currentReaverAttack = available[Random.Range(0, available.Count)];
+        // Weighted random selection
+        float totalW = 0f;
+        if (canDash) totalW += 1f;
+        if (canCharge) totalW += 1f;
+        if (canProjectile) totalW += 1f;
+        if (canJump) totalW += jumpWeight;
+
+        float rollW = Random.value * totalW;
+        float cumW = 0f;
+        currentReaverAttack = ReaverAttackType.Dash;
+        if (canDash) { cumW += 1f; if (rollW < cumW) { currentReaverAttack = ReaverAttackType.Dash; goto selected; } }
+        if (canCharge) { cumW += 1f; if (rollW < cumW) { currentReaverAttack = ReaverAttackType.Charge; goto selected; } }
+        if (canProjectile) { cumW += 1f; if (rollW < cumW) { currentReaverAttack = ReaverAttackType.Projectile; goto selected; } }
+        if (canJump) { currentReaverAttack = ReaverAttackType.Jump; }
+    selected:;
 
         if (currentReaverAttack == ReaverAttackType.Dash)
             animator?.SetTrigger("ReaverAttack1");
         else if (currentReaverAttack == ReaverAttackType.Charge)
             animator?.SetTrigger("ChargeWindUp");
-        else
+        else if (currentReaverAttack == ReaverAttackType.Projectile)
             animator?.SetTrigger("ReaverProjectileAttack");
+        else
+        {
+            Debug.Log("[Jump] Standalone");
+            animator?.SetTrigger("ReaverJumpRise");
+        }
     }
 
     // Form Switch
@@ -492,6 +549,8 @@ public class LasherReaverController : EnemyBase
         currentReaverAttack = ReaverAttackType.None;
         isDashing = false;
         isReaverProjectilePhase = false;
+        isJumpAttackPhase = false;
+        jumpTargetPosition = Vector3.zero;
         isCharging = false;
         isStunned = false;
         chargeDir = Vector3.zero;
@@ -536,11 +595,21 @@ public class LasherReaverController : EnemyBase
         {
             if (currentReaverAttack == ReaverAttackType.Dash)
             {
-                if (!isReaverProjectilePhase && Random.value < reaverProjectileChance && reaverProjectilePrefab != null)
+                if (!isReaverProjectilePhase && !isJumpAttackPhase)
                 {
-                    isReaverProjectilePhase = true;
-                    animator?.SetTrigger("ReaverProjectileAttack");
-                    return;
+                    if (Random.value < reaverProjectileChance && reaverProjectilePrefab != null)
+                    {
+                        isReaverProjectilePhase = true;
+                        animator?.SetTrigger("ReaverProjectileAttack");
+                        return;
+                    }
+                    if (Random.value < jumpChanceAfterDash)
+                    {
+                        Debug.Log("[Jump] After Dash");
+                        isJumpAttackPhase = true;
+                        animator?.SetTrigger("ReaverJumpRise");
+                        return;
+                    }
                 }
 
                 lastReaverDashTime = Time.time;
@@ -1001,6 +1070,127 @@ public class LasherReaverController : EnemyBase
         }
     }
 
+    // Animation Events Reaver Jump
+    private Coroutine jumpArcCoroutine = null;
+
+    public void JumpStartArc()
+    {
+        jumpArcCoroutine = StartCoroutine(JumpArcRoutine());
+    }
+
+    private IEnumerator JumpArcRoutine()
+    {
+        Vector3 startPos = transform.position;
+        Vector3 targetPos = jumpTargetPosition;
+        float totalDuration = jumpRiseDuration + jumpFallDuration;
+
+        var agent = movement.GetAgent();
+        if (agent != null && agent.isOnNavMesh) agent.enabled = false;
+
+        bool landTriggered = false;
+        float elapsed = 0f;
+        while (elapsed < totalDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / totalDuration);
+            Vector3 flatPos = Vector3.Lerp(startPos, targetPos, t);
+            float height = Mathf.Sin(t * Mathf.PI) * jumpRiseHeight;
+            transform.position = new Vector3(flatPos.x, startPos.y + height, flatPos.z);
+
+            // Trigger fall at midpoint
+            if (elapsed >= jumpRiseDuration && elapsed - Time.deltaTime < jumpRiseDuration)
+                animator?.SetTrigger("ReaverJumpFall");
+
+            // Trigger JumpLand when close to ground on descent
+            if (!landTriggered && elapsed > jumpRiseDuration && height <= jumpLandTriggerHeight)
+            {
+                landTriggered = true;
+                JumpLand();
+            }
+
+            yield return null;
+        }
+
+        transform.position = new Vector3(targetPos.x, startPos.y, targetPos.z);
+        if (agent != null) agent.enabled = true;
+
+        // Wait then finish
+        yield return new WaitForSeconds(jumpLandFinishDelay);
+        FinishJumpAttack();
+    }
+
+    public void JumpLockTarget()
+    {
+        jumpTargetPosition = HasTarget ? TargetPosition : transform.position + transform.forward * 2f;
+        jumpTargetPosition.y = transform.position.y;
+    }
+
+    public void JumpLand()
+    {
+        StartCoroutine(JumpLandRoutine());
+    }
+
+    private IEnumerator JumpLandRoutine()
+    {
+        LayerMask hitMask = (1 << LayerMask.NameToLayer("Player"))
+                          | (1 << LayerMask.NameToLayer("Summoner"))
+                          | (1 << LayerMask.NameToLayer("Totem"));
+
+        Vector3 landPos = new Vector3(jumpTargetPosition.x, transform.position.y, jumpTargetPosition.z);
+
+        // Land AOE (center)
+        if (jumpAoeFieldPrefab != null)
+        {
+            var go = Instantiate(jumpAoeFieldPrefab, landPos, Quaternion.identity);
+            go.GetComponent<LashAoeField>()?.Initialize(jumpLandRadius, stats.Damage * jumpDamageScale, 0f, jumpFieldFadeInDuration, jumpFieldStayDuration, jumpFieldFadeOutDuration, hitMask, health, jumpAoeVFX, jumpVFXBaseRadius, jumpVFXOffsetY, jumpVFXOffsetZMult);
+        }
+
+        // Tip rings
+        float currentDist = 0f;
+        float currentStep = jumpTipBaseDistance;
+        for (int i = 0; i < jumpTipCount; i++)
+        {
+            currentDist += currentStep;
+            currentStep += jumpTipDistanceStep;
+            float delay = jumpTipBaseDelay * (i + 1);
+            float radius = jumpTipBaseRadius + jumpTipRadiusStep * i;
+            float damage = stats.Damage * jumpTipDamageScale;
+            SpawnJumpTipRing(landPos, currentDist, radius, damage, delay, hitMask);
+        }
+
+        float totalDuration = jumpTipBaseDelay * jumpTipCount + jumpFieldFadeInDuration;
+        yield return new WaitForSeconds(totalDuration);
+    }
+
+    private void SpawnJumpTipRing(Vector3 center, float distance, float radius, float damage, float startDelay, LayerMask hitMask)
+    {
+        if (jumpAoeFieldPrefab == null) return;
+        int count = Mathf.Max(6, Mathf.RoundToInt(2f * Mathf.PI * distance / (radius * 2f)));
+        for (int i = 0; i < count; i++)
+        {
+            float angle = i * (360f / count) * Mathf.Deg2Rad;
+            Vector3 pos = center + new Vector3(Mathf.Cos(angle) * distance, 0f, Mathf.Sin(angle) * distance);
+            var go = Instantiate(jumpAoeFieldPrefab, pos, Quaternion.identity);
+            go.GetComponent<LashAoeField>()?.Initialize(radius, damage, startDelay, jumpFieldFadeInDuration, jumpFieldStayDuration, jumpFieldFadeOutDuration, hitMask, health, jumpAoeVFX, jumpVFXBaseRadius, jumpVFXOffsetY, jumpVFXOffsetZMult);
+        }
+    }
+
+    public void FinishJumpAttack()
+    {
+        lastReaverJumpTime = Time.time;
+        currentReaverJumpCooldown = Random.Range(jumpAttackCooldownMin, jumpAttackCooldownMax);
+        currentReaverAttack = ReaverAttackType.None;
+        isJumpAttackPhase = false;
+        jumpTargetPosition = Vector3.zero;
+        isAttacking = false;
+        lockedAttackDir = Vector3.zero;
+        postAttackDelayMin = jumpPostDelayMin;
+        postAttackDelayMax = jumpPostDelayMax;
+        animator?.SetTrigger("ReaverBackToIdle");
+        strafe.Reset();
+        TriggerPostAttackDelay();
+    }
+
     // Animation Events Reaver
     public void FireReaverProjectile()
     {
@@ -1016,7 +1206,25 @@ public class LasherReaverController : EnemyBase
 
     public void FinishReaverProjectile()
     {
-        // If chained from dash, reset dash cooldown too
+        float jumpChance = isReaverProjectilePhase ? jumpChanceAfterDashProjectile : jumpChanceAfterProjectile;
+        if (!isJumpAttackPhase && Random.value < jumpChance)
+        {
+            Debug.Log(isReaverProjectilePhase ? "[Jump] After Dash + Projectile" : "[Jump] After Standalone Projectile");
+            if (isReaverProjectilePhase)
+            {
+                lastReaverDashTime = Time.time;
+                currentReaverDashCooldown = Random.Range(reaverDashCooldownMin, reaverDashCooldownMax);
+            }
+            currentReaverProjectileCooldown = Random.Range(reaverProjectileCooldownMin, reaverProjectileCooldownMax);
+            lastReaverProjectileTime = Time.time;
+            currentReaverAttack = ReaverAttackType.None;
+            isDashing = false;
+            isReaverProjectilePhase = false;
+            isJumpAttackPhase = true;
+            animator?.SetTrigger("ReaverJumpRise");
+            return;
+        }
+
         if (isReaverProjectilePhase)
         {
             lastReaverDashTime = Time.time;
@@ -1030,6 +1238,7 @@ public class LasherReaverController : EnemyBase
         currentReaverAttack = ReaverAttackType.None;
         isDashing = false;
         isReaverProjectilePhase = false;
+        isJumpAttackPhase = false;
         isAttacking = false;
         lockedAttackDir = Vector3.zero;
         postAttackDelayMin = reaverProjectilePostDelayMin;
@@ -1056,6 +1265,7 @@ public class LasherReaverController : EnemyBase
         lastReaverChargeTime = Time.time;
         currentReaverChargeCooldown = Random.Range(reaverChargeCooldownMin, reaverChargeCooldownMax);
         currentReaverProjectileCooldown = Random.Range(reaverProjectileCooldownMin, reaverProjectileCooldownMax);
+        currentReaverJumpCooldown = Random.Range(jumpAttackCooldownMin, jumpAttackCooldownMax);
 
         isAttacking = false;
         isCharging = false;
@@ -1306,6 +1516,23 @@ public class LasherReaverController : EnemyBase
         if (hb != null && !hb.IsDead && hb != health) hb.TakeDamage(damage);
     }
 
+    private void OnGUI()
+    {
+        if (currentForm != LasherReaverForm.Reaver) return;
+
+        float dashRemain = Mathf.Max(0f, (lastReaverDashTime + currentReaverDashCooldown) - Time.time);
+        float chargeRemain = Mathf.Max(0f, (lastReaverChargeTime + currentReaverChargeCooldown) - Time.time);
+        float projectileRemain = Mathf.Max(0f, (lastReaverProjectileTime + currentReaverProjectileCooldown) - Time.time);
+        float jumpRemain = Mathf.Max(0f, (lastReaverJumpTime + currentReaverJumpCooldown) - Time.time);
+
+        GUILayout.BeginArea(new Rect(10, 10, 250, 120));
+        GUILayout.Label($"[Reaver] Dash:       {dashRemain:F1}s");
+        GUILayout.Label($"[Reaver] Charge:     {chargeRemain:F1}s");
+        GUILayout.Label($"[Reaver] Projectile: {projectileRemain:F1}s");
+        GUILayout.Label($"[Reaver] Jump:       {jumpRemain:F1}s");
+        GUILayout.EndArea();
+    }
+
     protected new void OnDrawGizmosSelected()
     {
         base.OnDrawGizmosSelected();
@@ -1319,5 +1546,9 @@ public class LasherReaverController : EnemyBase
         Gizmos.DrawWireSphere(transform.position, anchorHitRadius);
         Gizmos.color = new Color(1f, 0.5f, 1f);
         Gizmos.DrawWireSphere(transform.position, anchorAttackRange);
+        Gizmos.color = new Color(0f, 1f, 1f);
+        Gizmos.DrawWireSphere(transform.position, jumpAttackRange);
+        Gizmos.color = new Color(0f, 0.5f, 1f);
+        Gizmos.DrawWireSphere(transform.position, jumpAttackMinRange);
     }
 }

@@ -29,6 +29,10 @@ public class LasherReaverAnimationEvents : MonoBehaviour
     public void AnchorLockTarget() => controller?.AnchorLockTarget();
     public void AnchorThrow() => controller?.AnchorThrow();
 
+    // Reaver Jump
+    public void JumpLockTarget() => controller?.JumpLockTarget();
+    public void JumpStartArc() => controller?.JumpStartArc();
+
     // Reaver Form
     public void FireReaverProjectile() => controller?.FireReaverProjectile();
     public void FinishReaverProjectile() => controller?.FinishReaverProjectile();
