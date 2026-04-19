@@ -12,7 +12,7 @@ public class RunManager : MonoBehaviour
     [Header("Healing")]
     [Tooltip("% after clearing")]
     [Range(0f, 1f)]
-    public float HealPerRoom = 0.10f;
+    public float HealPerRoom = 0f;
 
     [Header("Reroll")]
     public bool AllowReroll = false;
@@ -64,6 +64,7 @@ public class RunManager : MonoBehaviour
     public int   EffectiveExtraWaves         => PermanentMods.extraWaves             + NextFloorMods.extraWaves;
     public float EffectiveLootMeanBonus      => PermanentMods.lootMeanBonus          + NextFloorMods.lootMeanBonus;
     public int   EffectiveExtraLootOptions   => PermanentMods.extraLootOptions       + NextFloorMods.extraLootOptions;
+    public int  EffectiveShopPool => PermanentMods.extraShopPool + NextFloorMods.extraShopPool;
     public int   EffectiveExtraEventRoomMin  => PermanentMods.extraEventRoomMin      + NextFloorMods.extraEventRoomMin;
     public int   EffectiveExtraBattleRoomMin => PermanentMods.extraBattleRoomMin     + NextFloorMods.extraBattleRoomMin;
     public float EffectiveHealPerRoomBonus        => PermanentMods.healPerRoomBonus       + NextFloorMods.healPerRoomBonus;

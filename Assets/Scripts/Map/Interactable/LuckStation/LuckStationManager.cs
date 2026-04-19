@@ -60,17 +60,13 @@ public class LuckStationManager : MonoBehaviour
         return true;
     }
 
-    // Called by RunManager.ResetRun() — re-applies all permanent effects to fresh RunModifiers
     public void ResetRun()
     {
         var rm = RunManager.Instance;
         if (rm == null) return;
 
-        if (CurrentLevel >= 1) rm.AllowReroll = true;
-        if (CurrentLevel >= 2) CurrencyManager.Instance?.AddCoins(100);
-
-        for (int lv = 3; lv <= CurrentLevel; lv++)
-            rm.PermanentMods.Add(GetLevelData(lv)?.modifier ?? new RunModifiers());
+        for (int lv = 1; lv <= CurrentLevel; lv++)
+            ApplyUpgradeEffect(lv);
 
         OnLevelChanged?.Invoke();
     }
@@ -84,8 +80,16 @@ public class LuckStationManager : MonoBehaviour
         {
             case 1: rm.AllowReroll = true; break;
             case 2: CurrencyManager.Instance?.AddCoins(100); break;
-            default:
-                rm.PermanentMods.Add(GetLevelData(lv)?.modifier ?? new RunModifiers());
+            case 3:
+                rm.PermanentMods.shopDiscount    += 0.1f;
+                rm.PermanentMods.upgradeDiscount += 0.1f;
+                break;
+            case 4:
+                rm.PermanentMods.extraShopPool += 2;
+                rm.PermanentMods.extraLootOptions += 1;
+                break;
+            case 5:
+                rm.PermanentMods.lootChanceBias += 0.25f;
                 break;
         }
     }
