@@ -170,68 +170,89 @@ public class BossRoom : BattleRoom
 
     protected override void SpawnWave(int waveIndex)
     {
-        switch (_mode)
-        {
-            case BossRoomMode.MiniBoss:    SpawnMiniBossWave(waveIndex);    break;
-            case BossRoomMode.EliteBattle: SpawnEliteBattleWave(waveIndex); break;
-        }
-    }
-
-    void SpawnMiniBossWave(int waveIndex)
-    {
         if (enemyEntries == null || enemyEntries.Length == 0)
         {
             StartCoroutine(OnWaveCleared());
             return;
         }
+        StartCoroutine(SpawnBossWaveRoutine(waveIndex));
+    }
 
-        int budget  = _waveBudgets[waveIndex];
+    private IEnumerator SpawnBossWaveRoutine(int waveIndex)
+    {
+        _waveClearPending = false;
+        _spawning         = true;
+
+        var cells = new List<Vector3>(spawnCells);
+        ShuffleList(cells);
+        int cellIdx = 0;
+        Vector3 NextCell() => cells.Count > 0
+            ? cells[cellIdx++ % cells.Count] + Vector3.up * 0.5f
+            : transform.position + Vector3.up * 0.5f;
+
         int spawned = 0;
 
-        EnemyEntry topEntry = null;
-        int        topCost  = -1;
-        foreach (var e in enemyEntries)
+        if (_mode == BossRoomMode.MiniBoss)
         {
-            int c = Mathf.Max(1, e.cost);
-            if (e.elite != null && c > topCost) { topCost = c; topEntry = e; }
-        }
-
-        if (topEntry != null)
-        {
-            var go = Instantiate(topEntry.elite, PickSpawnPosition(), Quaternion.identity);
-            if (go.TryGetComponent<EntityStats>(out var stats))
+            EnemyEntry topEntry = null;
+            int topCost = -1;
+            foreach (var e in enemyEntries)
             {
-                var scale    = ComputeStatScale();
-                scale.hp    *= miniBossHpScale;
-                scale.damage *= miniBossDmgScale;
-                stats.SetStatScale(scale);
+                int c = Mathf.Max(1, e.cost);
+                if (e.elite != null && c > topCost) { topCost = c; topEntry = e; }
             }
-            budget -= topCost;
-            spawned++;
+
+            int remaining = _waveBudgets[waveIndex];
+            if (topEntry != null)
+            {
+                var go = Instantiate(topEntry.elite, NextCell(), Quaternion.identity);
+                if (go.TryGetComponent<EntityStats>(out var stats))
+                {
+                    var scale    = ComputeStatScale();
+                    scale.hp    *= miniBossHpScale;
+                    scale.damage *= miniBossDmgScale;
+                    stats.SetStatScale(scale);
+                }
+                remaining -= topCost;
+                _aliveCount++;
+                spawned++;
+                yield return new WaitForSeconds(Random.Range(spawnDelayMin, spawnDelayMax));
+            }
+
+            foreach (var prefab in BuildBudgetPrefabList(remaining, waveIndex))
+            {
+                int n = SpawnEnemyPrefab(prefab, NextCell());
+                _aliveCount += n;
+                spawned     += n;
+                yield return new WaitForSeconds(Random.Range(spawnDelayMin, spawnDelayMax));
+            }
         }
-
-        spawned += SpawnBudgetFill(budget, waveIndex);
-
-        _aliveCount += spawned;
-        if (spawned == 0) StartCoroutine(OnWaveCleared());
-    }
-
-    void SpawnEliteBattleWave(int waveIndex)
-    {
-        if (enemyEntries == null || enemyEntries.Length == 0)
+        else // EliteBattle
         {
-            StartCoroutine(OnWaveCleared());
-            return;
+            foreach (var prefab in BuildEliteWavePrefabList(_waveBudgets[waveIndex]))
+            {
+                int n = SpawnEnemyPrefab(prefab, NextCell());
+                _aliveCount += n;
+                spawned     += n;
+                yield return new WaitForSeconds(Random.Range(spawnDelayMin, spawnDelayMax));
+            }
         }
 
-        int spawned = SpawnEliteBudget(_waveBudgets[waveIndex], waveIndex);
-        _aliveCount += spawned;
-        if (spawned == 0) StartCoroutine(OnWaveCleared());
+        _waveSpawnedCount = spawned;
+        bool isLastWave   = _currentWave >= waveCount - 1;
+        _waveClearThreshold = isLastWave ? 0
+            : Mathf.Max(1, Mathf.RoundToInt(spawned * Random.Range(waveNextThresholdMin, waveNextThresholdMax)));
+
+        _spawning = false;
+
+        if (spawned == 0 || (isLocked && !isCleared && !_waveClearPending && ShouldClearWave()))
+            StartCoroutine(OnWaveCleared());
     }
 
-    int SpawnEliteBudget(int budget, int waveIndex)
+    // All-elite prefab list for EliteBattle waves.
+    List<GameObject> BuildEliteWavePrefabList(int budget)
     {
-        int spawned    = 0;
+        var result = new List<GameObject>();
         int safetyLimit = 200;
 
         while (budget > 0 && safetyLimit-- > 0)
@@ -240,46 +261,28 @@ public class BossRoom : BattleRoom
             foreach (var e in enemyEntries)
                 if (Mathf.Max(1, e.cost) <= budget) affordable.Add(e);
 
-            EnemyEntry entry;
-            if (affordable.Count == 0)
-            {
-                // Filler: cheapest entry
-                entry = null;
-                int lowestCost = int.MaxValue;
-                foreach (var e in enemyEntries)
-                {
-                    int c = Mathf.Max(1, e.cost);
-                    if (c < lowestCost) { lowestCost = c; entry = e; }
-                }
-                if (entry == null) break;
-                spawned += InstantiateEliteEntry(entry);
-                break; // filler always ends the loop
-            }
+            if (affordable.Count == 0) break;
 
-            entry = affordable[Random.Range(0, affordable.Count)];
+            var entry = affordable[Random.Range(0, affordable.Count)];
             budget -= Mathf.Max(1, entry.cost);
-            spawned += InstantiateEliteEntry(entry);
+            result.Add(entry.elite != null ? entry.elite : entry.normal);
         }
-
-        return spawned;
-    }
-
-    int InstantiateEliteEntry(EnemyEntry entry)
-    {
-        var prefab = entry.elite != null ? entry.elite : entry.normal;
-        return SpawnEnemyPrefab(prefab);
+        return result;
     }
 
 
     protected override void OnEntityKilled(HealthBase enemy)
     {
-        if (!isLocked || isCleared) return;
+        if (isCleared) return;
 
         if (_mode != BossRoomMode.TrueBoss)
         {
             base.OnEntityKilled(enemy);
             return;
         }
+
+        if (_aliveCount > 0) _aliveCount--;
+        if (!isLocked) return;
 
         RunManager.Instance?.OnEnemyKilled();
         var enemyBase = enemy.GetComponent<EnemyBase>();
@@ -292,17 +295,13 @@ public class BossRoom : BattleRoom
         if (_bossInstances.Remove(enemy.gameObject))
         {
             if (_bossInstances.Count == 0)
-            {
-                _aliveCount = 0;
                 StartCoroutine(OnWaveCleared());
-            }
         }
         else
         {
             _normalEnemies.RemoveAll(e => e == null);
         }
     }
-
 
     protected override IEnumerator OnWaveCleared()
     {
@@ -315,12 +314,16 @@ public class BossRoom : BattleRoom
             yield break;
         }
 
+        if (_waveClearPending) yield break;
+        _waveClearPending = true;
+
         isLocked = false;
         _currentWave++;
 
         if (_currentWave < waveCount)
         {
             yield return new WaitForSeconds(wavePause);
+            _waveClearPending = false;
             isLocked = true;
             SpawnWave(_currentWave);
         }

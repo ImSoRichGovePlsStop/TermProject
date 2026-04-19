@@ -39,12 +39,12 @@ public class BattleRoom : MonoBehaviour
     [Range(1, 5)] public int waveCount = 3;
     public float wavePause = 1f;
     [Tooltip("Fraction of wave enemies remaining that triggers the next wave spawn.")]
-    [Range(0f, 0.5f)] public float waveNextThresholdMin = 0.4f;
-    [Range(0f, 0.5f)] public float waveNextThresholdMax = 0.5f;
+    [Range(0f, 0.5f)] public float waveNextThresholdMin = 0.2f;
+    [Range(0f, 0.5f)] public float waveNextThresholdMax = 0.3f;
 
     [Header("Spawn Timing")]
     [Tooltip("Min delay in seconds between each enemy spawn within a wave.")]
-    public float spawnDelayMin = 0.4f;
+    public float spawnDelayMin = 0.1f;
     [Tooltip("Max delay in seconds between each enemy spawn within a wave.")]
     public float spawnDelayMax = 0.7f;
 
@@ -94,10 +94,10 @@ public class BattleRoom : MonoBehaviour
     protected int[] _waveBudgets;
     protected int[] _eliteBudgetsPerWave;
 
-    int  _waveSpawnedCount  = 0;   // total enemies spawned in the current wave
-    int  _waveClearThreshold = 0;  // alive count that triggers next wave (fixed per wave)
-    bool _spawning          = false;
-    bool _waveClearPending  = false;
+    protected int  _waveSpawnedCount   = 0;
+    protected int  _waveClearThreshold = 0;
+    protected bool _spawning           = false;
+    protected bool _waveClearPending   = false;
 
     const float TriggerInset = 0.3f;
     const float InvisibleWallThickness = 0.01f;
@@ -147,9 +147,7 @@ public class BattleRoom : MonoBehaviour
             StartCoroutine(OnWaveCleared());
     }
 
-    // Returns true when alive count has dropped to the wave-clear trigger point.
-    // Threshold is fixed per wave after spawning completes.
-    bool ShouldClearWave() => _aliveCount <= _waveClearThreshold;
+    protected bool ShouldClearWave() => _aliveCount <= _waveClearThreshold;
 
     protected virtual IEnumerator OnWaveCleared()
     {
@@ -244,9 +242,11 @@ public class BattleRoom : MonoBehaviour
     }
 
     private List<GameObject> BuildWavePrefabList(int waveIndex)
+        => BuildBudgetPrefabList(_waveBudgets[waveIndex], waveIndex);
+
+    protected List<GameObject> BuildBudgetPrefabList(int budget, int waveIndex)
     {
         var result = new List<GameObject>();
-        int budget = _waveBudgets[waveIndex];
         int safetyLimit = 200;
         bool groupSpawnerUsed = false;
 
@@ -272,7 +272,7 @@ public class BattleRoom : MonoBehaviour
         return result;
     }
 
-    static void ShuffleList<T>(List<T> list)
+    protected static void ShuffleList<T>(List<T> list)
     {
         for (int i = list.Count - 1; i > 0; i--)
         { int j = Random.Range(0, i + 1); (list[i], list[j]) = (list[j], list[i]); }

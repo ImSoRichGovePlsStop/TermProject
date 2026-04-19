@@ -197,7 +197,7 @@ MonoBehaviour:
   segmentCount: 3
   floorsPerSegment: 3
   segmentBossConfigs:
-  - roomPreset: {fileID: 11400000, guid: f8e48b83105e67b43a0ae7cfe8efdfda, type: 2}
+  - roomPreset: {fileID: 11400000, guid: 5f9270f89b0358a4ebe67e10b3993ad9, type: 2}
     bossPrefabs:
     - {fileID: 2371149561134109772, guid: 2e7578b831f8fc946942f39b57144684, type: 3}
     - {fileID: 998253066982403686, guid: 2903b8f1bd8b1e64693773095af86e48, type: 3}
@@ -206,7 +206,7 @@ MonoBehaviour:
     spawnCountMin: 0
     spawnCountMax: 0
     maxAliveNormals: 3
-  - roomPreset: {fileID: 11400000, guid: f8e48b83105e67b43a0ae7cfe8efdfda, type: 2}
+  - roomPreset: {fileID: 11400000, guid: 5f9270f89b0358a4ebe67e10b3993ad9, type: 2}
     bossPrefabs:
     - {fileID: 7665104473517315308, guid: 5d900225ef78b9d488ed2b9be9deb4c5, type: 3}
     periodicEntries: []
@@ -477,7 +477,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2ed41bb552d081145bce2fc4164fcd33, type: 2}
   - {fileID: 11400000, guid: 9b87d61227132fb4db164e9a6433e9de, type: 2}
   - {fileID: 11400000, guid: f4601b98d3fefb641baf3c22d4adc523, type: 2}
-  - {fileID: 11400000, guid: 5f9270f89b0358a4ebe67e10b3993ad9, type: 2}
   doorWidth: 1
   wallPrefab: {fileID: 4780047926931452637, guid: 38d8ad24e9b06be4c80e188bc072b5f3, type: 3}
   pillarPrefab: {fileID: 5252582885613049431, guid: 994a8f54789240547be9f61d42127fce, type: 3}

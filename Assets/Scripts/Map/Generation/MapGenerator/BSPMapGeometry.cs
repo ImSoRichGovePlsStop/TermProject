@@ -448,11 +448,17 @@ public class BSPMapGeometry : MonoBehaviour
 
         if (type == RoomType.Boss)
         {
-            int floor  = RunManager.Instance?.CurrentFloor ?? 1;
-            var config = EnemyPoolManager.Instance?.GetBossConfig(floor);
-            if (config?.roomPreset != null)
+            int floor      = RunManager.Instance?.CurrentFloor ?? 1;
+            var pool       = EnemyPoolManager.Instance;
+            int fps        = pool != null ? pool.floorsPerSegment : 3;
+            int floorInSeg = ((floor - 1) % fps) + 1;
+            bool isTrueBoss = fps == 1 || floorInSeg == fps;
+
+            if (isTrueBoss)
             {
-                if (TryPlacePresetRoom(type, config.roomPreset, cornerIdx)) return;
+                var config = pool?.GetBossConfig(floor);
+                if (config?.roomPreset != null)
+                    if (TryPlacePresetRoom(type, config.roomPreset, cornerIdx)) return;
             }
         }
 
