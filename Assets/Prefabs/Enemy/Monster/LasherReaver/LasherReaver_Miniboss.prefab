@@ -510,6 +510,7 @@ MonoBehaviour:
   reaverProjectileCooldownMin: 7
   reaverProjectileCooldownMax: 10
   reaverProjectileDamageScale: 1.8
+  anchorLastPositionChance: 0.5
   reaverProjectilePostDelayMin: 0.8
   reaverProjectilePostDelayMax: 1.2
   reaverDashAttackRange: 3
@@ -584,14 +585,49 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
   entries:
-  - items: []
-    weight: 0
-  - items: []
-    weight: 0
-  - items: []
-    weight: 0
-  - items: []
-    weight: 0
+  - items:
+    - material: {fileID: 11400000, guid: 0e055652656be514d8c06906bd86a13e, type: 2}
+      minCount: 7
+      maxCount: 10
+    weight: 5
+  - items:
+    - material: {fileID: 11400000, guid: 0e055652656be514d8c06906bd86a13e, type: 2}
+      minCount: 4
+      maxCount: 6
+    - material: {fileID: 11400000, guid: a7f0ae0d573fda242bf1ee3eba5f0133, type: 2}
+      minCount: 2
+      maxCount: 3
+    weight: 5
+  - items:
+    - material: {fileID: 11400000, guid: 0e055652656be514d8c06906bd86a13e, type: 2}
+      minCount: 2
+      maxCount: 3
+    - material: {fileID: 11400000, guid: a7f0ae0d573fda242bf1ee3eba5f0133, type: 2}
+      minCount: 1
+      maxCount: 2
+    - material: {fileID: 11400000, guid: 7ba20a670b80b744c82f719a8118b50c, type: 2}
+      minCount: 1
+      maxCount: 1
+    weight: 15
+  - items:
+    - material: {fileID: 11400000, guid: 0e055652656be514d8c06906bd86a13e, type: 2}
+      minCount: 2
+      maxCount: 3
+    - material: {fileID: 11400000, guid: a7f0ae0d573fda242bf1ee3eba5f0133, type: 2}
+      minCount: 1
+      maxCount: 2
+    - material: {fileID: 11400000, guid: f30e2ab00b19af944acc9c7fd574283a, type: 2}
+      minCount: 1
+      maxCount: 1
+    weight: 15
+  - items:
+    - material: {fileID: 11400000, guid: f30e2ab00b19af944acc9c7fd574283a, type: 2}
+      minCount: 1
+      maxCount: 1
+    - material: {fileID: 11400000, guid: 7ba20a670b80b744c82f719a8118b50c, type: 2}
+      minCount: 1
+      maxCount: 1
+    weight: 60
   maxDropsPerKill: 1
   groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
 --- !u!1 &6805230779249563792
