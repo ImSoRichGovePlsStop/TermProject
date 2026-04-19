@@ -82,23 +82,19 @@ public class LasherReaverController : EnemyBase
     [Header("Lasher Anchor")]
     [SerializeField] private GameObject anchorProjectilePrefab;
     [SerializeField] private float anchorAttackRange = 8f;
+    [SerializeField] private float anchorMinRange = 2f;
     [SerializeField] private float anchorCooldownMin = 6f;
     [SerializeField] private float anchorCooldownMax = 10f;
-    [SerializeField] private float anchorMoveSpeed = 12f;
-    [SerializeField] private float anchorArrivalRange = 0.3f;
-    [SerializeField] private float anchorShockwaveDamageScale = 1.5f;
-    [SerializeField] private GameObject anchorShockwavePrefab;
-    [SerializeField] private float anchorProjectileDuration = 0.6f;
-    [SerializeField] private float anchorProjectilePeakHeight = 2f;
-    [SerializeField] private float anchorSlowRadius = 2f;
-    [Range(0f, 1f)]
-    [SerializeField] private float anchorSlowAmount = 0.35f;
-    [SerializeField] private float anchorSlowDuration = 2f;
+    [SerializeField] private float anchorHitRadius = 0.4f;
+    [SerializeField] private float anchorDamageScale = 1f;
+    [SerializeField] private float anchorHitInterval = 0.3f;
+    [SerializeField] private float anchorSpinSpeed = 1f;
+    [SerializeField] private float anchorCurveWidth = 0.5f;
+    [SerializeField] private float anchorProjectileSpeed = 8f;
     [SerializeField] private float anchorPostDelayMin = 0.8f;
     [SerializeField] private float anchorPostDelayMax = 1.2f;
     [Range(0f, 1f)]
     [SerializeField] private float anchorWeight = 0.4f;
-    [SerializeField] private float anchorPredictScale = 1f;
 
     [Header("Lasher Smash Ritual")]
     [SerializeField] private Vector2 ritualPositionNormalized = new Vector2(0.5f, 0.6f);
@@ -193,8 +189,7 @@ public class LasherReaverController : EnemyBase
     private float currentLasherAnchorCooldown = 0f;
 
     private Vector3 anchorTargetPosition = Vector3.zero;
-    private Vector3 anchorTrackStartPosition = Vector3.zero;
-    private float anchorTrackStartTime = 0f;
+    private LasherReaverAnchorProjectile activeAnchor = null;
     private float lastReaverDashTime = -Mathf.Infinity;
     private float currentReaverDashCooldown = 0f;
     private float lastReaverChargeTime = -Mathf.Infinity;
@@ -701,39 +696,20 @@ public class LasherReaverController : EnemyBase
     }
 
     // Animation Events Lasher Anchor
-    public void AnchorTrackStart()
-    {
-        if (!HasTarget) return;
-        anchorTrackStartPosition = TargetPosition;
-        anchorTrackStartPosition.y = transform.position.y;
-        anchorTrackStartTime = Time.time;
-    }
-
     public void AnchorLockTarget()
     {
         if (!HasTarget)
         {
-            anchorTargetPosition = transform.position + transform.forward * 2f;
+            anchorTargetPosition = transform.position + transform.forward * anchorMinRange;
+            anchorTargetPosition.y = transform.position.y;
             return;
         }
 
-        Vector3 currentPos = TargetPosition;
-        currentPos.y = transform.position.y;
-
-        float elapsed = Time.time - anchorTrackStartTime;
-        Vector3 trackedVelocity = elapsed > 0f
-            ? (currentPos - anchorTrackStartPosition) / elapsed
-            : Vector3.zero;
-
-        Vector3 predicted = currentPos + trackedVelocity * anchorProjectileDuration * anchorPredictScale;
-        predicted.y = transform.position.y;
-
-        LayerMask wallMask = 1 << LayerMask.NameToLayer("Wall");
-        Vector3 dir = predicted - currentPos;
-        if (dir.sqrMagnitude > 0.001f && Physics.Raycast(currentPos, dir.normalized, out RaycastHit hit, dir.magnitude, wallMask))
-            predicted = hit.point - dir.normalized * 0.5f;
-
-        anchorTargetPosition = predicted;
+        Vector3 dir = TargetPosition - transform.position;
+        dir.y = 0f;
+        float dist = Mathf.Clamp(dir.magnitude, anchorMinRange, anchorAttackRange);
+        anchorTargetPosition = transform.position + dir.normalized * dist;
+        anchorTargetPosition.y = transform.position.y;
     }
 
     public void AnchorThrow()
@@ -741,58 +717,34 @@ public class LasherReaverController : EnemyBase
         if (anchorProjectilePrefab == null) return;
         var go = Instantiate(anchorProjectilePrefab, transform.position, Quaternion.identity);
         var proj = go.GetComponent<LasherReaverAnchorProjectile>();
-        proj?.Initialize(transform.position, anchorTargetPosition, anchorProjectileDuration, anchorProjectilePeakHeight, anchorSlowRadius, anchorSlowAmount, anchorSlowDuration, OnAnchorLanded);
-    }
-
-    private void OnAnchorLanded()
-    {
-        StartCoroutine(AnchorRunRoutine());
-    }
-
-    private IEnumerator AnchorRunRoutine()
-    {
-        var agent = movement.GetAgent();
-        if (agent != null && agent.isOnNavMesh) agent.enabled = false;
-
-        animator?.SetTrigger("LasherAnchorRun");
-
-        while (true)
+        if (proj != null)
         {
-            Vector3 dir = anchorTargetPosition - transform.position;
-            dir.y = 0f;
-            float dist = dir.magnitude;
-
-            if (dist <= anchorArrivalRange) break;
-
-            transform.position += dir.normalized * anchorMoveSpeed * stats.MoveSpeedRatio * Time.deltaTime;
-            movement.FaceTarget(anchorTargetPosition);
-            yield return null;
+            activeAnchor = proj;
+            float dist = Vector3.Distance(
+                new Vector3(transform.position.x, 0f, transform.position.z),
+                new Vector3(anchorTargetPosition.x, 0f, anchorTargetPosition.z));
+            float anchorDuration = dist / Mathf.Max(0.1f, anchorProjectileSpeed);
+            proj.Initialize(transform.position, anchorTargetPosition, anchorDuration,
+                anchorDamageScale, anchorHitRadius, anchorHitInterval, anchorSpinSpeed, anchorCurveWidth, health, OnAnchorReturned);
         }
-
-        if (agent != null) agent.enabled = true;
-        AnchorShockwave();
-        FinishAnchorAttack();
     }
 
-    public void AnchorShockwave()
+    private void OnAnchorReturned()
     {
-        if (anchorShockwavePrefab == null) return;
-        var go = Instantiate(anchorShockwavePrefab, anchorTargetPosition, Quaternion.identity);
-        go.GetComponent<Shockwave>()?.Init(stats.Damage * anchorShockwaveDamageScale, health);
+        activeAnchor = null;
+        FinishAnchorAttack();
     }
 
     public void FinishAnchorAttack()
     {
         isAttacking = false;
         anchorTargetPosition = Vector3.zero;
+        activeAnchor = null;
         lastLasherAnchorTime = Time.time;
         currentLasherAnchorCooldown = Random.Range(anchorCooldownMin, anchorCooldownMax);
         postAttackDelayMin = anchorPostDelayMin;
         postAttackDelayMax = anchorPostDelayMax;
-
-        if (currentForm == LasherReaverForm.Lasher)
-            animator?.SetTrigger("LasherBackToIdle");
-
+        animator?.SetTrigger("LasherBackToIdle");
         strafe.Reset();
         TriggerPostAttackDelay();
     }
@@ -1264,5 +1216,9 @@ public class LasherReaverController : EnemyBase
         Gizmos.DrawWireSphere(transform.position, reaverDashAttackRange);
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(transform.position, chargeAttackRange);
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, anchorHitRadius);
+        Gizmos.color = new Color(1f, 0.5f, 1f);
+        Gizmos.DrawWireSphere(transform.position, anchorAttackRange);
     }
 }

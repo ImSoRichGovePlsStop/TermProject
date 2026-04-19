@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class LasherReaverAnchorProjectile : MonoBehaviour
@@ -7,75 +8,106 @@ public class LasherReaverAnchorProjectile : MonoBehaviour
     private Vector3 startPos;
     private Vector3 targetPos;
     private float duration;
-    private float peakHeight;
-    private float slowAmount;
-    private float slowDuration;
-    private float slowRadius;
-    private Action onLanded;
+    private float damageScale;
+    private float hitRadius;
+    private float hitInterval;
+    private float spinSpeed;
+    private float curveWidth;
+    private HealthBase attacker;
+    private EntityStats attackerStats;
+    private Action onReturned;
+    private Transform owner;
 
-    public void Initialize(Vector3 start, Vector3 target, float duration, float peakHeight,
-        float slowRadius, float slowAmount, float slowDuration, Action onLanded)
+    private readonly Dictionary<GameObject, float> lastHitTime = new Dictionary<GameObject, float>();
+
+    public void Initialize(Vector3 start, Vector3 target, float duration,
+        float damageScale, float hitRadius, float hitInterval, float spinSpeed, float curveWidth,
+        HealthBase attacker, Action onReturned)
     {
         this.startPos = start;
         this.targetPos = target;
         this.duration = duration;
-        this.peakHeight = peakHeight;
-        this.slowRadius = slowRadius;
-        this.slowAmount = slowAmount;
-        this.slowDuration = slowDuration;
-        this.onLanded = onLanded;
-        StartCoroutine(FlyRoutine());
+        this.damageScale = damageScale;
+        this.hitRadius = hitRadius;
+        this.hitInterval = hitInterval;
+        this.spinSpeed = spinSpeed;
+        this.curveWidth = curveWidth;
+        this.attacker = attacker;
+        this.attackerStats = attacker?.GetComponent<EntityStats>();
+        this.onReturned = onReturned;
+
+        var controller = attacker?.GetComponent<LasherReaverController>();
+        if (controller != null) owner = controller.transform;
+
+        StartCoroutine(OvalRoutine());
     }
 
-    private IEnumerator FlyRoutine()
+    private IEnumerator OvalRoutine()
     {
-        float elapsed = 0f;
-        Camera cam = Camera.main;
+        // Oval center = midpoint between Lasher and target
+        Vector3 center = (startPos + targetPos) * 0.5f;
+        center.y = startPos.y;
 
-        while (elapsed < duration)
+        // Semi-axes
+        Vector3 axisA = (targetPos - startPos) * 0.5f; // major axis (toward target)
+        axisA.y = 0f;
+        Vector3 axisB = new Vector3(-axisA.z, 0f, axisA.x).normalized * axisA.magnitude * curveWidth; // minor axis (perpendicular)
+
+        float elapsed = 0f;
+        float totalDuration = duration * 2f; // full oval = go + return
+        float currentSpin = 0f;
+
+        while (elapsed < totalDuration)
         {
             elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / duration);
+            float t = elapsed / totalDuration;
+            currentSpin += spinSpeed * 360f * Time.deltaTime;
 
-            // Position
-            Vector3 flatPos = Vector3.Lerp(startPos, targetPos, t);
-            float height = Mathf.Sin(t * Mathf.PI) * peakHeight;
-            transform.position = new Vector3(flatPos.x, flatPos.y + height, flatPos.z);
+            // Parametric oval: angle goes from PI to -PI (start at Lasher side)
+            float angle = Mathf.PI - t * Mathf.PI * 2f;
+            Vector3 pos = center + axisA * Mathf.Cos(angle) + axisB * Mathf.Sin(angle);
+            pos.y = startPos.y;
+            transform.position = pos;
 
-            // Billboard - face camera
-            if (cam != null)
-                transform.rotation = Quaternion.LookRotation(transform.position - cam.transform.position);
+            // Align with ground (flat) + spin
+            transform.rotation = Quaternion.Euler(90f, currentSpin, 0f);
 
-            // Flip X based on travel direction
-            Vector3 flatDir = targetPos - startPos;
-            transform.localScale = new Vector3(flatDir.x < 0f ? -1f : 1f, 1f, 1f);
-
-            // Rotate Z by arc tangent angle
-            float yVelocity = Mathf.Cos(t * Mathf.PI) * peakHeight;
-            float flatSpeed = Vector3.Distance(
-                new Vector3(startPos.x, 0f, startPos.z),
-                new Vector3(targetPos.x, 0f, targetPos.z)
-            ) / duration;
-            float arcAngle = Mathf.Atan2(yVelocity, flatSpeed) * Mathf.Rad2Deg;
-            transform.Rotate(0f, 0f, arcAngle, Space.Self);
-
+            CheckHits();
             yield return null;
         }
 
-        transform.position = targetPos;
-        ApplySlow();
-        onLanded?.Invoke();
+        onReturned?.Invoke();
         Destroy(gameObject);
     }
 
-    private void ApplySlow()
+    private void CheckHits()
     {
-        LayerMask playerMask = 1 << LayerMask.NameToLayer("Player");
-        Collider[] hits = Physics.OverlapSphere(targetPos, slowRadius, playerMask);
+        LayerMask hitMask = (1 << LayerMask.NameToLayer("Player"))
+                          | (1 << LayerMask.NameToLayer("Summoner"))
+                          | (1 << LayerMask.NameToLayer("Totem"));
+
+        float damage = (attackerStats?.Damage ?? 0f) * damageScale;
+
+        Collider[] hits = Physics.OverlapSphere(transform.position, hitRadius, hitMask);
         foreach (var col in hits)
         {
+            GameObject go = col.gameObject;
+            if (lastHitTime.TryGetValue(go, out float last) && Time.time - last < hitInterval)
+                continue;
+
+            lastHitTime[go] = Time.time;
+
             var ps = col.GetComponent<PlayerStats>() ?? col.GetComponentInParent<PlayerStats>();
-            ps?.TakeDebuffMultiplier(new StatModifier { moveSpeed = -slowAmount }, slowDuration);
+            if (ps != null && !ps.IsDead) { ps.TakeDamage(damage, attacker); continue; }
+
+            var hb = col.GetComponent<HealthBase>() ?? col.GetComponentInParent<HealthBase>();
+            if (hb != null && !hb.IsDead && hb != attacker) hb.TakeDamage(damage);
         }
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, hitRadius);
     }
 }

@@ -44000,8 +44000,24 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorMinRange
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorHitRadius
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
       propertyPath: anchorMoveSpeed
       value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorSpinSpeed
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorCurveWidth
+      value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
       propertyPath: anchorSlowRadius
@@ -44017,7 +44033,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
       propertyPath: anchorAttackRange
-      value: 6
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
       propertyPath: anchorCooldownMax
@@ -44026,6 +44042,22 @@ PrefabInstance:
     - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
       propertyPath: anchorCooldownMin
       value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorDamageScale
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorHitInterval
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: lasherCooldownMax
+      value: 2.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: lasherCooldownMin
+      value: 1.75
       objectReference: {fileID: 0}
     - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
       propertyPath: smashPostDelayMax
@@ -44068,6 +44100,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 575652732540652510, guid: 1b487df38b8121f47a6a5e28414ba549, type: 3}
     - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: anchorProjectileSpeed
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
       propertyPath: anchorShockwavePrefab
       value: 
       objectReference: {fileID: 7054419061288264857, guid: 711175bf4cbb73443923bc705e25bc0a, type: 3}
@@ -44101,7 +44137,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
       propertyPath: anchorProjectileDuration
-      value: 0.6
+      value: 0.8
       objectReference: {fileID: 0}
     - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
       propertyPath: ritualSpotLightIntensity
