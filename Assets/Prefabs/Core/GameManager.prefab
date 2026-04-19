@@ -2535,7 +2535,7 @@ Transform:
   m_GameObject: {fileID: 1941185337081448578}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1639.2426, y: 862.75085, z: -2150.6216}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -8977,8 +8977,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FloorTransitionUI
   floorLabel: {fileID: 6957339036257284262}
-  minDuration: 2
-  fadeInDuration: 0.5
+  panelFadeInDuration: 0.3
+  labelFadeInDuration: 0.6
+  holdAfterMapReady: 2
   fadeOutDuration: 0.5
 --- !u!1 &6731005258270888285
 GameObject:
