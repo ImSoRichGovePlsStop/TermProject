@@ -135,7 +135,10 @@ public class LasherReaverController : EnemyBase
     [SerializeField] private float reaverProjectileCooldownMin = 4f;
     [SerializeField] private float reaverProjectileCooldownMax = 8f;
     [SerializeField] private float reaverProjectileDamageScale = 1f;
-    [SerializeField][Range(0f, 1f)] private float reaverProjectileChance = 0.5f;
+    [Header("Reaver Dash Combo")]
+    [SerializeField][Range(0f, 1f)] private float comboDashProjChance = 0.5f;
+    [SerializeField][Range(0f, 1f)] private float comboDashAnchorChance = 0.3f;
+    [SerializeField][Range(0f, 1f)] private float comboDashJumpChance = 0.3f;
     [SerializeField] private float reaverProjectilePostDelayMin = 0.4f;
     [SerializeField] private float reaverProjectilePostDelayMax = 0.8f;
 
@@ -202,14 +205,13 @@ public class LasherReaverController : EnemyBase
     [SerializeField] private float jumpFieldFadeInDuration = 0.25f;
     [SerializeField] private float jumpFieldStayDuration = 0.1f;
     [SerializeField] private float jumpFieldFadeOutDuration = 0.2f;
+    [SerializeField] private float jumpTargetRandomOffset = 0.5f;
     [SerializeField] private float jumpLandTriggerHeight = 0.5f;
     [SerializeField] private float jumpLandFinishDelay = 0.5f;
     [SerializeField] private float jumpPostDelayMin = 0.5f;
     [SerializeField] private float jumpPostDelayMax = 1f;
     [SerializeField][Range(0f, 1f)] private float jumpWeight = 0.3f;
-    [SerializeField][Range(0f, 1f)] private float jumpChanceAfterDash = 0.3f;
-    [SerializeField][Range(0f, 1f)] private float jumpChanceAfterDashProjectile = 0.4f;
-    [SerializeField][Range(0f, 1f)] private float jumpChanceAfterProjectile = 0.3f;
+    [SerializeField][Range(0f, 1f)] private float jumpChanceAfterProjectile = 0.4f;
 
     // Runtime State
     private LasherReaverForm currentForm;
@@ -223,6 +225,8 @@ public class LasherReaverController : EnemyBase
     private ReaverAttackType currentReaverAttack = ReaverAttackType.None;
     private bool isDashing = false;
     private bool isReaverProjectilePhase = false;
+    private bool isComboAnchorPhase = false;
+    private Queue<string> dashComboQueue = new Queue<string>();
     private bool isJumpAttackPhase = false;
     private Vector3 jumpTargetPosition = Vector3.zero;
     private float lastReaverJumpTime = 0f;
@@ -524,7 +528,7 @@ public class LasherReaverController : EnemyBase
             : LasherReaverForm.Lasher;
 
         if (switchVFXPrefab != null)
-            Instantiate(switchVFXPrefab, transform.position, Quaternion.identity);
+            Instantiate(switchVFXPrefab, transform.position + Vector3.forward * -0.1f, Quaternion.identity);
 
         yield return new WaitForSeconds(switchVFXDelay);
 
@@ -607,20 +611,25 @@ public class LasherReaverController : EnemyBase
         {
             if (currentReaverAttack == ReaverAttackType.Dash)
             {
-                if (!isReaverProjectilePhase && !isJumpAttackPhase)
+                if (dashComboQueue.Count == 0)
                 {
-                    if (Random.value < reaverProjectileChance && reaverProjectilePrefab != null)
-                    {
-                        isReaverProjectilePhase = true;
-                        animator?.SetTrigger("ReaverProjectileAttack");
-                        return;
-                    }
-                    if (Random.value < jumpChanceAfterDash)
-                    {
-                        isJumpAttackPhase = true;
-                        animator?.SetTrigger("ReaverJumpRise");
-                        return;
-                    }
+                    bool doProj = Random.value < comboDashProjChance && reaverProjectilePrefab != null;
+                    bool doAnchor = Random.value < comboDashAnchorChance && anchorProjectilePrefab != null;
+                    bool doJump = Random.value < comboDashJumpChance;
+
+                    var actions = new List<string>();
+                    if (doProj) actions.Add("Proj");
+                    if (doJump) actions.Add("Jump");
+                    if (doAnchor) actions.Insert(Random.Range(0, actions.Count + 1), "Anchor");
+
+                    foreach (var a in actions)
+                        dashComboQueue.Enqueue(a);
+                }
+
+                if (dashComboQueue.Count > 0)
+                {
+                    ExecuteNextDashCombo();
+                    return;
                 }
 
                 lastReaverDashTime = Time.time;
@@ -804,7 +813,7 @@ public class LasherReaverController : EnemyBase
         currentForm = LasherReaverForm.Reaver;
         transform.localScale = reaverScale;
         if (switchVFXPrefab != null)
-            Instantiate(switchVFXPrefab, transform.position, Quaternion.identity);
+            Instantiate(switchVFXPrefab, transform.position + Vector3.forward * -0.1f, Quaternion.identity);
         animator?.SetTrigger("ReaverProjectileAttack");
     }
 
@@ -817,7 +826,7 @@ public class LasherReaverController : EnemyBase
             currentForm = LasherReaverForm.Lasher;
             transform.localScale = lasherScale;
             if (switchVFXPrefab != null)
-                Instantiate(switchVFXPrefab, transform.position, Quaternion.identity);
+                Instantiate(switchVFXPrefab, transform.position + Vector3.forward * -0.1f, Quaternion.identity);
             lastComboHit = 4;
             animator?.SetTrigger("LasherAttack1Lash");
             return;
@@ -925,6 +934,7 @@ public class LasherReaverController : EnemyBase
         float dist = Mathf.Clamp(dir.magnitude, anchorMinRange, anchorAttackRange);
         anchorTargetPosition = transform.position + dir.normalized * dist;
         anchorTargetPosition.y = transform.position.y;
+        movement.FaceTarget(anchorTargetPosition);
     }
 
     public void AnchorThrow()
@@ -947,11 +957,15 @@ public class LasherReaverController : EnemyBase
     private void OnAnchorReturned()
     {
         activeAnchor = null;
-        FinishAnchorAttack();
+        if (isComboAnchorPhase)
+            FinishComboAnchor();
+        else
+            FinishAnchorAttack();
     }
 
     public void FinishAnchorAttack()
     {
+        if (isComboAnchorPhase) return;
         isAttacking = false;
         anchorTargetPosition = Vector3.zero;
         activeAnchor = null;
@@ -1176,6 +1190,125 @@ public class LasherReaverController : EnemyBase
         }
     }
 
+    private void ExecuteNextDashCombo()
+    {
+        if (dashComboQueue.Count == 0)
+        {
+            lastReaverDashTime = Time.time;
+            currentReaverDashCooldown = Random.Range(reaverDashCooldownMin, reaverDashCooldownMax);
+            currentReaverAttack = ReaverAttackType.None;
+            isDashing = false;
+            isReaverProjectilePhase = false;
+            isJumpAttackPhase = false;
+
+            // Clamp switch timer if had anchor in combo
+            if (isComboAnchorPhase)
+            {
+                float halfInterval = Random.Range(switchIntervalMin, switchIntervalMax) * 0.5f;
+                if (switchTimerRemain < halfInterval)
+                    switchTimerRemain = halfInterval;
+            }
+            isComboAnchorPhase = false;
+
+            isAttacking = false;
+            lockedAttackDir = Vector3.zero;
+            postAttackDelayMin = reaverDashPostDelayMin;
+            postAttackDelayMax = reaverDashPostDelayMax;
+            animator?.SetTrigger("ReaverBackToIdle");
+            strafe.Reset();
+            TriggerPostAttackDelay();
+            return;
+        }
+
+        string next = dashComboQueue.Dequeue();
+        if (next == "Proj")
+        {
+            isReaverProjectilePhase = true;
+            animator?.SetTrigger("ReaverProjectileAttack");
+        }
+        else if (next == "Anchor")
+        {
+            isComboAnchorPhase = true;
+            StartCoroutine(ComboAnchorRoutine());
+        }
+        else if (next == "Jump")
+        {
+            isJumpAttackPhase = true;
+            animator?.SetTrigger("ReaverJumpRise");
+        }
+    }
+
+    private IEnumerator ComboAnchorRoutine()
+    {
+        // Switch to Lasher
+        currentForm = LasherReaverForm.Lasher;
+        transform.localScale = lasherScale;
+        animator?.ResetTrigger("ChargeWindUp");
+        animator?.ResetTrigger("ChargeStart");
+        animator?.SetTrigger("ReaverBackToIdle");
+        if (switchVFXPrefab != null)
+            Instantiate(switchVFXPrefab, transform.position + Vector3.forward * -0.1f, Quaternion.identity);
+
+        // Wait for animator to leave JumpFall/JumpRise state
+        yield return null;
+        float waited = 0f;
+        while (animator != null &&
+               (animator.GetCurrentAnimatorStateInfo(0).IsName("Reaver_JumpAttack_Fall") ||
+                animator.GetCurrentAnimatorStateInfo(0).IsName("Reaver_JumpAttack_Rise")) &&
+               waited < 1f)
+        {
+            waited += Time.deltaTime;
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(switchVFXDelay);
+
+        animator?.SetTrigger("LasherBackToIdle");
+        yield return null;
+
+        // Lock target and throw anchor
+        AnchorLockTarget();
+        animator?.SetTrigger("LasherAnchorThrow");
+    }
+
+    private void FinishComboAnchor()
+    {
+        lastLasherAnchorTime = Time.time;
+        currentLasherAnchorCooldown = Random.Range(anchorCooldownMin, anchorCooldownMax);
+
+        if (dashComboQueue.Count > 0)
+        {
+            // More actions remain — switch back to Reaver
+            currentForm = LasherReaverForm.Reaver;
+            transform.localScale = reaverScale;
+            animator?.SetTrigger("ReaverBackToIdle");
+            if (switchVFXPrefab != null)
+                Instantiate(switchVFXPrefab, transform.position + Vector3.forward * -0.1f, Quaternion.identity);
+            strafe.Init(reaverDashAttackRange);
+            ExecuteNextDashCombo();
+        }
+        else
+        {
+            // Anchor was last — stay in Lasher form, half switch timer
+            float halfInterval = Random.Range(switchIntervalMin, switchIntervalMax) * 0.5f;
+            if (switchTimerRemain < halfInterval)
+                switchTimerRemain = halfInterval;
+            isComboAnchorPhase = false;
+
+            lastReaverDashTime = Time.time;
+            currentReaverDashCooldown = Random.Range(reaverDashCooldownMin, reaverDashCooldownMax);
+            currentReaverAttack = ReaverAttackType.None;
+            isDashing = false;
+            isAttacking = false;
+            lockedAttackDir = Vector3.zero;
+            postAttackDelayMin = reaverDashPostDelayMin;
+            postAttackDelayMax = reaverDashPostDelayMax;
+            animator?.SetTrigger("LasherBackToIdle");
+            strafe.Reset();
+            TriggerPostAttackDelay();
+        }
+    }
+
     // Animation Events Reaver Jump
     private Coroutine jumpArcCoroutine = null;
 
@@ -1203,6 +1336,12 @@ public class LasherReaverController : EnemyBase
             float height = Mathf.Sin(t * Mathf.PI) * jumpRiseHeight;
             transform.position = new Vector3(flatPos.x, startPos.y + height, flatPos.z);
 
+            // Face movement direction
+            Vector3 moveDir = targetPos - startPos;
+            moveDir.y = 0f;
+            if (moveDir.sqrMagnitude > 0.001f)
+                movement.FaceTarget(transform.position + moveDir);
+
             // Trigger fall at midpoint
             if (elapsed >= jumpRiseDuration && elapsed - Time.deltaTime < jumpRiseDuration)
                 animator?.SetTrigger("ReaverJumpFall");
@@ -1220,6 +1359,13 @@ public class LasherReaverController : EnemyBase
         transform.position = new Vector3(targetPos.x, startPos.y, targetPos.z);
         if (agent != null) agent.enabled = true;
 
+        // If combo queue active, continue immediately after land
+        if (currentReaverAttack == ReaverAttackType.Dash && dashComboQueue.Count > 0)
+        {
+            FinishJumpAttack();
+            yield break;
+        }
+
         // Wait then finish
         yield return new WaitForSeconds(jumpLandFinishDelay);
         FinishJumpAttack();
@@ -1227,7 +1373,11 @@ public class LasherReaverController : EnemyBase
 
     public void JumpLockTarget()
     {
-        jumpTargetPosition = HasTarget ? TargetPosition : transform.position + transform.forward * 2f;
+        Vector3 target = HasTarget ? TargetPosition : transform.position + transform.forward * 2f;
+        // Add small random offset to avoid landing exactly on player
+        Vector2 offset = Random.insideUnitCircle * jumpTargetRandomOffset;
+        target += new Vector3(offset.x, 0f, offset.y);
+        jumpTargetPosition = target;
         jumpTargetPosition.y = transform.position.y;
     }
 
@@ -1285,9 +1435,18 @@ public class LasherReaverController : EnemyBase
     {
         lastReaverJumpTime = Time.time;
         currentReaverJumpCooldown = Random.Range(jumpAttackCooldownMin, jumpAttackCooldownMax);
-        currentReaverAttack = ReaverAttackType.None;
         isJumpAttackPhase = false;
         jumpTargetPosition = Vector3.zero;
+
+        // Continue dash combo queue if active
+        if (currentReaverAttack == ReaverAttackType.Dash && dashComboQueue.Count > 0)
+        {
+            animator?.SetTrigger("ReaverBackToIdle");
+            ExecuteNextDashCombo();
+            return;
+        }
+
+        currentReaverAttack = ReaverAttackType.None;
         isAttacking = false;
         lockedAttackDir = Vector3.zero;
         postAttackDelayMin = jumpPostDelayMin;
@@ -1318,7 +1477,16 @@ public class LasherReaverController : EnemyBase
             return;
         }
 
-        float jumpChance = isReaverProjectilePhase ? jumpChanceAfterDashProjectile : jumpChanceAfterProjectile;
+        // Continue dash combo queue if active
+        if (currentReaverAttack == ReaverAttackType.Dash && dashComboQueue.Count > 0)
+        {
+            isReaverProjectilePhase = false;
+            lastReaverProjectileTime = Time.time - currentReaverProjectileCooldown * 0.5f;
+            ExecuteNextDashCombo();
+            return;
+        }
+
+        float jumpChance = jumpChanceAfterProjectile;
         if (!isJumpAttackPhase && Random.value < jumpChance)
         {
             if (isReaverProjectilePhase)
