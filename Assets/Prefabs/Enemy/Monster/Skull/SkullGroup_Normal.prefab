@@ -45,8 +45,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SkullGroup
   skullPrefab: {fileID: 7238543708409638561, guid: dd9f068c973098c498dd3e59894d0504, type: 3}
-  spawnCountMin: 8
-  spawnCountMax: 12
+  spawnCountMin: 4
+  spawnCountMax: 6
   spawnRadius: 0.8
   minDistanceBetweenSkulls: 0.2
   maxAttemptsPerSkull: 20
