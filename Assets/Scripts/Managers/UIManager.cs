@@ -393,32 +393,26 @@ public class UIManager : MonoBehaviour
     {
         var cam = CameraController.Instance;
         if (cam != null)
-            yield return StartCoroutine(cam.EndgameEffect(1f));
-        else
-            yield return new WaitForSecondsRealtime(1f);
+            yield return StartCoroutine(cam.EndgameEffect(1.5f));
 
         _endGameUI.Show(isWin);
     }
 
+    private void OnPlayerDeath()
+    {
+        ShowEndGame(false);
+    }
+
+
     public IEnumerator PlayFloorTransition()
     {
-        if (_floorTransitionUI == null)
-            _floorTransitionUI = FindFirstObjectByType<FloorTransitionUI>(FindObjectsInactive.Include);
-        if (_floorTransitionUI != null)
-            yield return StartCoroutine(_floorTransitionUI.PlayTransition());
+        if (_floorTransitionUI == null) yield break;
+        yield return StartCoroutine(_floorTransitionUI.PlayFadeIn());
     }
 
     public IEnumerator PlayFloorModifierSelection(FloorModifierCard[] cards)
     {
-        if (_floorModifierUI == null)
-            _floorModifierUI = FindFirstObjectByType<FloorModifierUI>(FindObjectsInactive.Include);
-        if (_floorModifierUI != null && cards != null && cards.Length > 0)
-            yield return StartCoroutine(_floorModifierUI.ShowSelection(cards));
-    }
-
-    private void OnPlayerDeath()
-    {
-        isInBattle = false;
-        ShowEndGame(false);
+        if (_floorModifierUI == null) yield break;
+        yield return StartCoroutine(_floorModifierUI.ShowSelection(cards));
     }
 }
