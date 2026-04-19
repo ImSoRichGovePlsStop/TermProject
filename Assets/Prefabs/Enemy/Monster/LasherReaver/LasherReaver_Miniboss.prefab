@@ -316,9 +316,9 @@ MonoBehaviour:
   spawnFadeOutDuration: 0.4
   spawnEffectScale: 1
   spawnStayDuration: 0.5
-  lasherFormChance: 0
-  switchIntervalMin: 8
-  switchIntervalMax: 20
+  lasherFormChance: 1
+  switchIntervalMin: 15
+  switchIntervalMax: 30
   switchVFXPrefab: {fileID: 6375145438201293164, guid: 1393cd58ba6cf814d838e7d3e19e82d5, type: 3}
   switchVFXDelay: 0.3
   strafe:
@@ -341,6 +341,7 @@ MonoBehaviour:
   comboExtendMaxRedirectAngle: 75
   comboExtend3Chance: 0.5
   comboExtend4Chance: 0.5
+  comboReaverProjectileChance: 0.5
   lashHitOffset: 1
   lashHitRadius: 1.2
   lashDamageScale: 1.2
@@ -363,8 +364,10 @@ MonoBehaviour:
   combo2PostDelayMax: 0.8
   combo3PostDelayMin: 1
   combo3PostDelayMax: 1.2
-  combo4PostDelayMin: 1.5
-  combo4PostDelayMax: 2
+  combo4PostDelayMin: 1.6
+  combo4PostDelayMax: 2.2
+  combo5PostDelayMin: 2.4
+  combo5PostDelayMax: 3
   anchorProjectilePrefab: {fileID: 1673625421123493190, guid: 2eae2b76514341848b74fb272a786a6f, type: 3}
   anchorAttackRange: 10
   anchorMinRange: 4
@@ -383,10 +386,10 @@ MonoBehaviour:
   cameraLockPositionNormalized: {x: 0.5, y: 0.4}
   smashConfigs:
   - riseHeight: 1.5
-    riseDurationMin: 0.8
-    riseDurationMax: 1
-    stayDurationMin: 0.8
-    stayDurationMax: 1
+    riseDurationMin: 1.2
+    riseDurationMax: 1.6
+    stayDurationMin: 1.2
+    stayDurationMax: 1.6
     fallDurationMin: 0.2
     fallDurationMax: 0.25
   - riseHeight: 1.5
@@ -441,7 +444,7 @@ MonoBehaviour:
   reaverProjectileCooldownMax: 10
   reaverProjectileDamageScale: 1.5
   reaverProjectileChance: 0.4
-  reaverProjectilePostDelayMin: 0.6
+  reaverProjectilePostDelayMin: 0.8
   reaverProjectilePostDelayMax: 1.2
   reaverDashAttackRange: 3
   reaverDashCooldownMin: 2.5
@@ -465,15 +468,15 @@ MonoBehaviour:
   chargeDamageScale: 1.2
   chargeRotateSpeed: 30
   chargeWallDetectRange: 0.5
-  chargeStunnedDuration: 1.5
+  chargeStunnedDuration: 2.5
   reaverChargePostDelayMin: 0
   reaverChargePostDelayMax: 0
   missDetectAngle: 120
   missDetectDuration: 0.1
-  redirectChance: 0.5
-  brakeDuration: 0.5
+  redirectChance: 0.6
+  brakeDuration: 0.4
   redirectWindUpDuration: 0.4
-  maxRedirectCount: 1
+  maxRedirectCount: 2
   jumpAttackRange: 8
   jumpAttackMinRange: 6
   jumpAttackCooldownMin: 12
@@ -481,7 +484,7 @@ MonoBehaviour:
   jumpRiseHeight: 2
   jumpRiseDuration: 0.5
   jumpFallDuration: 0.3
-  jumpDamageScale: 1.5
+  jumpDamageScale: 2
   jumpLandRadius: 1.2
   jumpTipCount: 3
   jumpTipBaseDelay: 0.5
@@ -489,13 +492,13 @@ MonoBehaviour:
   jumpTipDistanceStep: 0.75
   jumpTipBaseRadius: 0.6
   jumpTipRadiusStep: 0.3
-  jumpTipDamageScale: 0.8
+  jumpTipDamageScale: 1
   jumpAoeVFX: {fileID: 245339282735500823, guid: 5292192e29d6a1447bdf673f3227f4a1, type: 3}
   jumpVFXBaseRadius: 0.25
   jumpVFXOffsetY: 0.5
   jumpVFXOffsetZMult: 0.3
   jumpAoeFieldPrefab: {fileID: 3132944589323993650, guid: e05e31c4e3f36bf40b3b6ea1a1d4dbb4, type: 3}
-  jumpFieldFadeInDuration: 0.2
+  jumpFieldFadeInDuration: 0.1
   jumpFieldStayDuration: 0.4
   jumpFieldFadeOutDuration: 0.25
   jumpLandTriggerHeight: 1
