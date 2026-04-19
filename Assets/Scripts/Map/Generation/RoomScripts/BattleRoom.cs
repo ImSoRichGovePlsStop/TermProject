@@ -183,37 +183,27 @@ public class BattleRoom : MonoBehaviour
         int spawned = 0;
         int safetyLimit = 200;
 
+        bool groupSpawnerUsed = false;
+
         while (budget > 0 && safetyLimit-- > 0)
         {
             var affordable = new List<EnemyEntry>();
             foreach (var e in enemyEntries)
             {
-                if (Mathf.Max(1, e.cost) <= budget) affordable.Add(e);
+                if (Mathf.Max(1, e.cost) > budget) continue;
+                if (groupSpawnerUsed && IsGroupSpawnerEntry(e)) continue;
+                affordable.Add(e);
             }
 
-            if (affordable.Count == 0)
-            {
-                EnemyEntry cheapestEntry = null;
-                int lowestCost = int.MaxValue;
-                foreach (var e in enemyEntries)
-                {
-                    int c = Mathf.Max(1, e.cost);
-                    if (c < lowestCost) { lowestCost = c; cheapestEntry = e; }
-                }
-                if (cheapestEntry != null)
-                {
-                    bool fillerElite = _eliteBudgetsPerWave[waveIndex] > 0 && cheapestEntry.elite != null;
-                    if (fillerElite) _eliteBudgetsPerWave[waveIndex]--;
-                    spawned += SpawnEnemyPrefab(fillerElite ? cheapestEntry.elite : cheapestEntry.normal);
-                }
-                break;
-            }
+            if (affordable.Count == 0) break;
 
             var entry = affordable[Random.Range(0, affordable.Count)];
             bool useElite = _eliteBudgetsPerWave[waveIndex] > 0 && entry.elite != null;
             if (useElite) _eliteBudgetsPerWave[waveIndex]--;
+            var prefab = useElite ? entry.elite : entry.normal;
             budget -= Mathf.Max(1, entry.cost);
-            spawned += SpawnEnemyPrefab(useElite ? entry.elite : entry.normal);
+            spawned += SpawnEnemyPrefab(prefab);
+            if (prefab.GetComponent<IGroupSpawner>() != null) groupSpawnerUsed = true;
         }
 
         return spawned;
@@ -240,6 +230,10 @@ public class BattleRoom : MonoBehaviour
         if (isLocked && !isCleared && _aliveCount <= waveThreshold)
             StartCoroutine(OnWaveCleared());
     }
+
+    protected static bool IsGroupSpawnerEntry(EnemyEntry e)
+        => (e.normal != null && e.normal.GetComponent<IGroupSpawner>() != null)
+        || (e.elite  != null && e.elite.GetComponent<IGroupSpawner>()  != null);
 
     protected Vector3 PickSpawnPosition()
     {

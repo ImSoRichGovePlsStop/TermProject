@@ -129,9 +129,6 @@ public class BSPMapGeometry : MonoBehaviour
 
     MapNode _bossGuardNode;   // battle room directly adjacent to boss, sole door to boss
 
-    // Shared meshes created once at geometry build time — reused by every floor/wall quad
-    Mesh _sharedFloorMesh;
-    Mesh _sharedWallMesh;
 
     // Debug: rectangles produced by FillRemaining — stamped rooms vs sealed gaps
     readonly List<RectResult> _fillStamped = new();
@@ -874,30 +871,6 @@ public class BSPMapGeometry : MonoBehaviour
 
     void SpawnGeometry()
     {
-        // ── Shared meshes (built once, reused for every quad) ─────────────────
-        _sharedFloorMesh = new Mesh { name = "SharedFloor" };
-        _sharedFloorMesh.vertices  = new[] {
-            new Vector3(-0.5f, 0f,  0.5f), new Vector3(0.5f, 0f,  0.5f),
-            new Vector3( 0.5f, 0f, -0.5f), new Vector3(-0.5f, 0f, -0.5f)
-        };
-        _sharedFloorMesh.triangles = new[] { 0, 1, 2, 0, 2, 3 };
-        _sharedFloorMesh.uv        = new[] { new Vector2(0,1), new Vector2(1,1), new Vector2(1,0), new Vector2(0,0) };
-        _sharedFloorMesh.RecalculateNormals();
-        _sharedFloorMesh.RecalculateBounds();
-
-        float totalH = wallHeight + Mathf.Abs(floorThickness);
-        float hh     = totalH * 0.5f;
-        _sharedWallMesh = new Mesh { name = "SharedWall" };
-        _sharedWallMesh.vertices  = new[] {
-            new Vector3(-0.5f, -hh, 0f), new Vector3(0.5f, -hh, 0f),
-            new Vector3( 0.5f,  hh, 0f), new Vector3(-0.5f,  hh, 0f)
-        };
-        _sharedWallMesh.triangles = new[] { 0, 1, 2, 0, 2, 3 };
-        _sharedWallMesh.uv        = new[] { new Vector2(0,0), new Vector2(1,0), new Vector2(1,1), new Vector2(0,1) };
-        _sharedWallMesh.RecalculateNormals();
-        _sharedWallMesh.RecalculateBounds();
-        // ─────────────────────────────────────────────────────────────────────
-
         var floorP = new GameObject("Floors").transform;
         var wallP = new GameObject("Walls").transform;
         var voidP = new GameObject("VoidBlockers").transform;
@@ -1014,64 +987,59 @@ public class BSPMapGeometry : MonoBehaviour
 
     void SpawnSealedCube(Transform parent, int x, int z)
     {
-        var go = new GameObject($"Sealed_{x}_{z}");
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.name = $"Sealed_{x}_{z}";
         go.transform.SetParent(parent);
-        go.transform.position = new Vector3(x + 0.5f, wallHeight * 0.5f, z + 0.5f);
+        go.transform.position  = new Vector3(x + 0.5f, wallHeight * 0.5f, z + 0.5f);
         go.transform.localScale = new Vector3(1f, wallHeight, 1f);
-        go.layer = LayerMask.NameToLayer("Wall");
+        go.layer   = LayerMask.NameToLayer("Wall");
         go.isStatic = true;
-        go.AddComponent<MeshFilter>().sharedMesh = Resources.GetBuiltinResource<Mesh>("Cube.fbx");
-        go.AddComponent<MeshRenderer>().sharedMaterial = sealedMat;
-        go.AddComponent<BoxCollider>();
+        go.GetComponent<MeshRenderer>().sharedMaterial = sealedMat;
     }
 
     void SpawnFloorQuad(Transform parent, int x, int z, MapNode owner)
     {
-        var go = new GameObject($"F_{x}_{z}");
+        float depth = Mathf.Abs(floorThickness);
+
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.name = $"F_{x}_{z}";
         go.transform.SetParent(parent);
-        go.transform.position = new Vector3(x + 0.5f, 0f, z + 0.5f);
-        go.layer = LayerMask.NameToLayer("Ground");
+        go.transform.position   = new Vector3(x + 0.5f, floorThickness * 0.5f, z + 0.5f);
+        go.transform.localScale = new Vector3(1f, depth, 1f);
+        go.layer    = LayerMask.NameToLayer("Ground");
         go.isStatic = true;
+        go.GetComponent<MeshRenderer>().sharedMaterial = floorMat;
 
-        go.AddComponent<MeshFilter>().sharedMesh = _sharedFloorMesh;
-        var mr = go.AddComponent<MeshRenderer>();
-        mr.sharedMaterial = floorMat;
-
-        
-        if (owner != null && (owner.Type == RoomType.Battle || owner.Type == RoomType.Boss || owner.Type == RoomType.RareLoot))
-        {
-            var mc = go.AddComponent<MeshCollider>();
-            mc.sharedMesh = _sharedFloorMesh;
-        }
+        bool needsCollider = owner != null &&
+            (owner.Type == RoomType.Battle   ||
+             owner.Type == RoomType.Boss     ||
+             owner.Type == RoomType.RareLoot);
+        if (!needsCollider)
+            Object.Destroy(go.GetComponent<BoxCollider>());
     }
 
     void SpawnWallQuad(Transform parent, int x, int z, Vector2Int facing)
     {
-        
         if (wallPrefab != null)
         {
             SpawnWallPrefabTile(parent, x, z, facing);
             return;
         }
 
-        
         float totalH  = wallHeight + Mathf.Abs(floorThickness);
         float centerY = floorThickness + totalH * 0.5f;
+        bool  faceX   = facing.x != 0;
 
-        var go = new GameObject($"W_{x}_{z}_{facing.x}_{facing.y}");
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.name = $"W_{x}_{z}_{facing.x}_{facing.y}";
         go.transform.SetParent(parent);
-        go.transform.position = new Vector3(x + 0.5f + facing.x * 0.5f, centerY, z + 0.5f + facing.y * 0.5f);
-        go.transform.rotation = Quaternion.LookRotation(new Vector3(-facing.x, 0, -facing.y));
-        go.layer = LayerMask.NameToLayer("Wall");
+        go.transform.position   = new Vector3(x + 0.5f + facing.x * 0.5f, centerY, z + 0.5f + facing.y * 0.5f);
+        go.transform.localScale = faceX
+            ? new Vector3(Mathf.Max(0.05f, wallThickness), totalH, 1f)
+            : new Vector3(1f, totalH, Mathf.Max(0.05f, wallThickness));
+        go.layer    = LayerMask.NameToLayer("Wall");
         go.isStatic = true;
-
-        go.AddComponent<MeshFilter>().sharedMesh = _sharedWallMesh;
-        var mr = go.AddComponent<MeshRenderer>();
-        mr.sharedMaterial = wallMat;
-
-       
-        var bc = go.AddComponent<BoxCollider>();
-        bc.size = new Vector3(1f, totalH, Mathf.Max(0.05f, wallThickness));
+        go.GetComponent<MeshRenderer>().sharedMaterial = wallMat;
 
         var mod = go.AddComponent<NavMeshModifier>();
         mod.overrideArea = true;
