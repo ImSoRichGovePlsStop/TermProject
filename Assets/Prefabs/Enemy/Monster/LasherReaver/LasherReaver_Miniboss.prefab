@@ -240,8 +240,9 @@ MonoBehaviour:
   healthBarHeight: 0.6
   healthBarScale: {x: 2, y: 1.5, z: 1}
   tier: 2
-  phaseTwoThreshold: 0.6
-  phaseThreeThreshold: 0.3
+  phaseTwoThreshold: 0.8
+  phaseThreeThreshold: 0.6
+  phaseFourThreshold: 0.4
 --- !u!114 &3772710423183095178
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -305,8 +306,8 @@ MonoBehaviour:
   movement: {fileID: 0}
   stats: {fileID: 0}
   animator: {fileID: 0}
-  coinDropMin: 4
-  coinDropMax: 9
+  coinDropMin: 400
+  coinDropMax: 600
   hurtDuration: 0.2
   postHurtDelayMin: 0.1
   postHurtDelayMax: 0.3
@@ -316,9 +317,81 @@ MonoBehaviour:
   spawnFadeOutDuration: 0.4
   spawnEffectScale: 1
   spawnStayDuration: 0.5
-  lasherFormChance: 1
-  switchIntervalMin: 15
-  switchIntervalMax: 30
+  phase1Settings:
+    comboExtend3Chance: 0.35
+    comboExtend4Chance: 0.35
+    comboReaverProjectileChance: 0
+    lashLineCount: 1
+    anchorCooldownMin: 9
+    anchorCooldownMax: 12
+    smashEnabled: 0
+    smashCount: 3
+    smashCooldownMin: 30
+    smashCooldownMax: 40
+    comboDashProjChance: 0.35
+    comboDashAnchorChance: 0
+    comboDashJumpChance: 0
+    jumpEnabled: 0
+    jumpChanceAfterProjectile: 0
+    redirectChance: 0.4
+    maxRedirectCount: 1
+  phase2Settings:
+    comboExtend3Chance: 0.5
+    comboExtend4Chance: 0.5
+    comboReaverProjectileChance: 0
+    lashLineCount: 3
+    anchorCooldownMin: 7
+    anchorCooldownMax: 10
+    smashEnabled: 1
+    smashCount: 3
+    smashCooldownMin: 30
+    smashCooldownMax: 40
+    comboDashProjChance: 0.5
+    comboDashAnchorChance: 0
+    comboDashJumpChance: 0.35
+    jumpEnabled: 1
+    jumpChanceAfterProjectile: 0.35
+    redirectChance: 0.6
+    maxRedirectCount: 1
+  phase3Settings:
+    comboExtend3Chance: 0.5
+    comboExtend4Chance: 0.5
+    comboReaverProjectileChance: 0.35
+    lashLineCount: 3
+    anchorCooldownMin: 6
+    anchorCooldownMax: 9
+    smashEnabled: 1
+    smashCount: 5
+    smashCooldownMin: 30
+    smashCooldownMax: 40
+    comboDashProjChance: 0.5
+    comboDashAnchorChance: 0.35
+    comboDashJumpChance: 0.5
+    jumpEnabled: 1
+    jumpChanceAfterProjectile: 0.5
+    redirectChance: 0.6
+    maxRedirectCount: 2
+  phase4Settings:
+    comboExtend3Chance: 0.75
+    comboExtend4Chance: 0.75
+    comboReaverProjectileChance: 0.75
+    lashLineCount: 3
+    anchorCooldownMin: 6
+    anchorCooldownMax: 9
+    smashEnabled: 1
+    smashCount: 5
+    smashCooldownMin: 24
+    smashCooldownMax: 30
+    comboDashProjChance: 0.75
+    comboDashAnchorChance: 0.75
+    comboDashJumpChance: 0.75
+    jumpEnabled: 1
+    jumpChanceAfterProjectile: 0.5
+    redirectChance: 0.65
+    maxRedirectCount: 3
+  lasherFormChance: 0.5
+  switchIntervalMin: 12
+  switchIntervalMax: 20
   switchVFXPrefab: {fileID: 6375145438201293164, guid: 1393cd58ba6cf814d838e7d3e19e82d5, type: 3}
   switchVFXDelay: 0.3
   strafe:
@@ -339,9 +412,6 @@ MonoBehaviour:
   comboDamageScale: 1
   comboMaxRedirectAngle: 105
   comboExtendMaxRedirectAngle: 75
-  comboExtend3Chance: 0.5
-  comboExtend4Chance: 0.5
-  comboReaverProjectileChance: 0.5
   lashHitOffset: 1
   lashHitRadius: 1.2
   lashDamageScale: 1.2
@@ -350,7 +420,6 @@ MonoBehaviour:
   lashTipCount: 3
   lashTipRadius: 1.2
   lashTipDamageScale: 1.2
-  lashLineCount: 3
   lashLineAngleStep: 45
   lashAoeVFX: {fileID: 245339282735500823, guid: 5292192e29d6a1447bdf673f3227f4a1, type: 3}
   lashVFXBaseRadius: 0.25
@@ -371,8 +440,6 @@ MonoBehaviour:
   anchorProjectilePrefab: {fileID: 1673625421123493190, guid: 2eae2b76514341848b74fb272a786a6f, type: 3}
   anchorAttackRange: 10
   anchorMinRange: 4
-  anchorCooldownMin: 8
-  anchorCooldownMax: 12
   anchorHitRadius: 1
   anchorDamageScale: 1.5
   anchorHitInterval: 0.5
@@ -423,8 +490,6 @@ MonoBehaviour:
   smashLandPauseDuration: 0.5
   smashShockwaveDamageScale: 1.5
   smashShockwavePrefab: {fileID: 575652732540652510, guid: 1b487df38b8121f47a6a5e28414ba549, type: 3}
-  smashCooldownMin: 30
-  smashCooldownMax: 40
   smashPostDelayMin: 2
   smashPostDelayMax: 3
   smashWeight: 1
@@ -439,11 +504,10 @@ MonoBehaviour:
   lightTransitionDuration: 3
   reaverProjectilePrefab: {fileID: 3391258929950527744, guid: be24a26faf5353e45ac968aedda019f1, type: 3}
   reaverProjectileAttackRange: 7
-  reaverProjectileMinRange: 3
-  reaverProjectileCooldownMin: 6
+  reaverProjectileMinRange: 4
+  reaverProjectileCooldownMin: 7
   reaverProjectileCooldownMax: 10
-  reaverProjectileDamageScale: 1.5
-  reaverProjectileChance: 0.4
+  reaverProjectileDamageScale: 1.8
   reaverProjectilePostDelayMin: 0.8
   reaverProjectilePostDelayMax: 1.2
   reaverDashAttackRange: 3
@@ -452,7 +516,7 @@ MonoBehaviour:
   reaverDashSpeed: 10
   reaverDashDuration: 0.18
   reaverDashHitRadius: 0.9
-  reaverDashDamageScale: 1.25
+  reaverDashDamageScale: 1.5
   reaverDashPostDelayMin: 0.5
   reaverDashPostDelayMax: 0.6
   chargeWarningPrefab: {fileID: 3021588917348942916, guid: 25dd7453603477c4a95228b244f64ae6, type: 3}
@@ -464,8 +528,8 @@ MonoBehaviour:
   chargeSpeed: 16
   chargeWindUpDuration: 0.8
   windUpRotateSpeed: 180
-  chargeHitRadius: 0.9
-  chargeDamageScale: 1.2
+  chargeHitRadius: 0.7
+  chargeDamageScale: 1.8
   chargeRotateSpeed: 30
   chargeWallDetectRange: 0.5
   chargeStunnedDuration: 2.5
@@ -473,10 +537,8 @@ MonoBehaviour:
   reaverChargePostDelayMax: 0
   missDetectAngle: 120
   missDetectDuration: 0.1
-  redirectChance: 0.6
   brakeDuration: 0.4
   redirectWindUpDuration: 0.4
-  maxRedirectCount: 2
   jumpAttackRange: 8
   jumpAttackMinRange: 6
   jumpAttackCooldownMin: 12
@@ -484,7 +546,7 @@ MonoBehaviour:
   jumpRiseHeight: 2
   jumpRiseDuration: 0.5
   jumpFallDuration: 0.3
-  jumpDamageScale: 2
+  jumpDamageScale: 3
   jumpLandRadius: 1.2
   jumpTipCount: 3
   jumpTipBaseDelay: 0.5
@@ -492,7 +554,7 @@ MonoBehaviour:
   jumpTipDistanceStep: 0.75
   jumpTipBaseRadius: 0.6
   jumpTipRadiusStep: 0.3
-  jumpTipDamageScale: 1
+  jumpTipDamageScale: 1.5
   jumpAoeVFX: {fileID: 245339282735500823, guid: 5292192e29d6a1447bdf673f3227f4a1, type: 3}
   jumpVFXBaseRadius: 0.25
   jumpVFXOffsetY: 0.5
@@ -501,14 +563,12 @@ MonoBehaviour:
   jumpFieldFadeInDuration: 0.1
   jumpFieldStayDuration: 0.4
   jumpFieldFadeOutDuration: 0.25
+  jumpTargetRandomOffset: 0.25
   jumpLandTriggerHeight: 1
   jumpLandFinishDelay: 0.5
   jumpPostDelayMin: 2
   jumpPostDelayMax: 3
   jumpWeight: 1
-  jumpChanceAfterDash: 0.3
-  jumpChanceAfterDashProjectile: 0.2
-  jumpChanceAfterProjectile: 0.5
 --- !u!114 &1595102670700126107
 MonoBehaviour:
   m_ObjectHideFlags: 0

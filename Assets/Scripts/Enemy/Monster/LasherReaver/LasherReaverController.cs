@@ -4,6 +4,39 @@ using UnityEngine;
 using UnityEngine.AI;
 
 [System.Serializable]
+public class LasherReaverPhaseSettings
+{
+    [Header("Lasher Combo")]
+    [Range(0f, 1f)] public float comboExtend3Chance = 0.5f;
+    [Range(0f, 1f)] public float comboExtend4Chance = 0.5f;
+    [Range(0f, 1f)] public float comboReaverProjectileChance = 0.3f;
+    public int lashLineCount = 1;
+
+    [Header("Lasher Anchor")]
+    public float anchorCooldownMin = 6f;
+    public float anchorCooldownMax = 10f;
+
+    [Header("Lasher Smash")]
+    public bool smashEnabled = false;
+    public int smashCount = 3;
+    public float smashCooldownMin = 15f;
+    public float smashCooldownMax = 25f;
+
+    [Header("Reaver Dash Combo")]
+    [Range(0f, 1f)] public float comboDashProjChance = 0.5f;
+    [Range(0f, 1f)] public float comboDashAnchorChance = 0.3f;
+    [Range(0f, 1f)] public float comboDashJumpChance = 0.3f;
+
+    [Header("Reaver Jump")]
+    public bool jumpEnabled = false;
+    [Range(0f, 1f)] public float jumpChanceAfterProjectile = 0.3f;
+
+    [Header("Reaver Charge")]
+    [Range(0f, 1f)] public float redirectChance = 0.25f;
+    public int maxRedirectCount = 1;
+}
+
+[System.Serializable]
 public class SmashConfig
 {
     public float riseHeight;
@@ -21,6 +54,12 @@ public class LasherReaverController : EnemyBase
     public enum ReaverAttackType { None, Dash, Charge, Projectile, Jump }
 
     // Form Switch
+    [Header("Phase Settings")]
+    [SerializeField] private LasherReaverPhaseSettings phase1Settings;
+    [SerializeField] private LasherReaverPhaseSettings phase2Settings;
+    [SerializeField] private LasherReaverPhaseSettings phase3Settings;
+    [SerializeField] private LasherReaverPhaseSettings phase4Settings;
+
     [Header("Form")]
     [SerializeField][Range(0f, 1f)] private float lasherFormChance = 0.5f;
 
@@ -51,9 +90,9 @@ public class LasherReaverController : EnemyBase
     [SerializeField] private float comboDamageScale = 1f;
     [SerializeField] private float comboMaxRedirectAngle = 60f;
     [SerializeField] private float comboExtendMaxRedirectAngle = 60f;
-    [SerializeField][Range(0f, 1f)] private float comboExtend3Chance = 0.5f;
-    [SerializeField][Range(0f, 1f)] private float comboExtend4Chance = 0.5f;
-    [SerializeField][Range(0f, 1f)] private float comboReaverProjectileChance = 0.3f;
+    private float comboExtend3Chance = 0.5f;
+    private float comboExtend4Chance = 0.5f;
+    private float comboReaverProjectileChance = 0.3f;
 
     [Header("Lasher Hit4 Lash")]
     [SerializeField] private float lashHitOffset = 0.5f;
@@ -64,7 +103,7 @@ public class LasherReaverController : EnemyBase
     [SerializeField] private int lashTipCount = 1;
     [SerializeField] private float lashTipRadius = 1f;
     [SerializeField] private float lashTipDamageScale = 0.8f;
-    [SerializeField] private int lashLineCount = 1;
+    private int lashLineCount = 1;
     [SerializeField] private float lashLineAngleStep = 30f;
     [SerializeField] private GameObject lashAoeVFX;
     [SerializeField] private float lashVFXBaseRadius = 1f;
@@ -89,8 +128,8 @@ public class LasherReaverController : EnemyBase
     [SerializeField] private GameObject anchorProjectilePrefab;
     [SerializeField] private float anchorAttackRange = 8f;
     [SerializeField] private float anchorMinRange = 2f;
-    [SerializeField] private float anchorCooldownMin = 6f;
-    [SerializeField] private float anchorCooldownMax = 10f;
+    private float anchorCooldownMin = 6f;
+    private float anchorCooldownMax = 10f;
     [SerializeField] private float anchorHitRadius = 0.4f;
     [SerializeField] private float anchorDamageScale = 1f;
     [SerializeField] private float anchorHitInterval = 0.3f;
@@ -109,8 +148,8 @@ public class LasherReaverController : EnemyBase
     [SerializeField] private float smashLandPauseDuration = 0.5f;
     [SerializeField] private float smashShockwaveDamageScale = 1.5f;
     [SerializeField] private GameObject smashShockwavePrefab;
-    [SerializeField] private float smashCooldownMin = 15f;
-    [SerializeField] private float smashCooldownMax = 25f;
+    private float smashCooldownMin = 15f;
+    private float smashCooldownMax = 25f;
     [SerializeField] private float smashPostDelayMin = 1f;
     [SerializeField] private float smashPostDelayMax = 1.5f;
     [SerializeField][Range(0f, 1f)] private float smashWeight = 0.3f;
@@ -136,9 +175,9 @@ public class LasherReaverController : EnemyBase
     [SerializeField] private float reaverProjectileCooldownMax = 8f;
     [SerializeField] private float reaverProjectileDamageScale = 1f;
     [Header("Reaver Dash Combo")]
-    [SerializeField][Range(0f, 1f)] private float comboDashProjChance = 0.5f;
-    [SerializeField][Range(0f, 1f)] private float comboDashAnchorChance = 0.3f;
-    [SerializeField][Range(0f, 1f)] private float comboDashJumpChance = 0.3f;
+    private float comboDashProjChance = 0.5f;
+    private float comboDashAnchorChance = 0.3f;
+    private float comboDashJumpChance = 0.3f;
     [SerializeField] private float reaverProjectilePostDelayMin = 0.4f;
     [SerializeField] private float reaverProjectilePostDelayMax = 0.8f;
 
@@ -175,10 +214,10 @@ public class LasherReaverController : EnemyBase
     [Header("Reaver Charge Redirect")]
     [SerializeField] private float missDetectAngle = 120f;
     [SerializeField] private float missDetectDuration = 0.1f;
-    [SerializeField] private float redirectChance = 0.25f;
+    private float redirectChance = 0.25f;
     [SerializeField] private float brakeDuration = 0.1f;
     [SerializeField] private float redirectWindUpDuration = 0.5f;
-    [SerializeField] private int maxRedirectCount = 1;
+    private int maxRedirectCount = 1;
 
     [Header("Reaver Jump Attack")]
     [SerializeField] private float jumpAttackRange = 6f;
@@ -211,7 +250,7 @@ public class LasherReaverController : EnemyBase
     [SerializeField] private float jumpPostDelayMin = 0.5f;
     [SerializeField] private float jumpPostDelayMax = 1f;
     [SerializeField][Range(0f, 1f)] private float jumpWeight = 0.3f;
-    [SerializeField][Range(0f, 1f)] private float jumpChanceAfterProjectile = 0.4f;
+    private float jumpChanceAfterProjectile = 0.4f;
 
     // Runtime State
     private LasherReaverForm currentForm;
@@ -245,6 +284,9 @@ public class LasherReaverController : EnemyBase
     private float lastLasherSmashTime = 0f;
     private float currentLasherSmashCooldown = 0f;
     private bool isSmashRitual = false;
+    private bool smashEnabled = false;
+    private int activeSmashCount = 3;
+    private bool jumpEnabled = false;
 
     private const string SmashRiseTrigger = "SmashRise";
     private const string SmashStayTrigger = "SmashStay";
@@ -294,6 +336,14 @@ public class LasherReaverController : EnemyBase
     protected override void Start()
     {
         base.Start();
+        var lrHealth = health as LasherReaverHealthBase;
+        if (lrHealth != null)
+        {
+            lrHealth.OnPhaseTwo += () => ApplyPhaseSettings(phase2Settings);
+            lrHealth.OnPhaseThree += () => ApplyPhaseSettings(phase3Settings);
+            lrHealth.OnPhaseFour += () => ApplyPhaseSettings(phase4Settings);
+        }
+        ApplyPhaseSettings(phase1Settings);
         if (currentForm == LasherReaverForm.Reaver)
             animator?.SetTrigger("ReaverBackToIdle");
         StartCoroutine(SwitchTimerRoutine());
@@ -336,14 +386,14 @@ public class LasherReaverController : EnemyBase
         {
             bool canCombo = Time.time >= lastLasherComboTime + currentLasherCooldown && dist <= lasherAttackRange;
             bool canAnchor = Time.time >= lastLasherAnchorTime + currentLasherAnchorCooldown && dist <= anchorAttackRange;
-            bool canSmash = Time.time >= lastLasherSmashTime + currentLasherSmashCooldown;
+            bool canSmash = smashEnabled && Time.time >= lastLasherSmashTime + currentLasherSmashCooldown;
             return canCombo || canAnchor || canSmash;
         }
 
         bool canDash = Time.time >= lastReaverDashTime + currentReaverDashCooldown && dist <= reaverDashAttackRange;
         bool canCharge = Time.time >= lastReaverChargeTime + currentReaverChargeCooldown && dist <= chargeAttackRange;
         bool canProjectile = Time.time >= lastReaverProjectileTime + currentReaverProjectileCooldown && dist >= reaverProjectileMinRange && dist <= reaverProjectileAttackRange && reaverProjectilePrefab != null;
-        bool canJump = Time.time >= lastReaverJumpTime + currentReaverJumpCooldown && dist >= jumpAttackMinRange && dist <= jumpAttackRange;
+        bool canJump = jumpEnabled && Time.time >= lastReaverJumpTime + currentReaverJumpCooldown && dist >= jumpAttackMinRange && dist <= jumpAttackRange;
         return canDash || canCharge || canProjectile || canJump;
     }
 
@@ -417,7 +467,7 @@ public class LasherReaverController : EnemyBase
         float dist = Vector3.Distance(transform.position, TargetPosition);
         bool canCombo = Time.time >= lastLasherComboTime + currentLasherCooldown && dist <= lasherAttackRange;
         bool canAnchor = Time.time >= lastLasherAnchorTime + currentLasherAnchorCooldown && dist <= anchorAttackRange;
-        bool canSmash = Time.time >= lastLasherSmashTime + currentLasherSmashCooldown;
+        bool canSmash = smashEnabled && Time.time >= lastLasherSmashTime + currentLasherSmashCooldown;
 
         if (!canCombo && !canAnchor && !canSmash) return;
 
@@ -458,7 +508,7 @@ public class LasherReaverController : EnemyBase
         bool canDash = Time.time >= lastReaverDashTime + currentReaverDashCooldown && dist <= reaverDashAttackRange;
         bool canCharge = Time.time >= lastReaverChargeTime + currentReaverChargeCooldown && dist <= chargeAttackRange;
         bool canProjectile = Time.time >= lastReaverProjectileTime + currentReaverProjectileCooldown && dist >= reaverProjectileMinRange && dist <= reaverProjectileAttackRange && reaverProjectilePrefab != null;
-        bool canJump = Time.time >= lastReaverJumpTime + currentReaverJumpCooldown && dist >= jumpAttackMinRange && dist <= jumpAttackRange;
+        bool canJump = jumpEnabled && Time.time >= lastReaverJumpTime + currentReaverJumpCooldown && dist >= jumpAttackMinRange && dist <= jumpAttackRange;
 
         if (!canDash && !canCharge && !canProjectile && !canJump) return;
 
@@ -559,6 +609,7 @@ public class LasherReaverController : EnemyBase
         pendingHit4AfterProjectile = false;
         anchorTargetPosition = Vector3.zero;
         isSmashRitual = false;
+        // smashEnabled and jumpEnabled are phase-driven, don't reset
         lockedAttackDir = Vector3.zero;
 
 
@@ -615,7 +666,7 @@ public class LasherReaverController : EnemyBase
                 {
                     bool doProj = Random.value < comboDashProjChance && reaverProjectilePrefab != null;
                     bool doAnchor = Random.value < comboDashAnchorChance && anchorProjectilePrefab != null;
-                    bool doJump = Random.value < comboDashJumpChance;
+                    bool doJump = jumpEnabled && Random.value < comboDashJumpChance;
 
                     var actions = new List<string>();
                     if (doProj) actions.Add("Proj");
@@ -1042,7 +1093,8 @@ public class LasherReaverController : EnemyBase
         // 3. Smash loop
         Vector3 groundPos = transform.position;
 
-        for (int i = 0; i < smashConfigs.Length; i++)
+        int smashLoopCount = Mathf.Min(activeSmashCount, smashConfigs.Length);
+        for (int i = 0; i < smashLoopCount; i++)
         {
             var config = smashConfigs[i];
             float riseDuration = Random.Range(config.riseDurationMin, config.riseDurationMax);
@@ -1100,7 +1152,7 @@ public class LasherReaverController : EnemyBase
             yield return new WaitForSeconds(smashLandPauseDuration);
 
             // Close invincible again if not last smash
-            if (i < smashConfigs.Length - 1)
+            if (i < smashLoopCount - 1)
                 health.IsInvincible = true;
         }
 
@@ -1114,6 +1166,7 @@ public class LasherReaverController : EnemyBase
         if (smashAgent != null && !smashAgent.enabled) smashAgent.enabled = true;
         movement.SetCanMove(true);
         isSmashRitual = false;
+        // smashEnabled and jumpEnabled are phase-driven, don't reset
         lastLasherSmashTime = Time.time;
         currentLasherSmashCooldown = Random.Range(smashCooldownMin, smashCooldownMax);
         isAttacking = false;
@@ -1487,7 +1540,7 @@ public class LasherReaverController : EnemyBase
         }
 
         float jumpChance = jumpChanceAfterProjectile;
-        if (!isJumpAttackPhase && Random.value < jumpChance)
+        if (jumpEnabled && !isJumpAttackPhase && Random.value < jumpChance)
         {
             if (isReaverProjectilePhase)
             {
@@ -1797,25 +1850,39 @@ public class LasherReaverController : EnemyBase
 
     private float switchTimerRemain = 0f;
 
-    private void OnGUI()
+    private void ApplyPhaseSettings(LasherReaverPhaseSettings s)
     {
-        float dashRemain = Mathf.Max(0f, (lastReaverDashTime + currentReaverDashCooldown) - Time.time);
-        float chargeRemain = Mathf.Max(0f, (lastReaverChargeTime + currentReaverChargeCooldown) - Time.time);
-        float projectileRemain = Mathf.Max(0f, (lastReaverProjectileTime + currentReaverProjectileCooldown) - Time.time);
-        float jumpRemain = Mathf.Max(0f, (lastReaverJumpTime + currentReaverJumpCooldown) - Time.time);
+        // Lasher Combo
+        comboExtend3Chance = s.comboExtend3Chance;
+        comboExtend4Chance = s.comboExtend4Chance;
+        comboReaverProjectileChance = s.comboReaverProjectileChance;
+        lashLineCount = s.lashLineCount;
 
-        GUILayout.BeginArea(new Rect(10, 10, 280, 160));
-        GUILayout.Label($"Form: {currentForm}");
-        GUILayout.Label($"Switch Cooldown: {switchTimerRemain:F1}s");
-        if (currentForm == LasherReaverForm.Reaver)
-        {
-            GUILayout.Label($"[Reaver] Dash:       {dashRemain:F1}s");
-            GUILayout.Label($"[Reaver] Charge:     {chargeRemain:F1}s");
-            GUILayout.Label($"[Reaver] Projectile: {projectileRemain:F1}s");
-            GUILayout.Label($"[Reaver] Jump:       {jumpRemain:F1}s");
-        }
-        GUILayout.EndArea();
+        // Lasher Anchor
+        currentLasherAnchorCooldown = Random.Range(s.anchorCooldownMin, s.anchorCooldownMax);
+        anchorCooldownMin = s.anchorCooldownMin;
+        anchorCooldownMax = s.anchorCooldownMax;
+
+        // Lasher Smash
+        smashEnabled = s.smashEnabled;
+        activeSmashCount = s.smashCount;
+        smashCooldownMin = s.smashCooldownMin;
+        smashCooldownMax = s.smashCooldownMax;
+
+        // Reaver Dash Combo
+        comboDashProjChance = s.comboDashProjChance;
+        comboDashAnchorChance = s.comboDashAnchorChance;
+        comboDashJumpChance = s.comboDashJumpChance;
+
+        // Reaver Jump
+        jumpEnabled = s.jumpEnabled;
+        jumpChanceAfterProjectile = s.jumpChanceAfterProjectile;
+
+        // Reaver Charge
+        redirectChance = s.redirectChance;
+        maxRedirectCount = s.maxRedirectCount;
     }
+
 
     protected new void OnDrawGizmosSelected()
     {

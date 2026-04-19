@@ -43987,30 +43987,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: LasherReaver_Miniboss
       objectReference: {fileID: 0}
-    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
-      propertyPath: chargeHitRadius
-      value: 0.7
-      objectReference: {fileID: 0}
-    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
-      propertyPath: lasherFormChance
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
-      propertyPath: comboDashJumpChance
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
-      propertyPath: comboDashProjChance
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
-      propertyPath: comboDashAnchorChance
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
-      propertyPath: jumpTargetRandomOffset
-      value: 0.25
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
