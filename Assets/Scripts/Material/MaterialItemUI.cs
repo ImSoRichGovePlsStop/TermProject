@@ -518,12 +518,27 @@ public class MaterialItemUI : MonoBehaviour,
     public void OnPointerClick(PointerEventData e)
     {
         if (e.button != PointerEventData.InputButton.Right) return;
+
+        if (ShopUI.IsOpen)
+        {
+            if (Instance.CurrentGrid != InventoryManager.Instance.BagGrid) return;
+            SellConfirmationUI.Instance?.Show(Instance, e.position);
+            return;
+        }
+
         if (Instance.StackCount <= 1) return;
         if (InventoryUI == null) return;
 
         Instance.RemoveStack();
         var ui = InventoryUI.SpawnSplitMaterial(Instance.MaterialData, BagGridUI);
-        if (ui == null) Instance.AddStack();
+        if (ui == null)
+        {
+            Instance.AddStack();
+            return;
+        }
+
+        if (MergeUI.IsMergeOpen)
+            ui.InputGridUI = InputGridUI;
     }
 
     public void OnPointerEnter(PointerEventData e)

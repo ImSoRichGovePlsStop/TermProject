@@ -81,7 +81,9 @@ public class RandomLoot : MonoBehaviour, IInteractable
             return;
         }
 
-        uiManager?.OpenRewardLoot(this, rolled);
+        var cfg = new LootConfig { optionCount = optionCount, meanCost = meanCost, sd = sd, allowDuplicates = allowDuplicates };
+        uiManager?.OpenRewardLoot(cfg, rolled);
+        Destroy(gameObject);
     }
 
     public List<TestModuleEntry> RollNewOptions()
@@ -91,6 +93,6 @@ public class RandomLoot : MonoBehaviour, IInteractable
 
     public virtual void OnLootPicked()
     {
-        Destroy(gameObject);
+        if (this != null) Destroy(gameObject);
     }
 }

@@ -160,6 +160,85 @@ public static class Randomizer
         return (cheap, mid, expensive);
     }
 
+    public static TestModuleEntry RollInRange(float minCost, float maxCost, bool allowDuplicates = false, int minRarityIndex = 0)
+    {
+        var pool = GetPool();
+        float mean = (minCost + maxCost) * 0.5f;
+
+        var currentSet = new HashSet<ModuleData>();
+        var mgr = InventoryManager.Instance;
+        if (mgr != null)
+        {
+            foreach (var m in mgr.BagGrid.GetAllModules())
+                if (m.Data != null) currentSet.Add(m.Data);
+            foreach (var m in mgr.WeaponGrid.GetAllModules())
+                if (m.Data != null) currentSet.Add(m.Data);
+        }
+
+        var candidates = new List<(TestModuleEntry entry, float weight)>();
+
+        foreach (var item in pool)
+        {
+            var data = item.data;
+            if (!allowDuplicates && currentSet.Contains(data)) continue;
+
+            // Find the rarity tier whose cost best fits the range
+            int   bestRarity = -1;
+            float bestDelta  = float.MaxValue;
+
+            for (int r = 0; r < data.cost.Length; r++)
+            {
+                float c = data.cost[r];
+                if (c <= 0 || c < minCost || c > maxCost) continue;
+
+                float delta = Mathf.Abs(c - mean);
+                if (delta < bestDelta) { bestDelta = delta; bestRarity = r; }
+            }
+
+            if (bestRarity == -1) continue;
+            if (bestRarity < minRarityIndex) continue;
+
+            float weight = 1f / (bestDelta + 1f);
+            candidates.Add((new TestModuleEntry { data = data, rarity = IndexToRarity(bestRarity) }, weight));
+        }
+
+        if (candidates.Count == 0) return default;
+
+        // Weighted random pick
+        float totalWeight = 0f;
+        foreach (var c in candidates) totalWeight += c.weight;
+
+        float roll = Random.value * totalWeight;
+        float cumulative = 0f;
+        foreach (var (entry, weight) in candidates)
+        {
+            cumulative += weight;
+            if (roll <= cumulative) return entry;
+        }
+        return candidates[candidates.Count - 1].entry;
+    }
+
+    public static (Rarity min, Rarity max) GetRarityRange(float minCost, float maxCost)
+    {
+        var pool = GetPool();
+        int minIdx = int.MaxValue;
+        int maxIdx = int.MinValue;
+
+        foreach (var item in pool)
+        {
+            for (int r = 0; r < item.data.cost.Length; r++)
+            {
+                float c = item.data.cost[r];
+                if (c <= 0 || c < minCost || c > maxCost) continue;
+                if (r < minIdx) minIdx = r;
+                if (r > maxIdx) maxIdx = r;
+            }
+        }
+
+        if (minIdx == int.MaxValue) return (Rarity.Common, Rarity.Common);
+        return (IndexToRarity(minIdx), IndexToRarity(maxIdx));
+    }
+
     private static float SampleGaussian(float mean, float sd)
     {
         float u1 = 1f - Random.value;

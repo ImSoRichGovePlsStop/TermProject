@@ -18,6 +18,8 @@ public class UIManager : MonoBehaviour
     private EndGameUI        _endGameUI;
     private FloorTransitionUI _floorTransitionUI;
     private FloorModifierUI   _floorModifierUI;
+    private HealthStationUpgradeUI _healthStationUI;
+    private LuckStationUpgradeUI   _luckStationUI;
     private PlayerStats playerStats;
     private bool _upgradeOpen;
 
@@ -31,6 +33,8 @@ public class UIManager : MonoBehaviour
     public bool IsMergeOpen => _activeMergeUI != null && _activeMergeUI.gameObject.activeSelf;
     public bool IsUpgradeOpen => _upgradeOpen;
     public bool IsStorageOpen => _storageUI != null && _storageUI.IsOpen;
+    public bool IsHealthStationOpen => _healthStationUI != null && _healthStationUI.IsOpen;
+    public bool IsLuckStationOpen   => _luckStationUI   != null && _luckStationUI.IsOpen;
 
     public PassiveScreenUI GetPassiveScreen() => passiveScreenUI;
     public GamblerScreenUI GetGamblerScreen() => gamblerScreenUI;
@@ -44,6 +48,24 @@ public class UIManager : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+    }
+
+    private void OnEnable()  { UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded; }
+    private void OnDisable() { UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded; }
+
+    private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        ResetPanelState();
+    }
+
+    public void ResetPanelState()
+    {
+        IsInventoryOpen  = false;
+        IsRightPanelOpen = false;
+        isInBattle       = false;
+        _upgradeOpen     = false;
+        inventoryPanel?.SetActive(false);
+        if (hud != null) hud.SetActive(true);
     }
 
     private void Start()
@@ -65,6 +87,8 @@ public class UIManager : MonoBehaviour
         _endGameUI          = FindFirstObjectByType<EndGameUI>(FindObjectsInactive.Include);
         _floorTransitionUI  = FindFirstObjectByType<FloorTransitionUI>(FindObjectsInactive.Include);
         _floorModifierUI    = FindFirstObjectByType<FloorModifierUI>(FindObjectsInactive.Include);
+        _healthStationUI    = FindFirstObjectByType<HealthStationUpgradeUI>(FindObjectsInactive.Include);
+        _luckStationUI      = FindFirstObjectByType<LuckStationUpgradeUI>(FindObjectsInactive.Include);
 
         // Force Awake on all panels, then hide
         SetActive(inventoryPanel, true);
@@ -73,6 +97,8 @@ public class UIManager : MonoBehaviour
         SetActive(_upgradeStationUI?.gameObject, true);
         SetActive(_lootRewardUI?.gameObject, true);
         SetActive(sellUI?.gameObject, true);
+        SetActive(_healthStationUI?.gameObject, true);
+        SetActive(_luckStationUI?.gameObject, true);
 
         Canvas.ForceUpdateCanvases();
 
@@ -82,16 +108,26 @@ public class UIManager : MonoBehaviour
         SetActive(_upgradeStationUI?.gameObject, false);
         SetActive(_lootRewardUI?.gameObject, false);
         SetActive(sellUI?.gameObject, false);
+        SetActive(_healthStationUI?.gameObject, false);
+        SetActive(_luckStationUI?.gameObject, false);
     }
 
     private static void SetActive(GameObject go, bool active) { if (go != null) go.SetActive(active); }
 
     private void Update()
     {
-        if (isInBattle) return;
-
         var kb = Keyboard.current;
         if (kb == null) return;
+
+        if (isInBattle)
+        {
+            if (IsInventoryOpen &&
+                (kb[Key.Escape].wasPressedThisFrame || kb[Key.I].wasPressedThisFrame))
+            {
+                CloseInventoryImmediate();
+            }
+            return;
+        }
 
         if (kb[Key.I].wasPressedThisFrame)
         {
@@ -109,9 +145,11 @@ public class UIManager : MonoBehaviour
             else if (IsGamblerOpen) CloseGambler();
             else if (IsStorageOpen) CloseStorage();
             else if (_upgradeOpen) return;
+            else if (IsHealthStationOpen) CloseHealthStation();
+            else if (IsLuckStationOpen)   CloseLuckStation();
             else if (IsMergeOpen) { CloseMerge(); CloseInventoryImmediate(); }
             else if (IsShopOpen) { CloseShop(); CloseInventoryImmediate(); }
-            else if (IsInventoryOpen) ToggleInventory();
+            else ToggleInventory();
         }
 
         if (IsInventoryOpen && inventoryUI != null)
@@ -235,7 +273,7 @@ public class UIManager : MonoBehaviour
         UpdatePanelVisibility();
     }
 
-    public void OpenRewardLoot(RandomLoot station, System.Collections.Generic.List<TestModuleEntry> rolled)
+    public void OpenRewardLoot(LootConfig config, System.Collections.Generic.List<TestModuleEntry> rolled)
     {
         if (_lootRewardUI == null)
             _lootRewardUI = FindFirstObjectByType<LootRewardUI>(FindObjectsInactive.Include);
@@ -243,7 +281,7 @@ public class UIManager : MonoBehaviour
 
         _lootRewardUI.gameObject.SetActive(true);
         DiscardGridUI.Instance?.ForceHide();
-        _lootRewardUI.Open(station, rolled);
+        _lootRewardUI.Open(config, rolled);
         UpdatePanelVisibility();
     }
 
@@ -307,9 +345,42 @@ public class UIManager : MonoBehaviour
         UpdatePanelVisibility();
     }
 
+    public void OpenHealthStation()
+    {
+        if (_healthStationUI == null)
+            _healthStationUI = FindFirstObjectByType<HealthStationUpgradeUI>(FindObjectsInactive.Include);
+        if (_healthStationUI == null) { Debug.LogError("[UIManager] HealthStationUpgradeUI not found!"); return; }
+
+        _healthStationUI.Open();
+        UpdatePanelVisibility();
+    }
+
+    public void CloseHealthStation()
+    {
+        _healthStationUI?.Close();
+        UpdatePanelVisibility();
+    }
+
+    public void OpenLuckStation()
+    {
+        if (_luckStationUI == null)
+            _luckStationUI = FindFirstObjectByType<LuckStationUpgradeUI>(FindObjectsInactive.Include);
+        if (_luckStationUI == null) { Debug.LogError("[UIManager] LuckStationUpgradeUI not found!"); return; }
+
+        _luckStationUI.Open();
+        UpdatePanelVisibility();
+    }
+
+    public void CloseLuckStation()
+    {
+        _luckStationUI?.Close();
+        UpdatePanelVisibility();
+    }
+
     private void UpdatePanelVisibility()
     {
-        bool anyRightPanelOpen = IsShopOpen || IsMergeOpen || _upgradeOpen || (_lootRewardUI != null && _lootRewardUI.gameObject.activeSelf);
+        bool anyRightPanelOpen = IsShopOpen || IsMergeOpen || _upgradeOpen
+            || (_lootRewardUI != null && _lootRewardUI.gameObject.activeSelf);
         IsRightPanelOpen = anyRightPanelOpen;
 
         if (anyRightPanelOpen && !IsInventoryOpen && inventoryPanel != null)
@@ -320,7 +391,7 @@ public class UIManager : MonoBehaviour
         }
 
         bool hideHUD = IsInventoryOpen || IsShopOpen || IsMergeOpen || _upgradeOpen
-                    || IsPassiveOpen || IsGamblerOpen || IsStorageOpen;
+                    || IsPassiveOpen || IsGamblerOpen || IsStorageOpen || IsHealthStationOpen || IsLuckStationOpen;
 
         if (hud != null) hud.SetActive(!hideHUD);
     }
@@ -340,32 +411,26 @@ public class UIManager : MonoBehaviour
     {
         var cam = CameraController.Instance;
         if (cam != null)
-            yield return StartCoroutine(cam.EndgameEffect(1f));
-        else
-            yield return new WaitForSecondsRealtime(1f);
+            yield return StartCoroutine(cam.EndgameEffect(1.5f));
 
         _endGameUI.Show(isWin);
     }
 
+    private void OnPlayerDeath()
+    {
+        ShowEndGame(false);
+    }
+
+
     public IEnumerator PlayFloorTransition()
     {
-        if (_floorTransitionUI == null)
-            _floorTransitionUI = FindFirstObjectByType<FloorTransitionUI>(FindObjectsInactive.Include);
-        if (_floorTransitionUI != null)
-            yield return StartCoroutine(_floorTransitionUI.PlayTransition());
+        if (_floorTransitionUI == null) yield break;
+        yield return StartCoroutine(_floorTransitionUI.PlayFadeIn());
     }
 
     public IEnumerator PlayFloorModifierSelection(FloorModifierCard[] cards)
     {
-        if (_floorModifierUI == null)
-            _floorModifierUI = FindFirstObjectByType<FloorModifierUI>(FindObjectsInactive.Include);
-        if (_floorModifierUI != null && cards != null && cards.Length > 0)
-            yield return StartCoroutine(_floorModifierUI.ShowSelection(cards));
-    }
-
-    private void OnPlayerDeath()
-    {
-        isInBattle = false;
-        ShowEndGame(false);
+        if (_floorModifierUI == null) yield break;
+        yield return StartCoroutine(_floorModifierUI.ShowSelection(cards));
     }
 }

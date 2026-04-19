@@ -44,7 +44,7 @@ public class GoldenStatue : MonoBehaviour
         {
             case 0: bonus.health = stats.BaseHP * boost; statName = "Max HP"; displayValue = $"{bonus.health:F1}"; break;
             case 1: bonus.damage = stats.BaseDMG * boost; statName = "Damage"; displayValue = $"{bonus.damage:F1}"; break;
-            case 2: bonus.attackSpeed = stats.BaseATKSPD * boost; statName = "Attack Speed"; displayValue = $"{bonus.attackSpeed:F1}"; break;
+            case 2: bonus.attackSpeed = stats.BaseATKSPD * boost; statName = "Attack Speed"; displayValue = $"{bonus.attackSpeed:P1}"; break;
             case 3: bonus.moveSpeed = stats.BaseMOVSPD * boost; statName = "Move Speed"; displayValue = $"{bonus.moveSpeed:F1}"; break;
             case 4: bonus.critChance = stats.BaseCrit * boost; statName = "Crit Chance"; displayValue = $"{bonus.critChance:P1}"; break;
             case 5: bonus.critDamage = stats.BaseCritDMG * boost; statName = "Crit Damage"; displayValue = $"{bonus.critDamage:P1}"; break;

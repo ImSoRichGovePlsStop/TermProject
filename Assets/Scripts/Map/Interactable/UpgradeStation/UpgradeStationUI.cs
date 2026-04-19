@@ -110,9 +110,16 @@ public class UpgradeStationUI : MonoBehaviour
         return candidates;
     }
 
+    private void OnDisable()
+    {
+        _currentStation?.OnUpgradeClosed();
+    }
+
     public void OnOptionSelected(ModuleInstance instance)
     {
         instance.SetLevel(instance.Level + 1);
+
+        InventoryManager.Instance?.RefreshModule(instance);
 
         var moduleUI = instance.UIElement as ModuleItemUI;
         if (moduleUI != null)

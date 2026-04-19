@@ -52,6 +52,8 @@ public class PlayerStats : MonoBehaviour
     public event Action<float> OnPlayerDamaged;
     public event Action OnPlayerDeath;
 
+    public event Func<bool> OnReviveRequested;
+
     public bool IsInvincible { get; private set; }
 
     public void SetInvincible(bool value)
@@ -455,6 +457,9 @@ public class PlayerStats : MonoBehaviour
 
         if (CurrentHealth <= 0)
         {
+            if (OnReviveRequested != null)
+                foreach (Func<bool> h in OnReviveRequested.GetInvocationList())
+                    if (h.Invoke()) return;
             Debug.Log("Player died!");
             OnPlayerDeath?.Invoke();
         }

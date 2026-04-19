@@ -9,8 +9,8 @@ public class ShopRoom : MonoBehaviour
     [HideInInspector] public RoomNode node;
 
     [Header("Shop Config")]
-    public int   shopMinCount         = 5;
-    public int   shopMaxCount         = 6;
+    public int   shopMinCount         = 3;
+    public int   shopMaxCount         = 4;
     public float shopBaseMean         = 80f;
     public float shopMeanPerFloor     = 40f;
     public float shopMeanPerRoom      = 6f;
@@ -55,13 +55,14 @@ public class ShopRoom : MonoBehaviour
         int floor        = RunManager.Instance?.CurrentFloor ?? 1;
         int roomsCleared = RunManager.Instance?.TotalRoomsCleared ?? 0;
         int bossKills    = RunManager.Instance?.TotalBossKilled ?? 0;
+        int extraPool = RunManager.Instance?.EffectiveShopPool ?? 0;
 
         float midCost = shopBaseMean + floor * shopMeanPerFloor + roomsCleared * shopMeanPerRoom + bossKills * shopMeanPerBossKill;
         float sd      = shopBaseSd   + floor * shopSdPerFloor;
 
         return new ShopConfig
         {
-            count          = Random.Range(shopMinCount, shopMaxCount + 1),
+            count          = Random.Range(shopMinCount+extraPool, shopMaxCount + 1 + extraPool),
             midCost        = midCost,
             cheapSd        = sd,
             expensiveSd    = sd,
