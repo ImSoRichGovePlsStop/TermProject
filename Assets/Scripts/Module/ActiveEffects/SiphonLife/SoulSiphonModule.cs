@@ -21,8 +21,11 @@ public class SoulSiphonModule : ModuleEffect
     [Header("Core Settings")]
     public float moduleCooldown = 15f;
 
-    [Tooltip("Spawned at the player position when siphon fires.")]
+    [Tooltip("Spawned at the player position when siphon fires (outward pulse ring).")]
     public GameObject siphonVFXPrefab;
+
+    [Tooltip("Parented to the player for the buff duration — shows radial clock + enemy count.")]
+    public GameObject buffIndicatorPrefab;
 
     private float GetAttackBuffPerEnemy(Rarity rarity, int level)
         => GetFinalStat(baseAttackBuffPerEnemyPerRarity, levelMultiplier, rarity, level);
