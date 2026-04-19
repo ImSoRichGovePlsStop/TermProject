@@ -1,12 +1,18 @@
 using UnityEngine;
 
 [System.Serializable]
-public class DropEntry
+public class MaterialDropItem
 {
     public MaterialData material;
-    public int weight = 1;
     public int minCount = 1;
     public int maxCount = 1;
+}
+
+[System.Serializable]
+public class DropEntry
+{
+    public MaterialDropItem[] items;
+    public int weight = 1;
 }
 
 public class MaterialDropHandler : MonoBehaviour
@@ -24,15 +30,19 @@ public class MaterialDropHandler : MonoBehaviour
         for (int i = 0; i < maxDropsPerKill; i++)
         {
             DropEntry entry = RollEntry();
-            if (entry == null || entry.material == null) continue;
+            if (entry == null || entry.items == null) continue;
 
-            int count = Random.Range(entry.minCount, entry.maxCount + 1);
-            for (int j = 0; j < count; j++)
+            foreach (var item in entry.items)
             {
-                Vector3 spawnPos = transform.position + GetSpreadOffset(spawnIndex);
-                GameObject obj = Instantiate(groundPickupPrefab, spawnPos, Quaternion.identity);
-                obj.GetComponent<GroundMaterial>()?.Setup(entry.material);
-                spawnIndex++;
+                if (item == null || item.material == null) continue;
+                int count = Random.Range(item.minCount, item.maxCount + 1);
+                for (int j = 0; j < count; j++)
+                {
+                    Vector3 spawnPos = transform.position + GetSpreadOffset(spawnIndex);
+                    GameObject obj = Instantiate(groundPickupPrefab, spawnPos, Quaternion.identity);
+                    obj.GetComponent<GroundMaterial>()?.Setup(item.material);
+                    spawnIndex++;
+                }
             }
         }
     }

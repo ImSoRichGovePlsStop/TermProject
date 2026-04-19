@@ -51,10 +51,7 @@ public class LashAoeField : MonoBehaviour
         }
         SetColor(fullColor);
 
-        // Stay
-        yield return new WaitForSeconds(stayDuration);
-
-        // Deal damage + spawn VFX
+        // Deal damage + spawn VFX (after fade in)
         DealDamage(radius, damage, targetLayers, attacker);
         if (vfxPrefab != null)
         {
@@ -62,6 +59,9 @@ public class LashAoeField : MonoBehaviour
             var vfx = Instantiate(vfxPrefab, vfxPos, Quaternion.identity);
             vfx.transform.localScale = Vector3.one * (radius / vfxBaseRadius);
         }
+
+        // Stay
+        yield return new WaitForSeconds(stayDuration);
 
         // Fade out
         elapsed = 0f;

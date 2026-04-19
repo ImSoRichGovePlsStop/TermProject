@@ -507,18 +507,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
   entries:
-  - material: {fileID: 11400000, guid: 143d429ad908be14e8eed1214cf168b7, type: 2}
+  - items:
+    - material: {fileID: 11400000, guid: 143d429ad908be14e8eed1214cf168b7, type: 2}
+      minCount: 4
+      maxCount: 6
     weight: 5
-    minCount: 4
-    maxCount: 6
-  - material: {fileID: 11400000, guid: 13a68ddd8fc6f724c960061a5aba1839, type: 2}
+  - items:
+    - material: {fileID: 11400000, guid: 13a68ddd8fc6f724c960061a5aba1839, type: 2}
+      minCount: 2
+      maxCount: 3
     weight: 15
-    minCount: 2
-    maxCount: 3
-  - material: {fileID: 11400000, guid: 072ab0b6b14dc484baa80252ee75489f, type: 2}
+  - items:
+    - material: {fileID: 11400000, guid: 072ab0b6b14dc484baa80252ee75489f, type: 2}
+      minCount: 1
+      maxCount: 1
     weight: 80
-    minCount: 1
-    maxCount: 1
   maxDropsPerKill: 1
   groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
 --- !u!1 &2977151229816529530

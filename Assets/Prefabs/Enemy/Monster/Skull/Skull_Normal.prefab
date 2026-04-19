@@ -481,13 +481,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
   entries:
-  - material: {fileID: 0}
-    weight: 20
-    minCount: 1
-    maxCount: 1
-  - material: {fileID: 0}
-    weight: 80
-    minCount: 0
-    maxCount: 0
+  - items:
+    - material: {fileID: 11400000, guid: ac531af617b2d024c8d44a59918e7b1d, type: 2}
+      minCount: 1
+      maxCount: 1
+    weight: 2
+  - items: []
+    weight: 98
   maxDropsPerKill: 1
   groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
