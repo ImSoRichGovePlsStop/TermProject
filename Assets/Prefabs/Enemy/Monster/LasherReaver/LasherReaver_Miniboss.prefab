@@ -237,9 +237,9 @@ MonoBehaviour:
   flashColor: {r: 1, g: 0, b: 0, a: 1}
   flashDuration: 0.1
   showHealthBar: 1
-  healthBarHeight: 1
-  healthBarScale: {x: 1, y: 1, z: 1}
-  tier: 0
+  healthBarHeight: 0.6
+  healthBarScale: {x: 2, y: 1.5, z: 1}
+  tier: 2
   phaseTwoThreshold: 0.6
   phaseThreeThreshold: 0.3
 --- !u!114 &3772710423183095178
@@ -316,6 +316,7 @@ MonoBehaviour:
   spawnFadeOutDuration: 0.4
   spawnEffectScale: 1
   spawnStayDuration: 0.5
+  lasherFormChance: 0
   switchIntervalMin: 8
   switchIntervalMax: 20
   switchVFXPrefab: {fileID: 6375145438201293164, guid: 1393cd58ba6cf814d838e7d3e19e82d5, type: 3}
@@ -330,8 +331,8 @@ MonoBehaviour:
   lasherScale: {x: 1.5, y: 1.5, z: 1.5}
   reaverScale: {x: 1.3, y: 1.3, z: 1.3}
   lasherAttackRange: 2.5
-  lasherCooldownMin: 2.5
-  lasherCooldownMax: 3
+  lasherCooldownMin: 1.75
+  lasherCooldownMax: 2.5
   comboDashSpeed: 20
   comboDashDuration: 0.1
   comboDashHitRadius: 0.75
@@ -364,13 +365,91 @@ MonoBehaviour:
   combo3PostDelayMax: 1.2
   combo4PostDelayMin: 1.5
   combo4PostDelayMax: 2
+  anchorProjectilePrefab: {fileID: 1673625421123493190, guid: 2eae2b76514341848b74fb272a786a6f, type: 3}
+  anchorAttackRange: 10
+  anchorMinRange: 4
+  anchorCooldownMin: 8
+  anchorCooldownMax: 12
+  anchorHitRadius: 1
+  anchorDamageScale: 1.5
+  anchorHitInterval: 0.5
+  anchorSpinSpeed: 10
+  anchorCurveWidth: 0.6
+  anchorProjectileSpeed: 8
+  anchorPostDelayMin: 1.5
+  anchorPostDelayMax: 2
+  anchorWeight: 0.4
+  ritualPositionNormalized: {x: 0.5, y: 0.6}
+  cameraLockPositionNormalized: {x: 0.5, y: 0.4}
+  smashConfigs:
+  - riseHeight: 1.5
+    riseDurationMin: 0.8
+    riseDurationMax: 1
+    stayDurationMin: 0.8
+    stayDurationMax: 1
+    fallDurationMin: 0.2
+    fallDurationMax: 0.25
+  - riseHeight: 1.5
+    riseDurationMin: 0.7
+    riseDurationMax: 0.9
+    stayDurationMin: 0.6
+    stayDurationMax: 1
+    fallDurationMin: 0.16
+    fallDurationMax: 0.21
+  - riseHeight: 1.5
+    riseDurationMin: 0.4
+    riseDurationMax: 0.6
+    stayDurationMin: 0.3
+    stayDurationMax: 0.8
+    fallDurationMin: 0.03
+    fallDurationMax: 0.17
+  - riseHeight: 1.5
+    riseDurationMin: 0.4
+    riseDurationMax: 0.6
+    stayDurationMin: 0.1
+    stayDurationMax: 0.8
+    fallDurationMin: 0.03
+    fallDurationMax: 0.13
+  - riseHeight: 2
+    riseDurationMin: 0.4
+    riseDurationMax: 0.6
+    stayDurationMin: 0.1
+    stayDurationMax: 0.8
+    fallDurationMin: 0.03
+    fallDurationMax: 0.09
+  smashLandPauseDuration: 0.5
+  smashShockwaveDamageScale: 1.5
+  smashShockwavePrefab: {fileID: 575652732540652510, guid: 1b487df38b8121f47a6a5e28414ba549, type: 3}
+  smashCooldownMin: 30
+  smashCooldownMax: 40
+  smashPostDelayMin: 2
+  smashPostDelayMax: 3
+  smashWeight: 1
+  smashZoomOutAmount: 3
+  smashZoomDuration: 1
+  ritualGlobalLightIntensity: 0
+  ritualSpotLightIntensity: 100
+  ritualSpotLightRange: 20
+  ritualSpotLightAngle: 120
+  ritualSpotLightInnerAngle: 80
+  ritualSpotLightColor: {r: 0.019607844, g: 0.5686275, b: 0.5294118, a: 1}
+  lightTransitionDuration: 3
+  reaverProjectilePrefab: {fileID: 3391258929950527744, guid: be24a26faf5353e45ac968aedda019f1, type: 3}
+  reaverProjectileAttackRange: 7
+  reaverProjectileMinRange: 3
+  reaverProjectileCooldownMin: 6
+  reaverProjectileCooldownMax: 10
+  reaverProjectileDamageScale: 1.5
+  reaverProjectileChance: 0.4
+  reaverProjectilePostDelayMin: 0.6
+  reaverProjectilePostDelayMax: 1.2
   reaverDashAttackRange: 3
   reaverDashCooldownMin: 2.5
   reaverDashCooldownMax: 3
   reaverDashSpeed: 10
   reaverDashDuration: 0.18
   reaverDashHitRadius: 0.9
-  reaverDashDamageScale: 1
+  reaverDashDamageScale: 1.25
   reaverDashPostDelayMin: 0.5
   reaverDashPostDelayMax: 0.6
   chargeAttackRange: 7
@@ -404,7 +483,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d4dd2a12fa25f34e925bf8bd905354b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
-  entries: []
+  entries:
+  - items: []
+    weight: 0
+  - items: []
+    weight: 0
+  - items: []
+    weight: 0
+  - items: []
+    weight: 0
   maxDropsPerKill: 1
   groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
 --- !u!1 &6805230779249563792

@@ -30,6 +30,8 @@ public class LasherReaverAnimationEvents : MonoBehaviour
     public void AnchorThrow() => controller?.AnchorThrow();
 
     // Reaver Form
+    public void FireReaverProjectile() => controller?.FireReaverProjectile();
+    public void FinishReaverProjectile() => controller?.FinishReaverProjectile();
     public void ReaverDashAttack() => controller?.ReaverDashAttack();
     public void StartCharge() => controller?.StartCharge();
     public void FinishCharge() => controller?.FinishCharge();

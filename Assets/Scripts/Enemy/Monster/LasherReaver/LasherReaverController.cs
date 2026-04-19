@@ -18,9 +18,12 @@ public class SmashConfig
 public class LasherReaverController : EnemyBase
 {
     public enum LasherReaverForm { Lasher, Reaver }
-    public enum ReaverAttackType { None, Dash, Charge }
+    public enum ReaverAttackType { None, Dash, Charge, Projectile }
 
     // Form Switch
+    [Header("Form")]
+    [SerializeField][Range(0f, 1f)] private float lasherFormChance = 0.5f;
+
     [Header("Form Switch")]
     [SerializeField] private float switchIntervalMin = 20f;
     [SerializeField] private float switchIntervalMax = 40f;
@@ -122,6 +125,17 @@ public class LasherReaverController : EnemyBase
     [SerializeField] private Color ritualSpotLightColor = Color.white;
     [SerializeField] private float lightTransitionDuration = 1.5f;
 
+    [Header("Reaver Projectile")]
+    [SerializeField] private GameObject reaverProjectilePrefab;
+    [SerializeField] private float reaverProjectileAttackRange = 6f;
+    [SerializeField] private float reaverProjectileMinRange = 2f;
+    [SerializeField] private float reaverProjectileCooldownMin = 4f;
+    [SerializeField] private float reaverProjectileCooldownMax = 8f;
+    [SerializeField] private float reaverProjectileDamageScale = 1f;
+    [SerializeField][Range(0f, 1f)] private float reaverProjectileChance = 0.5f;
+    [SerializeField] private float reaverProjectilePostDelayMin = 0.4f;
+    [SerializeField] private float reaverProjectilePostDelayMax = 0.8f;
+
     // Reaver Form
     [Header("Reaver Dash")]
     [SerializeField] private float reaverDashAttackRange = 1.5f;
@@ -135,6 +149,9 @@ public class LasherReaverController : EnemyBase
     [SerializeField] private float reaverDashPostDelayMax = 0.8f;
 
     [Header("Reaver Charge")]
+    [SerializeField] private GameObject chargeWarningPrefab;
+    [SerializeField] private float chargeWarningOffset = 1f;
+    [SerializeField] private float chargeWarningOffsetZ = 0f;
     [SerializeField] private float chargeAttackRange = 5f;
     [SerializeField] private float reaverChargeCooldownMin = 3f;
     [SerializeField] private float reaverChargeCooldownMax = 6f;
@@ -168,6 +185,9 @@ public class LasherReaverController : EnemyBase
     // Reaver state
     private ReaverAttackType currentReaverAttack = ReaverAttackType.None;
     private bool isDashing = false;
+    private bool isReaverProjectilePhase = false;
+    private float lastReaverProjectileTime = 0f;
+    private float currentReaverProjectileCooldown = 0f;
     private bool isCharging = false;
     private bool isStunned = false;
     private Vector3 chargeDir = Vector3.zero;
@@ -175,9 +195,9 @@ public class LasherReaverController : EnemyBase
     private bool hasRolledRedirect = false;
 
     // Cooldowns (global, never reset on switch)
-    private float lastLasherComboTime = -Mathf.Infinity;
+    private float lastLasherComboTime = 0f;
     private float currentLasherCooldown = 0f;
-    private float lastLasherSmashTime = -Mathf.Infinity;
+    private float lastLasherSmashTime = 0f;
     private float currentLasherSmashCooldown = 0f;
     private bool isSmashRitual = false;
 
@@ -185,14 +205,14 @@ public class LasherReaverController : EnemyBase
     private const string SmashStayTrigger = "SmashStay";
     private const string SmashFallTrigger = "SmashFall";
     private const string SmashLandTrigger = "SmashLand";
-    private float lastLasherAnchorTime = -Mathf.Infinity;
+    private float lastLasherAnchorTime = 0f;
     private float currentLasherAnchorCooldown = 0f;
 
     private Vector3 anchorTargetPosition = Vector3.zero;
     private LasherReaverAnchorProjectile activeAnchor = null;
-    private float lastReaverDashTime = -Mathf.Infinity;
+    private float lastReaverDashTime = 0f;
     private float currentReaverDashCooldown = 0f;
-    private float lastReaverChargeTime = -Mathf.Infinity;
+    private float lastReaverChargeTime = 0f;
     private float currentReaverChargeCooldown = 0f;
 
     private enum AIState { Wander, Chase, Strafe, Attack }
@@ -203,13 +223,21 @@ public class LasherReaverController : EnemyBase
         base.Awake();
         movement.SetStopDistance(0.1f);
 
-        currentForm = LasherReaverForm.Lasher;
+        currentForm = Random.value < lasherFormChance ? LasherReaverForm.Lasher : LasherReaverForm.Reaver;
 
         currentLasherCooldown = Random.Range(lasherCooldownMin, lasherCooldownMax);
         currentLasherAnchorCooldown = Random.Range(anchorCooldownMin, anchorCooldownMax);
         currentLasherSmashCooldown = Random.Range(smashCooldownMin, smashCooldownMax);
         currentReaverDashCooldown = Random.Range(reaverDashCooldownMin, reaverDashCooldownMax);
         currentReaverChargeCooldown = Random.Range(reaverChargeCooldownMin, reaverChargeCooldownMax);
+        currentReaverProjectileCooldown = Random.Range(reaverProjectileCooldownMin, reaverProjectileCooldownMax);
+
+        // Combo and dash ready immediately, anchor and charge start at half cooldown
+        lastLasherComboTime = -currentLasherCooldown;
+        lastReaverDashTime = -currentReaverDashCooldown;
+        lastLasherAnchorTime = -currentLasherAnchorCooldown * 0.5f;
+        lastReaverChargeTime = -currentReaverChargeCooldown * 0.5f;
+        lastReaverProjectileTime = -currentReaverProjectileCooldown * 0.5f;
 
         float attackRange = currentForm == LasherReaverForm.Lasher ? lasherAttackRange : reaverDashAttackRange;
         strafe.Init(attackRange);
@@ -267,7 +295,8 @@ public class LasherReaverController : EnemyBase
 
         bool canDash = Time.time >= lastReaverDashTime + currentReaverDashCooldown && dist <= reaverDashAttackRange;
         bool canCharge = Time.time >= lastReaverChargeTime + currentReaverChargeCooldown && dist <= chargeAttackRange;
-        return canDash || canCharge;
+        bool canProjectile = Time.time >= lastReaverProjectileTime + currentReaverProjectileCooldown && dist >= reaverProjectileMinRange && dist <= reaverProjectileAttackRange && reaverProjectilePrefab != null;
+        return canDash || canCharge || canProjectile;
     }
 
     protected override void TickState()
@@ -380,22 +409,24 @@ public class LasherReaverController : EnemyBase
         float dist = Vector3.Distance(transform.position, TargetPosition);
         bool canDash = Time.time >= lastReaverDashTime + currentReaverDashCooldown && dist <= reaverDashAttackRange;
         bool canCharge = Time.time >= lastReaverChargeTime + currentReaverChargeCooldown && dist <= chargeAttackRange;
+        bool canProjectile = Time.time >= lastReaverProjectileTime + currentReaverProjectileCooldown && dist >= reaverProjectileMinRange && dist <= reaverProjectileAttackRange && reaverProjectilePrefab != null;
 
-        if (!canDash && !canCharge) return;
+        if (!canDash && !canCharge && !canProjectile) return;
 
         isAttacking = true;
 
-        if (canDash && canCharge)
-            currentReaverAttack = Random.value < 0.5f ? ReaverAttackType.Dash : ReaverAttackType.Charge;
-        else if (canDash)
-            currentReaverAttack = ReaverAttackType.Dash;
-        else
-            currentReaverAttack = ReaverAttackType.Charge;
+        var available = new System.Collections.Generic.List<ReaverAttackType>();
+        if (canDash) available.Add(ReaverAttackType.Dash);
+        if (canCharge) available.Add(ReaverAttackType.Charge);
+        if (canProjectile) available.Add(ReaverAttackType.Projectile);
+        currentReaverAttack = available[Random.Range(0, available.Count)];
 
         if (currentReaverAttack == ReaverAttackType.Dash)
             animator?.SetTrigger("ReaverAttack1");
-        else
+        else if (currentReaverAttack == ReaverAttackType.Charge)
             animator?.SetTrigger("ChargeWindUp");
+        else
+            animator?.SetTrigger("ReaverProjectileAttack");
     }
 
     // Form Switch
@@ -460,6 +491,7 @@ public class LasherReaverController : EnemyBase
 
         currentReaverAttack = ReaverAttackType.None;
         isDashing = false;
+        isReaverProjectilePhase = false;
         isCharging = false;
         isStunned = false;
         chargeDir = Vector3.zero;
@@ -504,11 +536,19 @@ public class LasherReaverController : EnemyBase
         {
             if (currentReaverAttack == ReaverAttackType.Dash)
             {
+                if (!isReaverProjectilePhase && Random.value < reaverProjectileChance && reaverProjectilePrefab != null)
+                {
+                    isReaverProjectilePhase = true;
+                    animator?.SetTrigger("ReaverProjectileAttack");
+                    return;
+                }
+
                 lastReaverDashTime = Time.time;
                 currentReaverDashCooldown = Random.Range(reaverDashCooldownMin, reaverDashCooldownMax);
             }
             currentReaverAttack = ReaverAttackType.None;
             isDashing = false;
+            isReaverProjectilePhase = false;
         }
 
         isAttacking = false;
@@ -757,6 +797,8 @@ public class LasherReaverController : EnemyBase
     private void StartSmashRitual()
     {
         isSmashRitual = true;
+        health.StopFlashBuildup();
+        if (animator != null) animator.speed = 1f;
         StartCoroutine(SmashRitualRoutine());
     }
 
@@ -960,6 +1002,43 @@ public class LasherReaverController : EnemyBase
     }
 
     // Animation Events Reaver
+    public void FireReaverProjectile()
+    {
+        if (reaverProjectilePrefab == null) return;
+
+        Vector3 spawnPos = transform.position + Vector3.up * 0.5f;
+        Vector3 dir = lockedAttackDir.sqrMagnitude > 0.001f ? lockedAttackDir : transform.forward;
+        Vector3 target = spawnPos + dir * 20f;
+
+        var go = Instantiate(reaverProjectilePrefab, spawnPos, Quaternion.identity);
+        go.GetComponent<ReaverProjectile>()?.Initialize(target, stats.Damage * reaverProjectileDamageScale, health);
+    }
+
+    public void FinishReaverProjectile()
+    {
+        // If chained from dash, reset dash cooldown too
+        if (isReaverProjectilePhase)
+        {
+            lastReaverDashTime = Time.time;
+            currentReaverDashCooldown = Random.Range(reaverDashCooldownMin, reaverDashCooldownMax);
+        }
+
+        currentReaverProjectileCooldown = Random.Range(reaverProjectileCooldownMin, reaverProjectileCooldownMax);
+        lastReaverProjectileTime = isReaverProjectilePhase
+            ? Time.time - currentReaverProjectileCooldown * 0.5f
+            : Time.time;
+        currentReaverAttack = ReaverAttackType.None;
+        isDashing = false;
+        isReaverProjectilePhase = false;
+        isAttacking = false;
+        lockedAttackDir = Vector3.zero;
+        postAttackDelayMin = reaverProjectilePostDelayMin;
+        postAttackDelayMax = reaverProjectilePostDelayMax;
+        animator?.SetTrigger("ReaverBackToIdle");
+        strafe.Reset();
+        TriggerPostAttackDelay();
+    }
+
     public void ReaverDashAttack()
     {
         if (isDashing) return;
@@ -976,6 +1055,7 @@ public class LasherReaverController : EnemyBase
     {
         lastReaverChargeTime = Time.time;
         currentReaverChargeCooldown = Random.Range(reaverChargeCooldownMin, reaverChargeCooldownMax);
+        currentReaverProjectileCooldown = Random.Range(reaverProjectileCooldownMin, reaverProjectileCooldownMax);
 
         isAttacking = false;
         isCharging = false;
@@ -1012,6 +1092,14 @@ public class LasherReaverController : EnemyBase
             if (info.length > 0f) animator.speed = info.length / chargeWindUpDuration;
         }
 
+        GameObject warning = null;
+        if (chargeWarningPrefab != null)
+        {
+            Vector3 wPos = transform.position + lockedAttackDir * chargeWarningOffset;
+            wPos.z -= chargeWarningOffsetZ;
+            warning = Instantiate(chargeWarningPrefab, wPos, Quaternion.LookRotation(lockedAttackDir, Vector3.up));
+        }
+
         float elapsed = 0f;
         while (elapsed < chargeWindUpDuration)
         {
@@ -1024,8 +1112,19 @@ public class LasherReaverController : EnemyBase
                     lockedAttackDir = Vector3.RotateTowards(lockedAttackDir.normalized, toTarget.normalized, windUpRotateSpeed * Mathf.Deg2Rad * Time.deltaTime, 0f);
             }
             movement.FaceTarget(transform.position + lockedAttackDir);
+
+            if (warning != null)
+            {
+                Vector3 wPos = transform.position + lockedAttackDir * chargeWarningOffset;
+                wPos.z -= chargeWarningOffsetZ;
+                warning.transform.position = wPos;
+                warning.transform.rotation = Quaternion.LookRotation(lockedAttackDir, Vector3.up);
+            }
+
             yield return null;
         }
+
+        if (warning != null) Destroy(warning);
 
         if (!isAttacking) yield break;
         if (animator != null) animator.speed = 1f;
