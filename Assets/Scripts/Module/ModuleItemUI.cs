@@ -420,6 +420,9 @@ public class ModuleItemUI : MonoBehaviour,
             _originGrid = EnvGridUI;
         else if (InputGridUI != null && Instance.CurrentGrid == InputGridUI.Data)
             _originGrid = InputGridUI;
+        else if (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible
+                 && Instance.CurrentGrid == DiscardGridUI.Instance.DiscardGrid)
+            _originGrid = DiscardGridUI.Instance.GridUI;
         else
             _originGrid = BagGridUI;
 
@@ -473,7 +476,7 @@ public class ModuleItemUI : MonoBehaviour,
 
         GridUI[] gridsToScan = MergeUI.IsMergeOpen
             ? new[] { InputGridUI, BagGridUI, WeaponGridUI, EnvGridUI, (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible ? DiscardGridUI.Instance.GridUI : null) }
-            : new[] { WeaponGridUI, BagGridUI, EnvGridUI, InputGridUI, (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible ? DiscardGridUI.Instance.GridUI : null) };
+            : new[] { WeaponGridUI, BagGridUI, EnvGridUI, (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible ? DiscardGridUI.Instance.GridUI : null) };
 
         foreach (var g in gridsToScan)
         {
@@ -619,7 +622,7 @@ public class ModuleItemUI : MonoBehaviour,
 
         GridUI[] gridsToHighlight = MergeUI.IsMergeOpen
             ? new[] { InputGridUI, BagGridUI, WeaponGridUI, EnvGridUI, (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible ? DiscardGridUI.Instance.GridUI : null) }
-            : new[] { WeaponGridUI, BagGridUI, EnvGridUI, InputGridUI, (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible ? DiscardGridUI.Instance.GridUI : null) };
+            : new[] { WeaponGridUI, BagGridUI, EnvGridUI, (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible ? DiscardGridUI.Instance.GridUI : null) };
 
         foreach (var g in gridsToHighlight)
         {

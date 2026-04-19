@@ -21,8 +21,6 @@ public class BSPMapPopulator : MonoBehaviour
     public GameObject battleDoorPrefab;
 
     [Header("Enemy / Loot")]
-    [Tooltip("One boss prefab per floor, index 0 = floor 1")]
-    public GameObject[] bossPrefabs;
     [Tooltip("Average elite enemies per battle room added each floor. Floor 1 = 0, floor 2 = ~1 per room, etc.")]
     public float elitePerRoomPerFloor = 1f;
     public GameObject lootPrefab;
@@ -44,6 +42,11 @@ public class BSPMapPopulator : MonoBehaviour
 
     [Header("Navigation")]
     public NavMeshSurface navMeshSurface;
+
+    [Header("Enemy Spawn Inset")]
+    [Tooltip("Number of cells to trim from each room edge when building spawn-cell lists. " +
+             "Prevents enemies spawning on the room boundary where NavMesh bleeds into adjacent rooms.")]
+    public int spawnCellInset = 2;
 
     [Header("Trigger")]
     public float triggerHeight = 3f;
@@ -143,16 +146,18 @@ public class BSPMapPopulator : MonoBehaviour
         var vol  = Volume(node);
         var room = obj.AddComponent<BossRoom>();
         room.node              = ToLegacy(node);
-        room.bossPrefab        = PickBoss();
         room.lootPrefab        = lootPrefab;
         room.portalPrefab      = portalPrefab;
         room.portalFinalPrefab = portalFinalPrefab;
         room.boundaryMaterial  = boundaryMaterial;
+        room.doorPrefab        = battleDoorPrefab;
         room.spawnCells        = CollectSpawnCells(node);
+        room.doorInfos         = CollectDoorInfos(node);
         room.enemyEntries      = EnemyPoolManager.Instance
                                      ?.GetPoolForFloor(RunManager.Instance?.CurrentFloor ?? 1)
                                      ?.ToArray() ?? System.Array.Empty<EnemyEntry>();
         room.SetRoomSize(vol);
+        room.CalculateTotalBudget(vol);
         AddTrigger(obj, vol);
         return obj;
     }
@@ -348,21 +353,21 @@ public class BSPMapPopulator : MonoBehaviour
 
     System.Collections.Generic.List<Vector3> CollectSpawnCells(MapNode node)
     {
-        var cells  = new System.Collections.Generic.List<Vector3>();
+        var cells   = new System.Collections.Generic.List<Vector3>();
         var roomMap = GetComponent<BSPMapGeometry>()?.RoomMapPublic;
         if (roomMap == null) return cells;
-        for (int x = node.MinX; x <= node.MaxX; x++)
-            for (int z = node.MinZ; z <= node.MaxZ; z++)
+
+        int inset = spawnCellInset;
+        int x0 = node.MinX + inset, x1 = node.MaxX - inset;
+        int z0 = node.MinZ + inset, z1 = node.MaxZ - inset;
+
+        if (x0 > x1 || z0 > z1) { x0 = node.MinX; x1 = node.MaxX; z0 = node.MinZ; z1 = node.MaxZ; }
+
+        for (int x = x0; x <= x1; x++)
+            for (int z = z0; z <= z1; z++)
                 if (roomMap[x, z] == node)
                     cells.Add(new Vector3(x + 0.5f, 0f, z + 0.5f));
         return cells;
-    }
-
-    GameObject PickBoss()
-    {
-        if (bossPrefabs == null || bossPrefabs.Length == 0) return null;
-        int idx = Mathf.Clamp((RunManager.Instance?.CurrentFloor ?? 1) - 1, 0, bossPrefabs.Length - 1);
-        return bossPrefabs[idx];
     }
 
     Vector3 Volume(MapNode n) => new Vector3(n.Width, triggerHeight, n.Depth);

@@ -69,7 +69,7 @@ public class WallVisibility : MonoBehaviour
     {
         _allWalls.Clear();
         foreach (var r in FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None))
-            if (((1 << r.gameObject.layer) & wallLayer.value) != 0)
+            if (((1 << r.gameObject.layer) & wallLayer.value) != 0 && r.transform.position.y >= 0f)
                 _allWalls.Add(r);
         _indexed = true;
     }

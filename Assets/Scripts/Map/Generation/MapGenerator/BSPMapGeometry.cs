@@ -129,9 +129,6 @@ public class BSPMapGeometry : MonoBehaviour
 
     MapNode _bossGuardNode;   // battle room directly adjacent to boss, sole door to boss
 
-    // Shared meshes created once at geometry build time — reused by every floor/wall quad
-    Mesh _sharedFloorMesh;
-    Mesh _sharedWallMesh;
 
     // Debug: rectangles produced by FillRemaining — stamped rooms vs sealed gaps
     readonly List<RectResult> _fillStamped = new();
@@ -180,29 +177,36 @@ public class BSPMapGeometry : MonoBehaviour
     void FillMatrix()
     {
         int spawnCorner = Random.Range(0, 4);
-        int bossCorner = (spawnCorner + 1 + Random.Range(0, 3)) % 4;
+        int bossCorner  = spawnCorner ^ 1;  // always the diagonally opposite corner
+
+        var rm = RunManager.Instance;
+        int effectiveMaxBattle = maxBattleCount + (rm?.EffectiveExtraBattleRoomMin ?? 0);
+        int effectiveMaxEvent  = maxEventCount  + (rm?.EffectiveExtraEventRoomMin  ?? 0);
 
         PlaceTypedRoom(RoomType.Spawn, minBattleRoomSize, maxBattleRoomSize, presetChanceSpawn, spawnCorner);
-        PlaceTypedRoom(RoomType.Boss, minBattleRoomSize, maxBattleRoomSize, presetChanceBoss, bossCorner);
+        PlaceTypedRoom(RoomType.Boss,  minBattleRoomSize, maxBattleRoomSize, presetChanceBoss,  bossCorner);
 
         var freeCorners = new List<int>();
         for (int ci = 0; ci < 4; ci++)
             if (ci != spawnCorner && ci != bossCorner) freeCorners.Add(ci);
         Shuffle(freeCorners);
-        PlaceTypedRoom(RoomType.Battle, minBattleRoomSize, maxBattleRoomSize, presetChanceBattle, freeCorners[0]);
+
+        PlaceCornerEventOfType(RoomType.Shop, freeCorners[0]);
+
         if (freeCorners.Count > 1)
         {
-            if (Random.value < cornerEventChance) PlaceCornerEvent(freeCorners[1]);
-            else PlaceTypedRoom(RoomType.Battle, minBattleRoomSize, maxBattleRoomSize, presetChanceBattle, freeCorners[1]);
+            var cycleTypes = new[] { RoomType.RareLoot, RoomType.Merge, RoomType.Heal, RoomType.Fountain };
+            int curFloor   = rm?.CurrentFloor ?? 1;
+            RoomType cycleType = cycleTypes[(curFloor - 1) % cycleTypes.Length];
+            PlaceCornerEventOfType(cycleType, freeCorners[1]);
         }
 
         PlaceAdjacentBattle();
         PlaceBossGuardRoom();     // battle room touching boss — becomes the only door to boss
 
-        for (int i = 0; i < maxBattleCount - 1; i++)
+        for (int i = 0; i < effectiveMaxBattle - 1; i++)
             PlaceTypedRoom(RoomType.Battle, minBattleRoomSize, maxBattleRoomSize, presetChanceBattle, -1);
 
-        var rm = RunManager.Instance;
         float wHeal = weightHeal * (rm != null && rm.WasMissingLastFloor(RoomType.Heal) ? 1f : repeatPenalty);
         float wShop = weightShop * (rm != null && rm.WasMissingLastFloor(RoomType.Shop) ? 1f : repeatPenalty);
         float wRare = weightRareLoot * (rm != null && rm.WasMissingLastFloor(RoomType.RareLoot) ? 1f : repeatPenalty);
@@ -218,31 +222,34 @@ public class BSPMapGeometry : MonoBehaviour
         int preExisting = 0;
         foreach (var kvp in placed) preExisting += kvp.Value;
 
-        for (int i = preExisting; i < maxEventCount; i++)
+        int evtPlaced  = preExisting;
+        int evtAttempt = 0;
+        int evtMaxAttempts = (effectiveMaxEvent - preExisting) * 4;
+        while (evtPlaced < effectiveMaxEvent && evtAttempt++ < evtMaxAttempts)
         {
-            float h = placed[RoomType.Heal] > 0 ? 0f : wHeal;
-            float s = placed[RoomType.Shop] > 0 ? 0f : wShop;
+            float h = placed[RoomType.Heal]     > 0 ? 0f : wHeal;
+            float s = placed[RoomType.Shop]     > 0 ? 0f : wShop;
             float r = placed[RoomType.RareLoot] > 0 ? 0f : wRare;
-            float m = placed[RoomType.Merge] > 0 ? 0f : wMrge;
+            float m = placed[RoomType.Merge]    > 0 ? 0f : wMrge;
             float f = placed[RoomType.Fountain] > 0 ? 0f : wFoun;
-            float total = h + s + r + m + f;
-            if (total <= 0f) break;
+            float evtTotal = h + s + r + m + f;
+            if (evtTotal <= 0f) break;  // all eligible types already placed
 
-            float roll = Random.Range(0f, total);
+            float evtRoll = Random.Range(0f, evtTotal);
             RoomType chosen;
-            if ((roll -= h) < 0f) chosen = RoomType.Heal;
-            else if ((roll -= s) < 0f) chosen = RoomType.Shop;
-            else if ((roll -= r) < 0f) chosen = RoomType.RareLoot;
-            else if ((roll -= m) < 0f) chosen = RoomType.Merge;
-            else chosen = RoomType.Fountain;
+            if      ((evtRoll -= h) < 0f) chosen = RoomType.Heal;
+            else if ((evtRoll -= s) < 0f) chosen = RoomType.Shop;
+            else if ((evtRoll -= r) < 0f) chosen = RoomType.RareLoot;
+            else if ((evtRoll -= m) < 0f) chosen = RoomType.Merge;
+            else                          chosen = RoomType.Fountain;
 
             float pChance = chosen switch
             {
-                RoomType.Heal => presetChanceHeal,
-                RoomType.Shop => presetChanceShop,
+                RoomType.Heal     => presetChanceHeal,
+                RoomType.Shop     => presetChanceShop,
                 RoomType.RareLoot => presetChanceRareLoot,
                 RoomType.Fountain => presetChanceFountain,
-                _ => presetChanceMerge,
+                _                 => presetChanceMerge,
             };
 
             bool didPlace = false;
@@ -255,7 +262,7 @@ public class BSPMapGeometry : MonoBehaviour
                     if (TryPlacePresetRoom(chosen, preset, -1)) { didPlace = true; break; }
             }
             if (!didPlace) didPlace = TryPlaceRandomRoom(chosen, minEventRoomSize, maxEventRoomSize, -1);
-            if (didPlace) { placed[chosen]++; rm?.RegisterEventRoomPlaced(chosen); }
+            if (didPlace) { placed[chosen]++; evtPlaced++; rm?.RegisterEventRoomPlaced(chosen); }
         }
 
         int effectiveMinBattle = minBattleCount + (RunManager.Instance?.EffectiveExtraBattleRoomMin ?? 0);
@@ -272,18 +279,31 @@ public class BSPMapGeometry : MonoBehaviour
         foreach (var kvp in placed) ec += kvp.Value;
         if (ec < effectiveMinEvent)
         {
-            var eventOrder = new List<RoomType> { RoomType.Heal, RoomType.Shop, RoomType.RareLoot, RoomType.Merge, RoomType.Fountain };
-            Shuffle(eventOrder);
-            foreach (var et in eventOrder)
+            int gAttempt = 0, gMaxAttempts = effectiveMinEvent * 6;
+            while (ec < effectiveMinEvent && gAttempt++ < gMaxAttempts)
             {
-                if (ec >= effectiveMinEvent) break;
-                if (placed[et] > 0) continue;
+                float gh = placed[RoomType.Heal]     > 0 ? 0f : wHeal;
+                float gs = placed[RoomType.Shop]     > 0 ? 0f : wShop;
+                float gr = placed[RoomType.RareLoot] > 0 ? 0f : wRare;
+                float gm = placed[RoomType.Merge]    > 0 ? 0f : wMrge;
+                float gf = placed[RoomType.Fountain] > 0 ? 0f : wFoun;
+                float gTotal = gh + gs + gr + gm + gf;
+                if (gTotal <= 0f) break;
+
+                float gRoll = Random.Range(0f, gTotal);
+                RoomType et;
+                if      ((gRoll -= gh) < 0f) et = RoomType.Heal;
+                else if ((gRoll -= gs) < 0f) et = RoomType.Shop;
+                else if ((gRoll -= gr) < 0f) et = RoomType.RareLoot;
+                else if ((gRoll -= gm) < 0f) et = RoomType.Merge;
+                else                         et = RoomType.Fountain;
+
                 if (TryPlaceRandomRoom(et, minEventRoomSize, maxEventRoomSize, -1))
                 { placed[et]++; ec++; rm?.RegisterEventRoomPlaced(et); }
             }
         }
 
-        FillWithSmallTypedRooms(placed, maxEventCount);
+        FillWithSmallTypedRooms(placed, effectiveMaxEvent);
 
         FillRemaining();
     }
@@ -352,31 +372,10 @@ public class BSPMapGeometry : MonoBehaviour
             }
     }
 
-    void PlaceCornerEvent(int cornerIdx)
+    void PlaceCornerEventOfType(RoomType type, int cornerIdx)
     {
-        var rm = RunManager.Instance;
-        float wH = weightHeal     * (rm != null && rm.WasMissingLastFloor(RoomType.Heal)     ? 1f : repeatPenalty);
-        float wS = weightShop     * (rm != null && rm.WasMissingLastFloor(RoomType.Shop)     ? 1f : repeatPenalty);
-        float wR = weightRareLoot * (rm != null && rm.WasMissingLastFloor(RoomType.RareLoot) ? 1f : repeatPenalty);
-        float wM = weightMerge    * (rm != null && rm.WasMissingLastFloor(RoomType.Merge)    ? 1f : repeatPenalty);
-        float wF = weightFountain * (rm != null && rm.WasMissingLastFloor(RoomType.Fountain) ? 1f : repeatPenalty);
-        float total = wH + wS + wR + wM + wF;
-
-        RoomType chosen = RoomType.Battle;
-        if (total > 0f)
+        float pChance = type switch
         {
-            float roll = Random.Range(0f, total);
-            if      ((roll -= wH) < 0f) chosen = RoomType.Heal;
-            else if ((roll -= wS) < 0f) chosen = RoomType.Shop;
-            else if ((roll -= wR) < 0f) chosen = RoomType.RareLoot;
-            else if ((roll -= wM) < 0f) chosen = RoomType.Merge;
-            else                        chosen = RoomType.Fountain;
-        }
-
-        if (chosen == RoomType.Battle)
-        { PlaceTypedRoom(RoomType.Battle, minBattleRoomSize, maxBattleRoomSize, presetChanceBattle, cornerIdx); return; }
-
-        float pChance = chosen switch {
             RoomType.Heal     => presetChanceHeal,
             RoomType.Shop     => presetChanceShop,
             RoomType.RareLoot => presetChanceRareLoot,
@@ -384,18 +383,18 @@ public class BSPMapGeometry : MonoBehaviour
             _                 => presetChanceMerge,
         };
 
-        bool placed = false;
+        bool didPlace = false;
         if (Random.value < pChance && roomPresets != null)
         {
             var compat = new List<BSPRoomPreset>();
-            foreach (var p in roomPresets) if (p != null && p.AllowsType(chosen)) compat.Add(p);
+            foreach (var p in roomPresets) if (p != null && p.AllowsType(type)) compat.Add(p);
             Shuffle(compat);
             foreach (var preset in compat)
-                if (TryPlacePresetRoom(chosen, preset, cornerIdx)) { placed = true; break; }
+                if (TryPlacePresetRoom(type, preset, cornerIdx)) { didPlace = true; break; }
         }
-        if (!placed) placed = TryPlaceRandomRoom(chosen, minEventRoomSize, maxEventRoomSize, cornerIdx);
-        if (!placed) PlaceTypedRoom(RoomType.Battle, minBattleRoomSize, maxBattleRoomSize, presetChanceBattle, cornerIdx);
-        else rm?.RegisterEventRoomPlaced(chosen);
+        if (!didPlace) didPlace = TryPlaceRandomRoom(type, minEventRoomSize, maxEventRoomSize, cornerIdx);
+        if (!didPlace) PlaceTypedRoom(RoomType.Battle, minBattleRoomSize, maxBattleRoomSize, presetChanceBattle, cornerIdx);
+        else RunManager.Instance?.RegisterEventRoomPlaced(type);
     }
 
     void FillWithSmallTypedRooms(Dictionary<RoomType, int> alreadyPlaced, int eventCap)
@@ -426,6 +425,23 @@ public class BSPMapGeometry : MonoBehaviour
 
     void PlaceTypedRoom(RoomType type, int minSz, int maxSz, float presetChance, int cornerIdx)
     {
+
+        if (type == RoomType.Boss)
+        {
+            int floor      = RunManager.Instance?.CurrentFloor ?? 1;
+            var pool       = EnemyPoolManager.Instance;
+            int fps        = pool != null ? pool.floorsPerSegment : 3;
+            int floorInSeg = ((floor - 1) % fps) + 1;
+            bool isTrueBoss = fps == 1 || floorInSeg == fps;
+
+            if (isTrueBoss)
+            {
+                var config = pool?.GetBossConfig(floor);
+                if (config?.roomPreset != null)
+                    if (TryPlacePresetRoom(type, config.roomPreset, cornerIdx)) return;
+            }
+        }
+
         if (Random.value < presetChance && roomPresets != null && roomPresets.Length > 0)
         {
             var compat = new List<BSPRoomPreset>();
@@ -841,30 +857,6 @@ public class BSPMapGeometry : MonoBehaviour
 
     void SpawnGeometry()
     {
-        // ── Shared meshes (built once, reused for every quad) ─────────────────
-        _sharedFloorMesh = new Mesh { name = "SharedFloor" };
-        _sharedFloorMesh.vertices  = new[] {
-            new Vector3(-0.5f, 0f,  0.5f), new Vector3(0.5f, 0f,  0.5f),
-            new Vector3( 0.5f, 0f, -0.5f), new Vector3(-0.5f, 0f, -0.5f)
-        };
-        _sharedFloorMesh.triangles = new[] { 0, 1, 2, 0, 2, 3 };
-        _sharedFloorMesh.uv        = new[] { new Vector2(0,1), new Vector2(1,1), new Vector2(1,0), new Vector2(0,0) };
-        _sharedFloorMesh.RecalculateNormals();
-        _sharedFloorMesh.RecalculateBounds();
-
-        float totalH = wallHeight + Mathf.Abs(floorThickness);
-        float hh     = totalH * 0.5f;
-        _sharedWallMesh = new Mesh { name = "SharedWall" };
-        _sharedWallMesh.vertices  = new[] {
-            new Vector3(-0.5f, -hh, 0f), new Vector3(0.5f, -hh, 0f),
-            new Vector3( 0.5f,  hh, 0f), new Vector3(-0.5f,  hh, 0f)
-        };
-        _sharedWallMesh.triangles = new[] { 0, 1, 2, 0, 2, 3 };
-        _sharedWallMesh.uv        = new[] { new Vector2(0,0), new Vector2(1,0), new Vector2(1,1), new Vector2(0,1) };
-        _sharedWallMesh.RecalculateNormals();
-        _sharedWallMesh.RecalculateBounds();
-        // ─────────────────────────────────────────────────────────────────────
-
         var floorP = new GameObject("Floors").transform;
         var wallP = new GameObject("Walls").transform;
         var voidP = new GameObject("VoidBlockers").transform;
@@ -973,7 +965,7 @@ public class BSPMapGeometry : MonoBehaviour
         var go = new GameObject($"Void_{x}_{z}");
         go.transform.SetParent(parent);
         go.transform.position = new Vector3(x + 0.5f, 0f, z + 0.5f);
-        go.layer = LayerMask.NameToLayer("Wall");
+        go.layer = LayerMask.NameToLayer("Barrier");
         var col = go.AddComponent<BoxCollider>();
         col.center = new Vector3(0f, wallHeight / 2f, 0f);
         col.size = new Vector3(1f, wallHeight * 2f, 1f);
@@ -981,64 +973,59 @@ public class BSPMapGeometry : MonoBehaviour
 
     void SpawnSealedCube(Transform parent, int x, int z)
     {
-        var go = new GameObject($"Sealed_{x}_{z}");
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.name = $"Sealed_{x}_{z}";
         go.transform.SetParent(parent);
-        go.transform.position = new Vector3(x + 0.5f, wallHeight * 0.5f, z + 0.5f);
+        go.transform.position  = new Vector3(x + 0.5f, wallHeight * 0.5f, z + 0.5f);
         go.transform.localScale = new Vector3(1f, wallHeight, 1f);
-        go.layer = LayerMask.NameToLayer("Wall");
+        go.layer   = LayerMask.NameToLayer("Wall");
         go.isStatic = true;
-        go.AddComponent<MeshFilter>().sharedMesh = Resources.GetBuiltinResource<Mesh>("Cube.fbx");
-        go.AddComponent<MeshRenderer>().sharedMaterial = sealedMat;
-        go.AddComponent<BoxCollider>();
+        go.GetComponent<MeshRenderer>().sharedMaterial = sealedMat;
     }
 
     void SpawnFloorQuad(Transform parent, int x, int z, MapNode owner)
     {
-        var go = new GameObject($"F_{x}_{z}");
+        float depth = Mathf.Abs(floorThickness);
+
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.name = $"F_{x}_{z}";
         go.transform.SetParent(parent);
-        go.transform.position = new Vector3(x + 0.5f, 0f, z + 0.5f);
-        go.layer = LayerMask.NameToLayer("Ground");
+        go.transform.position   = new Vector3(x + 0.5f, floorThickness * 0.5f, z + 0.5f);
+        go.transform.localScale = new Vector3(1f, depth, 1f);
+        go.layer    = LayerMask.NameToLayer("Ground");
         go.isStatic = true;
+        go.GetComponent<MeshRenderer>().sharedMaterial = floorMat;
 
-        go.AddComponent<MeshFilter>().sharedMesh = _sharedFloorMesh;
-        var mr = go.AddComponent<MeshRenderer>();
-        mr.sharedMaterial = floorMat;
-
-        // Only Battle, Boss, and RareLoot room floors get a collider — NavMesh bakes from these
-        if (owner != null && (owner.Type == RoomType.Battle || owner.Type == RoomType.Boss || owner.Type == RoomType.RareLoot))
-        {
-            var mc = go.AddComponent<MeshCollider>();
-            mc.sharedMesh = _sharedFloorMesh;
-        }
+        bool needsCollider = owner != null &&
+            (owner.Type == RoomType.Battle   ||
+             owner.Type == RoomType.Boss     ||
+             owner.Type == RoomType.RareLoot);
+        if (!needsCollider)
+            Object.Destroy(go.GetComponent<BoxCollider>());
     }
 
     void SpawnWallQuad(Transform parent, int x, int z, Vector2Int facing)
     {
-        // ── Prefab path: tile 1×1 wall objects along the face ────────────────
         if (wallPrefab != null)
         {
             SpawnWallPrefabTile(parent, x, z, facing);
             return;
         }
 
-        // ── Fallback: plain mesh quad ─────────────────────────────────────────
         float totalH  = wallHeight + Mathf.Abs(floorThickness);
         float centerY = floorThickness + totalH * 0.5f;
+        bool  faceX   = facing.x != 0;
 
-        var go = new GameObject($"W_{x}_{z}_{facing.x}_{facing.y}");
+        var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        go.name = $"W_{x}_{z}_{facing.x}_{facing.y}";
         go.transform.SetParent(parent);
-        go.transform.position = new Vector3(x + 0.5f + facing.x * 0.5f, centerY, z + 0.5f + facing.y * 0.5f);
-        go.transform.rotation = Quaternion.LookRotation(new Vector3(-facing.x, 0, -facing.y));
-        go.layer = LayerMask.NameToLayer("Wall");
+        go.transform.position   = new Vector3(x + 0.5f + facing.x * 0.5f, centerY, z + 0.5f + facing.y * 0.5f);
+        go.transform.localScale = faceX
+            ? new Vector3(Mathf.Max(0.05f, wallThickness), totalH, 1f)
+            : new Vector3(1f, totalH, Mathf.Max(0.05f, wallThickness));
+        go.layer    = LayerMask.NameToLayer("Wall");
         go.isStatic = true;
-
-        go.AddComponent<MeshFilter>().sharedMesh = _sharedWallMesh;
-        var mr = go.AddComponent<MeshRenderer>();
-        mr.sharedMaterial = wallMat;
-
-        // BoxCollider gives actual volume — more reliable for physics and NavMesh than a flat MeshCollider
-        var bc = go.AddComponent<BoxCollider>();
-        bc.size = new Vector3(1f, totalH, Mathf.Max(0.05f, wallThickness));
+        go.GetComponent<MeshRenderer>().sharedMaterial = wallMat;
 
         var mod = go.AddComponent<NavMeshModifier>();
         mod.overrideArea = true;
@@ -1171,20 +1158,7 @@ public class BSPMapGeometry : MonoBehaviour
         oz = Mathf.Clamp(oz, 0, matrixSize - sz);
     }
 
-    bool RowEmpty(int ox, int z, int w)
-    {
-        for (int x = ox; x < ox + w; x++)
-            if (x >= matrixSize || _matrix[x, z] != Cell.Empty) return false;
-        return true;
-    }
 
-    Vector2Int? FindEmptyCell()
-    {
-        for (int x = 0; x < matrixSize; x++)
-            for (int z = 0; z < matrixSize; z++)
-                if (_matrix[x, z] == Cell.Empty) return new Vector2Int(x, z);
-        return null;
-    }
 
     void AddEdge(MapNode a, MapNode b)
     {
@@ -1226,7 +1200,7 @@ public class BSPMapGeometry : MonoBehaviour
         return new List<RoomNode>(map.Values);
     }
 
-    // ── Gizmos ────────────────────────────────────────────────────────────────
+
 
     void OnDrawGizmos()
     {
@@ -1269,7 +1243,6 @@ public class BSPMapGeometry : MonoBehaviour
                 if (_isDoor[x, z])
                     Gizmos.DrawCube(new Vector3(x + 0.5f, 1f, z + 0.5f), Vector3.one * 0.5f);
 
-        // FillRemaining debug: stamped Unmarked rooms (cyan) and sealed gaps (red)
         const float gizY = 2f;
         Gizmos.color = new Color(0f, 1f, 1f, 0.55f);
         foreach (var r in _fillStamped)

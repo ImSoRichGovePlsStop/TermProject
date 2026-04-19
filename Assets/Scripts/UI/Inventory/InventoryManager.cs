@@ -145,6 +145,13 @@ public class InventoryManager : MonoBehaviour
                 return true;
         return false;
     }
+    public void RefreshModule(ModuleInstance inst)
+    {
+        if (inst.CurrentGrid != WeaponGrid) return;
+        OnModuleUnequipped?.Invoke(inst);
+        OnModuleEquipped?.Invoke(inst);
+    }
+
     public void DeleteModule(ModuleInstance inst)
     {
         WeaponGrid.Remove(inst);
