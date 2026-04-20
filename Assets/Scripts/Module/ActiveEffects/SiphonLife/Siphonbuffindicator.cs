@@ -8,64 +8,92 @@ public class SiphonBuffIndicator : MonoBehaviour
     [SerializeField] private Image fillCircle;
     [SerializeField] private TextMeshProUGUI countText;
 
-    [Header("Fill colours")]
-    [SerializeField] private Color fillColorFull = new Color(0.60f, 0.00f, 1.00f, 0.90f);
-    [SerializeField] private Color fillColorExpiring = new Color(1.00f, 0.20f, 0.20f, 0.90f);
+    [Header("Cooldown state")]
+    [SerializeField] private Color cooldownColor = new Color(0.35f, 0.35f, 0.35f, 0.55f);
 
-    [Header("Colour shifts to expiring when this fraction of time remains (0–1)")]
+    [Header("Buff active state")]
+    [SerializeField] private Color buffColorFull = new Color(0.60f, 0.00f, 1.00f, 0.90f);
+    [SerializeField] private Color buffColorExpiring = new Color(1.00f, 0.20f, 0.20f, 0.90f);
+
+    [Header("Colour shifts to expiring when this fraction of buff time remains (0–1)")]
     [SerializeField] private float expiryWarningFraction = 0.25f;
 
     [Header("World-space offset above player origin")]
     [SerializeField] private Vector3 localOffset = new Vector3(0f, 2.2f, 0f);
 
-    private float _duration;
-    private float _elapsed;
-    private bool _running;
-
-    public void Init(int enemyCount, float duration)
+    public void Init()
     {
-        _duration = Mathf.Max(duration, 0.01f);
-        _elapsed = 0f;
-        _running = true;
-
         if (fillCircle == null)
             fillCircle = transform.Find("Canvas/FillCircle")?.GetComponent<Image>();
 
         if (countText == null)
             countText = transform.Find("Canvas/CountText")?.GetComponent<TextMeshProUGUI>();
 
+        transform.localPosition = localOffset;
+
+        Hide();
+    }
+
+    public void ShowCooldown(float ratio)
+    {
+        gameObject.SetActive(true);
+
         if (fillCircle != null)
         {
-            fillCircle.fillAmount = 1f;
-            fillCircle.color = fillColorFull;
+            fillCircle.fillAmount = ratio;
+            fillCircle.color = cooldownColor;
+        }
+
+        SetCountVisible(false);
+    }
+
+    public void SetCooldown(float ratio)
+    {
+        if (fillCircle != null)
+        {
+            fillCircle.fillAmount = ratio;
+            fillCircle.color = cooldownColor;
+        }
+    }
+
+    public void ShowBuff(float ratio, int enemyCount)
+    {
+        gameObject.SetActive(true);
+
+        if (fillCircle != null)
+        {
+            fillCircle.fillAmount = ratio;
+
+            float warningT = Mathf.InverseLerp(expiryWarningFraction, 0f, ratio);
+            fillCircle.color = Color.Lerp(buffColorFull, buffColorExpiring, warningT);
         }
 
         if (countText != null)
+        {
+            countText.gameObject.SetActive(true);
             countText.text = enemyCount.ToString();
-
-        transform.localPosition = localOffset;
+        }
     }
 
-    private void Update()
+    public void SetBuff(float ratio)
     {
-        if (!_running) return;
-
-        _elapsed += Time.deltaTime;
-
-        float remaining = Mathf.Clamp01(1f - (_elapsed / _duration));
-
         if (fillCircle != null)
         {
-            fillCircle.fillAmount = remaining;
+            fillCircle.fillAmount = ratio;
 
-            float warningT = Mathf.InverseLerp(expiryWarningFraction, 0f, remaining);
-            fillCircle.color = Color.Lerp(fillColorFull, fillColorExpiring, warningT);
+            float warningT = Mathf.InverseLerp(expiryWarningFraction, 0f, ratio);
+            fillCircle.color = Color.Lerp(buffColorFull, buffColorExpiring, warningT);
         }
+    }
 
-        if (_elapsed >= _duration)
-        {
-            _running = false;
-            Destroy(gameObject);
-        }
+    public void Hide()
+    {
+        gameObject.SetActive(false);
+    }
+
+    private void SetCountVisible(bool visible)
+    {
+        if (countText != null)
+            countText.gameObject.SetActive(visible);
     }
 }

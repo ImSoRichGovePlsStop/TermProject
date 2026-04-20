@@ -16,14 +16,29 @@ public class SelfDetonationPassive : MonoBehaviour
 
     private bool _isArmed = false;
     private float _cooldownTimer = 0f;
+    private float _countdownTimer = 0f;
 
-    
+    private SelfDetonationIndicator _indicator;
+    private float _indicatorDisplayTimer = 0f;
+    private const float IndicatorDisplayDuration = 1f;
+
 
     public void Init(PlayerStats playerStats, PlayerCombatContext combatContext, LayerMask layerMask)
     {
         _stats = playerStats;
         _context = combatContext;
         _layerMask = layerMask;
+
+        SpawnIndicator();
+    }
+
+    private void SpawnIndicator()
+    {
+        if (SelfDetonationModule?.indicatorPrefab == null) return;
+
+        var go = Instantiate(SelfDetonationModule.indicatorPrefab, transform);
+        _indicator = go.GetComponent<SelfDetonationIndicator>();
+        _indicator?.Init();   // starts hidden
     }
 
     private void Update()
@@ -31,7 +46,39 @@ public class SelfDetonationPassive : MonoBehaviour
         if (_cooldownTimer > 0f)
             _cooldownTimer -= Time.deltaTime;
 
+        if (_isArmed && _countdownTimer > 0f)
+            _countdownTimer -= Time.deltaTime;
+
+        if (_indicatorDisplayTimer > 0f)
+        {
+            _indicatorDisplayTimer -= Time.deltaTime;
+
+            if (_indicatorDisplayTimer <= 0f)
+                _indicator?.Hide();
+            else if (_indicator != null)
+            {
+                float ratio = Mathf.Clamp01(1f - (_cooldownTimer / SelfDetonationModule.moduleCooldown));
+                _indicator.SetCooldown(ratio);
+            }
+        }
+
+        UpdateArmedIndicator();
         HandleInput();
+    }
+
+    private void OnDisable()
+    {
+        _indicator?.Hide();
+        _indicatorDisplayTimer = 0f;
+    }
+
+    private void UpdateArmedIndicator()
+    {
+        if (!_isArmed || _indicator == null) return;
+
+        float duration = SelfDetonationModule != null ? SelfDetonationModule.countdownDuration : 1f;
+        float ratio = Mathf.Clamp01(_countdownTimer / duration);
+        _indicator.SetArmed(ratio);
     }
 
     private void HandleInput()
@@ -60,8 +107,15 @@ public class SelfDetonationPassive : MonoBehaviour
     {
         if (!enabled) return;
         if (_isArmed) return;
-        if (_cooldownTimer > 0f) return;
         if (_stats == null || SelfDetonationModule == null) return;
+
+        if (_cooldownTimer > 0f)
+        {
+            float ratio = Mathf.Clamp01(1f - (_cooldownTimer / SelfDetonationModule.moduleCooldown));
+            _indicator?.ShowCooldown(ratio);
+            _indicatorDisplayTimer = IndicatorDisplayDuration;
+            return;
+        }
 
         float hpCost = _stats.MaxHealth * SelfDetonationModule.activationHpCostPercent;
 
@@ -84,6 +138,8 @@ public class SelfDetonationPassive : MonoBehaviour
     private IEnumerator CountdownCoroutine()
     {
         _isArmed = true;
+        _countdownTimer = SelfDetonationModule.countdownDuration;
+        _indicatorDisplayTimer = 0f;
 
         GameObject countdownFX = null;
         DetnationVFX detonationVFX = null;
@@ -100,6 +156,8 @@ public class SelfDetonationPassive : MonoBehaviour
 
         if (countdownFX != null)
             Destroy(countdownFX);
+
+        _indicator?.Hide();
 
         if (_stats == null || _stats.IsDead)
         {
@@ -119,7 +177,6 @@ public class SelfDetonationPassive : MonoBehaviour
 
         float attackDamage = _stats.CalculateDamage(attackPercent);
         bool wasCrit = _stats.LastHitWasCrit;
-
         float hpDamage = hpPercent * _stats.MaxHealth;
         float totalDamage = attackDamage + hpDamage;
 
@@ -128,7 +185,6 @@ public class SelfDetonationPassive : MonoBehaviour
             Instantiate(burstVFXPrefab, transform.position, Quaternion.identity);
 
         DamageEnemiesInRadius(totalDamage, wasCrit);
-
         _stats.HealPercent(SelfDetonationModule.healBackPercent);
     }
 

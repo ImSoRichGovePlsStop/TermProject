@@ -28,6 +28,9 @@ public class SelfDetonationModule : ModuleEffect
     [Tooltip("Spawned at the player position when the burst fires.")]
     public GameObject burstVFXPrefab;
 
+    [Tooltip("World-space UI prefab with SelfDetonationIndicator component.")]
+    public GameObject indicatorPrefab;
+
     private float GetAttackPercent(Rarity rarity, int level)
         => GetFinalStat(baseAttackPercentPerRarity, levelMultiplier, rarity, level);
 
