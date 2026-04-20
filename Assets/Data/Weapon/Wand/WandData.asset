@@ -92,14 +92,14 @@ MonoBehaviour:
     vfxLoops: 1
   comboCooldown: 0.5
   secondaryCooldown: 0
-  comboResetTime: 0.6
+  comboResetTime: 1.2
   wandProjectile:
     normalMaxSpeed: 8
-    normalRange: 2
+    normalRange: 2.5
     normalLifetime: 2
     normalColliderRadius: 1
     bigMaxSpeed: 4
-    bigRange: 2.5
+    bigRange: 4
     bigLifetime: 4
     bigSpriteScale: 1.8
     easePower: 2
