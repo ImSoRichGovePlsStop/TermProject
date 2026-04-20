@@ -14,30 +14,75 @@ public class SoulSiphonPassive : MonoBehaviour
     private LayerMask _layerMask;
 
     private float _cooldownTimer = 0f;
+    private float _buffTimer = 0f;
+    private int _buffEnemyCount = 0;
+    private float _flashTimer = 0f;
     private Coroutine _buffCoroutine;
 
-    private GameObject _activeIndicator;
+    private const float CooldownFlashDuration = 1f;
+
+    private bool BuffActive => _buffTimer > 0f;
+    private bool OnCooldown => _cooldownTimer > 0f;
+    private bool FlashActive => _flashTimer > 0f;
+
+    private SiphonBuffIndicator _indicator;
 
     public void Init(PlayerStats playerStats, LayerMask layerMask)
     {
         _stats = playerStats;
         _layerMask = layerMask;
+
+        SpawnIndicator();
     }
 
     private void Update()
     {
-        if (_cooldownTimer > 0f)
-            _cooldownTimer -= Time.deltaTime;
+        if (_cooldownTimer > 0f) _cooldownTimer -= Time.deltaTime;
+        if (_buffTimer > 0f) _buffTimer -= Time.deltaTime;
+        if (_flashTimer > 0f) _flashTimer -= Time.deltaTime;
 
         HandleInput();
+        UpdateIndicator();
     }
 
     private void OnDisable()
     {
-        if (_activeIndicator != null)
+        if (_indicator != null)
         {
-            Destroy(_activeIndicator);
-            _activeIndicator = null;
+            Destroy(_indicator.gameObject);
+            _indicator = null;
+        }
+    }
+
+    private void SpawnIndicator()
+    {
+        if (Module.buffIndicatorPrefab == null) return;
+
+        if (_indicator != null)
+            Destroy(_indicator.gameObject);
+
+        var go = Instantiate(Module.buffIndicatorPrefab, transform.position, Quaternion.identity, transform);
+        _indicator = go.GetComponent<SiphonBuffIndicator>();
+        _indicator?.Init();
+    }
+
+    private void UpdateIndicator()
+    {
+        if (_indicator == null) return;
+
+        if (BuffActive)
+        {
+            float ratio = Mathf.Clamp01(_buffTimer / buffDuration);
+            _indicator.SetBuff(ratio);
+        }
+        else if (OnCooldown && FlashActive)
+        {
+            float ratio = Mathf.Clamp01(_cooldownTimer / Module.moduleCooldown);
+            _indicator.SetCooldown(ratio);
+        }
+        else
+        {
+            _indicator.Hide();
         }
     }
 
@@ -59,17 +104,19 @@ public class SoulSiphonPassive : MonoBehaviour
         var kb = Keyboard.current;
         if (kb == null) return;
 
-        if (kb[Key.Q].wasPressedThisFrame)
-            TryActivate();
-    }
+        if (!kb[Key.Q].wasPressedThisFrame) return;
+        if (!enabled || _stats == null || Module == null) return;
 
-    private void TryActivate()
-    {
-        if (!enabled) return;
-        if (_cooldownTimer > 0f) return;
-        if (_stats == null || Module == null) return;
-
-        StartCoroutine(SiphonCoroutine());
+        if (OnCooldown)
+        {
+            float ratio = Mathf.Clamp01(_cooldownTimer / Module.moduleCooldown);
+            _indicator?.ShowCooldown(ratio);
+            _flashTimer = CooldownFlashDuration;
+        }
+        else
+        {
+            StartCoroutine(SiphonCoroutine());
+        }
     }
 
     private IEnumerator SiphonCoroutine()
@@ -95,46 +142,31 @@ public class SoulSiphonPassive : MonoBehaviour
             enemiesHit++;
         }
 
+        _buffEnemyCount = enemiesHit;
+        _buffTimer = buffDuration;
+        _indicator?.ShowBuff(1f, enemiesHit);
+
         if (enemiesHit > 0)
-        {
-            float totalBuff = attackBuffPerEnemy * enemiesHit;
-            ApplyAttackBuff(totalBuff, enemiesHit);
-        }
+            ApplyAttackBuff(attackBuffPerEnemy * enemiesHit);
 
         yield return null;
     }
 
-    private void ApplyAttackBuff(float buffPercent, int enemiesHit)
+    private void ApplyAttackBuff(float buffPercent)
     {
         if (_buffCoroutine != null)
             StopCoroutine(_buffCoroutine);
 
-        _buffCoroutine = StartCoroutine(BuffCoroutine(buffPercent, enemiesHit));
+        _buffCoroutine = StartCoroutine(BuffCoroutine(buffPercent));
     }
 
-    private IEnumerator BuffCoroutine(float buffPercent, int enemiesHit)
+    private IEnumerator BuffCoroutine(float buffPercent)
     {
         _stats.AddMultiplierModifier(new StatModifier { damage = buffPercent });
-
-        if (_activeIndicator != null)
-            Destroy(_activeIndicator);
-
-        if (Module.buffIndicatorPrefab != null)
-        {
-            _activeIndicator = Instantiate(
-                Module.buffIndicatorPrefab,
-                transform.position,
-                Quaternion.identity,
-                transform
-            );
-            _activeIndicator.GetComponent<SiphonBuffIndicator>()?.Init(enemiesHit, buffDuration);
-        }
 
         yield return new WaitForSeconds(buffDuration);
 
         _stats.RemoveMultiplierModifier(new StatModifier { damage = buffPercent });
-
-        _activeIndicator = null;
         _buffCoroutine = null;
     }
 
