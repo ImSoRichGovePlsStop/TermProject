@@ -400,7 +400,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7835020951493159744}
-  - component: {fileID: 9061859571116609684}
   m_Layer: 0
   m_Name: PoisonStack
   m_TagString: Untagged
@@ -424,23 +423,3 @@ Transform:
   - {fileID: 2595916633005317576}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &9061859571116609684
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7022857122524116156}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 80feae99c97967e4c81eed9f3c5c1006, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SiphonBuffIndicator
-  fillCircle: {fileID: 0}
-  countText: {fileID: 1409745423602703886}
-  readyColor: {r: 0.6, g: 0, b: 1, a: 0.45}
-  cooldownColor: {r: 0.35, g: 0.35, b: 0.35, a: 0.55}
-  buffColorFull: {r: 0.6, g: 0, b: 1, a: 0.9}
-  buffColorExpiring: {r: 1, g: 0.2, b: 0.2, a: 0.9}
-  expiryWarningFraction: 0.25
-  localOffset: {x: 0, y: 0.25, z: 0}

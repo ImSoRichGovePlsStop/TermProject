@@ -96,17 +96,14 @@ public class PoisonModule : ModuleEffect
             {
                 data.EnemyStacks[enemy] = 0;
 
-                // Stop any active stack decay for this enemy since the proc fired
                 if (data.StackDecayCoroutines.TryGetValue(enemy, out Coroutine activeDecay) && activeDecay != null)
                 {
                     stats.StopCoroutine(activeDecay);
                     data.StackDecayCoroutines.Remove(enemy);
                 }
 
-                // Start ATK-based Poison
                 var atkRoutine = stats.StartCoroutine(AtkPoisonRoutine(enemy, stats, state, data));
 
-                // Start HP-based Poison (only if value > 0)
                 Coroutine hpRoutine = null;
                 if (GetEffHp(state) > 0)
                 {
@@ -119,7 +116,6 @@ public class PoisonModule : ModuleEffect
             {
                 data.EnemyStacks[enemy] = currentStacks;
 
-                // Restart decay timer on hit
                 if (data.StackDecayCoroutines.TryGetValue(enemy, out Coroutine activeDecay) && activeDecay != null)
                 {
                     stats.StopCoroutine(activeDecay);
@@ -236,54 +232,43 @@ public class PoisonModule : ModuleEffect
     }
 
     public override string PassiveDescription => $"Poison damage on hit stacks. Deals ATK damage every {atkTickInterval}s and Max HP damage every {hpTickInterval}s. Stacks decay over time.";
-    public override PassiveLayout GetPassiveLayout() => (hpPercentPerRarity[0] > 0 || hpPercentPerRarity[4] > 0) ? PassiveLayout.TwoEqual : PassiveLayout.Single;
+    public override PassiveLayout GetPassiveLayout() => PassiveLayout.TwoNarrowWide;
 
     public override PassiveEntry[] GetPassiveEntries(Rarity rarity, int level, ModuleRuntimeState state)
     {
         float bDur = GetFinalStat(durationPerRarity, levelMultiplier, rarity, level);
         float bHp = GetFinalStat(hpPercentPerRarity, levelMultiplier, rarity, level);
+        float bAtk = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
 
         float eDur = state.isActive ? GetEffDur(state) : bDur;
         float eHp = state.isActive ? GetEffHp(state) : bHp;
-
-        bool isBuffedDur = state.isActive && eDur != bDur;
-        bool isBuffedHp = state.isActive && eHp != bHp;
+        float eAtk = state.isActive ? GetEffDmg(state) : bAtk;
 
         int stacks = stacksRequiredPerRarity[(int)rarity];
 
-        if (eHp > 0 || bHp > 0)
-        {
-            return new PassiveEntry[]
-            {
-                new PassiveEntry
-                {
-                    value         = $"{eDur:F1}s",
-                    label         = "Duration",
-                    sublabel      = $"{stacks} Stacks",
-                    isBuffed      = isBuffedDur,
-                    unbuffedValue = $"{bDur:F1}s"
-                },
-                new PassiveEntry
-                {
-                    value         = $"+{eHp * 100f:F1}%",
-                    label         = "Max HP Dmg",
-                    sublabel      = "Per Tick",
-                    isBuffed      = isBuffedHp,
-                    unbuffedValue = $"+{bHp * 100f:F1}%"
-                }
-            };
-        }
+        string mainValue = eAtk > 0 ? $"{eAtk * 100f:F0}% Attack" : "";
+        string subValue = eHp > 0 ? $"+ {eHp * 100f:F1}% Enemy Max HP" : "Per Tick";
+        string uMainValue = bAtk > 0 ? $"{bAtk * 100f:F0}% Atk" : "";
+        string uSubValue = bHp > 0 ? $"+ {bHp * 100f:F1}% Enemy Max HP" : "Per Tick";
 
         return new PassiveEntry[]
         {
-            new PassiveEntry
-            {
-                value         = $"{eDur:F1}s",
-                label         = "Duration",
-                sublabel      = $"{stacks} Stacks",
-                isBuffed      = isBuffedDur,
-                unbuffedValue = $"{bDur:F1}s"
-            }
+        new PassiveEntry
+        {
+            label         = "Duration",
+            value         = $"{eDur:F1}s",
+            sublabel      = $"{stacks} Stacks",
+            isBuffed      = state.isActive && Math.Abs(eDur - bDur) > 0.01f,
+            unbuffedValue = $"{bDur:F1}s"
+        },
+        new PassiveEntry
+        {
+            label         = "Damage",
+            value         = string.IsNullOrEmpty(mainValue) ? "Poison" : mainValue,
+            sublabel      = subValue,
+            isBuffed      = state.isActive && (Math.Abs(eHp - bHp) > 0.001f || Math.Abs(eAtk - bAtk) > 0.001f),
+            unbuffedValue = uMainValue
+        }
         };
     }
 }
