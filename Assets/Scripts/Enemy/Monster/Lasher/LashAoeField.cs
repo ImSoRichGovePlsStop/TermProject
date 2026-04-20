@@ -51,7 +51,8 @@ public class LashAoeField : MonoBehaviour
         }
         SetColor(fullColor);
 
-        // Deal damage + spawn VFX (after fade in)
+        // Deal damage 0.12s after fade in
+        yield return new WaitForSeconds(0.12f);
         DealDamage(radius, damage, targetLayers, attacker);
         if (vfxPrefab != null)
         {

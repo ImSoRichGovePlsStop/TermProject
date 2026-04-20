@@ -3986,12 +3986,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4991438143346320085, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
       propertyPath: testModules.Array.size
-      value: 18
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4991438143346320085, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
       propertyPath: testModules.Array.data[0].data
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 11400000, guid: 17e467e9df761d5489bed571b870acc8, type: 2}
     - target: {fileID: 4991438143346320085, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
       propertyPath: testModules.Array.data[1].data
       value: 
@@ -4060,6 +4060,10 @@ PrefabInstance:
       propertyPath: testModules.Array.data[17].data
       value: 
       objectReference: {fileID: 11400000, guid: 7ba20a670b80b744c82f719a8118b50c, type: 2}
+    - target: {fileID: 4991438143346320085, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
+      propertyPath: testModules.Array.data[0].rarity
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 5406892480512669607, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -43986,6 +43990,118 @@ PrefabInstance:
     - target: {fileID: 3833017404443964105, guid: 082c796765a59534587cd77babf0844d, type: 3}
       propertyPath: m_Name
       value: LasherReaver_Miniboss
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: chargeSpeed
+      value: 18
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: jumpTipCount
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: lashTipCount
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: lashTipDelay
+      value: 0.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: lashHitRadius
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: lashTipOffset
+      value: 1.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: lashTipRadius
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: jumpLandRadius
+      value: 1.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: reaverDashSpeed
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: jumpFallDuration
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: jumpPostDelayMax
+      value: 2.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: jumpPostDelayMin
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: jumpRiseDuration
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: jumpTipBaseDelay
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: jumpTipBaseRadius
+      value: 0.55
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: jumpTipRadiusStep
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: jumpTipBaseDistance
+      value: 1.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: jumpTipDistanceStep
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: chargeWindUpDuration
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: jumpFieldStayDuration
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: lashFieldStayDuration
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: reaverDashAttackRange
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: jumpFieldFadeInDuration
+      value: 0.12
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: lashFieldFadeInDuration
+      value: 0.12
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: phase1Settings.lashLineCount
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: phase2Settings.lashLineCount
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: phase3Settings.lashLineCount
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 4352790168215606185, guid: 082c796765a59534587cd77babf0844d, type: 3}
+      propertyPath: phase4Settings.lashLineCount
+      value: 8
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

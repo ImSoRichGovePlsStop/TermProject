@@ -68,7 +68,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c43860605bd8c549b9db4368ae97b11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ReaverProjectile
-  speed: 12
+  speed: 15
   maxTravelDistance: 15
   targetLayers:
     serializedVersion: 2
