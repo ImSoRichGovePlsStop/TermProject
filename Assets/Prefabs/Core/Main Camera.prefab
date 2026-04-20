@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5715549152588582197}
   - component: {fileID: 6451735179777468738}
   - component: {fileID: 6140889862373676860}
+  - component: {fileID: 8209903405398535905}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -45,7 +46,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0.36205056, g: 0.5549035, b: 0.6792453, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -67,7 +68,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 30
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -151,3 +152,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraController
   offset: {x: 0, y: 4, z: -4}
+  shakeMagnitude: 0.1
+  shakeSpeed: 5
+  zoomInAmount: 1.5
+  endTimeScale: 0.1
+--- !u!114 &8209903405398535905
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3874700437601062225}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e6395864889ca34faba5205ea995228, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WallVisibility
+  cam: {fileID: 5143899279005939996}
+  player: {fileID: 0}
+  opaqueMat: {fileID: 2100000, guid: d2654b0f80c3fd249afdc51c6d742d79, type: 2}
+  transparentMat: {fileID: 2100000, guid: 9cc3a09839bd23045a23680971b8c414, type: 2}
+  wallLayer:
+    serializedVersion: 2
+    m_Bits: 4096
+  wallLayerName: Wall
+  detectionRange: 2.5
+  sideRayRange: 2
+  fadeSpeed: 15
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  enemyRevealRange: 30
