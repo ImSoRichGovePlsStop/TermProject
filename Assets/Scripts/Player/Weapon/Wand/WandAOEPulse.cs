@@ -15,6 +15,12 @@ public class WandAoEPulse : MonoBehaviour
     [SerializeField] private float vfxDuration = 0.5f;
 
     private float pulseTimer = 0f;
+    private LayerMask _hitMask;
+
+    void Awake()
+    {
+        _hitMask = (1 << LayerMask.NameToLayer("Enemy")) | (1 << LayerMask.NameToLayer("Breakable"));
+    }
 
     void Update()
     {
@@ -31,12 +37,11 @@ public class WandAoEPulse : MonoBehaviour
     {
         if (shooterStats == null) return;
 
-        Collider[] hits = Physics.OverlapSphere(transform.position, pulseRadius);
+        Collider[] hits = Physics.OverlapSphere(transform.position, pulseRadius, _hitMask);
         var result = new HashSet<HealthBase>();
 
         foreach (Collider hit in hits)
         {
-            if (!hit.CompareTag("Enemy")) continue;
             var healthBase = hit.GetComponentInParent<HealthBase>();
             if (healthBase == null || healthBase.IsDead) continue;
             float dmg = shooterStats.CalculateDamage(pulseDamageScale);

@@ -34,9 +34,11 @@ public class WandProjectile : MonoBehaviour
     private Animator animator;
     private SpriteRenderer spriteRenderer;
     private HashSet<int> hitEnemyIDs = new HashSet<int>();
+    private LayerMask _hitMask;
 
     void Start()
     {
+        _hitMask = (1 << LayerMask.NameToLayer("Enemy")) | (1 << LayerMask.NameToLayer("Breakable"));
         lifetimeTimer = lifetime;
         currentSpeed = maxSpeed;
         animator = GetComponentInChildren<Animator>();
@@ -110,7 +112,7 @@ public class WandProjectile : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("Enemy")) return;
+        if ((_hitMask & (1 << other.gameObject.layer)) == 0) return;
 
         int id = other.gameObject.GetInstanceID();
         if (hitEnemyIDs.Contains(id)) return;
@@ -121,7 +123,7 @@ public class WandProjectile : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        if (!other.CompareTag("Enemy")) return;
+        if ((_hitMask & (1 << other.gameObject.layer)) == 0) return;
         if (!isStopped) return;
 
         int id = other.gameObject.GetInstanceID();
