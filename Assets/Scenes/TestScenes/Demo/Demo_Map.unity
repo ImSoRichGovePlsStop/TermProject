@@ -181,7 +181,7 @@ MonoBehaviour:
   - normal: {fileID: 5014756994894003621, guid: 42d280777b1172b42b5854270bfec4c2, type: 3}
     elite: {fileID: 7143792438297347694, guid: b5df83872bee4564aa94454221001c13, type: 3}
     type: 1
-    cost: 9
+    cost: 15
   - normal: {fileID: 2267385209059488080, guid: 7b3e637306542674a858675a8eb8614c, type: 3}
     elite: {fileID: 8761219684217307977, guid: 81bc309d0cb204a469adc399b7df23fb, type: 3}
     type: 1
@@ -216,7 +216,7 @@ MonoBehaviour:
     maxAliveNormals: 0
   - roomPreset: {fileID: 11400000, guid: 40c8797782cfb6949bf519d24bf7d357, type: 2}
     bossPrefabs:
-    - {fileID: 7425926837719396271, guid: c379bb763df3f384fa49f34d8f1fb9d3, type: 3}
+    - {fileID: 3833017404443964105, guid: 082c796765a59534587cd77babf0844d, type: 3}
     periodicEntries: []
     spawnInterval: 0
     spawnCountMin: 0
