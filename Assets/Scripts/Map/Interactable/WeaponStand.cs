@@ -25,6 +25,20 @@ public class WeaponStand : MonoBehaviour, IInteractable
         return "[ E ]  Pick Up Weapon";
     }
 
+    public InteractInfo GetInteractInfo()
+    {
+        if (weaponEquip == null)
+            weaponEquip = FindFirstObjectByType<WeaponEquip>();
+
+        bool isEquipped = weaponEquip != null && weaponEquip.GetCurrentWeapon() == weaponData;
+        return new InteractInfo
+        {
+            name       = weaponData != null ? weaponData.weaponName : "Weapon",
+            actionText = isEquipped ? "Open Skill Tree" : "Pick Up",
+            cost       = null
+        };
+    }
+
     private void Awake()
     {
         passiveScreenUI = FindFirstObjectByType<PassiveScreenUI>();

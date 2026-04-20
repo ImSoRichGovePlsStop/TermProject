@@ -42,4 +42,11 @@ public class GamblerStation : MonoBehaviour, IInteractable
     }
 
     public string GetPromptText() => "[ E ]  Open Gambler Station";
+    public InteractInfo GetInteractInfo() => new InteractInfo
+    {
+        name        = "Gambler Station",
+        description = "Idk not even in the game",
+        actionText  = "Gamble",
+        cost        = null
+    };
 }

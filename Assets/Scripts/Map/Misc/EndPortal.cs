@@ -11,8 +11,12 @@ public class EndPortal : MonoBehaviour, IInteractable
         UIManager.Instance?.ShowEndGame(isWin: true);
     }
 
-    string IInteractable.GetPromptText()
+    string IInteractable.GetPromptText() => "[E] -> Complete Run";
+
+    InteractInfo IInteractable.GetInteractInfo() => new InteractInfo
     {
-        return "[E] -> Complete Run";
-    }
+        name       = "Complete Run",
+        actionText = "Enter",
+        cost       = null
+    };
 }

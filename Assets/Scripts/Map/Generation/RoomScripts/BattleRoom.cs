@@ -381,6 +381,8 @@ public class BattleRoom : MonoBehaviour
         scale.damage    = (1f + progress + (player.MaxHealth / Mathf.Max(1f, player.BaseHealth)) * enemyDmgPlayerHpWeight)
                           * (rm?.EffectiveEnemyDamageMultiplier ?? 1f);
         return scale;
+
+        //very important function i think
     }
 
     protected void ApplyEnemyScale(GameObject enemy)
