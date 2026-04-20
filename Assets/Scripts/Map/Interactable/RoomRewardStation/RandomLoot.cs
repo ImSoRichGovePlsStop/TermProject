@@ -31,6 +31,18 @@ public class RandomLoot : MonoBehaviour, IInteractable
     private UIManager uiManager;
 
     public string GetPromptText() => "[ E ]  Open Loot";
+    public InteractInfo GetInteractInfo()
+    {
+        string desc = "A sealed chest containing rewards from the depths of the dungeon.";
+        if (isMimic) desc += " But this one seems to have some special energy.";
+        return new InteractInfo
+        {
+            name        = "Loot Chest",
+            description = desc,
+            actionText  = "Open",
+            cost        = null
+        };
+    }
 
     public void Configure(LootConfig cfg)
     {

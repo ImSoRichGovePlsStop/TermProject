@@ -99,6 +99,14 @@ public class GroundMaterial : MonoBehaviour, IInteractable
 
     public string GetPromptText() => $"[ E ]  Pick up {data?.moduleName}";
 
+    public InteractInfo GetInteractInfo() => new InteractInfo
+    {
+        name        = data?.moduleName ?? "Material",
+        description = !string.IsNullOrEmpty(data?.materialDescription) ? data.materialDescription : null,
+        actionText  = "Pick Up",
+        cost        = null
+    };
+
     public void Interact(PlayerController playerController)
     {
         if (data == null) return;

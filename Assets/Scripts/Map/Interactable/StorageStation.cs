@@ -19,4 +19,11 @@ public class StorageStation : MonoBehaviour, IInteractable
     }
 
     public string GetPromptText() => "[ E ]  Open Storage";
+    public InteractInfo GetInteractInfo() => new InteractInfo
+    {
+        name        = "Storage",
+        description = "Access your material storage.",
+        actionText  = "Open",
+        cost        = null
+    };
 }

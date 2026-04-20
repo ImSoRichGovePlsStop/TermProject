@@ -13,6 +13,13 @@ public class PaidUpgradeStation : UpgradeStation, IInteractable
     }
 
     public override string GetPromptText() => $"[ E ] Upgrade Modules ({EffectiveCost()} Gold)";
+    public override InteractInfo GetInteractInfo() => new InteractInfo
+    {
+        name        = "Merchant's Anvil",
+        description = "Pay merchant to randomly pick modules from your inventory to upgrade.",
+        actionText  = "Use",
+        cost        = EffectiveCost()
+    };
 
     private void Start()
     {

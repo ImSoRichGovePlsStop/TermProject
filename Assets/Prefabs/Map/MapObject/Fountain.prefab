@@ -140,11 +140,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5c63e0d25a7ec85478da35e0f5fa50cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WishFountain
-  activateChance: 0.05
-  chanceIncrement: 0.001
-  cost: 1
-  wishMeanCost: 150
-  wishSd: 300
+  activateChance: 0.02
+  chanceIncrement: 0
+  baseCost: 10
+  costPerFloor: 1
+  wishMeanCost: 100
+  wishSd: 200
   allowDuplicates: 0
   bonusCoinMin: 50
   bonusCoinMax: 200

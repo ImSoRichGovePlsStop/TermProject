@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 
@@ -56,6 +57,28 @@ public class MinimapManager : MonoBehaviour
         RoomType.Heal, RoomType.Shop, RoomType.RareLoot,
         RoomType.Merge, RoomType.Fountain
     };
+
+    private void Awake()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        RefreshVisibility(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    private void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        RefreshVisibility(scene.buildIndex);
+    }
+
+    private void RefreshVisibility(int sceneIndex)
+    {
+        if (minimapRoot != null)
+            minimapRoot.gameObject.SetActive(sceneIndex != 1);
+    }
 
     public void BuildMinimapFromMatrix(byte[,] matrix, int size,
                                        MapNode[,] roomMap,

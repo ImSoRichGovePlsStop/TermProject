@@ -18,4 +18,10 @@ public class NextFloorPortal : MonoBehaviour, IInteractable
     }
 
     string IInteractable.GetPromptText() => "[E] -> Go to next floor";
+    InteractInfo IInteractable.GetInteractInfo() => new InteractInfo
+    {
+        name       = "Next Floor",
+        actionText = "Enter",
+        cost       = null
+    };
 }

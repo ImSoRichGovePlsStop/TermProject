@@ -38,7 +38,7 @@ public class SellConfirmationUI : MonoBehaviour
             ? $"{inst.Data.moduleName} ×{m.StackCount}"
             : inst.Data.moduleName;
         itemNameText.text = $"Selling: {label}";
-        sellPriceText.text = $"Selling for: {CalcSellPrice(inst)} coins";
+        sellPriceText.text = $"Selling for:  $ {CalcSellPrice(inst)}";
 
         BuildShapePreview(inst.Data, inst.Rarity);
 
