@@ -32,6 +32,13 @@ public class TradeSystem : MonoBehaviour, IInteractable
     private static readonly Color colErr  = new Color(1f, 0.35f, 0.35f);
 
     public string GetPromptText() => $"[ E ]  Offer {boneCost} Bone";
+    public InteractInfo GetInteractInfo() => new InteractInfo
+    {
+        name        = "Cerberus",
+        description = $"Offer <color=#88FF88>{boneCost}</color> bones to Cerberus in exchange for a reward.",
+        actionText  = "Offer Bones",
+        cost        = null
+    };
 
     private void Start()
     {

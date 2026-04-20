@@ -12,9 +12,11 @@ public class InteractPromptUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI actionText;
 
     [Header("Positioning")]
-    [SerializeField] private Vector3 worldOffset = new Vector3(0f, 2.5f, 0f);
+    [SerializeField] private float xOffset = 1.5f;
+    [SerializeField] private float yOffset = 0f;
 
     private Transform     _target;
+    private Transform     _player;
     private RectTransform _rt;
     private Camera        _cam;
 
@@ -22,6 +24,8 @@ public class InteractPromptUI : MonoBehaviour
     {
         _rt  = GetComponent<RectTransform>();
         _cam = Camera.main;
+        var playerObj = GameObject.FindWithTag("Player");
+        if (playerObj != null) _player = playerObj.transform;
         gameObject.SetActive(false);
     }
 
@@ -29,8 +33,20 @@ public class InteractPromptUI : MonoBehaviour
     {
         if (_target == null) return;
         if (_cam == null) _cam = Camera.main;
+        if (_player == null) _player = GameObject.FindWithTag("Player")?.transform;
 
-        Vector3 screenPos = _cam.WorldToScreenPoint(_target.position + worldOffset);
+        float side = (_player != null && _player.position.x > _target.position.x) ? -1f : 1f;
+
+        float halfWidth = 0f;
+        var col = _target.GetComponent<Collider>();
+        if (col != null) halfWidth = col.bounds.extents.x;
+
+        Vector3 worldPos = new Vector3(
+            _target.position.x + (halfWidth + xOffset) * side,
+            yOffset,
+            _target.position.z);
+
+        Vector3 screenPos = _cam.WorldToScreenPoint(worldPos);
         if (screenPos.z < 0f)
         {
             gameObject.SetActive(false);
