@@ -759,6 +759,7 @@ MonoBehaviour:
   topRow: {fileID: 6515323305593749105}
   bottomRow: {fileID: 7119563922062384394}
   optionPrefab: {fileID: 1428866872015559617, guid: bc231770e9766f14d80a2491de929d9c, type: 3}
+  rerollButton: {fileID: 0}
 --- !u!1 &1185180102548048344
 GameObject:
   m_ObjectHideFlags: 0
@@ -1863,6 +1864,7 @@ MonoBehaviour:
   bottomRow: {fileID: 9113859783962293218}
   shopItemPrefab: {fileID: 1428866872015559617, guid: bc231770e9766f14d80a2491de929d9c, type: 3}
   sellConfirmationUI: {fileID: 6487128139267877926}
+  rerollButton: {fileID: 0}
 --- !u!1 &2133318664201132605
 GameObject:
   m_ObjectHideFlags: 0
@@ -2851,6 +2853,7 @@ MonoBehaviour:
   topRow: {fileID: 8132552444863256335}
   bottomRow: {fileID: 790635516910569806}
   optionPrefab: {fileID: 1428866872015559617, guid: bc231770e9766f14d80a2491de929d9c, type: 3}
+  rerollButton: {fileID: 0}
 --- !u!1 &3139113947881231687
 GameObject:
   m_ObjectHideFlags: 0
@@ -3767,6 +3770,8 @@ MonoBehaviour:
   outputGridUI: {fileID: 4143061617632254983}
   bagGridUI: {fileID: 6436487287782709202}
   mergeButton: {fileID: 5517386702004817076}
+  totalCostText: {fileID: 0}
+  outputRangeText: {fileID: 0}
   moduleItemPrefab: {fileID: 2996288814634159331, guid: 2e667019bf23b8743b2e3414548beeeb, type: 3}
   materialItemPrefab: {fileID: 8151539626362182282, guid: f9a8e3b4fa5f32e49ad4294a914dc9ef, type: 3}
 --- !u!1 &3913699095301663653
@@ -4186,10 +4191,58 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InventoryTestSpawner
   testModules:
-  - data: {fileID: 11400000, guid: 9a13cd4f455107e4fbe99eebba23a69c, type: 2}
+  - data: {fileID: 11400000, guid: 347983e0f419af54aac76500c585630c, type: 2}
     rarity: 0
     level: 0
-  - data: {fileID: 11400000, guid: 29c82ce4031db764fadef2ffeb7417e5, type: 2}
+  - data: {fileID: 11400000, guid: ac531af617b2d024c8d44a59918e7b1d, type: 2}
+    rarity: 0
+    level: 0
+  - data: {fileID: 11400000, guid: 6bb7b6cfada68ea46b0e68a11c4e8b39, type: 2}
+    rarity: 0
+    level: 0
+  - data: {fileID: 11400000, guid: 143d429ad908be14e8eed1214cf168b7, type: 2}
+    rarity: 0
+    level: 0
+  - data: {fileID: 11400000, guid: 072ab0b6b14dc484baa80252ee75489f, type: 2}
+    rarity: 0
+    level: 0
+  - data: {fileID: 11400000, guid: 072ab0b6b14dc484baa80252ee75489f, type: 2}
+    rarity: 0
+    level: 0
+  - data: {fileID: 11400000, guid: 0e055652656be514d8c06906bd86a13e, type: 2}
+    rarity: 0
+    level: 0
+  - data: {fileID: 11400000, guid: 0e055652656be514d8c06906bd86a13e, type: 2}
+    rarity: 0
+    level: 0
+  - data: {fileID: 11400000, guid: 83bdbb620c51bdd439fb89c97180137e, type: 2}
+    rarity: 0
+    level: 0
+  - data: {fileID: 11400000, guid: 13a68ddd8fc6f724c960061a5aba1839, type: 2}
+    rarity: 0
+    level: 0
+  - data: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+    rarity: 0
+    level: 0
+  - data: {fileID: 11400000, guid: 5abdcea167f2bcd40935a2f6eec2acd0, type: 2}
+    rarity: 0
+    level: 0
+  - data: {fileID: 11400000, guid: 399297f3e79be15409f69ab7096a631f, type: 2}
+    rarity: 0
+    level: 0
+  - data: {fileID: 11400000, guid: d526cca1760890744834885573002c5c, type: 2}
+    rarity: 0
+    level: 0
+  - data: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+    rarity: 0
+    level: 0
+  - data: {fileID: 11400000, guid: f30e2ab00b19af944acc9c7fd574283a, type: 2}
+    rarity: 0
+    level: 0
+  - data: {fileID: 11400000, guid: 7ba20a670b80b744c82f719a8118b50c, type: 2}
+    rarity: 0
+    level: 0
+  - data: {fileID: 11400000, guid: a7f0ae0d573fda242bf1ee3eba5f0133, type: 2}
     rarity: 0
     level: 0
   inventoryUI: {fileID: 9222455767557791017}

@@ -355,6 +355,55 @@ public class ModuleTooltipUI : MonoBehaviour
         StartCoroutine(PositionNextFrame(inst));
     }
 
+    public void ShowForStorage(MaterialInstance inst, RectTransform anchor)
+    {
+        currentInst = null;
+        isDetailExpanded = false;
+        isTabExpanded = false;
+
+        mainPanelLayout.preferredWidth = 400f;
+        nameText.text = inst.MaterialData.moduleName;
+        nameText.color = RarityColor(inst.Rarity);
+        levelText.text = "";
+        rarityText.text = inst.Rarity.ToString();
+        costText.text = "";
+
+        ClearStatRows();
+        ClearPassive();
+        ClearFooter();
+
+        bool hasDesc = !string.IsNullOrEmpty(inst.MaterialData.materialDescription);
+        if (hasDesc) AddDescRow().text = inst.MaterialData.materialDescription;
+        statContainer.SetActive(hasDesc);
+        statDivider.SetActive(hasDesc);
+
+        if (inst.MaterialData.obtainSources != null && inst.MaterialData.obtainSources.Length > 0)
+        {
+            footerContainer.SetActive(true);
+            CreateDivider(footerContainer);
+            var textWrapper = new GameObject("FooterTextPadding", typeof(RectTransform));
+            textWrapper.transform.SetParent(footerContainer.transform, false);
+            var vlg = textWrapper.AddComponent<VerticalLayoutGroup>();
+            vlg.padding = new RectOffset(20, 20, 10, 14);
+            vlg.childControlWidth = true;
+            vlg.childControlHeight = true;
+            var sourceTmp = new GameObject("ObtainText", typeof(RectTransform)).AddComponent<TextMeshProUGUI>();
+            sourceTmp.transform.SetParent(textWrapper.transform, false);
+            sourceTmp.text = "Obtain from: " + string.Join(", ", inst.MaterialData.obtainSources);
+            sourceTmp.fontSize = 22f;
+            sourceTmp.color = new Color(0.55f, 0.55f, 0.55f);
+            sourceTmp.alignment = TextAlignmentOptions.Left;
+            sourceTmp.raycastTarget = false;
+            sourceTmp.textWrappingMode = TextWrappingModes.Normal;
+            textWrapper.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        }
+
+        detailPanel.SetActive(false);
+        gameObject.SetActive(true);
+        transform.SetAsLastSibling();
+        StartCoroutine(PositionAtRectNextFrame(anchor));
+    }
+
     public void Show(MaterialInstance inst)
     {
         currentInst = null;
