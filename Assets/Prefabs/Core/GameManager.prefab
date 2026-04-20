@@ -15709,6 +15709,6 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4096
   wallLayerName: Wall
-  detectionRange: 2
-  sideRayRange: 2
-  fadeSpeed: 8
+  detectionRange: 2.5
+  sideRayRange: 2.5
+  fadeSpeed: 15
