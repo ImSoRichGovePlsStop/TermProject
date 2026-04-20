@@ -191,12 +191,15 @@ public class BSPMapGeometry : MonoBehaviour
             if (ci != spawnCorner && ci != bossCorner) freeCorners.Add(ci);
         Shuffle(freeCorners);
 
-        PlaceCornerEventOfType(RoomType.Shop, freeCorners[0]);
+        int curFloor = rm?.CurrentFloor ?? 1;
+        if (curFloor % 2 == 1)
+            PlaceCornerEventOfType(RoomType.Shop, freeCorners[0]);
+        else
+            PlaceTypedRoom(RoomType.Battle, minBattleRoomSize, maxBattleRoomSize, presetChanceBattle, freeCorners[0]);
 
         if (freeCorners.Count > 1)
         {
             var cycleTypes = new[] { RoomType.RareLoot, RoomType.Merge, RoomType.Heal, RoomType.Fountain };
-            int curFloor   = rm?.CurrentFloor ?? 1;
             RoomType cycleType = cycleTypes[(curFloor - 1) % cycleTypes.Length];
             PlaceCornerEventOfType(cycleType, freeCorners[1]);
         }
