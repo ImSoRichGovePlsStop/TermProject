@@ -55767,6 +55767,8 @@ GameObject:
   m_Component:
   - component: {fileID: 970713716}
   - component: {fileID: 970713715}
+  - component: {fileID: 970713717}
+  - component: {fileID: 970713718}
   m_Layer: 0
   m_Name: Cerberus_idle_1
   m_TagString: Untagged
@@ -55849,6 +55851,65 @@ Transform:
   - {fileID: 989382848}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: 0, z: 0}
+--- !u!65 &970713717
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 970713714}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2, y: 2, z: 2}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &970713718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 970713714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c3cfeb589b36d740b9e044d81ce3127, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TradeSystem
+  boneMaterial: {fileID: 11400000, guid: ac531af617b2d024c8d44a59918e7b1d, type: 2}
+  boneCost: 10
+  materialPool:
+  - {fileID: 11400000, guid: 347983e0f419af54aac76500c585630c, type: 2}
+  - {fileID: 11400000, guid: ac531af617b2d024c8d44a59918e7b1d, type: 2}
+  - {fileID: 11400000, guid: 6bb7b6cfada68ea46b0e68a11c4e8b39, type: 2}
+  - {fileID: 11400000, guid: 143d429ad908be14e8eed1214cf168b7, type: 2}
+  - {fileID: 11400000, guid: 072ab0b6b14dc484baa80252ee75489f, type: 2}
+  - {fileID: 11400000, guid: 0e055652656be514d8c06906bd86a13e, type: 2}
+  - {fileID: 11400000, guid: 83bdbb620c51bdd439fb89c97180137e, type: 2}
+  - {fileID: 11400000, guid: 13a68ddd8fc6f724c960061a5aba1839, type: 2}
+  - {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+  - {fileID: 11400000, guid: 5abdcea167f2bcd40935a2f6eec2acd0, type: 2}
+  - {fileID: 11400000, guid: 399297f3e79be15409f69ab7096a631f, type: 2}
+  - {fileID: 11400000, guid: d526cca1760890744834885573002c5c, type: 2}
+  - {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+  - {fileID: 11400000, guid: f30e2ab00b19af944acc9c7fd574283a, type: 2}
+  - {fileID: 11400000, guid: 7ba20a670b80b744c82f719a8118b50c, type: 2}
+  - {fileID: 11400000, guid: a7f0ae0d573fda242bf1ee3eba5f0133, type: 2}
+  groundMaterialPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
+  dropOffset: {x: 0, y: -1, z: -1}
+  moduleMeanCost: 150
+  moduleSd: 300
+  allowDuplicates: 0
+  messageFontSize: 5
+  messageHeightOffset: 0.4
 --- !u!1 &972646293
 GameObject:
   m_ObjectHideFlags: 0

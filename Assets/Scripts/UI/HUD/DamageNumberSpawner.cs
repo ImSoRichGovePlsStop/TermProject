@@ -49,14 +49,14 @@ public class DamageNumberSpawner : MonoBehaviour
         SpawnNumber(playerStats.transform.position + playerDamageOffset, damage, false, true);
     }
 
-    public void SpawnMessage(Vector3 worldPos, string message, Color color, float heightOffset = 0.9f)
+    public void SpawnMessage(Vector3 worldPos, string message, Color color, float heightOffset = 0.9f, float fontSize = 3.5f)
     {
         if (prefab == null) return;
         float tiltRad = Camera.main.transform.eulerAngles.x * Mathf.Deg2Rad;
         float zOffset = heightOffset * Mathf.Tan(tiltRad);
         Vector3 pos = worldPos + new Vector3(0f, heightOffset, zOffset);
         var num = Instantiate(prefab, pos, Quaternion.identity);
-        num.InitMessage(message, color);
+        num.InitMessage(message, color, fontSize);
     }
 
     public void SpawnHealNumber(Vector3 worldPos, float amount, float heightOffset = 0.5f)
