@@ -5,6 +5,8 @@ using UnityEngine.InputSystem;
 
 public class HubStorageUI : MonoBehaviour
 {
+    [SerializeField] private BagGridUpgradeConfig bagGridConfig;
+
     private const float ItemGap = 16f;
     private const int Columns = 4;
     private const float GridPad = 36f;
@@ -119,7 +121,7 @@ public class HubStorageUI : MonoBehaviour
         upgradeRt.offsetMin = new Vector2(0f, 0f);
         upgradeRt.offsetMax = new Vector2(0f, -60f);
         _upgradePanel = upgradeGo.AddComponent<BagGridUpgradeUI>();
-        _upgradePanel.Init();
+        _upgradePanel.Init(bagGridConfig, OnSwitchButtonClicked);
         upgradeGo.SetActive(false);
 
         _panel.SetActive(false);
@@ -256,6 +258,7 @@ public class HubStorageUI : MonoBehaviour
 
     private void ShowUpgradeView()
     {
+        Debug.Log($"[Storage] ShowUpgradeView, panel={_upgradePanel != null}");
         _isShowingUpgrade = true;
         _contentRoot?.SetActive(false);
         _upgradePanel?.gameObject.SetActive(true);
