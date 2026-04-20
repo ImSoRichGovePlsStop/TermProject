@@ -92,28 +92,22 @@ public class SellConfirmationUI : MonoBehaviour
             return;
         }
 
-        float sp = 3f;
-        float borderSize = 3f;
-
+        float sp = 2f;
+        float borderSize = 2f;
+        float scaleFactor = 0.9f;
+        float maxExpectedUnits = 4f;
 
         var shapeCells = data.GetShapeCells();
         var bound = data.GetBoundingSize();
 
-        float availableWidth = shapePreviewRoot.rect.width-2;
-        float availableHeight = shapePreviewRoot.rect.height-2;
+        float previewSize = shapePreviewRoot.rect.width;
+        float unitW = (previewSize + sp) / maxExpectedUnits - sp;
+        float cs = unitW * scaleFactor;
 
-        float csFromWidth = (availableWidth + sp) / bound.x - sp;
-        float csFromHeight = (availableHeight + sp) / bound.y - sp;
-        float cs = Mathf.Min(csFromWidth, csFromHeight); 
-
-        shapePreviewRoot.sizeDelta = new Vector2(
-            bound.x * (cs + sp) - sp,
-            bound.y * (cs + sp) - sp);
-
-        shapePreviewRoot.sizeDelta = new Vector2(
-            bound.x * (cs + sp) - sp,
-            bound.y * (cs + sp) - sp);
-
+        float shapeW = bound.x * (cs + sp) - sp;
+        float shapeH = bound.y * (cs + sp) - sp;
+        float xOffset = (previewSize - shapeW) / 2f;
+        float yOffset = -(shapePreviewRoot.rect.height - shapeH) / 2f;
         Color borderColor = RarityColor(rarity);
 
         foreach (var cell in shapeCells)
@@ -141,8 +135,8 @@ public class SellConfirmationUI : MonoBehaviour
                 cs + bExtraTop + bExtraBottom);
 
             borderRt.anchoredPosition = new Vector2(
-                 cell.x * (cs + sp) - bExtraLeft,
-                -cell.y * (cs + sp) + bExtraTop);
+                 cell.x * (cs + sp) - bExtraLeft + xOffset,
+                -cell.y * (cs + sp) + bExtraTop + yOffset);
 
             var borderImg = borderGo.GetComponent<Image>();
             borderImg.color = borderColor;
@@ -174,8 +168,8 @@ public class SellConfirmationUI : MonoBehaviour
                 cs - borderSize * 2f + extraTop + extraBottom);
 
             cellRt.anchoredPosition = new Vector2(
-                 cell.x * (cs + sp) + borderSize - extraLeft,
-                -cell.y * (cs + sp) - borderSize + extraTop);
+                 cell.x * (cs + sp) + borderSize - extraLeft + xOffset,
+                -cell.y * (cs + sp) - borderSize + extraTop + yOffset);
 
             var cellImg = go.GetComponent<Image>();
             if (data.icon != null) cellImg.sprite = data.icon;
