@@ -9,10 +9,13 @@ public class AttackHitbox : MonoBehaviour
     private int currentComboIndex = 0;
     private bool isSecondary = false;
 
+    private LayerMask _hitMask;
+
     private void Awake()
     {
         stats = GetComponentInParent<PlayerStats>();
         context = GetComponentInParent<PlayerCombatContext>();
+        _hitMask = (1 << LayerMask.NameToLayer("Enemy")) | (1 << LayerMask.NameToLayer("Breakable"));
     }
 
     public void SetComboHit(ComboHit hit, int comboIndex = 0, bool secondary = false)
@@ -32,10 +35,9 @@ public class AttackHitbox : MonoBehaviour
         var result = new HashSet<HealthBase>();
         var hitEnemies = new HashSet<Collider>();
 
-        Collider[] sphereHits = Physics.OverlapSphere(transform.position, currentHit.range);
+        Collider[] sphereHits = Physics.OverlapSphere(transform.position, currentHit.range, _hitMask);
         foreach (Collider hit in sphereHits)
         {
-            if (!hit.CompareTag("Enemy")) continue;
             Vector3 dir = (hit.transform.position - transform.position);
             dir.y = 0;
             float angleTo = Vector3.Angle(transform.forward, dir);
@@ -51,11 +53,11 @@ public class AttackHitbox : MonoBehaviour
             Collider[] boxHits = Physics.OverlapBox(
                 center,
                 new Vector3(width / 2f, 1f, currentHit.extraRange / 2f),
-                transform.rotation
+                transform.rotation,
+                _hitMask
             );
             foreach (Collider hit in boxHits)
-                if (hit.CompareTag("Enemy"))
-                    hitEnemies.Add(hit);
+                hitEnemies.Add(hit);
         }
 
         foreach (Collider hit in hitEnemies)
