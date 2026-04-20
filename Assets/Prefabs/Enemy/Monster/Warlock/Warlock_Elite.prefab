@@ -247,30 +247,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
   entries:
-  - material: {fileID: 11400000, guid: ac531af617b2d024c8d44a59918e7b1d, type: 2}
+  - items:
+    - material: {fileID: 11400000, guid: ac531af617b2d024c8d44a59918e7b1d, type: 2}
+      minCount: 1
+      maxCount: 1
     weight: 3
-    minCount: 1
-    maxCount: 1
-  - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+  - items:
+    - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+      minCount: 1
+      maxCount: 1
     weight: 1
-    minCount: 1
-    maxCount: 1
-  - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+  - items:
+    - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+      minCount: 1
+      maxCount: 1
     weight: 1
-    minCount: 1
-    maxCount: 1
-  - material: {fileID: 11400000, guid: 6bb7b6cfada68ea46b0e68a11c4e8b39, type: 2}
+  - items:
+    - material: {fileID: 11400000, guid: 6bb7b6cfada68ea46b0e68a11c4e8b39, type: 2}
+      minCount: 1
+      maxCount: 1
     weight: 10
-    minCount: 1
-    maxCount: 1
-  - material: {fileID: 11400000, guid: d526cca1760890744834885573002c5c, type: 2}
+  - items:
+    - material: {fileID: 11400000, guid: d526cca1760890744834885573002c5c, type: 2}
+      minCount: 1
+      maxCount: 1
     weight: 20
-    minCount: 1
-    maxCount: 1
-  - material: {fileID: 0}
+  - items: []
     weight: 65
-    minCount: 1
-    maxCount: 1
   maxDropsPerKill: 1
   groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
 --- !u!114 &6023014831787975133

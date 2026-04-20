@@ -343,7 +343,7 @@ public class MinibossHarpyController : HarpyController
         if (shockwavePrefab != null)
         {
             var sw = Instantiate(shockwavePrefab, diveTarget, Quaternion.identity);
-            sw.GetComponent<HarpyShockwave>()?.Init(stats.Damage * shockwaveDamageScale, eliteHealth);
+            sw.GetComponent<Shockwave>()?.Init(stats.Damage * shockwaveDamageScale, eliteHealth);
         }
 
         while (!diveLandFinished)

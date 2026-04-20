@@ -16,6 +16,7 @@ public class RunModifiers
     public float lootMeanBonus         = 0f;
     public int   extraLootOptions      = 0;
     public int   bonusCoinsOnFloorEntry = 0;
+    public int extraShopPool = 0;
 
     [Tooltip("Additive bias to loot-vs-upgrade chance after clearing a room. Positive = more loot, negative = more upgrades. Clamped to [0,1].")]
     public float lootChanceBias        = 0f;
@@ -75,6 +76,7 @@ public class RunModifiers
         coinMultiplier            *= other.coinMultiplier;
         lootMeanBonus             += other.lootMeanBonus;
         extraLootOptions          += other.extraLootOptions;
+        extraShopPool             += other.extraShopPool;
         bonusCoinsOnFloorEntry    += other.bonusCoinsOnFloorEntry;
         lootChanceBias            += other.lootChanceBias;
         extraEventRoomMin         += other.extraEventRoomMin;

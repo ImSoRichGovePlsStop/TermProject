@@ -38,7 +38,15 @@ public class BattleRoom : MonoBehaviour
     [Header("Waves")]
     [Range(1, 5)] public int waveCount = 3;
     public float wavePause = 1f;
-    public int waveThreshold = 0;
+    [Tooltip("Fraction of wave enemies remaining that triggers the next wave spawn.")]
+    [Range(0f, 0.5f)] public float waveNextThresholdMin = 0.2f;
+    [Range(0f, 0.5f)] public float waveNextThresholdMax = 0.3f;
+
+    [Header("Spawn Timing")]
+    [Tooltip("Min delay in seconds between each enemy spawn within a wave.")]
+    public float spawnDelayMin = 0.1f;
+    [Tooltip("Max delay in seconds between each enemy spawn within a wave.")]
+    public float spawnDelayMax = 0.7f;
 
     [Header("Reward")]
     [Tooltip("Chance to spawn loot instead of upgrade station on room clear.")]
@@ -71,8 +79,8 @@ public class BattleRoom : MonoBehaviour
     public float enemySpeedMax = 1.1f;
     public float enemyProgressBossWeight = 0.3f;
     public float enemyProgressRoomWeight = 0.1f;
-    public float enemyHpPlayerDmgWeight = 0.15f;
-    public float enemyDmgPlayerHpWeight = 0.15f;
+    public float enemyHpPlayerDmgWeight = 0.0f;
+    public float enemyDmgPlayerHpWeight = 0.0f;
 
     public Material boundaryMaterial;
 
@@ -85,6 +93,11 @@ public class BattleRoom : MonoBehaviour
     protected int _totalBudget;
     protected int[] _waveBudgets;
     protected int[] _eliteBudgetsPerWave;
+
+    protected int  _waveSpawnedCount   = 0;
+    protected int  _waveClearThreshold = 0;
+    protected bool _spawning           = false;
+    protected bool _waveClearPending   = false;
 
     const float TriggerInset = 0.3f;
     const float InvisibleWallThickness = 0.01f;
@@ -115,12 +128,13 @@ public class BattleRoom : MonoBehaviour
 
     protected virtual void OnEntityKilled(HealthBase enemy)
     {
-        if (!isLocked || isCleared) return;
-        _aliveCount = Mathf.Max(0, _aliveCount - 1);
+        if (isCleared) return;
 
-        var enemyHealth = enemy.GetComponent<EnemyHealthBase>();
-        EnemyTier tier = enemyHealth != null ? enemyHealth.Tier : EnemyTier.Normal;
-        RunManager.Instance?.OnEnemyKilled(tier);
+        if (_aliveCount > 0) _aliveCount--;
+
+        if (!isLocked) return;   // during wave pause — don't award coins or trigger wave clear
+
+        RunManager.Instance?.OnEnemyKilled();
         var enemyBase = enemy.GetComponent<EnemyBase>();
         int coinMin = enemyBase != null ? enemyBase.coinDropMin : fallbackCoinMin;
         int coinMax = enemyBase != null ? enemyBase.coinDropMax : fallbackCoinMax;
@@ -129,18 +143,24 @@ public class BattleRoom : MonoBehaviour
         Object.FindFirstObjectByType<CurrencyManager>()
               ?.AddCoins(Mathf.RoundToInt(Random.Range(coinMin, coinMax + 1) * floorMult * modMult));
 
-        if (_aliveCount <= waveThreshold)
+        if (!_spawning && !_waveClearPending && ShouldClearWave())
             StartCoroutine(OnWaveCleared());
     }
 
+    protected bool ShouldClearWave() => _aliveCount <= _waveClearThreshold;
+
     protected virtual IEnumerator OnWaveCleared()
     {
+        if (_waveClearPending) yield break;
+        _waveClearPending = true;
+
         isLocked = false;
         _currentWave++;
 
         if (_currentWave < waveCount)
         {
             yield return new WaitForSeconds(wavePause);
+            _waveClearPending = false;   // reset before next wave starts
             isLocked = true;
             SpawnWave(_currentWave);
         }
@@ -173,38 +193,152 @@ public class BattleRoom : MonoBehaviour
             StartCoroutine(OnWaveCleared());
             return;
         }
+        StartCoroutine(SpawnWaveRoutine(waveIndex));
+    }
 
-        int budget = _waveBudgets[waveIndex];
+    private IEnumerator SpawnWaveRoutine(int waveIndex)
+    {
+        _waveClearPending = false;
+        _spawning         = true;
+
+        var prefabs = BuildWavePrefabList(waveIndex);
+        if (prefabs.Count == 0)
+        {
+            _spawning = false;
+            StartCoroutine(OnWaveCleared());
+            yield break;
+        }
+
+       
+        var cells = new List<Vector3>(spawnCells);
+        ShuffleList(cells);
+        int cellIdx = 0;
         int spawned = 0;
+
+        foreach (var prefab in prefabs)
+        {
+            Vector3 pos = cells.Count > 0
+                ? cells[cellIdx++ % cells.Count] + Vector3.up * 0.5f
+                : transform.position + Vector3.up * 0.5f;
+
+            int n = SpawnEnemyPrefab(prefab, pos);
+            _aliveCount += n;
+            spawned     += n;
+            yield return new WaitForSeconds(Random.Range(spawnDelayMin, spawnDelayMax));
+        }
+
+        _waveSpawnedCount = spawned;
+
+       
+        bool isLastWave = _currentWave >= waveCount - 1;
+        _waveClearThreshold = isLastWave ? 0
+            : Mathf.Max(1, Mathf.RoundToInt(spawned * Random.Range(waveNextThresholdMin, waveNextThresholdMax)));
+
+        _spawning = false;
+
+       
+        if (isLocked && !isCleared && !_waveClearPending && ShouldClearWave())
+            StartCoroutine(OnWaveCleared());
+    }
+
+    private List<GameObject> BuildWavePrefabList(int waveIndex)
+        => BuildBudgetPrefabList(_waveBudgets[waveIndex], waveIndex);
+
+    protected List<GameObject> BuildBudgetPrefabList(int budget, int waveIndex)
+    {
+        var result = new List<GameObject>();
         int safetyLimit = 200;
+        bool groupSpawnerUsed = false;
 
         while (budget > 0 && safetyLimit-- > 0)
         {
-            // Filter entries that fit in remaining budget
             var affordable = new List<EnemyEntry>();
-            int cheapest = int.MaxValue;
             foreach (var e in enemyEntries)
             {
-                int c = Mathf.Max(1, e.cost);
-                if (c < cheapest) cheapest = c;
-                if (c <= budget) affordable.Add(e);
+                if (Mathf.Max(1, e.cost) > budget) continue;
+                if (groupSpawnerUsed && IsGroupSpawnerEntry(e)) continue;
+                affordable.Add(e);
             }
-
-            if (affordable.Count == 0) break; // nothing fits
+            if (affordable.Count == 0) break;
 
             var entry = affordable[Random.Range(0, affordable.Count)];
             bool useElite = _eliteBudgetsPerWave[waveIndex] > 0 && entry.elite != null;
             if (useElite) _eliteBudgetsPerWave[waveIndex]--;
             var prefab = useElite ? entry.elite : entry.normal;
             budget -= Mathf.Max(1, entry.cost);
-            spawned++;
-            ApplyEnemyScale(Instantiate(prefab, PickSpawnPosition(), Quaternion.identity));
+            result.Add(prefab);
+            if (prefab.GetComponent<IGroupSpawner>() != null) groupSpawnerUsed = true;
+        }
+        return result;
+    }
+
+    protected static void ShuffleList<T>(List<T> list)
+    {
+        for (int i = list.Count - 1; i > 0; i--)
+        { int j = Random.Range(0, i + 1); (list[i], list[j]) = (list[j], list[i]); }
+    }
+
+    protected int SpawnBudgetFill(int budget, int waveIndex)
+    {
+        int spawned = 0;
+        int safetyLimit = 200;
+
+        bool groupSpawnerUsed = false;
+
+        while (budget > 0 && safetyLimit-- > 0)
+        {
+            var affordable = new List<EnemyEntry>();
+            foreach (var e in enemyEntries)
+            {
+                if (Mathf.Max(1, e.cost) > budget) continue;
+                if (groupSpawnerUsed && IsGroupSpawnerEntry(e)) continue;
+                affordable.Add(e);
+            }
+
+            if (affordable.Count == 0) break;
+
+            var entry = affordable[Random.Range(0, affordable.Count)];
+            bool useElite = _eliteBudgetsPerWave[waveIndex] > 0 && entry.elite != null;
+            if (useElite) _eliteBudgetsPerWave[waveIndex]--;
+            var prefab = useElite ? entry.elite : entry.normal;
+            budget -= Mathf.Max(1, entry.cost);
+            spawned += SpawnEnemyPrefab(prefab);
+            if (prefab.GetComponent<IGroupSpawner>() != null) groupSpawnerUsed = true;
         }
 
-        _aliveCount += spawned;
-        if (spawned == 0)
-            StartCoroutine(OnWaveCleared());
+        return spawned;
     }
+
+    protected int SpawnEnemyPrefab(GameObject prefab, Vector3 position)
+    {
+        var go = Instantiate(prefab, position, Quaternion.identity);
+        var groupSpawner = go.GetComponent<IGroupSpawner>();
+        if (groupSpawner != null)
+        {
+            groupSpawner.SetGroupStatScale(ComputeStatScale());
+            groupSpawner.SetMissCallback(HandleGroupMiss);
+            return groupSpawner.GetSpawnCount();
+        }
+        ApplyEnemyScale(go);
+        return 1;
+    }
+
+    
+    protected int SpawnEnemyPrefab(GameObject prefab)
+        => SpawnEnemyPrefab(prefab, PickSpawnPosition());
+
+    protected void HandleGroupMiss(int missed)
+    {
+        if (missed <= 0) return;
+        _aliveCount = Mathf.Max(0, _aliveCount - missed);
+        if (isLocked && !isCleared && !_spawning && !_waveClearPending && ShouldClearWave())
+            StartCoroutine(OnWaveCleared());
+       
+    }
+
+    protected static bool IsGroupSpawnerEntry(EnemyEntry e)
+        => (e.normal != null && e.normal.GetComponent<IGroupSpawner>() != null)
+        || (e.elite  != null && e.elite.GetComponent<IGroupSpawner>()  != null);
 
     protected Vector3 PickSpawnPosition()
     {
@@ -218,7 +352,7 @@ public class BattleRoom : MonoBehaviour
         if (spawnCells == null || spawnCells.Count == 0)
             return transform.position;
 
-        // Only consider cells that are at least lootInset cells away from every wall.
+       
         float minX = transform.position.x - roomSize.x * 0.5f + lootInset;
         float maxX = transform.position.x + roomSize.x * 0.5f - lootInset;
         float minZ = transform.position.z - roomSize.z * 0.5f + lootInset;
@@ -229,22 +363,30 @@ public class BattleRoom : MonoBehaviour
             if (cell.x >= minX && cell.x <= maxX && cell.z >= minZ && cell.z <= maxZ)
                 interior.Add(cell);
 
-        // Fall back to any cell if the room is too small for the inset
+        
         var pool = interior.Count > 0 ? interior : spawnCells;
         return pool[Random.Range(0, pool.Count)];
+    }
+
+    protected StatScale ComputeStatScale()
+    {
+        var player = FindFirstObjectByType<PlayerStats>();
+        var rm = RunManager.Instance;
+        var scale = new StatScale();
+        float progress = (rm?.TotalBossKilled ?? 0) * enemyProgressBossWeight
+                       + (rm?.TotalRoomsCleared ?? 0) * enemyProgressRoomWeight;
+        scale.moveSpeed = Random.Range(enemySpeedMin, enemySpeedMax) * (rm?.EffectiveEnemySpeedMultiplier ?? 1f);
+        scale.hp        = (1f + progress + (player.Damage / Mathf.Max(1f, player.BaseDamage)) * enemyHpPlayerDmgWeight)
+                          * (rm?.EffectiveEnemyHpMultiplier ?? 1f);
+        scale.damage    = (1f + progress + (player.MaxHealth / Mathf.Max(1f, player.BaseHealth)) * enemyDmgPlayerHpWeight)
+                          * (rm?.EffectiveEnemyDamageMultiplier ?? 1f);
+        return scale;
     }
 
     protected void ApplyEnemyScale(GameObject enemy)
     {
         if (!enemy.TryGetComponent<EntityStats>(out var stats)) return;
-        var player = FindFirstObjectByType<PlayerStats>();
-        var scale = new StatScale();
-        float progress = (RunManager.Instance?.TotalBossKilled ?? 0) * enemyProgressBossWeight
-                       + (RunManager.Instance?.TotalRoomsCleared ?? 0) * enemyProgressRoomWeight;
-        scale.moveSpeed = Random.Range(enemySpeedMin, enemySpeedMax);
-        scale.hp = 1f + progress + (player.Damage / Mathf.Max(1f, player.BaseDamage)) * enemyHpPlayerDmgWeight;
-        scale.damage = 1f + progress + (player.MaxHealth / Mathf.Max(1f, player.BaseHealth)) * enemyDmgPlayerHpWeight;
-        stats.SetStatScale(scale);
+        stats.SetStatScale(ComputeStatScale());
     }
 
     public void CalculateTotalBudget(Vector3 vol)
@@ -253,24 +395,22 @@ public class BattleRoom : MonoBehaviour
         float modMult = RunManager.Instance?.EffectiveEnemyCountMult ?? 1f;
         _totalBudget  = Mathf.RoundToInt((baseBudget + area * budgetPerArea) * modMult);
 
-        // Large rooms get one fewer wave so each wave has more enemies (feels fuller)
         if (area > waveReduceAreaThreshold)
             waveCount = Mathf.Max(1, waveCount - 1);
     }
 
-    // Apply run modifier bonuses once when the room is first entered
+    
     protected virtual void ApplyRunModifiers()
     {
         var rm = RunManager.Instance;
         if (rm == null) return;
         eliteBudget += rm.EffectiveEliteBudgetBonus;
 
-        // Extra waves add proportional budget instead of splitting the same pool
+        
         int extraWaves = rm.EffectiveExtraWaves;
         if (extraWaves > 0)
         {
             int totalWaves = waveCount + extraWaves;
-            // Scale total budget so each wave keeps roughly the same budget
             _totalBudget = Mathf.RoundToInt(_totalBudget * ((float)totalWaves / Mathf.Max(1, waveCount)));
             waveCount = totalWaves;
         }
@@ -302,7 +442,8 @@ public class BattleRoom : MonoBehaviour
         RemoveInvisibleWalls();
 
         bool firstRoom = (RunManager.Instance?.TotalRoomsCleared ?? 0) == 0;
-        if (firstRoom || Random.value < lootChance)
+        float effectiveLootChance = Mathf.Clamp01(lootChance + (RunManager.Instance?.EffectiveLootChanceBias ?? 0f));
+        if (firstRoom || Random.value < effectiveLootChance)
             SpawnLoot(PickLootPosition());
         else if (upgradeStationPrefab != null)
             Instantiate(upgradeStationPrefab, PickLootPosition(), Quaternion.identity);
@@ -380,6 +521,7 @@ public class BattleRoom : MonoBehaviour
 
     protected void CreateInvisibleWalls()
     {
+        int wallLayer = LayerMask.NameToLayer("Wall");
         float t = InvisibleWallThickness;
         (Vector3 pos, Vector3 size)[] configs =
         {
@@ -392,6 +534,7 @@ public class BattleRoom : MonoBehaviour
         foreach (var (localPos, size) in configs)
         {
             var wall = new GameObject("InvisibleWall");
+            if (wallLayer >= 0) wall.layer = wallLayer;
             wall.transform.SetParent(transform);
             wall.transform.localPosition = localPos;
             wall.AddComponent<BoxCollider>().size = size;

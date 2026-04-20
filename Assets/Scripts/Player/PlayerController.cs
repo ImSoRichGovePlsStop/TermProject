@@ -127,6 +127,11 @@ public class PlayerController : MonoBehaviour
     public void OnPrimaryAttack(InputAction.CallbackContext ctx)
     {
         if (!ctx.started) return;
+        TryPrimaryAttack();
+    }
+
+    private void TryPrimaryAttack()
+    {
         if (IsAnyUIOpen()) return;
         if (isPrimaryAttacking || isSecondaryAttacking) return;
         if (primaryCooldownTimer > 0) return;
@@ -269,6 +274,12 @@ public class PlayerController : MonoBehaviour
         WeaponData weapon = weaponEquip.GetCurrentWeapon();
         if (weapon != null && weapon.weaponType != WeaponType.Wand)
             secondaryCooldownTimer = weapon.secondaryCooldown / stats.AttackSpeed;
+    }
+
+    void Update()
+    {
+        if (Mouse.current != null && Mouse.current.leftButton.isPressed)
+            TryPrimaryAttack();
     }
 
     void FixedUpdate()

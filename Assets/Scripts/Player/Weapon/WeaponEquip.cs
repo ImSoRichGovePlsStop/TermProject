@@ -46,4 +46,13 @@ public class WeaponEquip : MonoBehaviour
     }
 
     public WeaponData GetCurrentWeapon() => currentWeapon;
+
+    public void ResetToCurrentWeapon()
+    {
+        var weapon = currentWeapon ?? startingWeapon;
+        if (weapon != null)
+            Equip(weapon);
+        else
+            Unequip();
+    }
 }

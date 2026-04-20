@@ -50,6 +50,24 @@ public class UIManager : MonoBehaviour
         Instance = this;
     }
 
+    private void OnEnable()  { UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded; }
+    private void OnDisable() { UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded; }
+
+    private void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        ResetPanelState();
+    }
+
+    public void ResetPanelState()
+    {
+        IsInventoryOpen  = false;
+        IsRightPanelOpen = false;
+        isInBattle       = false;
+        _upgradeOpen     = false;
+        inventoryPanel?.SetActive(false);
+        if (hud != null) hud.SetActive(true);
+    }
+
     private void Start()
     {
         playerStats = FindFirstObjectByType<PlayerStats>();
@@ -98,10 +116,18 @@ public class UIManager : MonoBehaviour
 
     private void Update()
     {
-        if (isInBattle) return;
-
         var kb = Keyboard.current;
         if (kb == null) return;
+
+        if (isInBattle)
+        {
+            if (IsInventoryOpen &&
+                (kb[Key.Escape].wasPressedThisFrame || kb[Key.I].wasPressedThisFrame))
+            {
+                CloseInventoryImmediate();
+            }
+            return;
+        }
 
         if (kb[Key.I].wasPressedThisFrame)
         {
@@ -123,7 +149,7 @@ public class UIManager : MonoBehaviour
             else if (IsLuckStationOpen)   CloseLuckStation();
             else if (IsMergeOpen) { CloseMerge(); CloseInventoryImmediate(); }
             else if (IsShopOpen) { CloseShop(); CloseInventoryImmediate(); }
-            else if (IsInventoryOpen) ToggleInventory();
+            else ToggleInventory();
         }
 
         if (IsInventoryOpen && inventoryUI != null)
@@ -385,32 +411,26 @@ public class UIManager : MonoBehaviour
     {
         var cam = CameraController.Instance;
         if (cam != null)
-            yield return StartCoroutine(cam.EndgameEffect(1f));
-        else
-            yield return new WaitForSecondsRealtime(1f);
+            yield return StartCoroutine(cam.EndgameEffect(1.5f));
 
         _endGameUI.Show(isWin);
     }
 
+    private void OnPlayerDeath()
+    {
+        ShowEndGame(false);
+    }
+
+
     public IEnumerator PlayFloorTransition()
     {
-        if (_floorTransitionUI == null)
-            _floorTransitionUI = FindFirstObjectByType<FloorTransitionUI>(FindObjectsInactive.Include);
-        if (_floorTransitionUI != null)
-            yield return StartCoroutine(_floorTransitionUI.PlayTransition());
+        if (_floorTransitionUI == null) yield break;
+        yield return StartCoroutine(_floorTransitionUI.PlayFadeIn());
     }
 
     public IEnumerator PlayFloorModifierSelection(FloorModifierCard[] cards)
     {
-        if (_floorModifierUI == null)
-            _floorModifierUI = FindFirstObjectByType<FloorModifierUI>(FindObjectsInactive.Include);
-        if (_floorModifierUI != null && cards != null && cards.Length > 0)
-            yield return StartCoroutine(_floorModifierUI.ShowSelection(cards));
-    }
-
-    private void OnPlayerDeath()
-    {
-        isInBattle = false;
-        ShowEndGame(false);
+        if (_floorModifierUI == null) yield break;
+        yield return StartCoroutine(_floorModifierUI.ShowSelection(cards));
     }
 }

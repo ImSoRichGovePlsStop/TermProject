@@ -119,6 +119,8 @@ public class UpgradeStationUI : MonoBehaviour
     {
         instance.SetLevel(instance.Level + 1);
 
+        InventoryManager.Instance?.RefreshModule(instance);
+
         var moduleUI = instance.UIElement as ModuleItemUI;
         if (moduleUI != null)
         {

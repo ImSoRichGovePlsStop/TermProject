@@ -80,10 +80,20 @@ public class HealthStationManager : MonoBehaviour
     {
         var s = FindFirstObjectByType<PlayerStats>();
         if (s != null) s.OnReviveRequested -= TryRevive;
-        CurrentLevel = 0;
-        canRevive    = false;
-        revived      = false;
-        killCount    = 0;
+
+        canRevive = false;
+        revived   = false;
+        killCount = 0;
+
+        if (CurrentLevel >= 2)
+            s?.AddFlatModifier(new StatModifier { health = 40f });
+
+        if (CurrentLevel >= 5)
+        {
+            canRevive = true;
+            if (s != null) s.OnReviveRequested += TryRevive;
+        }
+
         OnLevelChanged?.Invoke();
     }
 
@@ -92,7 +102,7 @@ public class HealthStationManager : MonoBehaviour
         var s = FindFirstObjectByType<PlayerStats>();
         switch (lv)
         {
-            case 2: s?.AddFlatModifier(new StatModifier { health = 25f }); break;
+            case 2: s?.AddFlatModifier(new StatModifier { health = 40f }); break;
             case 5:
                 canRevive = true;
                 revived   = false;
@@ -107,9 +117,9 @@ public class HealthStationManager : MonoBehaviour
         var s = FindFirstObjectByType<PlayerStats>();
         if (s == null || s.IsDead) return;
         float missing = s.MaxHealth - s.CurrentHealth;
-        s.Heal(missing * 0.10f);
+        s.Heal(missing * 0.20f);
         if (CurrentLevel >= 3)
-            s.AddFlatModifier(new StatModifier { health = 3f });
+            s.AddFlatModifier(new StatModifier { health = 5f });
     }
 
     private void OnEnemyKilledWithTier(EnemyTier tier)
@@ -118,10 +128,10 @@ public class HealthStationManager : MonoBehaviour
         var s = FindFirstObjectByType<PlayerStats>();
         if (s == null || s.IsDead) return;
 
-        if (tier == EnemyTier.Boss)                                    { s.Heal(25f); return; }
-        if (tier == EnemyTier.Elite || tier == EnemyTier.Miniboss)    { s.Heal(10f); return; }
+        if (tier == EnemyTier.Miniboss)  { s.Heal(s.MaxHealth * 0.35f); return; }
+        if (tier == EnemyTier.Elite)     { s.Heal(s.MaxHealth * 0.05f); return; }
 
-        if (++killCount >= 10) { s.Heal(5f); killCount = 0; }
+        if (++killCount >= 10) { s.Heal(s.MaxHealth * 0.05f); killCount = 0; }
     }
 
     private bool TryRevive()
@@ -130,7 +140,7 @@ public class HealthStationManager : MonoBehaviour
         var s = FindFirstObjectByType<PlayerStats>();
         if (s == null) return false;
         revived = true;
-        s.Heal(50f);
+        s.Heal(s.MaxHealth * 0.50f);
         return true;
     }
 }
