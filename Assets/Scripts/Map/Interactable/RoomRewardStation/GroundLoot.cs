@@ -11,6 +11,13 @@ public class GroundLoot : MonoBehaviour, IInteractable
     private readonly List<ModuleInstance> _savedLoot = new List<ModuleInstance>();
 
     public string GetPromptText() => "[ E ]  Open Loot";
+    public InteractInfo GetInteractInfo() => new InteractInfo
+    {
+        name        = "Loot",
+        description = "Contains items to pick up.",
+        actionText  = "Pick Up",
+        cost        = null
+    };
 
     public void Interact(PlayerController playerController)
     {

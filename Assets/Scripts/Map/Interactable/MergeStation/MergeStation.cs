@@ -9,6 +9,13 @@ public class MergeStation : MonoBehaviour, IInteractable
     public bool HasOutput => CachedOutput != null;
 
     public string GetPromptText() => "[ E ]  Reforge Items";
+    public InteractInfo GetInteractInfo() => new InteractInfo
+    {
+        name        = "Smelter",
+        description = "Smelt your items to create a new one with combined values.",
+        actionText  = "Smelt",
+        cost        = null
+    };
 
     private void Start()
     {

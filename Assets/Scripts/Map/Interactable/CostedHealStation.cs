@@ -27,6 +27,21 @@ public class PaidHealObject : MonoBehaviour, IInteractable
 
 
 
+    public InteractInfo GetInteractInfo()
+    {
+        var stats = FindStats();
+        string desc = stats != null
+            ? $"Channels restorative magic, healing <color=#88FF88>{ComputeHeal(stats)}</color> HP  (<color=#88FF88>{CurrentFlatHeal()}</color> HP  +  <color=#88FF88>{missingHpHealPercent * 100f:0}%</color> of missing health)."
+            : $"Channels restorative magic, healing <color=#88FF88>{CurrentFlatHeal()}+</color> HP based on your missing health.";
+        return new InteractInfo
+        {
+            name        = "Healing Crystal",
+            description = desc,
+            actionText  = "Heal",
+            cost        = CurrentCost()
+        };
+    }
+
     public string GetPromptText()
     {
         int cost = CurrentCost();
@@ -34,7 +49,7 @@ public class PaidHealObject : MonoBehaviour, IInteractable
         var stats = FindStats();
         string healStr = stats != null
             ? $"+{ComputeHeal(stats)} HP"   
-            : $"+{CurrentFlatHeal()}+ HP";  
+            : $"+{CurrentFlatHeal()} HP";  
 
 
         return $"[ E ]  Heal  {healStr}  ({cost} coins)";

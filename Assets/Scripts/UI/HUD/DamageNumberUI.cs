@@ -57,6 +57,8 @@ public class DamageNumberUI : MonoBehaviour
         damageText.text = message;
         damageText.fontSize = fontSize;
         damageText.color = color;
+        damageText.overflowMode = TextOverflowModes.Overflow;
+        damageText.textWrappingMode = TMPro.TextWrappingModes.NoWrap;
         StartCoroutine(Animate(duration));
     }
 

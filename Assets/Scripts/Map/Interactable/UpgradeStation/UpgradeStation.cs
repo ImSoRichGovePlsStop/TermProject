@@ -7,6 +7,13 @@ public class UpgradeStation : MonoBehaviour, IInteractable
 
 
     public virtual string GetPromptText() => "[ E ]  Upgrade Your Modules";
+    public virtual InteractInfo GetInteractInfo() => new InteractInfo
+    {
+        name        = "Anvil",
+        description = "Randomly pick modules from your inventory to upgrade.",
+        actionText  = "Upgrade",
+        cost        = null
+    };
 
     public virtual void OnUpgradeClosed() { }
 

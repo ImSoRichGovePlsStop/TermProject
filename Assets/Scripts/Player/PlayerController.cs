@@ -6,6 +6,7 @@ public interface IInteractable
 {
     void Interact(PlayerController playerController);
     string GetPromptText();
+    InteractInfo GetInteractInfo();
 }
 public class PlayerController : MonoBehaviour
 {
@@ -364,6 +365,12 @@ public class PlayerController : MonoBehaviour
 
     private void CheckInteractable()
     {
+        if (UIManager.Instance != null && UIManager.Instance.isInBattle)
+        {
+            interactPrompt?.Hide();
+            return;
+        }
+
         Collider[] hits = Physics.OverlapSphere(transform.position, interactRange, interactableLayer);
 
         IInteractable closest = null;
@@ -381,7 +388,7 @@ public class PlayerController : MonoBehaviour
         }
 
         if (closest != null)
-            interactPrompt?.Show(closest.GetPromptText());
+            interactPrompt?.Show(closest.GetInteractInfo(), (closest as MonoBehaviour)?.transform);
         else
             interactPrompt?.Hide();
     }

@@ -16,7 +16,6 @@ public class LuckStationManager : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
-        DontDestroyOnLoad(gameObject);
     }
 
     public LuckStationLevelData GetLevelData(int level)

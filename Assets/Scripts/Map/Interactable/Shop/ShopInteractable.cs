@@ -23,6 +23,13 @@ public class ShopInteractable : MonoBehaviour, IInteractable
     private TestModuleEntry[] _generatedEntries;
 
     public string GetPromptText() => "[ E ]  Open Shop";
+    public InteractInfo GetInteractInfo() => new InteractInfo
+    {
+        name        = "Merchant",
+        description = "Purchase or sell items.",
+        actionText  = "Talk",
+        cost        = null
+    };
 
     private void Start()
     {

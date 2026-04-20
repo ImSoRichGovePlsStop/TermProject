@@ -2,9 +2,10 @@ using UnityEngine;
 
 public class WishFountain : MonoBehaviour, IInteractable
 {
-    [SerializeField] private float activateChance  = 0.05f;
-    [SerializeField] private float chanceIncrement = 0.001f;
-    [SerializeField] private int   cost            = 1;
+    [SerializeField] private float activateChance  = 0.02f;
+    [SerializeField] private float chanceIncrement = 0.00f;
+    [SerializeField] private int   baseCost        = 10;
+    [SerializeField] private int   costPerFloor    = 1;
 
     [Header("Wish Loot")]
     [SerializeField] private float wishMeanCost    = 150f;
@@ -22,8 +23,20 @@ public class WishFountain : MonoBehaviour, IInteractable
     private bool      _activated = false;
     private UIManager _uiManager;
 
+    private int CurrentCost()
+    {
+        int floor = RunManager.Instance?.CurrentFloor ?? 1;
+        return baseCost + costPerFloor * (floor - 1);
+    }
 
-    public string GetPromptText() => $"[ E ]  {cost} Gold to make a wish";
+    public string GetPromptText() => $"[ E ]  $ {CurrentCost()} to make a wish";
+    public InteractInfo GetInteractInfo() => new InteractInfo
+    {
+        name        = "Wish Fountain",
+        description = $"Toss a coin into the fountain for a <color=#88FF88>{activateChance * 100f:0.0}%</color> chance to receive a blessing.",
+        actionText  = "Wish",
+        cost        = CurrentCost()
+    };
 
     private void Start()
     {
@@ -34,6 +47,7 @@ public class WishFountain : MonoBehaviour, IInteractable
     {
         if (_activated) return;
 
+        int cost = CurrentCost();
         if (!CurrencyManager.Instance.TrySpend(cost))
         {
             DamageNumberSpawner.Instance?.SpawnMessage(
@@ -44,6 +58,8 @@ public class WishFountain : MonoBehaviour, IInteractable
         if (Random.value < activateChance)
         {
             _activated = true;
+            var col = GetComponent<Collider>();
+            if (col != null) col.enabled = false;
             int eventType = Random.Range(0,4);
 
             switch (eventType)

@@ -174,8 +174,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RandomLoot
   optionCount: 1
   allowDuplicates: 0
-  meanCost: 150
-  sd: 30
+  meanCost: 100
+  sd: 60
   isMimic: 1
   mimicChance: 0.2
   mimicPrefab: {fileID: 4435016329322801452, guid: 39678b9541782ef4ba8d59c29c4e5646, type: 3}

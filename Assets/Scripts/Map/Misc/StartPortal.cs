@@ -18,4 +18,10 @@ public class StartPortal : MonoBehaviour, IInteractable
     }
 
     string IInteractable.GetPromptText() => "[E] -> Start Run";
+    InteractInfo IInteractable.GetInteractInfo() => new InteractInfo
+    {
+        name       = "Start Run",
+        actionText = "Enter",
+        cost       = null
+    };
 }

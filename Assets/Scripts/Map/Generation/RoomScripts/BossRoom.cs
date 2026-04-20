@@ -29,7 +29,7 @@ public class BossRoom : BattleRoom
     [Tooltip("Fraction of the normal battle-room budget used for MiniBoss / EliteBattle waves. " +
              "Lower values mean fewer enemies.")]
     [Range(0.1f, 1f)]
-    public float eliteWaveBudgetMult = 0.6f;
+    public float eliteWaveBudgetMult = 0.8f;
 
     // ── Loot (all modes share this) ───────────────────────────────────────────
     [Header("Boss Loot Config")]
