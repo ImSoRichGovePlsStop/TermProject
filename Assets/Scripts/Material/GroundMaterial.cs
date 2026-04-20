@@ -102,7 +102,6 @@ public class GroundMaterial : MonoBehaviour, IInteractable
     public InteractInfo GetInteractInfo() => new InteractInfo
     {
         name        = data?.moduleName ?? "Material",
-        description = !string.IsNullOrEmpty(data?.materialDescription) ? data.materialDescription : null,
         actionText  = "Pick Up",
         cost        = null
     };
