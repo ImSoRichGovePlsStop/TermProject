@@ -357,7 +357,7 @@ MonoBehaviour:
     comboExtend3Chance: 0.5
     comboExtend4Chance: 0.5
     comboReaverProjectileChance: 0.35
-    lashLineCount: 3
+    lashLineCount: 4
     anchorCooldownMin: 6
     anchorCooldownMax: 9
     smashEnabled: 1
@@ -375,7 +375,7 @@ MonoBehaviour:
     comboExtend3Chance: 0.75
     comboExtend4Chance: 0.75
     comboReaverProjectileChance: 0.75
-    lashLineCount: 3
+    lashLineCount: 8
     anchorCooldownMin: 6
     anchorCooldownMax: 9
     smashEnabled: 1
@@ -407,18 +407,18 @@ MonoBehaviour:
   lasherCooldownMin: 1.75
   lasherCooldownMax: 2.5
   comboDashSpeed: 20
-  comboDashDuration: 0.1
+  comboDashDuration: 0.15
   comboDashHitRadius: 0.75
   comboDamageScale: 1
   comboMaxRedirectAngle: 105
   comboExtendMaxRedirectAngle: 75
   lashHitOffset: 1
-  lashHitRadius: 1.2
+  lashHitRadius: 1
   lashDamageScale: 1.2
-  lashTipDelay: 0.3
-  lashTipOffset: 2
-  lashTipCount: 3
-  lashTipRadius: 1.2
+  lashTipDelay: 0.15
+  lashTipOffset: 1.75
+  lashTipCount: 4
+  lashTipRadius: 1
   lashTipDamageScale: 1.2
   lashLineAngleStep: 45
   lashAoeVFX: {fileID: 245339282735500823, guid: 5292192e29d6a1447bdf673f3227f4a1, type: 3}
@@ -426,8 +426,8 @@ MonoBehaviour:
   lashVFXOffsetY: 0.5
   lashVFXOffsetZMult: 0.3
   lashAoeFieldPrefab: {fileID: 3132944589323993650, guid: e05e31c4e3f36bf40b3b6ea1a1d4dbb4, type: 3}
-  lashFieldFadeInDuration: 0.4
-  lashFieldStayDuration: 0.4
+  lashFieldFadeInDuration: 0.12
+  lashFieldStayDuration: 0.3
   lashFieldFadeOutDuration: 0.25
   combo2PostDelayMin: 0.6
   combo2PostDelayMax: 0.8
@@ -513,10 +513,10 @@ MonoBehaviour:
   anchorLastPositionChance: 0.5
   reaverProjectilePostDelayMin: 0.8
   reaverProjectilePostDelayMax: 1.2
-  reaverDashAttackRange: 3
+  reaverDashAttackRange: 4
   reaverDashCooldownMin: 2.5
   reaverDashCooldownMax: 3
-  reaverDashSpeed: 10
+  reaverDashSpeed: 12
   reaverDashDuration: 0.18
   reaverDashHitRadius: 0.9
   reaverDashDamageScale: 1.5
@@ -528,8 +528,8 @@ MonoBehaviour:
   chargeAttackRange: 7
   reaverChargeCooldownMin: 5
   reaverChargeCooldownMax: 8
-  chargeSpeed: 16
-  chargeWindUpDuration: 0.8
+  chargeSpeed: 18
+  chargeWindUpDuration: 0.5
   windUpRotateSpeed: 180
   chargeHitRadius: 0.7
   chargeDamageScale: 1.8
@@ -550,12 +550,12 @@ MonoBehaviour:
   jumpRiseDuration: 0.5
   jumpFallDuration: 0.3
   jumpDamageScale: 3
-  jumpLandRadius: 1.75
-  jumpTipCount: 3
-  jumpTipBaseDelay: 0.5
-  jumpTipBaseDistance: 2
-  jumpTipDistanceStep: 0.75
-  jumpTipBaseRadius: 0.6
+  jumpLandRadius: 1.8
+  jumpTipCount: 4
+  jumpTipBaseDelay: 0.2
+  jumpTipBaseDistance: 1.8
+  jumpTipDistanceStep: 0.4
+  jumpTipBaseRadius: 0.55
   jumpTipRadiusStep: 0.3
   jumpTipDamageScale: 1.5
   jumpAoeVFX: {fileID: 245339282735500823, guid: 5292192e29d6a1447bdf673f3227f4a1, type: 3}
@@ -563,14 +563,14 @@ MonoBehaviour:
   jumpVFXOffsetY: 0.5
   jumpVFXOffsetZMult: 0.3
   jumpAoeFieldPrefab: {fileID: 3132944589323993650, guid: e05e31c4e3f36bf40b3b6ea1a1d4dbb4, type: 3}
-  jumpFieldFadeInDuration: 0.1
-  jumpFieldStayDuration: 0.4
+  jumpFieldFadeInDuration: 0.12
+  jumpFieldStayDuration: 0.3
   jumpFieldFadeOutDuration: 0.25
   jumpTargetRandomOffset: 0.25
   jumpLandTriggerHeight: 1
   jumpLandFinishDelay: 0.5
-  jumpPostDelayMin: 2
-  jumpPostDelayMax: 3
+  jumpPostDelayMin: 1.5
+  jumpPostDelayMax: 2.5
   jumpWeight: 1
 --- !u!114 &1595102670700126107
 MonoBehaviour:
