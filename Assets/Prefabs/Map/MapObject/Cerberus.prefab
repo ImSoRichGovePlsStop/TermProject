@@ -169,10 +169,18 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f30e2ab00b19af944acc9c7fd574283a, type: 2}
   - {fileID: 11400000, guid: 7ba20a670b80b744c82f719a8118b50c, type: 2}
   - {fileID: 11400000, guid: a7f0ae0d573fda242bf1ee3eba5f0133, type: 2}
+  weightCommon: 0.6
+  weightUncommon: 0.3
+  weightRare: 0.07
+  weightEpic: 0.025
+  weightGOD: 0.005
   groundMaterialPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
   dropOffset: {x: 0, y: -1, z: -1}
-  moduleMeanCost: 150
-  moduleSd: 300
+  floatAmplitude: 0.15
+  dropSpreadLeft: -1
+  dropSpreadRight: 0.6
+  moduleMeanCost: 50
+  moduleSd: 75
   allowDuplicates: 0
   messageFontSize: 5
   messageHeightOffset: 0.4
