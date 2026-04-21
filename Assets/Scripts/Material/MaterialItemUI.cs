@@ -10,7 +10,7 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Image))]
 public class MaterialItemUI : MonoBehaviour,
     IBeginDragHandler, IDragHandler, IEndDragHandler,
-    IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+    IPointerDownHandler, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     public MaterialInstance Instance { get; private set; }
 
@@ -32,6 +32,7 @@ public class MaterialItemUI : MonoBehaviour,
     private int _originRotation;
     private Vector2 _dragOffset;
     private Vector2Int _clickedCell;
+    private Vector2 _pointerDownScreenPos;
     private TextMeshProUGUI _stackText;
     private int _dragRotation;
     private bool _isDragging;
@@ -601,13 +602,22 @@ public class MaterialItemUI : MonoBehaviour,
         if (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible) DiscardGridUI.Instance.GridUI?.ClearHighlights();
     }
 
-    private Vector2Int GetClickedLocalCell(PointerEventData e)
+    public void OnPointerDown(PointerEventData e)
+    {
+        _pointerDownScreenPos = e.position;
+    }
+
+    private Vector2Int GetClickedLocalCell(PointerEventData e) => GetClickedLocalCellFromScreen(_pointerDownScreenPos);
+
+    private Vector2Int GetClickedLocalCellFromScreen(Vector2 screenPos)
     {
         float cs = BagGridUI.CellSize;
         float sp = BagGridUI.CellSpacing;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(_rt, e.position, UICam(), out var localPoint);
-        return new Vector2Int(Mathf.Max(0, Mathf.FloorToInt(localPoint.x / (cs + sp))),
-                              Mathf.Max(0, Mathf.FloorToInt(-localPoint.y / (cs + sp))));
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(_rt, screenPos, UICam(), out var localPoint);
+        var bound = Instance.Data.GetBoundingSize(Instance.Rotation);
+        int x = Mathf.Clamp(Mathf.FloorToInt(localPoint.x / (cs + sp)), 0, bound.x - 1);
+        int y = Mathf.Clamp(Mathf.FloorToInt(-localPoint.y / (cs + sp)), 0, bound.y - 1);
+        return new Vector2Int(x, y);
     }
 
     private Camera UICam() => _canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : _canvas.worldCamera;
