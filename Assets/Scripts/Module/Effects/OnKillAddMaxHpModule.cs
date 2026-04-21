@@ -11,8 +11,10 @@ public class OnKillAddMaxHpModule : ModuleEffect
     [Tooltip("Level multiplier")]
     public float levelMultiplier;
 
-    private readonly Dictionary<ModuleRuntimeState, Action<HealthBase>> _stateMap = new();
+    [Tooltip("Maximum number of stacks allowed")]
+    public int maxStacks = 100;
 
+    private readonly Dictionary<ModuleRuntimeState, Action<HealthBase>> _stateMap = new();
     private readonly Dictionary<ModuleRuntimeState, int> _stackMap = new();
 
     protected override void OnEquip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state)
@@ -20,6 +22,8 @@ public class OnKillAddMaxHpModule : ModuleEffect
         state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
 
         if (!_stackMap.ContainsKey(state)) _stackMap[state] = 0;
+
+        state.hpAdded = _stackMap[state] * state.currentStat;
 
         float existingEffectiveHp = state.hpAdded * (1f + state.totalBuffPercent);
         if (existingEffectiveHp > 0)
@@ -32,6 +36,7 @@ public class OnKillAddMaxHpModule : ModuleEffect
         Action<HealthBase> handler = (enemy) =>
         {
             if (enemy == null) return;
+            if (_stackMap[state] >= maxStacks) return;
 
             float oldEffectiveHp = state.hpAdded * (1f + state.totalBuffPercent);
             if (oldEffectiveHp > 0)
@@ -39,8 +44,9 @@ public class OnKillAddMaxHpModule : ModuleEffect
                 stats.RemoveFlatModifier(new StatModifier { health = oldEffectiveHp });
             }
 
-            state.hpAdded += state.currentStat;
             _stackMap[state]++;
+
+            state.hpAdded = _stackMap[state] * state.currentStat;
 
             float newEffectiveHp = state.hpAdded * (1f + state.totalBuffPercent);
             stats.AddFlatModifier(new StatModifier { health = newEffectiveHp });
@@ -57,7 +63,7 @@ public class OnKillAddMaxHpModule : ModuleEffect
         var ctx = stats.GetComponent<PlayerCombatContext>();
         if (ctx != null)
         {
-            ctx.OnEntityKilled -= handler; 
+            ctx.OnEntityKilled -= handler;
         }
 
         _stateMap.Remove(state);
@@ -67,43 +73,69 @@ public class OnKillAddMaxHpModule : ModuleEffect
         {
             stats.RemoveFlatModifier(new StatModifier { health = existingEffectiveHp });
         }
-
     }
 
     public override void OnLevelBuffReceived(int baselevel, int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
     {
-        if (!_stateMap.ContainsKey(state)) return;
+        float oldEffectiveHp = state.hpAdded * (1f + state.totalBuffPercent);
+        if (state.isActive && oldEffectiveHp > 0) stats.RemoveFlatModifier(new StatModifier { health = oldEffectiveHp });
 
         if (state.buffedLevel == 0) state.buffedLevel = baselevel;
         state.buffedLevel += levelBonus;
 
         Rarity effectiveRarity = state.buffRarity > rarity ? state.buffRarity : rarity;
-
         state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, effectiveRarity, state.buffedLevel);
+
+        // Recalculate to apply the level up to all existing stacks retroactively
+        int stacks = _stackMap.TryGetValue(state, out int s) ? s : 0;
+        state.hpAdded = stacks * state.currentStat;
+
+        float newEffectiveHp = state.hpAdded * (1f + state.totalBuffPercent);
+        if (state.isActive && newEffectiveHp > 0) stats.AddFlatModifier(new StatModifier { health = newEffectiveHp });
     }
 
     public override void OnLevelBuffRemoved(int baselevel, int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
     {
-        state.buffedLevel -= levelBonus;
+        if (!state.isActive)
+        {
+            state.buffedLevel -= levelBonus;
+            return;
+        }
 
-        if (!_stateMap.ContainsKey(state)) return;
-        if (!state.isActive) return;
+        float oldEffectiveHp = state.hpAdded * (1f + state.totalBuffPercent);
+        if (oldEffectiveHp > 0) stats.RemoveFlatModifier(new StatModifier { health = oldEffectiveHp });
+
+        state.buffedLevel -= levelBonus;
 
         Rarity effectiveRarity = state.buffRarity > rarity ? state.buffRarity : rarity;
         state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, effectiveRarity, state.buffedLevel);
+
+        int stacks = _stackMap.TryGetValue(state, out int s) ? s : 0;
+        state.hpAdded = stacks * state.currentStat;
+
+        float newEffectiveHp = state.hpAdded * (1f + state.totalBuffPercent);
+        if (newEffectiveHp > 0) stats.AddFlatModifier(new StatModifier { health = newEffectiveHp });
     }
 
     public override void OnRarityBuffReceived(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
     {
         state.baseRarity[(int)newRarity]++;
 
-        if (!_stateMap.ContainsKey(state)) return;
         if (state.buffRarity > newRarity | oldRarity > newRarity) return;
+
+        float oldEffectiveHp = state.hpAdded * (1f + state.totalBuffPercent);
+        if (state.isActive && oldEffectiveHp > 0) stats.RemoveFlatModifier(new StatModifier { health = oldEffectiveHp });
 
         state.buffRarity = newRarity;
         int effectiveLevel = state.buffedLevel > level ? state.buffedLevel : level;
 
         state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, effectiveLevel);
+
+        int stacks = _stackMap.TryGetValue(state, out int s) ? s : 0;
+        state.hpAdded = stacks * state.currentStat;
+
+        float newEffectiveHp = state.hpAdded * (1f + state.totalBuffPercent);
+        if (state.isActive && newEffectiveHp > 0) stats.AddFlatModifier(new StatModifier { health = newEffectiveHp });
     }
 
     public override void OnRarityBuffRemoved(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
@@ -111,36 +143,41 @@ public class OnKillAddMaxHpModule : ModuleEffect
         state.baseRarity[(int)newRarity]--;
         FindNextRarity(oldRarity, state);
 
-        if (!_stateMap.ContainsKey(state)) return;
         if (!state.isActive) return;
-
-        int effectiveLevel = state.buffedLevel > level ? state.buffedLevel : level;
-        state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, effectiveLevel);
-    }
-
-    public override void OnBuffReceived(float percent, PlayerStats stats, ModuleRuntimeState state)
-    {
-        if (!_stateMap.ContainsKey(state)) return;
 
         float oldEffectiveHp = state.hpAdded * (1f + state.totalBuffPercent);
         if (oldEffectiveHp > 0) stats.RemoveFlatModifier(new StatModifier { health = oldEffectiveHp });
 
-        state.totalBuffPercent += percent;
+        int effectiveLevel = state.buffedLevel > level ? state.buffedLevel : level;
+        state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, effectiveLevel);
+
+        int stacks = _stackMap.TryGetValue(state, out int s) ? s : 0;
+        state.hpAdded = stacks * state.currentStat;
 
         float newEffectiveHp = state.hpAdded * (1f + state.totalBuffPercent);
         if (newEffectiveHp > 0) stats.AddFlatModifier(new StatModifier { health = newEffectiveHp });
     }
 
-    public override void OnBuffRemoved(float percent, PlayerStats stats, ModuleRuntimeState state)
+    public override void OnBuffReceived(float percent, PlayerStats stats, ModuleRuntimeState state)
     {
         float oldEffectiveHp = state.hpAdded * (1f + state.totalBuffPercent);
+        if (state.isActive && oldEffectiveHp > 0) stats.RemoveFlatModifier(new StatModifier { health = oldEffectiveHp });
 
+        state.totalBuffPercent += percent;
+
+        float newEffectiveHp = state.hpAdded * (1f + state.totalBuffPercent);
+        if (state.isActive && newEffectiveHp > 0) stats.AddFlatModifier(new StatModifier { health = newEffectiveHp });
+    }
+
+    public override void OnBuffRemoved(float percent, PlayerStats stats, ModuleRuntimeState state)
+    {
         if (!state.isActive)
         {
             state.totalBuffPercent -= percent;
             return;
         }
 
+        float oldEffectiveHp = state.hpAdded * (1f + state.totalBuffPercent);
         if (oldEffectiveHp > 0) stats.RemoveFlatModifier(new StatModifier { health = oldEffectiveHp });
 
         state.totalBuffPercent -= percent;
@@ -151,6 +188,8 @@ public class OnKillAddMaxHpModule : ModuleEffect
 
     public override string GetDescription(Rarity rarity, int level, ModuleRuntimeState state)
     {
+        if (state.hpAdded <= 0) return "";
+
         float totalEffective = state.hpAdded * (1f + state.totalBuffPercent);
         if (state.totalBuffPercent != 0)
             return $"Total Added: <s>{state.hpAdded:F1}</s> {totalEffective:F1} HP";
@@ -161,7 +200,7 @@ public class OnKillAddMaxHpModule : ModuleEffect
     public override (float unbuffed, float buffed) GetBaseModuleStat(Rarity rarity, int level, ModuleRuntimeState state)
         => BuildBaseModuleStat(baseStatPerRarity, levelMultiplier, rarity, level, state);
 
-    public override string PassiveDescription => "Gain 1 stack on enemy kill, each stack grants Max HP.";
+    public override string PassiveDescription => $"Gain 1 stack on enemy kill (Max {maxStacks}), each stack grants Max HP.";
     public override PassiveLayout GetPassiveLayout() => PassiveLayout.TwoEqual;
 
     public override PassiveEntry[] GetPassiveEntries(Rarity rarity, int level, ModuleRuntimeState state)
@@ -179,7 +218,7 @@ public class OnKillAddMaxHpModule : ModuleEffect
             {
                 value         = $"{currentPerStack:F1}",
                 label         = "HP per stack",
-                sublabel      = $"Total stack : {stacks}",
+                sublabel      = $"Total stack : {stacks}/{maxStacks}",
                 isBuffed      = isBuffed,
                 unbuffedValue = $"{baseStat:F1}"
             },
