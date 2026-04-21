@@ -17,7 +17,7 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: 6525b3717142d4044957afa13ca3fcc7, type: 3}
   moduleEffect: {fileID: 0}
   moduleColor: {r: 0.335849, g: 0, b: 0, a: 1}
-  cost: f0000000
+  cost: e7030000
   hasActive: 0
   allowDuplicate: 1
   isBuffAdjacent: 0
@@ -34,7 +34,7 @@ MonoBehaviour:
   - cells: 0001010000
   - cells: 0000000000
   - cells: 0000000000
-  rarity: 3
+  rarity: 4
   maxStack: 1
   materialDescription: 
   obtainSources:

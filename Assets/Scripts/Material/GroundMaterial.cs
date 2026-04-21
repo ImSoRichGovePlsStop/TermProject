@@ -97,13 +97,28 @@ public class GroundMaterial : MonoBehaviour, IInteractable
         transform.position = pos;
     }
 
+    public void DelayShow()
+    {
+        foreach (var sr in GetComponentsInChildren<SpriteRenderer>(true))
+            sr.enabled = false;
+        StartCoroutine(ShowNextFrame());
+    }
+
+    private IEnumerator ShowNextFrame()
+    {
+        yield return null;
+        yield return null;
+        foreach (var sr in GetComponentsInChildren<SpriteRenderer>(true))
+            sr.enabled = true;
+    }
+
     public string GetPromptText() => $"[ E ]  Pick up {data?.moduleName}";
 
     public InteractInfo GetInteractInfo() => new InteractInfo
     {
-        name        = data?.moduleName ?? "Material",
-        actionText  = "Pick Up",
-        cost        = null
+        name = data?.moduleName ?? "Material",
+        actionText = "Pick Up",
+        cost = null
     };
 
     public void Interact(PlayerController playerController)
