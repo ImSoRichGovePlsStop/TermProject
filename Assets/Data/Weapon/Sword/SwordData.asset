@@ -108,12 +108,14 @@ MonoBehaviour:
   levelUpCosts:
   - materials: []
   - materials:
-    - material: {fileID: 11400000, guid: d1691728feead1440831ad1c54495f58, type: 2}
-      count: 1
-    - material: {fileID: 11400000, guid: bec557e530cca6b4ca0c34160b5c3f7a, type: 2}
-      count: 1
+    - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+      count: 2
+    - material: {fileID: 11400000, guid: 143d429ad908be14e8eed1214cf168b7, type: 2}
+      count: 3
   - materials:
-    - material: {fileID: 11400000, guid: d1691728feead1440831ad1c54495f58, type: 2}
+    - material: {fileID: 11400000, guid: 143d429ad908be14e8eed1214cf168b7, type: 2}
+      count: 3
+    - material: {fileID: 11400000, guid: 0e055652656be514d8c06906bd86a13e, type: 2}
       count: 2
   - materials:
     - material: {fileID: 11400000, guid: d1691728feead1440831ad1c54495f58, type: 2}
