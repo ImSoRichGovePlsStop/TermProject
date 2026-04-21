@@ -25,6 +25,10 @@ public class PoisonModule : ModuleEffect
     public float stackDecayDelay = 3f;
     public float levelMultiplier;
 
+    [Header("Indicator")]
+    [Tooltip("Prefab with a PoisonIndicator component (Canvas/FillCircle + Canvas/StackText children)")]
+    public GameObject indicatorPrefab;
+
     private readonly Dictionary<ModuleRuntimeState, StateData> _stateMap = new();
 
     private class StateData
@@ -33,6 +37,7 @@ public class PoisonModule : ModuleEffect
         public Dictionary<HealthBase, int> EnemyStacks = new();
         public Dictionary<HealthBase, Coroutine> StackDecayCoroutines = new();
         public Dictionary<HealthBase, (Coroutine atk, Coroutine hp)> ActiveProcs = new();
+        public Dictionary<HealthBase, PoisonIndicator> Indicators = new();
     }
 
     private void RefreshStateStats(ModuleRuntimeState state, Rarity rarity, int level)
@@ -47,22 +52,46 @@ public class PoisonModule : ModuleEffect
     private float GetEffHp(ModuleRuntimeState s) => s.hpPercent * (1f + s.totalBuffPercent);
     private float GetEffDur(ModuleRuntimeState s) => s.duration * (1f + s.totalBuffPercent);
 
+    private PoisonIndicator GetOrCreateIndicator(HealthBase enemy, StateData data)
+    {
+        if (data.Indicators.TryGetValue(enemy, out var existing) && existing != null)
+            return existing;
+
+        if (indicatorPrefab == null) return null;
+
+        var go = Instantiate(indicatorPrefab, enemy.transform);
+        var indicator = go.GetComponent<PoisonIndicator>();
+        indicator.Init();
+
+        data.Indicators[enemy] = indicator;
+        return indicator;
+    }
+
+    private void DestroyIndicator(HealthBase enemy, StateData data)
+    {
+        if (!data.Indicators.TryGetValue(enemy, out var indicator)) return;
+        if (indicator != null) Destroy(indicator.gameObject);
+        data.Indicators.Remove(enemy);
+    }
+
     protected override void OnEquip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state)
     {
         RefreshStateStats(state, rarity, level);
+
         var data = new StateData();
         var ctx = stats.GetComponent<PlayerCombatContext>();
 
         data.HitHandler = () => HandleHit(ctx, stats, state, data);
-
         ctx.OnAttack += data.HitHandler;
         ctx.OnSecondaryAttack += data.HitHandler;
+
         _stateMap[state] = data;
     }
 
     protected override void OnUnequip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state)
     {
         if (!_stateMap.TryGetValue(state, out var data)) return;
+
         var ctx = stats.GetComponent<PlayerCombatContext>();
         ctx.OnAttack -= data.HitHandler;
         ctx.OnSecondaryAttack -= data.HitHandler;
@@ -72,11 +101,11 @@ public class PoisonModule : ModuleEffect
             if (proc.atk != null) stats.StopCoroutine(proc.atk);
             if (proc.hp != null) stats.StopCoroutine(proc.hp);
         }
+        foreach (var decay in data.StackDecayCoroutines.Values)
+            if (decay != null) stats.StopCoroutine(decay);
 
-        foreach (var decayRoutine in data.StackDecayCoroutines.Values)
-        {
-            if (decayRoutine != null) stats.StopCoroutine(decayRoutine);
-        }
+        foreach (var enemy in new List<HealthBase>(data.Indicators.Keys))
+            DestroyIndicator(enemy, data);
 
         _stateMap.Remove(state);
     }
@@ -85,77 +114,87 @@ public class PoisonModule : ModuleEffect
     {
         if (ctx.LastHitEnemies == null || ctx.LastHitEnemies.Count == 0) return;
 
+        int required = (int)state.stacks;
+
         foreach (var enemy in ctx.LastHitEnemies)
         {
             if (enemy == null || data.ActiveProcs.ContainsKey(enemy)) continue;
 
-            data.EnemyStacks.TryGetValue(enemy, out int currentStacks);
-            currentStacks++;
+            data.EnemyStacks.TryGetValue(enemy, out int current);
+            current++;
 
-            if (currentStacks >= (int)state.stacks)
+            if (current >= required)
             {
                 data.EnemyStacks[enemy] = 0;
 
-                if (data.StackDecayCoroutines.TryGetValue(enemy, out Coroutine activeDecay) && activeDecay != null)
+                if (data.StackDecayCoroutines.TryGetValue(enemy, out var decay) && decay != null)
                 {
-                    stats.StopCoroutine(activeDecay);
+                    stats.StopCoroutine(decay);
                     data.StackDecayCoroutines.Remove(enemy);
                 }
 
-                var atkRoutine = stats.StartCoroutine(AtkPoisonRoutine(enemy, stats, state, data));
+                float duration = GetEffDur(state);
 
+                GetOrCreateIndicator(enemy, data)?.ShowPoisoned(duration);
+
+                var atkRoutine = stats.StartCoroutine(AtkPoisonRoutine(enemy, stats, state, data));
                 Coroutine hpRoutine = null;
-                if (GetEffHp(state) > 0)
-                {
+                if (GetEffHp(state) > 0f)
                     hpRoutine = stats.StartCoroutine(HpPoisonRoutine(enemy, stats, state, data));
-                }
 
                 data.ActiveProcs[enemy] = (atkRoutine, hpRoutine);
             }
             else
             {
-                data.EnemyStacks[enemy] = currentStacks;
+                data.EnemyStacks[enemy] = current;
 
-                if (data.StackDecayCoroutines.TryGetValue(enemy, out Coroutine activeDecay) && activeDecay != null)
-                {
-                    stats.StopCoroutine(activeDecay);
-                }
-                data.StackDecayCoroutines[enemy] = stats.StartCoroutine(StackDecayRoutine(enemy, data));
+                if (data.StackDecayCoroutines.TryGetValue(enemy, out var decay) && decay != null)
+                    stats.StopCoroutine(decay);
+                data.StackDecayCoroutines[enemy] =
+                    stats.StartCoroutine(StackDecayRoutine(enemy, stats, state, data, required));
+
+                GetOrCreateIndicator(enemy, data)?.ShowStacking(current, required);
             }
         }
     }
 
-    private IEnumerator StackDecayRoutine(HealthBase enemy, StateData data)
+    private IEnumerator StackDecayRoutine(
+        HealthBase enemy, PlayerStats stats, ModuleRuntimeState state, StateData data, int required)
     {
         while (enemy != null)
         {
             yield return new WaitForSeconds(stackDecayDelay);
 
-            if (data.EnemyStacks.TryGetValue(enemy, out int currentStacks) && currentStacks > 0)
+            if (!data.EnemyStacks.TryGetValue(enemy, out int current) || current <= 0) break;
+
+            current--;
+
+            if (current <= 0)
             {
-                data.EnemyStacks[enemy] = currentStacks - 1;
-                if (data.EnemyStacks[enemy] <= 0)
-                {
-                    data.EnemyStacks.Remove(enemy);
-                    break;
-                }
-            }
-            else
-            {
+                data.EnemyStacks.Remove(enemy);
+
+                if (data.Indicators.TryGetValue(enemy, out var ind) && ind != null)
+                    ind.Hide();
+
                 break;
             }
+
+            data.EnemyStacks[enemy] = current;
+
+            if (data.Indicators.TryGetValue(enemy, out var indicator) && indicator != null)
+                indicator.ShowStacking(current, required);
         }
 
-        if (enemy != null && data.StackDecayCoroutines.ContainsKey(enemy))
-        {
-            data.StackDecayCoroutines.Remove(enemy);
-        }
+        if (enemy != null) data.StackDecayCoroutines.Remove(enemy);
     }
 
-    private IEnumerator AtkPoisonRoutine(HealthBase enemy, PlayerStats stats, ModuleRuntimeState state, StateData data)
+    private IEnumerator AtkPoisonRoutine(
+        HealthBase enemy, PlayerStats stats, ModuleRuntimeState state, StateData data)
     {
         float elapsed = 0f;
-        while (elapsed < GetEffDur(state) && enemy != null)
+        float duration = GetEffDur(state);
+
+        while (elapsed < duration && enemy != null)
         {
             yield return new WaitForSeconds(atkTickInterval);
             elapsed += atkTickInterval;
@@ -163,13 +202,17 @@ public class PoisonModule : ModuleEffect
 
             enemy.TakeDamage(stats.Damage * GetEffDmg(state));
         }
+
         CleanupEnemy(enemy, data);
     }
 
-    private IEnumerator HpPoisonRoutine(HealthBase enemy, PlayerStats stats, ModuleRuntimeState state, StateData data)
+    private IEnumerator HpPoisonRoutine(
+        HealthBase enemy, PlayerStats stats, ModuleRuntimeState state, StateData data)
     {
         float elapsed = 0f;
-        while (elapsed < GetEffDur(state) && enemy != null)
+        float duration = GetEffDur(state);
+
+        while (elapsed < duration && enemy != null)
         {
             yield return new WaitForSeconds(hpTickInterval);
             elapsed += hpTickInterval;
@@ -181,8 +224,13 @@ public class PoisonModule : ModuleEffect
 
     private void CleanupEnemy(HealthBase enemy, StateData data)
     {
-        if (enemy != null && data.ActiveProcs.ContainsKey(enemy))
-            data.ActiveProcs.Remove(enemy);
+        if (enemy == null) return;
+
+        data.ActiveProcs.Remove(enemy);
+        data.EnemyStacks.Remove(enemy);
+
+        if (data.Indicators.TryGetValue(enemy, out var indicator) && indicator != null)
+            indicator.Hide();
     }
 
     public override void OnLevelBuffReceived(int baselevel, int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
@@ -196,7 +244,9 @@ public class PoisonModule : ModuleEffect
     {
         state.buffedLevel -= levelBonus;
         if (!state.isActive) return;
-        RefreshStateStats(state, state.buffRarity > rarity ? state.buffRarity : rarity, state.buffedLevel > 0 ? state.buffedLevel : baselevel);
+        RefreshStateStats(state,
+            state.buffRarity > rarity ? state.buffRarity : rarity,
+            state.buffedLevel > 0 ? state.buffedLevel : baselevel);
     }
 
     public override void OnRarityBuffReceived(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
@@ -227,11 +277,13 @@ public class PoisonModule : ModuleEffect
         string desc = $"Hits apply Poison: <color=#FFD700>{d:F0}% ATK</color> every {atkTickInterval}s.";
         if (h > 0) desc += $" & <color=#FFD700>{h:F1}% Max HP</color> every {hpTickInterval}s.";
         desc += $"\n(Requires {s} stacks. Stacks decay every {stackDecayDelay}s if not hit)";
-
         return desc;
     }
 
-    public override string PassiveDescription => $"Poison damage on hit stacks. Deals ATK damage every {atkTickInterval}s and Max HP damage every {hpTickInterval}s. Stacks decay over time.";
+    public override string PassiveDescription =>
+        $"Poison damage on hit stacks. Deals ATK damage every {atkTickInterval}s " +
+        $"and Max HP damage every {hpTickInterval}s. Stacks decay over time.";
+
     public override PassiveLayout GetPassiveLayout() => PassiveLayout.TwoNarrowWide;
 
     public override PassiveEntry[] GetPassiveEntries(Rarity rarity, int level, ModuleRuntimeState state)
@@ -246,29 +298,24 @@ public class PoisonModule : ModuleEffect
 
         int stacks = stacksRequiredPerRarity[(int)rarity];
 
-        string mainValue = eAtk > 0 ? $"{eAtk * 100f:F0}% Attack" : "";
-        string subValue = eHp > 0 ? $"+ {eHp * 100f:F1}% Enemy Max HP" : "Per Tick";
-        string uMainValue = bAtk > 0 ? $"{bAtk * 100f:F0}% Atk" : "";
-        string uSubValue = bHp > 0 ? $"+ {bHp * 100f:F1}% Enemy Max HP" : "Per Tick";
-
         return new PassiveEntry[]
         {
-        new PassiveEntry
-        {
-            label         = "Duration",
-            value         = $"{eDur:F1}s",
-            sublabel      = $"{stacks} Stacks",
-            isBuffed      = state.isActive && Math.Abs(eDur - bDur) > 0.01f,
-            unbuffedValue = $"{bDur:F1}s"
-        },
-        new PassiveEntry
-        {
-            label         = "Damage",
-            value         = string.IsNullOrEmpty(mainValue) ? "Poison" : mainValue,
-            sublabel      = subValue,
-            isBuffed      = state.isActive && (Math.Abs(eHp - bHp) > 0.001f || Math.Abs(eAtk - bAtk) > 0.001f),
-            unbuffedValue = uMainValue
-        }
+            new PassiveEntry
+            {
+                label         = "Duration",
+                value         = $"{eDur:F1}s",
+                sublabel      = $"{stacks} Stacks",
+                isBuffed      = state.isActive && Math.Abs(eDur - bDur) > 0.01f,
+                unbuffedValue = $"{bDur:F1}s"
+            },
+            new PassiveEntry
+            {
+                label         = "Damage",
+                value         = eAtk > 0 ? $"{eAtk * 100f:F0}% Attack" : "Poison",
+                sublabel      = eHp  > 0 ? $"+ {eHp * 100f:F1}% Enemy Max HP" : "Per Tick",
+                isBuffed      = state.isActive && (Math.Abs(eHp - bHp) > 0.001f || Math.Abs(eAtk - bAtk) > 0.001f),
+                unbuffedValue = bAtk > 0 ? $"{bAtk * 100f:F0}% Atk" : ""
+            }
         };
     }
 }
