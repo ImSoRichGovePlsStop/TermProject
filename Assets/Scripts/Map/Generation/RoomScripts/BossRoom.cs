@@ -11,13 +11,19 @@ public class BossRoom : BattleRoom
     public GameObject portalFinalPrefab;
 
     [Header("Boss Scaling")]
-    public float bossSpeedMin           = 0.9f;
-    public float bossSpeedMax           = 1.1f;
-    public float bossHpPerBossKill      = 1.1f;
-    public float bossHpPlayerDmgWeight  = 0.00f;
-    public float bossHpEnemyKillPenalty = 0.000f;
-    public float bossDmgPerBossKill     = 0.3f;
-    public float bossDmgPlayerHpWeight  = 0.00f;
+    public float bossSpeedMin            = 0.9f;
+    public float bossSpeedMax            = 1.1f;
+    [Tooltip("How much each boss kill contributes to the progress value that drives HP scaling.")]
+    public float bossProgressBossWeight  = 1f;
+    [Tooltip("How much each room cleared contributes to the progress value that drives HP/DMG scaling.")]
+    public float bossProgressRoomWeight  = 0f;
+    [Tooltip("How steeply progress increases boss HP. Equivalent to enemyHpScale in BattleRoom.")]
+    public float bossHpProgressScale     = 1.1f;
+    [Tooltip("How steeply progress increases boss damage. Equivalent to enemyDmgScale in BattleRoom.")]
+    public float bossDmgProgressScale    = 0.3f;
+    public float bossHpPlayerDmgWeight   = 0.00f;
+    public float bossHpEnemyKillPenalty  = 0.000f;
+    public float bossDmgPlayerHpWeight   = 0.00f;
 
     [Header("Mini-Boss Scaling")]
     [Tooltip("HP multiplier applied on top of normal scaling for the guaranteed elite.")]
@@ -33,10 +39,10 @@ public class BossRoom : BattleRoom
 
     // ── Loot (all modes share this) ───────────────────────────────────────────
     [Header("Boss Loot Config")]
-    public float bossLootMeanMultiplier = 3f;
+    public float bossLootMeanMultiplier = 1.5f;
     public float bossLootPerBossKill    = 50f;
     public float bossLootSdMultiplier   = 0.2f;
-    public int   bossLootOptionCount    = 1;
+    public int   bossLootOptionCount    = 2;
 
     [Header("Boss Clear Reward")]
     [Tooltip("Bonus coins awarded on boss clear, scaled per floor.")]
@@ -112,8 +118,7 @@ public class BossRoom : BattleRoom
             return;
         }
 
-        var player = FindFirstObjectByType<PlayerStats>();
-        var rm     = RunManager.Instance;
+        var bossScale = ComputeBossStatScale();
 
         foreach (var prefab in config.bossPrefabs)
         {
@@ -123,21 +128,30 @@ public class BossRoom : BattleRoom
             _bossInstances.Add(go);
 
             if (go.TryGetComponent<EntityStats>(out var stats))
-            {
-                var scale = new StatScale();
-                scale.moveSpeed = Random.Range(bossSpeedMin, bossSpeedMax);
-                scale.hp = 1f
-                    + (rm?.TotalBossKilled ?? 0) * bossHpPerBossKill
-                    + (player != null ? player.BaseDamage / Mathf.Max(1f, player.Damage) : 0f) * bossHpPlayerDmgWeight
-                    - (rm?.TotalEnemyKilled ?? 0) * bossHpEnemyKillPenalty;
-                scale.damage = 1f
-                    + (rm?.TotalBossKilled ?? 0) * bossDmgPerBossKill
-                    + (player != null ? player.MaxHealth / Mathf.Max(1f, player.BaseHealth) : 0f) * bossDmgPlayerHpWeight;
-                stats.SetStatScale(scale);
-            }
+                stats.SetStatScale(bossScale);
         }
 
         _aliveCount = _bossInstances.Count;
+    }
+
+
+    StatScale ComputeBossStatScale()
+    {
+        var rm     = RunManager.Instance;
+        var player = FindFirstObjectByType<PlayerStats>();
+
+        // progressBossWeight = 1  →  progress = bossKills * 1
+        var scale = BuildStatScale(
+            player, rm,
+            bossSpeedMin,                   bossSpeedMax,
+            bossProgressBossWeight,          bossProgressRoomWeight,
+            hpScale:  bossHpProgressScale,  dmgScale: bossDmgProgressScale,
+            hpPlayerWeight:  bossHpPlayerDmgWeight,
+            dmgPlayerWeight: bossDmgPlayerHpWeight);
+
+        // Boss-exclusive: long kill-count reduces HP (reward for clearing many enemies)
+        scale.hp = Mathf.Max(1f, scale.hp + (rm?.TotalEnemyKilled ?? 0) * bossHpEnemyKillPenalty);
+        return scale;
     }
 
     private IEnumerator PeriodicNormalSpawner(SegmentBossConfig config)
@@ -194,29 +208,34 @@ public class BossRoom : BattleRoom
 
         if (_mode == BossRoomMode.MiniBoss)
         {
-            EnemyEntry topEntry = null;
-            int topCost = -1;
-            foreach (var e in enemyEntries)
-            {
-                int c = Mathf.Max(1, e.cost);
-                if (e.elite != null && c > topCost) { topCost = c; topEntry = e; }
-            }
-
             int remaining = _waveBudgets[waveIndex];
-            if (topEntry != null)
+
+            // Elite spawns only in the final wave
+            if (waveIndex == waveCount - 1)
             {
-                var go = Instantiate(topEntry.elite, NextCell(), Quaternion.identity);
-                if (go.TryGetComponent<EntityStats>(out var stats))
+                EnemyEntry topEntry = null;
+                int topCost = -1;
+                foreach (var e in enemyEntries)
                 {
-                    var scale    = ComputeStatScale();
-                    scale.hp    *= miniBossHpScale;
-                    scale.damage *= miniBossDmgScale;
-                    stats.SetStatScale(scale);
+                    int c = Mathf.Max(1, e.cost);
+                    if (e.elite != null && c > topCost) { topCost = c; topEntry = e; }
                 }
-                remaining -= topCost;
-                _aliveCount++;
-                spawned++;
-                yield return new WaitForSeconds(Random.Range(spawnDelayMin, spawnDelayMax));
+
+                if (topEntry != null)
+                {
+                    var go = Instantiate(topEntry.elite, NextCell(), Quaternion.identity);
+                    if (go.TryGetComponent<EntityStats>(out var stats))
+                    {
+                        var scale     = ComputeStatScale();
+                        scale.hp     *= miniBossHpScale;
+                        scale.damage *= miniBossDmgScale;
+                        stats.SetStatScale(scale);
+                    }
+                    remaining -= topCost;
+                    _aliveCount++;
+                    spawned++;
+                    yield return new WaitForSeconds(Random.Range(spawnDelayMin, spawnDelayMax));
+                }
             }
 
             foreach (var prefab in BuildBudgetPrefabList(remaining, waveIndex))
@@ -345,15 +364,17 @@ public class BossRoom : BattleRoom
             if (e != null) Destroy(e);
         _normalEnemies.Clear();
 
-        SpawnLoot(PickLootPosition());
+        // Compute portal position first so loot can avoid it.
+        var portalPos = transform.position + new Vector3(0f, 0f, PortalOffsetZ);
+        SpawnLoot(PickLootPosition(portalPos));
 
-        int nextFloor  = (RunManager.Instance?.CurrentFloor ?? 1) + 1;
-        var pool       = EnemyPoolManager.Instance;
+        int nextFloor   = (RunManager.Instance?.CurrentFloor ?? 1) + 1;
+        var pool        = EnemyPoolManager.Instance;
         int totalFloors = pool != null ? pool.segmentCount * pool.floorsPerSegment : maxFloor;
-        var portal     = (nextFloor > totalFloors && portalFinalPrefab != null)
-                         ? portalFinalPrefab : portalPrefab;
+        var portal      = (nextFloor > totalFloors && portalFinalPrefab != null)
+                          ? portalFinalPrefab : portalPrefab;
         if (portal != null)
-            Instantiate(portal, transform.position + new Vector3(0f, 0f, PortalOffsetZ), Quaternion.identity);
+            Instantiate(portal, portalPos, Quaternion.identity);
 
         float floorMult = 1f + ((RunManager.Instance?.CurrentFloor ?? 1) - 1) * coinFloorMultiplier;
         Object.FindFirstObjectByType<CurrencyManager>()

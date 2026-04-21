@@ -56,10 +56,10 @@ public class BattleRoom : MonoBehaviour
     [Header("Loot Config")]
     public int lootOptionCount = 3;
     public float lootBaseMean = 50f;
-    public float lootMeanPerFloor = 30f;
-    public float lootMeanPerRoom = 5f;
+    public float lootMeanPerFloor = 20f;
+    public float lootMeanPerRoom = 0f;
     public float lootMeanFlat = 10f;
-    public float lootBaseSd = 20f;
+    public float lootBaseSd = 10f;
     public float lootSdPerFloor = 3f;
 
     [Header("Reward Placement")]
@@ -72,15 +72,17 @@ public class BattleRoom : MonoBehaviour
     [Tooltip("Fallback coin max when enemy has no EnemyBase.")]
     public int fallbackCoinMax = 9;
     [Tooltip("Additional coin multiplier per floor beyond floor 1.")]
-    public float coinFloorMultiplier = 0.3f;
+    public float coinFloorMultiplier = 0.1f;
 
     [Header("Enemy Scaling")]
     public float enemySpeedMin = 0.9f;
     public float enemySpeedMax = 1.1f;
-    public float enemyProgressBossWeight = 0.3f;
-    public float enemyProgressRoomWeight = 0.1f;
+    public float enemyProgressBossWeight = 0.5f;
+    public float enemyProgressRoomWeight = 0.0f;
     public float enemyHpPlayerDmgWeight = 0.0f;
     public float enemyDmgPlayerHpWeight = 0.0f;
+    public float enemyDmgScale = 1.0f;
+    public float enemyHpScale = 2.0f;
 
     public Material boundaryMaterial;
 
@@ -348,11 +350,14 @@ public class BattleRoom : MonoBehaviour
     }
 
     protected Vector3 PickLootPosition()
+        => PickLootPosition(null);
+
+    /// <param name="exclude">World position to avoid (e.g. portal). Cells within excludeRadius are skipped.</param>
+    protected Vector3 PickLootPosition(Vector3? exclude, float excludeRadius = 1.5f)
     {
         if (spawnCells == null || spawnCells.Count == 0)
             return transform.position;
 
-       
         float minX = transform.position.x - roomSize.x * 0.5f + lootInset;
         float maxX = transform.position.x + roomSize.x * 0.5f - lootInset;
         float minZ = transform.position.z - roomSize.z * 0.5f + lootInset;
@@ -360,30 +365,51 @@ public class BattleRoom : MonoBehaviour
 
         var interior = new List<Vector3>();
         foreach (var cell in spawnCells)
-            if (cell.x >= minX && cell.x <= maxX && cell.z >= minZ && cell.z <= maxZ)
-                interior.Add(cell);
+        {
+            if (cell.x < minX || cell.x > maxX || cell.z < minZ || cell.z > maxZ) continue;
+            if (exclude.HasValue)
+            {
+                float dx = cell.x - exclude.Value.x;
+                float dz = cell.z - exclude.Value.z;
+                if (dx * dx + dz * dz < excludeRadius * excludeRadius) continue;
+            }
+            interior.Add(cell);
+        }
 
-        
         var pool = interior.Count > 0 ? interior : spawnCells;
         return pool[Random.Range(0, pool.Count)];
     }
 
-    protected StatScale ComputeStatScale()
-    {
-        var player = FindFirstObjectByType<PlayerStats>();
-        var rm = RunManager.Instance;
-        var scale = new StatScale();
-        float progress = (rm?.TotalBossKilled ?? 0) * enemyProgressBossWeight
-                       + (rm?.TotalRoomsCleared ?? 0) * enemyProgressRoomWeight;
-        scale.moveSpeed = Random.Range(enemySpeedMin, enemySpeedMax) * (rm?.EffectiveEnemySpeedMultiplier ?? 1f);
-        scale.hp        = (1f + progress + (player.Damage / Mathf.Max(1f, player.BaseDamage)) * enemyHpPlayerDmgWeight)
-                          * (rm?.EffectiveEnemyHpMultiplier ?? 1f);
-        scale.damage    = (1f + progress + (player.MaxHealth / Mathf.Max(1f, player.BaseHealth)) * enemyDmgPlayerHpWeight)
-                          * (rm?.EffectiveEnemyDamageMultiplier ?? 1f);
-        return scale;
 
-        //very important function i think
+    protected static StatScale BuildStatScale(
+        PlayerStats player, RunManager rm,
+        float speedMin,           float speedMax,
+        float progressBossWeight, float progressRoomWeight,
+        float hpScale,            float dmgScale,
+        float hpPlayerWeight,     float dmgPlayerWeight)
+    {
+        float bossKills    = rm?.TotalBossKilled   ?? 0;
+        float roomsCleared = rm?.TotalRoomsCleared ?? 0;
+        float progress     = bossKills * progressBossWeight + roomsCleared * progressRoomWeight;
+
+        float playerDmgRatio = player != null ? player.Damage    / Mathf.Max(1f, player.BaseDamage)  : 0f;
+        float playerHpRatio  = player != null ? player.MaxHealth / Mathf.Max(1f, player.BaseHealth)  : 0f;
+
+        return new StatScale
+        {
+            moveSpeed = Random.Range(speedMin, speedMax) * (rm?.EffectiveEnemySpeedMultiplier ?? 1f),
+            hp        = (1f + progress * hpScale  + playerDmgRatio * hpPlayerWeight)  * (rm?.EffectiveEnemyHpMultiplier     ?? 1f),
+            damage    = (1f + progress * dmgScale + playerHpRatio  * dmgPlayerWeight) * (rm?.EffectiveEnemyDamageMultiplier ?? 1f),
+        };
     }
+
+    protected StatScale ComputeStatScale()
+        => BuildStatScale(
+            FindFirstObjectByType<PlayerStats>(), RunManager.Instance,
+            enemySpeedMin,          enemySpeedMax,
+            enemyProgressBossWeight, enemyProgressRoomWeight,
+            enemyHpScale,           enemyDmgScale,
+            enemyHpPlayerDmgWeight,  enemyDmgPlayerHpWeight);
 
     protected void ApplyEnemyScale(GameObject enemy)
     {
@@ -454,6 +480,7 @@ public class BattleRoom : MonoBehaviour
 
         RunManager.Instance?.OnRoomCleared();
         HealPlayerAfterRoom();
+        FindFirstObjectByType<MinimapManager>()?.OnBattleRoomCleared(node);
     }
 
     protected void SpawnLoot(Vector3 position)
@@ -469,7 +496,7 @@ public class BattleRoom : MonoBehaviour
         var rm           = RunManager.Instance;
         int floor        = rm?.CurrentFloor ?? 1;
         int roomsCleared = rm?.TotalRoomsCleared ?? 0;
-        float mean = lootBaseMean + floor * lootMeanPerFloor + roomsCleared * lootMeanPerRoom + lootMeanFlat
+        float mean = lootBaseMean + floor * lootMeanPerFloor + roomsCleared * lootMeanPerRoom 
                    + (rm?.EffectiveLootMeanBonus ?? 0f);
         float sd      = lootBaseSd + (floor - 1) * lootSdPerFloor;
         int   options = lootOptionCount + (rm?.EffectiveExtraLootOptions ?? 0);
