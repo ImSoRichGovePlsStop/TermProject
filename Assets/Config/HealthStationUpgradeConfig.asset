@@ -15,28 +15,44 @@ MonoBehaviour:
   levels:
   - description: On room clear heal 20% missing hp
     upgradeCost:
-    - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
-      count: 1
+    - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+      count: 2
+    - material: {fileID: 11400000, guid: 399297f3e79be15409f69ab7096a631f, type: 2}
+      count: 2
   - description: +40 max hp
     upgradeCost:
     - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+      count: 2
+    - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+      count: 3
+    - material: {fileID: 11400000, guid: 399297f3e79be15409f69ab7096a631f, type: 2}
       count: 3
   - description: +5 Max Hp on room clear
     upgradeCost:
-    - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
-      count: 1
-    - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+    - material: {fileID: 11400000, guid: 399297f3e79be15409f69ab7096a631f, type: 2}
+      count: 4
+    - material: {fileID: 11400000, guid: 5abdcea167f2bcd40935a2f6eec2acd0, type: 2}
+      count: 2
+    - material: {fileID: 11400000, guid: 83bdbb620c51bdd439fb89c97180137e, type: 2}
       count: 1
   - description: Every 10 kill heal 5% max hp , elite kill heal 5% max hp, miniboss
       kill heal 35% max hp
     upgradeCost:
-    - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
-      count: 1
-    - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
-      count: 1
+    - material: {fileID: 11400000, guid: 399297f3e79be15409f69ab7096a631f, type: 2}
+      count: 3
+    - material: {fileID: 11400000, guid: 399297f3e79be15409f69ab7096a631f, type: 2}
+      count: 3
+    - material: {fileID: 11400000, guid: 13a68ddd8fc6f724c960061a5aba1839, type: 2}
+      count: 2
+    - material: {fileID: 11400000, guid: 83bdbb620c51bdd439fb89c97180137e, type: 2}
+      count: 2
   - description: 'Allow 1 revive with 50% max hp '
     upgradeCost:
-    - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
-      count: 1
-    - material: {fileID: 0}
+    - material: {fileID: 11400000, guid: 5abdcea167f2bcd40935a2f6eec2acd0, type: 2}
+      count: 4
+    - material: {fileID: 11400000, guid: 13a68ddd8fc6f724c960061a5aba1839, type: 2}
+      count: 3
+    - material: {fileID: 11400000, guid: 83bdbb620c51bdd439fb89c97180137e, type: 2}
+      count: 2
+    - material: {fileID: 11400000, guid: 347983e0f419af54aac76500c585630c, type: 2}
       count: 1
