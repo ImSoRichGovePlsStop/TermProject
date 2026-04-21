@@ -29,5 +29,5 @@ public class CurrencyUI : MonoBehaviour
         }
     }
 
-    private void Refresh(int amount) => coinsText.text = $"{amount}$";
+    private void Refresh(int amount) => coinsText.text = $"{amount}  <sprite=0>";
 }

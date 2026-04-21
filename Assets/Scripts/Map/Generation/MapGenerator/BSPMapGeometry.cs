@@ -96,6 +96,13 @@ public class BSPMapGeometry : MonoBehaviour
     [Tooltip("Decorative pillar placed at every corner where a horizontal and vertical wall intersect. " +
              "Pivot should be at the base-center of the pillar.")]
     public GameObject pillarPrefab;
+    [Tooltip("Torch prefab placed on eligible inner wall faces. Leave null to skip.")]
+    public GameObject torchPrefab;
+    [Tooltip("Chance (0–1) per eligible wall face to spawn a torch.")]
+    [Range(0f, 1f)]
+    public float torchChance = 0.04f;
+    [Tooltip("Height offset from the floor for torch placement.")]
+    public float torchHeightOffset = 1.2f;
     public float wallHeight = 2f;
     public float wallThickness = 0.01f;
     public float floorThickness = -50f;
@@ -944,6 +951,12 @@ public class BSPMapGeometry : MonoBehaviour
             SpawnPillars(pillarP, activeWallMat);
         }
 
+        if (torchPrefab != null)
+        {
+            var torchP = new GameObject("Torches").transform;
+            SpawnTorches(torchP);
+        }
+
         // ── Static batching — collapses same-material renderers to 1 draw call each ──
         StaticBatchingUtility.Combine(floorP.gameObject);
         StaticBatchingUtility.Combine(wallP.gameObject);
@@ -977,6 +990,42 @@ public class BSPMapGeometry : MonoBehaviour
                 if (mat != null)
                     foreach (var r in inst.GetComponentsInChildren<Renderer>())
                         r.sharedMaterial = mat;
+            }
+        }
+    }
+
+    // Spawns torches on the inner face of walls bordering room cells.
+    // Eligible face: room cell neighbour is non-room (wall/OOB/Occupied), not a door, random chance passes.
+    void SpawnTorches(Transform parent)
+    {
+        var dirs = new[] { Vector2Int.right, Vector2Int.left, Vector2Int.up, Vector2Int.down };
+
+        for (int x = 0; x < matrixSize; x++)
+        for (int z = 0; z < matrixSize; z++)
+        {
+            if (_matrix[x, z] != Cell.Room) continue;
+            if (_isDoor[x, z]) continue;                          // skip door cells
+
+            foreach (var d in dirs)
+            {
+                int nx = x + d.x, nz = z + d.y;
+                bool oob = nx < 0 || nz < 0 || nx >= matrixSize || nz >= matrixSize;
+
+                // Must border a solid wall (OOB, Occupied, or non-Room)
+                if (!oob && _matrix[nx, nz] == Cell.Room) continue;
+                if (!oob && _isDoor[nx, nz]) continue;            // skip door-adjacent faces
+
+                if (Random.value > torchChance) continue;
+
+                // World position: on the wall face, slightly inset toward the room
+                float wx = x + 0.5f + d.x * 0.48f;
+                float wz = z + 0.5f + d.y * 0.48f;
+                var pos = new Vector3(wx, torchHeightOffset, wz);
+
+                // Face torch INTO the room (opposite to wall normal)
+                var rot = Quaternion.LookRotation(new Vector3(-d.x, 0f, -d.y));
+
+                Object.Instantiate(torchPrefab, pos, rot, parent);
             }
         }
     }
