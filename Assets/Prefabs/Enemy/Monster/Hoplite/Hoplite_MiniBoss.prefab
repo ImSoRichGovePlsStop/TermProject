@@ -384,7 +384,7 @@ MonoBehaviour:
   healthBarScale: {x: 2, y: 1.5, z: 1}
   tier: 2
   guardHealRatio: 0.3
-  guardProcChance: 0.08
+  guardProcChance: 0.12
   eliteController: {fileID: 4861128534556401032}
 --- !u!114 &5942300544733507474
 MonoBehaviour:
@@ -414,11 +414,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73a687f9a65ebc34ab8d148f3be77e4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EntityStats
-  baseMaxHP: 500
+  baseMaxHP: 700
   baseMoveSpeed: 3
   baseDamage: 16
   baseAttackSpeed: 1
-  baseShield: 0
+  shieldPercent: 0
 --- !u!114 &4861128534556401032
 MonoBehaviour:
   m_ObjectHideFlags: 0
