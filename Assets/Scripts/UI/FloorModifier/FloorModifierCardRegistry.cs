@@ -69,15 +69,15 @@ public static class FloorModifierCardRegistry
             ModifierScope.NextFloorOnly,
             m => m.lootMeanBonus = 80f));
 
-        //cards.Add(Make("extra_loot_run", "More Choices",
-        //    "Loot drops offer one extra card to choose from for the rest of the run.",
-        //    ModifierScope.WholeRun,
-        //    m => m.extraLootOptions = 1));
+        cards.Add(Make("extra_loot_run", "More Choices",
+            "Loot drops offer one extra card to choose from for the rest of the run.",
+            ModifierScope.WholeRun,
+            m => m.extraLootOptions = 1));
 
-        //cards.Add(Make("extra_loot_next", "Windfall",
-        //    "Loot drops on the next floor offer two extra cards to choose from.",
-        //    ModifierScope.NextFloorOnly,
-        //    m => m.extraLootOptions = 2));
+        cards.Add(Make("extra_loot_next", "Windfall",
+            "Loot drops on the next floor offer two extra cards to choose from.",
+            ModifierScope.NextFloorOnly,
+            m => m.extraLootOptions = 2));
 
         //commented until fix placement of reward more than 3
 
@@ -280,10 +280,10 @@ public static class FloorModifierCardRegistry
             ModifierScope.WholeRun,
             m => m.mergeSpreadMultiplier = 2.0f));
 
-        cards.Add(Make("merge_rarity_higher", "Superior Fusion",
-            "Merge output rarity is guaranteed to be at least one tier above the average input rarity.",
-            ModifierScope.WholeRun,
-            m => { m.mergeGuaranteeSameRarity = true; m.mergeRarityBonus = 1; }));
+        //cards.Add(Make("merge_rarity_higher", "Superior Fusion",
+        //    "Merge output rarity is guaranteed to be at least one tier above the average input rarity.",
+        //    ModifierScope.WholeRun,
+        //    m => { m.mergeGuaranteeSameRarity = true; m.mergeRarityBonus = 1; }));
 
         cards.Add(Make("merge_value_tight", "Master Craftsman",
             "Higher merge value and tighter spread — consistently good output.",

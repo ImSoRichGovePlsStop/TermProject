@@ -208,6 +208,7 @@ public class PlayerController : MonoBehaviour
     public void OnInteract(InputAction.CallbackContext ctx)
     {
         if (!ctx.started) return;
+        if (UIManager.Instance != null && UIManager.Instance.isInBattle) return;
 
         Collider[] hits = Physics.OverlapSphere(transform.position, interactRange, interactableLayer);
 
