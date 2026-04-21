@@ -112,9 +112,9 @@ NavMeshAgent:
   m_AutoBraking: 1
   m_AutoRepath: 1
   m_Height: 2
-  m_BaseOffset: 0.25
+  m_BaseOffset: 0.22
   m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 1
+  m_ObstacleAvoidanceType: 0
 --- !u!114 &3493100479858861636
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -168,7 +168,7 @@ MonoBehaviour:
   baseMoveSpeed: 2.5
   baseDamage: 16
   baseAttackSpeed: 1
-  baseShield: 80
+  shieldPercent: 80
 --- !u!114 &3778646481919745633
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -209,7 +209,6 @@ MonoBehaviour:
   spawnDuration: 2
   spawnFadeOutDuration: 1
   spawnEffectScale: 3.5
-  spawnStayDuration: 0.5
   strafe:
     preferredDistMin: 1
     preferredDistMax: 1.5
@@ -236,6 +235,9 @@ MonoBehaviour:
   chargeRotateSpeed: 30
   chargeWallDetectRange: 0.5
   chargeStunnedDuration: 1.5
+  chargeWarningPrefab: {fileID: 3021588917348942916, guid: 25dd7453603477c4a95228b244f64ae6, type: 3}
+  chargeWarningOffset: 1.25
+  chargeWarningOffsetZ: 0.3
   missDetectAngle: 120
   missDetectDuration: 0.1
   redirectChance: 0.25

@@ -252,9 +252,9 @@ NavMeshAgent:
   m_AutoBraking: 1
   m_AutoRepath: 1
   m_Height: 2
-  m_BaseOffset: 0.27
+  m_BaseOffset: 0.26
   m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 1
+  m_ObstacleAvoidanceType: 0
 --- !u!114 &6073305262486646008
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -308,7 +308,7 @@ MonoBehaviour:
   baseMoveSpeed: 2.5
   baseDamage: 10
   baseAttackSpeed: 1
-  baseShield: 70
+  shieldPercent: 75
 --- !u!114 &6968849752154686199
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -349,7 +349,6 @@ MonoBehaviour:
   spawnDuration: 2
   spawnFadeOutDuration: 1
   spawnEffectScale: 3
-  spawnStayDuration: 0.5
   strafe:
     preferredDistMin: 1
     preferredDistMax: 1.5

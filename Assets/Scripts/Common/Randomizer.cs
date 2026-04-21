@@ -40,10 +40,6 @@ public static class Randomizer
             return result;
 
         int returnCount = Random.Range(minCount, maxCount + 1);
-        int candidateCount = maxCount * 2;
-
-        var candidates = new List<(TestModuleEntry entry, float delta)>();
-        var seen = new HashSet<ModuleData>();
 
         var currentSet = new HashSet<ModuleData>();
         var mgr = InventoryManager.Instance;
@@ -55,18 +51,17 @@ public static class Randomizer
                 if (m.Data != null) currentSet.Add(m.Data);
         }
 
-        for (int i = 0; i < candidateCount; i++)
+        var candidates = new List<(TestModuleEntry entry, float delta)>();
+        var seen = new HashSet<ModuleData>();
+
+        foreach (var item in pool)
         {
-            int j = Random.Range(0, pool.Length);
-            var data = pool[j].data;
+            var data = item.data;
 
             if (seen.Contains(data)) continue;
-//            if(currentSet.Any(x => x.moduleName == data.moduleName)) Debug.Log($"Duplicate found: {data.moduleName}");
-            if (!allowDuplicates && currentSet.Any(x => x == data) && Random.value > currentModuleDupChance)
-            {
-//                Debug.Log($"Skipping duplicate: {data.moduleName}");
+
+            if (!allowDuplicates && currentSet.Contains(data) && Random.value > currentModuleDupChance)
                 continue;
-            }
 
             float sampledCost = SampleGaussian(meanCost, sd);
 
@@ -93,9 +88,8 @@ public static class Randomizer
             {
                 data = data,
                 rarity = IndexToRarity(bestIndex)
-            }, bestDelta));
+            }, bestDelta * bestDelta));
         }
-
 
         candidates.Sort((a, b) => a.delta.CompareTo(b.delta));
 

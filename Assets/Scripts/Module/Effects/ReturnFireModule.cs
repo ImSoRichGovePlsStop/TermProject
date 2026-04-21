@@ -6,13 +6,13 @@ using UnityEngine;
 public class ReturnFireModule : ModuleEffect
 {
     [Header("Stat per Rarity (Common -> Legendary)")]
-    [Tooltip("Return damage % per rarity (e.g. 0.2 = 20% of player's damage returned to attacker)")]
+    [Tooltip("Return % of damage received back to attacker (e.g. 0.5 = 50% of damage taken returned)")]
     public float[] baseStatPerRarity = { 0f, 0f, 0f, 0f, 0f };
 
     [Tooltip("Level multiplier")]
     public float levelMultiplier;
 
-    private readonly Dictionary<ModuleRuntimeState, Action> _stateMap = new();
+    private readonly Dictionary<ModuleRuntimeState, Action<float>> _stateMap = new();
 
     protected override void OnEquip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state)
     {
@@ -20,16 +20,16 @@ public class ReturnFireModule : ModuleEffect
 
         var ctx = stats.GetComponent<PlayerCombatContext>();
 
-        Action handler = () =>
+        Action<float> handler = (damageTaken) =>
         {
             if (ctx.LastAttacker == null || ctx.LastAttacker.IsDead) return;
 
-            float returnDamage = stats.Damage * GetEffectiveStat(state);
+            float reflectedDamage = damageTaken * GetEffectiveStat(state);
 
-            ctx.LastAttacker.TakeDamage(returnDamage);
+            ctx.LastAttacker.TakeDamage(reflectedDamage);
         };
 
-        ctx.OnTakeDamage += handler;
+        stats.OnPlayerDamaged += handler;
         _stateMap[state] = handler;
     }
 
@@ -37,9 +37,7 @@ public class ReturnFireModule : ModuleEffect
     {
         if (!_stateMap.TryGetValue(state, out var handler)) return;
 
-        var ctx = stats.GetComponent<PlayerCombatContext>();
-        ctx.OnTakeDamage -= handler;
-
+        stats.OnPlayerDamaged -= handler;
         _stateMap.Remove(state);
     }
 
@@ -100,9 +98,9 @@ public class ReturnFireModule : ModuleEffect
         state.totalBuffPercent -= percent;
     }
 
-    public override string GetDescription(Rarity rarity, int level, ModuleRuntimeState state) => null;
+    public override string GetDescription(Rarity rarity, int level, ModuleRuntimeState state) => PassiveDescription;
 
-    public override string PassiveDescription => "Reflect a portion of your damage back to any attacker";
+    public override string PassiveDescription => "Reflect a portion of damage taken back to the attacker";
     public override PassiveLayout GetPassiveLayout() => PassiveLayout.Single;
 
     public override PassiveEntry[] GetPassiveEntries(Rarity rarity, int level, ModuleRuntimeState state)
@@ -116,8 +114,8 @@ public class ReturnFireModule : ModuleEffect
             new PassiveEntry
             {
                 value         = $"{effective * 100f:F0}%",
-                label         = "Return Damage",
-                sublabel      = "Conditional",
+                label         = "Reflect Damage",
+                sublabel      = "Of Damage Taken",
                 isBuffed      = isBuffed,
                 unbuffedValue = $"{baseStat * 100f:F0}%"
             }

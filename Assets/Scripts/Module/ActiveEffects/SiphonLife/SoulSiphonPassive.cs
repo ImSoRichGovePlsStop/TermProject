@@ -17,6 +17,7 @@ public class SoulSiphonPassive : MonoBehaviour
     private float _buffTimer = 0f;
     private int _buffEnemyCount = 0;
     private float _flashTimer = 0f;
+    private float _readyFlashTimer = 0f;
     private Coroutine _buffCoroutine;
 
     private const float CooldownFlashDuration = 1f;
@@ -37,9 +38,16 @@ public class SoulSiphonPassive : MonoBehaviour
 
     private void Update()
     {
+        bool wasOnCooldown = _cooldownTimer > 0f;
+
         if (_cooldownTimer > 0f) _cooldownTimer -= Time.deltaTime;
         if (_buffTimer > 0f) _buffTimer -= Time.deltaTime;
         if (_flashTimer > 0f) _flashTimer -= Time.deltaTime;
+        if (_readyFlashTimer > 0f) _readyFlashTimer -= Time.deltaTime;
+        if (wasOnCooldown && _cooldownTimer <= 0f)
+        {
+            _readyFlashTimer = 1f;
+        }
 
         HandleInput();
         UpdateIndicator();
@@ -74,6 +82,10 @@ public class SoulSiphonPassive : MonoBehaviour
         {
             float ratio = Mathf.Clamp01(_buffTimer / buffDuration);
             _indicator.SetBuff(ratio);
+        }
+        else if (_readyFlashTimer > 0f)
+        {
+            _indicator.ShowReady();
         }
         else if (OnCooldown && FlashActive)
         {
@@ -122,6 +134,7 @@ public class SoulSiphonPassive : MonoBehaviour
     private IEnumerator SiphonCoroutine()
     {
         _cooldownTimer = Module.moduleCooldown;
+        _readyFlashTimer = 0f;
 
         if (Module.siphonVFXPrefab != null)
         {

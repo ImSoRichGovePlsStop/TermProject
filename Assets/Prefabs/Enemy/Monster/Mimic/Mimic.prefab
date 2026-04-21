@@ -176,7 +176,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -1.3782885, y: -0.0000004676191, z: 4.032411}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 3933781355179951000}
@@ -252,9 +252,9 @@ NavMeshAgent:
   m_AutoBraking: 1
   m_AutoRepath: 1
   m_Height: 2
-  m_BaseOffset: 0.18
+  m_BaseOffset: 0.3
   m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 1
+  m_ObstacleAvoidanceType: 0
 --- !u!114 &4097944732251278272
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -273,8 +273,8 @@ MonoBehaviour:
   flashColor: {r: 1, g: 0, b: 0, a: 1}
   flashDuration: 0.1
   showHealthBar: 1
-  healthBarHeight: 0.35
-  healthBarScale: {x: 1, y: 1, z: 1}
+  healthBarHeight: -0.15
+  healthBarScale: {x: 2, y: 1, z: 1}
   tier: 0
 --- !u!114 &6091641640401485855
 MonoBehaviour:
@@ -291,7 +291,7 @@ MonoBehaviour:
   stopDistance: 0.8
   spriteRenderer: {fileID: 0}
   animator: {fileID: 0}
-  flipXByDefault: 0
+  flipXByDefault: 1
 --- !u!114 &5013487709126751419
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -304,11 +304,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73a687f9a65ebc34ab8d148f3be77e4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EntityStats
-  baseMaxHP: 60
+  baseMaxHP: 75
   baseMoveSpeed: 1.5
   baseDamage: 10
   baseAttackSpeed: 1
-  baseShield: 80
+  shieldPercent: 150
 --- !u!114 &6810727162707617970
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -349,7 +349,6 @@ MonoBehaviour:
   spawnDuration: 0
   spawnFadeOutDuration: 0
   spawnEffectScale: 0
-  spawnStayDuration: 0
   strafe:
     preferredDistMin: 0
     preferredDistMax: 0
@@ -360,8 +359,8 @@ MonoBehaviour:
   attackRange: 1.5
   attackCooldownMin: 1.5
   attackCooldownMax: 2
-  attackDashSpeed: 6
-  attackDashDuration: 0.15
+  attackDashSpeed: 8
+  attackDashDuration: 0.25
   attackHitRadius: 0.6
   attackDamageScale: 1
   mimicSpawnStayDuration: 0.3
@@ -378,7 +377,40 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MaterialDropHandler
   entries:
-  - items: []
+  - items:
+    - material: {fileID: 11400000, guid: ac531af617b2d024c8d44a59918e7b1d, type: 2}
+      minCount: 0
+      maxCount: 2
+    - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+      minCount: 0
+      maxCount: 2
+    - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+      minCount: 0
+      maxCount: 2
+    - material: {fileID: 11400000, guid: 143d429ad908be14e8eed1214cf168b7, type: 2}
+      minCount: 0
+      maxCount: 1
+    - material: {fileID: 11400000, guid: 13a68ddd8fc6f724c960061a5aba1839, type: 2}
+      minCount: 0
+      maxCount: 1
+    - material: {fileID: 11400000, guid: 399297f3e79be15409f69ab7096a631f, type: 2}
+      minCount: 0
+      maxCount: 1
+    - material: {fileID: 11400000, guid: 5abdcea167f2bcd40935a2f6eec2acd0, type: 2}
+      minCount: 0
+      maxCount: 1
+    - material: {fileID: 11400000, guid: 0e055652656be514d8c06906bd86a13e, type: 2}
+      minCount: 0
+      maxCount: 1
+    - material: {fileID: 11400000, guid: a7f0ae0d573fda242bf1ee3eba5f0133, type: 2}
+      minCount: 0
+      maxCount: 1
+    - material: {fileID: 11400000, guid: 5abdcea167f2bcd40935a2f6eec2acd0, type: 2}
+      minCount: 0
+      maxCount: 1
+    - material: {fileID: 11400000, guid: d526cca1760890744834885573002c5c, type: 2}
+      minCount: 0
+      maxCount: 1
     weight: 100
   maxDropsPerKill: 1
   groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
@@ -394,7 +426,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b54bac1ba7c05144498fa0d36fdfad73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyShieldOutline
-  mainSpriteRenderer: {fileID: 0}
+  mainSpriteRenderer: {fileID: 3015475094757838172}
   thickness: 2
 --- !u!1 &9098074007205018799
 GameObject:
@@ -478,7 +510,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 1246672212, guid: 91c29ad83e23da24a958aa8f319989c2, type: 3}
+  m_Sprite: {fileID: 1543735986, guid: c1df54bfea73ebc4fa65309acf6246ab, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_FlipX: 0
   m_FlipY: 0

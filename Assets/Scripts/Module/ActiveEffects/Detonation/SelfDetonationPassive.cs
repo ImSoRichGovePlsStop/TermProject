@@ -20,8 +20,9 @@ public class SelfDetonationPassive : MonoBehaviour
 
     private SelfDetonationIndicator _indicator;
     private float _indicatorDisplayTimer = 0f;
-    private const float IndicatorDisplayDuration = 1f;
+    private float _readyFlashTimer = 0f;
 
+    private const float IndicatorDisplayDuration = 1f;
 
     public void Init(PlayerStats playerStats, PlayerCombatContext combatContext, LayerMask layerMask)
     {
@@ -38,31 +39,23 @@ public class SelfDetonationPassive : MonoBehaviour
 
         var go = Instantiate(SelfDetonationModule.indicatorPrefab, transform);
         _indicator = go.GetComponent<SelfDetonationIndicator>();
-        _indicator?.Init();   // starts hidden
+        _indicator?.Init();
     }
 
     private void Update()
     {
-        if (_cooldownTimer > 0f)
-            _cooldownTimer -= Time.deltaTime;
+        bool wasOnCooldown = _cooldownTimer > 0f;
 
-        if (_isArmed && _countdownTimer > 0f)
-            _countdownTimer -= Time.deltaTime;
-
-        if (_indicatorDisplayTimer > 0f)
+        if (_cooldownTimer > 0f) _cooldownTimer -= Time.deltaTime;
+        if (_isArmed && _countdownTimer > 0f) _countdownTimer -= Time.deltaTime;
+        if (_indicatorDisplayTimer > 0f) _indicatorDisplayTimer -= Time.deltaTime;
+        if (_readyFlashTimer > 0f) _readyFlashTimer -= Time.deltaTime;
+        if (wasOnCooldown && _cooldownTimer <= 0f)
         {
-            _indicatorDisplayTimer -= Time.deltaTime;
-
-            if (_indicatorDisplayTimer <= 0f)
-                _indicator?.Hide();
-            else if (_indicator != null)
-            {
-                float ratio = Mathf.Clamp01(1f - (_cooldownTimer / SelfDetonationModule.moduleCooldown));
-                _indicator.SetCooldown(ratio);
-            }
+            _readyFlashTimer = 1f;
         }
 
-        UpdateArmedIndicator();
+        UpdateIndicator();
         HandleInput();
     }
 
@@ -70,15 +63,32 @@ public class SelfDetonationPassive : MonoBehaviour
     {
         _indicator?.Hide();
         _indicatorDisplayTimer = 0f;
+        _readyFlashTimer = 0f;
     }
 
-    private void UpdateArmedIndicator()
+    private void UpdateIndicator()
     {
-        if (!_isArmed || _indicator == null) return;
+        if (_indicator == null) return;
 
-        float duration = SelfDetonationModule != null ? SelfDetonationModule.countdownDuration : 1f;
-        float ratio = Mathf.Clamp01(_countdownTimer / duration);
-        _indicator.SetArmed(ratio);
+        if (_isArmed)
+        {
+            float duration = SelfDetonationModule != null ? SelfDetonationModule.countdownDuration : 1f;
+            float ratio = Mathf.Clamp01(_countdownTimer / duration);
+            _indicator.SetArmed(ratio);
+        }
+        else if (_readyFlashTimer > 0f)
+        {
+            _indicator.ShowReady();
+        }
+        else if (_indicatorDisplayTimer > 0f && _cooldownTimer > 0f)
+        {
+            float ratio = Mathf.Clamp01(1f - (_cooldownTimer / SelfDetonationModule.moduleCooldown));
+            _indicator.ShowCooldown(ratio);
+        }
+        else
+        {
+            _indicator.Hide();
+        }
     }
 
     private void HandleInput()
@@ -140,6 +150,7 @@ public class SelfDetonationPassive : MonoBehaviour
         _isArmed = true;
         _countdownTimer = SelfDetonationModule.countdownDuration;
         _indicatorDisplayTimer = 0f;
+        _readyFlashTimer = 0f;
 
         GameObject countdownFX = null;
         DetnationVFX detonationVFX = null;

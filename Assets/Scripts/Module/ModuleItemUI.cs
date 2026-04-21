@@ -10,7 +10,7 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Image))]
 public class ModuleItemUI : MonoBehaviour,
     IBeginDragHandler, IDragHandler, IEndDragHandler,
-    IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+    IPointerDownHandler, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     public ModuleInstance Instance { get; private set; }
 
@@ -35,6 +35,7 @@ public class ModuleItemUI : MonoBehaviour,
     private Vector2Int _originCell;
     private int _originRotation;
     private Vector2 _dragOffset;
+    private Vector2 _pointerDownScreenPos;
     private Vector2Int _clickedCell;
     private int _dragRotation;
     private bool _isDragging;
@@ -411,46 +412,53 @@ public class ModuleItemUI : MonoBehaviour,
         _rt.anchoredPosition = new Vector2(localPos.x, localPos.y);
     }
 
+    public void OnPointerDown(PointerEventData e)
+    {
+        _pointerDownScreenPos = e.position;
+    }
+
     public void OnBeginDrag(PointerEventData e)
     {
-        var mgr = InventoryManager.Instance;
-        if (Instance.CurrentGrid == mgr.WeaponGrid)
-            _originGrid = WeaponGridUI;
-        else if (EnvGridUI != null && Instance.CurrentGrid == EnvGridUI.Data)
-            _originGrid = EnvGridUI;
-        else if (InputGridUI != null && Instance.CurrentGrid == InputGridUI.Data)
-            _originGrid = InputGridUI;
-        else if (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible
-                 && Instance.CurrentGrid == DiscardGridUI.Instance.DiscardGrid)
-            _originGrid = DiscardGridUI.Instance.GridUI;
-        else
-            _originGrid = BagGridUI;
+        {
+            var mgr = InventoryManager.Instance;
+            if (Instance.CurrentGrid == mgr.WeaponGrid)
+                _originGrid = WeaponGridUI;
+            else if (EnvGridUI != null && Instance.CurrentGrid == EnvGridUI.Data)
+                _originGrid = EnvGridUI;
+            else if (InputGridUI != null && Instance.CurrentGrid == InputGridUI.Data)
+                _originGrid = InputGridUI;
+            else if (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible
+                     && Instance.CurrentGrid == DiscardGridUI.Instance.DiscardGrid)
+                _originGrid = DiscardGridUI.Instance.GridUI;
+            else
+                _originGrid = BagGridUI;
 
-        _originCell = Instance.GridPosition;
-        _originRotation = Instance.Rotation;
-        _dragRotation = Instance.Rotation;
-        _isDragging = true;
-        ModuleTooltipUI.Instance?.Hide();
-        _clickedCell = GetClickedLocalCell(e);
+            _originCell = Instance.GridPosition;
+            _originRotation = Instance.Rotation;
+            _dragRotation = Instance.Rotation;
+            _isDragging = true;
+            ModuleTooltipUI.Instance?.Hide();
+            _clickedCell = GetClickedLocalCellFromScreen(_pointerDownScreenPos);
 
-        _rt.SetParent(_canvas.transform, worldPositionStays: true);
-        _rt.SetAsLastSibling();
+            _rt.SetParent(_canvas.transform, worldPositionStays: true);
+            _rt.SetAsLastSibling();
 
-        float cs = WeaponGridUI.CellSize;
-        float sp = WeaponGridUI.CellSpacing;
-        _dragOffset = new Vector2((_clickedCell.x + 0.5f) * (cs + sp), -(_clickedCell.y + 0.5f) * (cs + sp));
+            float cs = WeaponGridUI.CellSize;
+            float sp = WeaponGridUI.CellSpacing;
+            _dragOffset = new Vector2((_clickedCell.x + 0.5f) * (cs + sp), -(_clickedCell.y + 0.5f) * (cs + sp));
 
-        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(_canvasRt, e.position, UICam(), out var mouseLocal))
-            _rt.anchoredPosition = mouseLocal - _dragOffset;
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(_canvasRt, e.position, UICam(), out var mouseLocal))
+                _rt.anchoredPosition = mouseLocal - _dragOffset;
 
-        _cg.alpha = dragAlpha;
-        _cg.blocksRaycasts = false;
+            _cg.alpha = dragAlpha;
+            _cg.blocksRaycasts = false;
 
-        ModuleItemUI.IsDragging = true;
-        ModuleItemUI.DraggingInstance = Instance;
-        ModuleItemUI.DraggingCells = new System.Collections.Generic.HashSet<Vector2Int>(Instance.GetAbsoluteCells());
-        ModuleItemUI.DraggingGrid = Instance.CurrentGrid;
-        if (!UIManager.IsRightPanelOpen) DiscardGridUI.Instance?.ShowForDrag();
+            ModuleItemUI.IsDragging = true;
+            ModuleItemUI.DraggingInstance = Instance;
+            ModuleItemUI.DraggingCells = new System.Collections.Generic.HashSet<Vector2Int>(Instance.GetAbsoluteCells());
+            ModuleItemUI.DraggingGrid = Instance.CurrentGrid;
+            if (!UIManager.IsRightPanelOpen) DiscardGridUI.Instance?.ShowForDrag();
+        }
     }
 
     public void OnDrag(PointerEventData e)
@@ -668,13 +676,17 @@ public class ModuleItemUI : MonoBehaviour,
         if (DiscardGridUI.Instance != null && DiscardGridUI.Instance.IsVisible) DiscardGridUI.Instance.GridUI?.ClearHighlights();
     }
 
-    private Vector2Int GetClickedLocalCell(PointerEventData e)
+    private Vector2Int GetClickedLocalCell(PointerEventData e) => GetClickedLocalCellFromScreen(e.position);
+
+    private Vector2Int GetClickedLocalCellFromScreen(Vector2 screenPos)
     {
         float cs = WeaponGridUI.CellSize;
         float sp = WeaponGridUI.CellSpacing;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(_rt, e.position, UICam(), out var localPoint);
-        return new Vector2Int(Mathf.Max(0, Mathf.FloorToInt(localPoint.x / (cs + sp))),
-                              Mathf.Max(0, Mathf.FloorToInt(-localPoint.y / (cs + sp))));
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(_rt, screenPos, UICam(), out var localPoint);
+        var bound = Instance.Data.GetBoundingSize(Instance.Rotation);
+        int x = Mathf.Clamp(Mathf.FloorToInt(localPoint.x / (cs + sp)), 0, bound.x - 1);
+        int y = Mathf.Clamp(Mathf.FloorToInt(-localPoint.y / (cs + sp)), 0, bound.y - 1);
+        return new Vector2Int(x, y);
     }
 
     private Vector2 GetClickedCellCenterScreen()

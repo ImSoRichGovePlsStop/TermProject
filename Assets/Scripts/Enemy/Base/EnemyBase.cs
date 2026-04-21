@@ -79,8 +79,8 @@ public abstract class EnemyBase : MonoBehaviour
 
         NavMeshAgent agent = movement.GetAgent();
 
-        SpriteRenderer spriteRenderer = GetComponentInChildren<SpriteRenderer>();
-        if (spriteRenderer != null) spriteRenderer.enabled = false;
+        SpriteRenderer[] spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
+        foreach (var sr in spriteRenderers) sr.enabled = false;
 
         yield return null;
         Vector3 finalPos = transform.position;
@@ -90,7 +90,7 @@ public abstract class EnemyBase : MonoBehaviour
         Vector3 startPos = finalPos + Vector3.down * spawnRiseDistance;
         transform.position = startPos;
 
-        if (spriteRenderer != null) spriteRenderer.enabled = true;
+        foreach (var sr in spriteRenderers) sr.enabled = true;
 
         EnemySpawnEffect effect = null;
         if (!skipSpawnEffect && spawnEffectPrefab != null)
@@ -158,6 +158,7 @@ public abstract class EnemyBase : MonoBehaviour
     private IEnumerator HurtRoutine()
     {
         isHurting = true;
+        health.StopFlashBuildup();
         OnHurtTriggered();
         animator?.SetBool("IsHurting", true);
         yield return new WaitForSeconds(hurtDuration);
@@ -269,6 +270,7 @@ public abstract class EnemyBase : MonoBehaviour
         playerTarget = null;
         entityTarget = null;
         movement.SetCanMove(false);
+        health.StopFlashBuildup();
 
         if (hurtCoroutine != null)
         {
