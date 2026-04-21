@@ -362,11 +362,7 @@ public class MergeUI : MonoBehaviour
             if (inst is MaterialInstance matInst)
                 total += matInst.Cost * matInst.StackCount;
             else
-            {
-                var cost = inst.Data.cost;
-                int idx = Mathf.Clamp((int)inst.Rarity, 0, cost.Length - 1);
-                total += cost[idx];
-            }
+                total += Mathf.RoundToInt(inst.GetCostAtLevel());
         }
         return total;
     }

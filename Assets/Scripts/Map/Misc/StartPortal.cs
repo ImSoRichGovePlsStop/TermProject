@@ -12,7 +12,7 @@ public class StartPortal : MonoBehaviour, IInteractable
         int nextScene = SceneManager.GetActiveScene().buildIndex + 1;
 
         if (RunManager.Instance != null)
-            RunManager.Instance.StartFloorTransition(nextScene);
+            RunManager.Instance.StartRun(nextScene);
         else
             SceneManager.LoadScene(nextScene);
     }

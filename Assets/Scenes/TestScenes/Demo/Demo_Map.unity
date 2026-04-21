@@ -237,7 +237,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1679036508
+--- !u!1 &1497926122
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -245,23 +245,23 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1679036511}
-  - component: {fileID: 1679036510}
-  - component: {fileID: 1679036509}
+  - component: {fileID: 1497926125}
+  - component: {fileID: 1497926124}
+  - component: {fileID: 1497926123}
   m_Layer: 0
-  m_Name: 'Directional Light '
+  m_Name: Directional Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1679036509
+--- !u!114 &1497926123
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1679036508}
+  m_GameObject: {fileID: 1497926122}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
@@ -284,18 +284,18 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
---- !u!108 &1679036510
+--- !u!108 &1497926124
 Light:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1679036508}
+  m_GameObject: {fileID: 1497926122}
   m_Enabled: 1
   serializedVersion: 12
   m_Type: 1
-  m_Color: {r: 0.8773585, g: 0.7474641, b: 0.64146495, a: 1}
-  m_Intensity: 2
+  m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
+  m_Intensity: 1
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -349,13 +349,13 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
---- !u!4 &1679036511
+--- !u!4 &1497926125
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1679036508}
+  m_GameObject: {fileID: 1497926122}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 3, z: 0}
@@ -459,7 +459,7 @@ MonoBehaviour:
   minEventCount: 2
   cornerEventChance: 0.5
   weightHeal: 4
-  weightShop: 9999999
+  weightShop: 1
   weightRareLoot: 1
   weightMerge: 2
   weightFountain: 1
@@ -489,6 +489,13 @@ MonoBehaviour:
   floorMat: {fileID: 2100000, guid: 08a4a7f11deb9dd45aabfd25f05485e6, type: 2}
   wallMat: {fileID: 2100000, guid: b354030ecf56d194aa76bff9eed6802a, type: 2}
   sealedMat: {fileID: 2100000, guid: defdb7f80f413dc4491faac396d0fb16, type: 2}
+  segmentMaterials:
+  - floorMat: {fileID: 2100000, guid: 08a4a7f11deb9dd45aabfd25f05485e6, type: 2}
+    wallMat: {fileID: 2100000, guid: d2654b0f80c3fd249afdc51c6d742d79, type: 2}
+  - floorMat: {fileID: 2100000, guid: 1d4d74b2b65b8714c8a8b8d865215990, type: 2}
+    wallMat: {fileID: 2100000, guid: f74303301e7543a43baa8cf5eae4d5ac, type: 2}
+  - floorMat: {fileID: 2100000, guid: 6c13e419949e7de4a8510337e8c36e04, type: 2}
+    wallMat: {fileID: 2100000, guid: ae80d2335a8bbc84ebf9af35852af41a, type: 2}
   navMeshSurface: {fileID: 2145645486}
 --- !u!114 &2145645486
 MonoBehaviour:
@@ -526,6 +533,6 @@ MonoBehaviour:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 1679036511}
+  - {fileID: 1497926125}
   - {fileID: 2145645483}
   - {fileID: 1152646693}

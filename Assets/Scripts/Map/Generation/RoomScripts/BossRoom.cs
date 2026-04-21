@@ -20,7 +20,7 @@ public class BossRoom : BattleRoom
     [Tooltip("Damage multiplier applied per floor for bosses (e.g. 1.12 = +12% each floor).")]
     public float bossDmgPerFloor       = 1.12f;
     [Tooltip("Additional damage multiplier applied per completed segment for bosses.")]
-    public float bossDmgPerSegment     = 1.75f;
+    public float bossDmgPerSegment     = 1.4f;
     public float bossHpPlayerDmgWeight = 0.00f;
     public float bossHpEnemyKillPenalty= 0.000f;
     public float bossDmgPlayerHpWeight = 0.00f;
@@ -362,15 +362,17 @@ public class BossRoom : BattleRoom
             if (e != null) Destroy(e);
         _normalEnemies.Clear();
 
-        // Compute portal position first so loot can avoid it.
-        var portalPos = transform.position + new Vector3(0f, 0f, PortalOffsetZ);
-        SpawnLoot(PickLootPosition(portalPos));
-
         int nextFloor   = (RunManager.Instance?.CurrentFloor ?? 1) + 1;
         var pool        = EnemyPoolManager.Instance;
         int totalFloors = pool != null ? pool.segmentCount * pool.floorsPerSegment : maxFloor;
-        var portal      = (nextFloor > totalFloors && portalFinalPrefab != null)
-                          ? portalFinalPrefab : portalPrefab;
+        bool isFinalBoss = nextFloor > totalFloors;
+
+        // Compute portal position first so loot can avoid it.
+        var portalPos = transform.position + new Vector3(0f, 0f, PortalOffsetZ);
+        if (!isFinalBoss)
+            SpawnLoot(PickLootPosition(portalPos));
+
+        var portal = (isFinalBoss && portalFinalPrefab != null) ? portalFinalPrefab : portalPrefab;
         if (portal != null)
             Instantiate(portal, portalPos, Quaternion.identity);
 

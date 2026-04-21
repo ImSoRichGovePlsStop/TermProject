@@ -8,6 +8,7 @@ public class MinimapManager : MonoBehaviour
 {
     [Header("UI")]
     public RectTransform minimapRoot;
+    public GameObject    floorTextUI;
 
     [Header("Fog of War")]
     [Tooltip("Radius in matrix cells revealed around the player each frame.")]
@@ -77,8 +78,9 @@ public class MinimapManager : MonoBehaviour
 
     private void RefreshVisibility(int sceneIndex)
     {
-        if (minimapRoot != null)
-            minimapRoot.gameObject.SetActive(sceneIndex != 1);
+        bool inGame = sceneIndex == 2;
+        if (minimapRoot != null) minimapRoot.gameObject.SetActive(inGame);
+        if (floorTextUI  != null) floorTextUI.SetActive(inGame);
     }
 
     public void BuildMinimapFromMatrix(byte[,] matrix, int size,
