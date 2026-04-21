@@ -677,11 +677,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73a687f9a65ebc34ab8d148f3be77e4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EntityStats
-  baseMaxHP: 500
+  baseMaxHP: 1200
   baseMoveSpeed: 2.5
   baseDamage: 12
   baseAttackSpeed: 1
-  baseShield: 0
+  shieldPercent: 0
 --- !u!114 &1875878696231198487
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -722,7 +722,6 @@ MonoBehaviour:
   spawnDuration: 1
   spawnFadeOutDuration: 0.4
   spawnEffectScale: 1
-  spawnStayDuration: 0.5
   strafe:
     preferredDistMin: 5
     preferredDistMax: 7
@@ -821,7 +820,7 @@ MonoBehaviour:
   bigArcNodePrefab: {fileID: 8635059489987017166, guid: aca89842aed7dab47b4ee12aec4c7387, type: 3}
   bigArcNodeWallOffset: 0.5
   bigArcNodeDamageScale: 0.35
-  bigArcNodeHpScale: 0.3
+  bigArcNodeHpScale: 0.2
   bigArcNodeSlideRange: 5
 --- !u!114 &-2045061280870046310
 MonoBehaviour:
