@@ -17,11 +17,21 @@ public class NextFloorPortal : MonoBehaviour, IInteractable
             SceneManager.LoadScene(sceneIndex);
     }
 
-    string IInteractable.GetPromptText() => "[E] -> Go to next floor";
+    string IInteractable.GetPromptText() => $"[E] -> Go to {NextFloorLabel()}";
     InteractInfo IInteractable.GetInteractInfo() => new InteractInfo
     {
-        name       = "Next Floor",
+        name       = $"Floor {NextFloorLabel()}",
         actionText = "Enter",
         cost       = null
     };
+
+    static string NextFloorLabel()
+    {
+        int next = (RunManager.Instance?.CurrentFloor ?? 1) + 1;
+        var pool  = EnemyPoolManager.Instance;
+        int fps   = pool != null ? pool.floorsPerSegment : 3;
+        int seg         = (next - 1) / fps + 1;
+        int floorInSeg  = (next - 1) % fps + 1;
+        return $"{seg}-{floorInSeg}";
+    }
 }

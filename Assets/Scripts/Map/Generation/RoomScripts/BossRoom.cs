@@ -362,15 +362,17 @@ public class BossRoom : BattleRoom
             if (e != null) Destroy(e);
         _normalEnemies.Clear();
 
-        // Compute portal position first so loot can avoid it.
-        var portalPos = transform.position + new Vector3(0f, 0f, PortalOffsetZ);
-        SpawnLoot(PickLootPosition(portalPos));
-
         int nextFloor   = (RunManager.Instance?.CurrentFloor ?? 1) + 1;
         var pool        = EnemyPoolManager.Instance;
         int totalFloors = pool != null ? pool.segmentCount * pool.floorsPerSegment : maxFloor;
-        var portal      = (nextFloor > totalFloors && portalFinalPrefab != null)
-                          ? portalFinalPrefab : portalPrefab;
+        bool isFinalBoss = nextFloor > totalFloors;
+
+        // Compute portal position first so loot can avoid it.
+        var portalPos = transform.position + new Vector3(0f, 0f, PortalOffsetZ);
+        if (!isFinalBoss)
+            SpawnLoot(PickLootPosition(portalPos));
+
+        var portal = (isFinalBoss && portalFinalPrefab != null) ? portalFinalPrefab : portalPrefab;
         if (portal != null)
             Instantiate(portal, portalPos, Quaternion.identity);
 
