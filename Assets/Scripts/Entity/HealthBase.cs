@@ -97,6 +97,14 @@ public abstract class HealthBase : MonoBehaviour
         currentHP = maxHP;
     }
 
+    public void ApplyMaxHP()
+    {
+        var stats = GetComponent<EntityStats>();
+        if (stats == null) return;
+        maxHP     = stats.MaxHP;
+        currentHP = maxHP;
+    }
+
     public void Heal(float amount)
     {
         if (isDead) return;
