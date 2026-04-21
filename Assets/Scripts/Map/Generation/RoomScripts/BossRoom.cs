@@ -11,19 +11,19 @@ public class BossRoom : BattleRoom
     public GameObject portalFinalPrefab;
 
     [Header("Boss Scaling")]
-    public float bossSpeedMin            = 0.9f;
-    public float bossSpeedMax            = 1.1f;
-    [Tooltip("How much each boss kill contributes to the progress value that drives HP scaling.")]
-    public float bossProgressBossWeight  = 1f;
-    [Tooltip("How much each room cleared contributes to the progress value that drives HP/DMG scaling.")]
-    public float bossProgressRoomWeight  = 0f;
-    [Tooltip("How steeply progress increases boss HP. Equivalent to enemyHpScale in BattleRoom.")]
-    public float bossHpProgressScale     = 1.1f;
-    [Tooltip("How steeply progress increases boss damage. Equivalent to enemyDmgScale in BattleRoom.")]
-    public float bossDmgProgressScale    = 0.3f;
-    public float bossHpPlayerDmgWeight   = 0.00f;
-    public float bossHpEnemyKillPenalty  = 0.000f;
-    public float bossDmgPlayerHpWeight   = 0.00f;
+    public float bossSpeedMin          = 0.9f;
+    public float bossSpeedMax          = 1.1f;
+    [Tooltip("HP multiplier applied per floor for bosses (e.g. 1.20 = +20% each floor).")]
+    public float bossHpPerFloor        = 1.20f;
+    [Tooltip("Additional HP multiplier applied per completed segment for bosses.")]
+    public float bossHpPerSegment      = 1.75f;
+    [Tooltip("Damage multiplier applied per floor for bosses (e.g. 1.12 = +12% each floor).")]
+    public float bossDmgPerFloor       = 1.12f;
+    [Tooltip("Additional damage multiplier applied per completed segment for bosses.")]
+    public float bossDmgPerSegment     = 1.75f;
+    public float bossHpPlayerDmgWeight = 0.00f;
+    public float bossHpEnemyKillPenalty= 0.000f;
+    public float bossDmgPlayerHpWeight = 0.00f;
 
     [Header("Mini-Boss Scaling")]
     [Tooltip("HP multiplier applied on top of normal scaling for the guaranteed elite.")]
@@ -140,17 +140,15 @@ public class BossRoom : BattleRoom
         var rm     = RunManager.Instance;
         var player = FindFirstObjectByType<PlayerStats>();
 
-        // progressBossWeight = 1  →  progress = bossKills * 1
         var scale = BuildStatScale(
             player, rm,
-            bossSpeedMin,                   bossSpeedMax,
-            bossProgressBossWeight,          bossProgressRoomWeight,
-            hpScale:  bossHpProgressScale,  dmgScale: bossDmgProgressScale,
-            hpPlayerWeight:  bossHpPlayerDmgWeight,
-            dmgPlayerWeight: bossDmgPlayerHpWeight);
+            bossSpeedMin,         bossSpeedMax,
+            bossHpPerFloor,       bossHpPerSegment,
+            bossDmgPerFloor,      bossDmgPerSegment,
+            bossHpPlayerDmgWeight, bossDmgPlayerHpWeight);
 
-        // Boss-exclusive: long kill-count reduces HP (reward for clearing many enemies)
-        scale.hp = Mathf.Max(1f, scale.hp + (rm?.TotalEnemyKilled ?? 0) * bossHpEnemyKillPenalty);
+        // Boss-exclusive: kill-count penalty reduces HP (reward for clearing many enemies)
+        scale.hp = Mathf.Max(1f, scale.hp - (rm?.TotalEnemyKilled ?? 0) * bossHpEnemyKillPenalty);
         return scale;
     }
 
@@ -390,7 +388,7 @@ public class BossRoom : BattleRoom
         int floor        = RunManager.Instance?.CurrentFloor ?? 1;
         int roomsCleared = RunManager.Instance?.TotalRoomsCleared ?? 0;
         int bossKills    = RunManager.Instance?.TotalBossKilled ?? 0;
-        float baseMean   = lootBaseMean + floor * lootMeanPerFloor + roomsCleared * lootMeanPerRoom + lootMeanFlat;
+        float baseMean   = lootBaseMean + floor * lootMeanPerFloor + roomsCleared * lootMeanPerRoom ;
         float sd         = lootBaseSd + (floor - 1) * lootSdPerFloor;
         return new LootConfig
         {
