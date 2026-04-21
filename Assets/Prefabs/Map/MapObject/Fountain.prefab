@@ -142,7 +142,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WishFountain
   activateChance: 0.02
   chanceIncrement: 0
-  baseCost: 10
+  baseCost: 1
   costPerFloor: 1
   wishMeanCost: 100
   wishSd: 200

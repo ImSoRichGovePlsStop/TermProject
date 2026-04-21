@@ -58,6 +58,9 @@ public class RunManager : MonoBehaviour
 
     readonly HashSet<string> _pickedCardIds = new();
 
+    public readonly List<FloorModifierCard> AppliedWholeRun  = new();
+    public readonly List<FloorModifierCard> AppliedNextFloor = new();
+
     public float EffectiveCoinMultiplier => PermanentMods.coinMultiplier * NextFloorMods.coinMultiplier;
     public float EffectiveEnemyCountMult => PermanentMods.enemyCountMultiplier * NextFloorMods.enemyCountMultiplier;
     public int EffectiveEliteBudgetBonus => PermanentMods.eliteBudgetBonus + NextFloorMods.eliteBudgetBonus;
@@ -137,9 +140,6 @@ public class RunManager : MonoBehaviour
     {
         TotalBossKilled++;
         RotateFloorEvents();
-        NextFloorMods = new RunModifiers();   // clear next-floor mods before new card selection
-        CurrentFloor++;
-        HighestFloorReached = Mathf.Max(HighestFloorReached, CurrentFloor);
     }
 
     public void OnCoinsCollected(int amount)
@@ -180,6 +180,8 @@ public class RunManager : MonoBehaviour
         PermanentMods = new RunModifiers();
         NextFloorMods = new RunModifiers();
         _pickedCardIds.Clear();
+        AppliedWholeRun.Clear();
+        AppliedNextFloor.Clear();
         HealthStationManager.Instance?.ResetRun();
         LuckStationManager.Instance?.ResetRun();
         EnemyPoolManager.Instance?.RebuildPools();
@@ -217,23 +219,51 @@ public class RunManager : MonoBehaviour
         if (card == null) return;
         _pickedCardIds.Add(card.cardId);
         if (card.scope == ModifierScope.WholeRun)
+        {
             PermanentMods.Add(card.modifier);
+            AppliedWholeRun.Add(card);
+        }
         else
+        {
             NextFloorMods.Add(card.modifier);
+            AppliedNextFloor.Add(card);
+        }
     }
 
+    /// <summary>Called by StartPortal — plays the fade and loads without touching floor state.</summary>
+    public void StartRun(int sceneIndex)
+    {
+        StartCoroutine(StartRunRoutine(sceneIndex));
+    }
+
+    /// <summary>Called by NextFloorPortal — shows modifier selection, increments floor, then loads.</summary>
     public void StartFloorTransition(int sceneIndex)
     {
         StartCoroutine(FloorTransitionRoutine(sceneIndex));
+    }
+
+    private IEnumerator StartRunRoutine(int sceneIndex)
+    {
+        var uiManager = UIManager.Instance;
+        if (uiManager != null)
+            yield return StartCoroutine(uiManager.PlayFloorTransition());
+        SceneManager.LoadScene(sceneIndex);
     }
 
     private IEnumerator FloorTransitionRoutine(int sceneIndex)
     {
         var uiManager = UIManager.Instance;
 
-        // CurrentFloor was already incremented in OnBossKilled; floor just completed is CurrentFloor - 1
-        int justCompleted = CurrentFloor - 1;
-        if (IsTriggerFloor(justCompleted) && uiManager != null)
+        // Expire the previous floor's next-floor mods before selecting new ones.
+        NextFloorMods = new RunModifiers();
+        AppliedNextFloor.Clear();
+
+        // Advance floor so modifier cards know which floor they apply to.
+        CurrentFloor++;
+        HighestFloorReached = Mathf.Max(HighestFloorReached, CurrentFloor);
+
+        // Show modifier card selection for the destination floor.
+        if (IsTriggerFloor(CurrentFloor - 1) && uiManager != null)
         {
             var cards = DrawModifierCards(modifierCardCount);
             if (cards.Length > 0)

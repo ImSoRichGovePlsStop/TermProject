@@ -14,7 +14,11 @@ public class EntityStats : MonoBehaviour
     private EntityStatModifier multiplierModifier = new EntityStatModifier();
     private StatScale statScale = StatScale.Default;
 
-    public void SetStatScale(StatScale scale) => statScale = scale;
+    public void SetStatScale(StatScale scale)
+    {
+        statScale = scale;
+        GetComponent<HealthBase>()?.ApplyMaxHP();
+    }
 
     public float MaxHP => (baseMaxHP + flatModifier.maxHP) * (1f + multiplierModifier.maxHP) * statScale.hp;
     public float MoveSpeed => Mathf.Max(0f, (baseMoveSpeed + flatModifier.moveSpeed) * (1f + multiplierModifier.moveSpeed) * statScale.moveSpeed);
