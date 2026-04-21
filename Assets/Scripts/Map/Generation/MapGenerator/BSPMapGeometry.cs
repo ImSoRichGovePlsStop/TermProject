@@ -105,6 +105,19 @@ public class BSPMapGeometry : MonoBehaviour
     public Material wallMat;
     public Material sealedMat;
 
+    [System.Serializable]
+    public struct SegmentMaterials
+    {
+        [Tooltip("Floor material for this segment. Leave null to use the default floorMat.")]
+        public Material floorMat;
+        [Tooltip("Wall material for this segment. Leave null to use the default wallMat.")]
+        public Material wallMat;
+    }
+
+    [Tooltip("Per-segment material overrides. Element 0 = segment 1, element 1 = segment 2, etc. " +
+             "Segments beyond the array length fall back to the default materials above.")]
+    public SegmentMaterials[] segmentMaterials;
+
     [Header("Navigation")]
     public NavMeshSurface navMeshSurface;
 
@@ -858,8 +871,25 @@ public class BSPMapGeometry : MonoBehaviour
 
     // ── Step 6: Spawn Geometry ────────────────────────────────────────────────
 
+    // Returns the floor/wall materials for the current segment, falling back to defaults.
+    (Material floor, Material wall) ActiveSegmentMaterials()
+    {
+        int floor      = RunManager.Instance?.CurrentFloor ?? 1;
+        int fps        = EnemyPoolManager.Instance?.floorsPerSegment ?? 3;
+        int segIdx     = (floor - 1) / fps;  // 0-based
+
+        if (segmentMaterials != null && segIdx < segmentMaterials.Length)
+        {
+            var sm = segmentMaterials[segIdx];
+            return (sm.floorMat != null ? sm.floorMat : floorMat,
+                    sm.wallMat  != null ? sm.wallMat  : wallMat);
+        }
+        return (floorMat, wallMat);
+    }
+
     void SpawnGeometry()
     {
+        var (activeFlorMat, activeWallMat) = ActiveSegmentMaterials();
         var floorP = new GameObject("Floors").transform;
         var wallP = new GameObject("Walls").transform;
         var voidP = new GameObject("VoidBlockers").transform;
@@ -881,14 +911,14 @@ public class BSPMapGeometry : MonoBehaviour
                     {
                         int nx = x + d.x, nz = z + d.y;
                         bool oob = nx < 0 || nz < 0 || nx >= matrixSize || nz >= matrixSize;
-                        if (oob) { SpawnWallQuad(wallP, x, z, d); continue; }
+                        if (oob) { SpawnWallQuad(wallP, x, z, d, activeWallMat); continue; }
                         if (_roomMap[nx, nz] != vo && _voidOwnerMap[nx, nz] != vo)
-                            SpawnWallQuad(wallP, x, z, d);
+                            SpawnWallQuad(wallP, x, z, d, activeWallMat);
                     }
                     continue;
                 }
 
-                SpawnFloorQuad(floorP, x, z, owner);
+                SpawnFloorQuad(floorP, x, z, owner, activeFlorMat);
                 foreach (var d in Dirs)
                 {
                     int nx = x + d.x, nz = z + d.y;
@@ -904,14 +934,14 @@ public class BSPMapGeometry : MonoBehaviour
                     bool skipDiff = diff && !door && (d.x < 0 || (d.x == 0 && d.y < 0));
 
                     if (!skipDiff && !door && (oob || nonRoom || diff || (voidNb && !voidSameOwner)))
-                        SpawnWallQuad(wallP, x, z, d);
+                        SpawnWallQuad(wallP, x, z, d, activeWallMat);
                 }
             }
 
         if (pillarPrefab != null)
         {
             var pillarP = new GameObject("Pillars").transform;
-            SpawnPillars(pillarP);
+            SpawnPillars(pillarP, activeWallMat);
         }
 
         // ── Static batching — collapses same-material renderers to 1 draw call each ──
@@ -922,7 +952,7 @@ public class BSPMapGeometry : MonoBehaviour
 
     // Places a decorative pillar at every corner where both a horizontal wall (±Z face)
     // and a vertical wall (±X face) meet.  Corner (cx,cz) sits at world (cx, _, cz).
-    void SpawnPillars(Transform parent)
+    void SpawnPillars(Transform parent, Material mat)
     {
         for (int cx = 0; cx <= matrixSize; cx++)
         for (int cz = 0; cz <= matrixSize; cz++)
@@ -938,10 +968,16 @@ public class BSPMapGeometry : MonoBehaviour
                          || WallBoundaryExists(cx,     cz - 1, cx,     cz);
 
             if (hasXWall && hasZWall)
-                Object.Instantiate(pillarPrefab,
+            {
+                var inst = Object.Instantiate(pillarPrefab,
                     new Vector3(cx, 0f, cz),
                     Quaternion.identity,
                     parent);
+
+                if (mat != null)
+                    foreach (var r in inst.GetComponentsInChildren<Renderer>())
+                        r.sharedMaterial = mat;
+            }
         }
     }
 
@@ -986,7 +1022,7 @@ public class BSPMapGeometry : MonoBehaviour
         go.GetComponent<MeshRenderer>().sharedMaterial = sealedMat;
     }
 
-    void SpawnFloorQuad(Transform parent, int x, int z, MapNode owner)
+    void SpawnFloorQuad(Transform parent, int x, int z, MapNode owner, Material mat)
     {
         float depth = Mathf.Abs(floorThickness);
 
@@ -997,7 +1033,7 @@ public class BSPMapGeometry : MonoBehaviour
         go.transform.localScale = new Vector3(1f, depth, 1f);
         go.layer    = LayerMask.NameToLayer("Ground");
         go.isStatic = true;
-        go.GetComponent<MeshRenderer>().sharedMaterial = floorMat;
+        go.GetComponent<MeshRenderer>().sharedMaterial = mat;
 
         bool needsCollider = owner != null &&
             (owner.Type == RoomType.Battle   ||
@@ -1007,11 +1043,11 @@ public class BSPMapGeometry : MonoBehaviour
             Object.Destroy(go.GetComponent<BoxCollider>());
     }
 
-    void SpawnWallQuad(Transform parent, int x, int z, Vector2Int facing)
+    void SpawnWallQuad(Transform parent, int x, int z, Vector2Int facing, Material mat)
     {
         if (wallPrefab != null)
         {
-            SpawnWallPrefabTile(parent, x, z, facing);
+            SpawnWallPrefabTile(parent, x, z, facing, mat);
             return;
         }
 
@@ -1028,7 +1064,7 @@ public class BSPMapGeometry : MonoBehaviour
             : new Vector3(1f, totalH, Mathf.Max(0.05f, wallThickness));
         go.layer    = LayerMask.NameToLayer("Wall");
         go.isStatic = true;
-        go.GetComponent<MeshRenderer>().sharedMaterial = wallMat;
+        go.GetComponent<MeshRenderer>().sharedMaterial = mat;
 
         var mod = go.AddComponent<NavMeshModifier>();
         mod.overrideArea = true;
@@ -1036,21 +1072,20 @@ public class BSPMapGeometry : MonoBehaviour
     }
 
 
-    void SpawnWallPrefabTile(Transform parent, int x, int z, Vector2Int facing)
+    void SpawnWallPrefabTile(Transform parent, int x, int z, Vector2Int facing, Material mat)
     {
         float totalH = wallHeight + Mathf.Abs(floorThickness);
         int tiles = Mathf.CeilToInt(totalH);
-        float startY = floorThickness;          
+        float startY = floorThickness;
 
         float faceX = x + 0.5f + facing.x * 0.5f;
         float faceZ = z + 0.5f + facing.y * 0.5f;
 
-   
         Quaternion rot = Quaternion.LookRotation(new Vector3(facing.x, 0f, facing.y));
 
         for (int i = 0; i < tiles; i++)
         {
-            float tileY = startY + i;            
+            float tileY = startY + i;
             var inst = Object.Instantiate(
                 wallPrefab,
                 new Vector3(faceX, tileY, faceZ),
@@ -1058,6 +1093,11 @@ public class BSPMapGeometry : MonoBehaviour
                 parent);
             inst.name = $"W_{x}_{z}_{facing.x}_{facing.y}_{i}";
             inst.layer = LayerMask.NameToLayer("Wall");
+
+            if (mat != null)
+                foreach (var r in inst.GetComponentsInChildren<Renderer>())
+                    r.sharedMaterial = mat;
+
             var mod = inst.AddComponent<NavMeshModifier>();
             mod.overrideArea = true;
             mod.area = NavMesh.GetAreaFromName("Not Walkable");

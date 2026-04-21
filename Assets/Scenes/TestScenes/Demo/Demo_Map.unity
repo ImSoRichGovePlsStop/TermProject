@@ -489,6 +489,13 @@ MonoBehaviour:
   floorMat: {fileID: 2100000, guid: 08a4a7f11deb9dd45aabfd25f05485e6, type: 2}
   wallMat: {fileID: 2100000, guid: b354030ecf56d194aa76bff9eed6802a, type: 2}
   sealedMat: {fileID: 2100000, guid: defdb7f80f413dc4491faac396d0fb16, type: 2}
+  segmentMaterials:
+  - floorMat: {fileID: 2100000, guid: 1d4d74b2b65b8714c8a8b8d865215990, type: 2}
+    wallMat: {fileID: 2100000, guid: f74303301e7543a43baa8cf5eae4d5ac, type: 2}
+  - floorMat: {fileID: 2100000, guid: 6c13e419949e7de4a8510337e8c36e04, type: 2}
+    wallMat: {fileID: 2100000, guid: ae80d2335a8bbc84ebf9af35852af41a, type: 2}
+  - floorMat: {fileID: 2100000, guid: 08a4a7f11deb9dd45aabfd25f05485e6, type: 2}
+    wallMat: {fileID: 2100000, guid: d2654b0f80c3fd249afdc51c6d742d79, type: 2}
   navMeshSurface: {fileID: 2145645486}
 --- !u!114 &2145645486
 MonoBehaviour:
