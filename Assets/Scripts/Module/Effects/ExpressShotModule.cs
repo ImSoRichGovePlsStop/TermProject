@@ -1,0 +1,223 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+[CreateAssetMenu(menuName = "Module Effect/ExpressShot")]
+public class ExpressShot : ModuleEffect
+{
+    [Header("Stat per Rarity (Common -> Legendary)")]
+    [Tooltip("Damage multiplier bonus per rarity (e.g. 0.5 = +50% damage for one shot)")]
+    public float[] baseStatPerRarity = { 0f, 0f, 0f, 0f, 0f };
+    public float levelMultiplier;
+
+    [Tooltip("Cooldown in seconds before the bonus shot is ready again")]
+    public int cooldown;
+
+    private readonly Dictionary<ModuleRuntimeState, StateData> _stateMap = new();
+
+    private class StateData
+    {
+        public Action HitHandler;
+        public Action SecondaryHitHandler;
+        public bool BuffReady;
+        public Coroutine CooldownCoroutine;
+    }
+
+    protected override void OnEquip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state)
+    {
+        state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        var data = new StateData
+        {
+            BuffReady = true
+        };
+
+        stats.AddMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
+
+        var ctx = stats.GetComponent<PlayerCombatContext>();
+        data.HitHandler = () =>
+        {
+            if (!data.BuffReady) return;
+            if (ctx.LastHitEnemies == null || ctx.LastHitEnemies.Count == 0) return;
+
+            stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
+            data.BuffReady = false;
+            data.CooldownCoroutine = stats.StartCoroutine(CooldownCoroutine(stats, state, data));
+        };
+
+        data.SecondaryHitHandler = () =>
+        {
+            if (!data.BuffReady) return;
+            if (ctx.LastHitEnemies == null || ctx.LastHitEnemies.Count == 0) return;
+
+            stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
+            data.BuffReady = false;
+            data.CooldownCoroutine = stats.StartCoroutine(CooldownCoroutine(stats, state, data));
+        };
+
+        ctx.OnAttack += data.HitHandler;
+        ctx.OnSecondaryAttack += data.SecondaryHitHandler;
+        _stateMap[state] = data;
+    }
+
+    protected override void OnUnequip(PlayerStats stats, Rarity rarity, int level, ModuleRuntimeState state)
+    {
+        if (!_stateMap.TryGetValue(state, out var data)) return;
+        if (data.BuffReady)
+            stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
+
+        if (data.CooldownCoroutine != null)
+            stats.StopCoroutine(data.CooldownCoroutine);
+
+        var ctx = stats.GetComponent<PlayerCombatContext>();
+        ctx.OnAttack -= data.HitHandler;
+        ctx.OnSecondaryAttack -= data.SecondaryHitHandler;
+        _stateMap.Remove(state);
+    }
+
+    public override void OnLevelBuffReceived(int baselevel, int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
+    {
+        if (!_stateMap.TryGetValue(state, out var data)) return;
+        if (state.buffedLevel == 0) state.buffedLevel = baselevel;
+        state.buffedLevel += levelBonus;
+        if (data.BuffReady)
+            stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
+        if (state.buffRarity > rarity)
+        {
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
+        }
+        else
+        {
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, state.buffedLevel);
+        }
+        if (data.BuffReady)
+        {
+            stats.AddMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
+        }
+    }
+
+    public override void OnLevelBuffRemoved(int baselevel, int levelBonus, Rarity rarity, PlayerStats stats, ModuleRuntimeState state)
+    {
+        state.buffedLevel -= levelBonus;
+        if (!_stateMap.TryGetValue(state, out var data)) return;
+        if (!state.isActive) return;
+        if (data.BuffReady)
+            stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
+        if (state.buffRarity > rarity)
+        {
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
+        }
+        else
+        {
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, state.buffedLevel);
+        }
+        if (data.BuffReady)
+        {
+            stats.AddMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
+        }
+    }
+
+    public override void OnRarityBuffReceived(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
+    {
+        state.baseRarity[(int)newRarity]++;
+
+        if (!_stateMap.TryGetValue(state, out var data)) return;
+        if (state.buffRarity > newRarity | oldRarity > newRarity) return;
+        state.buffRarity = newRarity;
+        if (data.BuffReady)
+            stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
+        if (state.buffedLevel > level)
+        {
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
+        }
+        else
+        {
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, level);
+        }
+        if (data.BuffReady)
+        {
+            stats.AddMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
+        }
+    }
+
+    public override void OnRarityBuffRemoved(int level, Rarity oldRarity, Rarity newRarity, PlayerStats stats, ModuleRuntimeState state)
+    {
+        state.baseRarity[(int)newRarity]--;
+        FindNextRarity(oldRarity, state);
+
+        if (!_stateMap.TryGetValue(state, out var data)) return;
+        if (!state.isActive) return;
+        if (data.BuffReady)
+            stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
+        if (state.buffedLevel > level)
+        {
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, state.buffedLevel);
+        }
+        else
+        {
+            state.currentStat = GetFinalStat(baseStatPerRarity, levelMultiplier, state.buffRarity, level);
+        }
+        if (data.BuffReady)
+        {
+            stats.AddMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
+        }
+    }
+
+    public override void OnBuffReceived(float percent, PlayerStats stats, ModuleRuntimeState state)
+    {
+        if (!_stateMap.TryGetValue(state, out var data)) return;
+        if (data.BuffReady)
+            stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
+        state.totalBuffPercent += percent;
+        if (data.BuffReady)
+            stats.AddMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
+    }
+
+    public override void OnBuffRemoved(float percent, PlayerStats stats, ModuleRuntimeState state)
+    {
+        if (!_stateMap.TryGetValue(state, out var data))
+        {
+            state.totalBuffPercent -= percent;
+            return;
+        }
+        if (data.BuffReady)
+            stats.RemoveMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
+        state.totalBuffPercent -= percent;
+        if (data.BuffReady)
+            stats.AddMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
+    }
+
+    private IEnumerator CooldownCoroutine(PlayerStats stats, ModuleRuntimeState state, StateData data)
+    {
+        yield return new WaitForSeconds(cooldown);
+        if (!_stateMap.ContainsKey(state)) yield break;
+
+        stats.AddMultiplierModifier(new StatModifier { damage = GetEffectiveStat(state) });
+        data.BuffReady = true;
+        data.CooldownCoroutine = null;
+    }
+
+    public override string GetDescription(Rarity rarity, int level, ModuleRuntimeState state) => null;
+
+    public override string PassiveDescription => $"Every {cooldown}s, your next attack deals bonus damage";
+    public override PassiveLayout GetPassiveLayout() => PassiveLayout.Single;
+
+    public override PassiveEntry[] GetPassiveEntries(Rarity rarity, int level, ModuleRuntimeState state)
+    {
+        float baseStat = GetFinalStat(baseStatPerRarity, levelMultiplier, rarity, level);
+        float effective = state.isActive ? GetEffectiveStat(state) : baseStat;
+        bool isBuffed = state.isActive && effective != baseStat;
+
+        return new PassiveEntry[]
+        {
+            new PassiveEntry
+            {
+                value         = $"+{effective * 100f:F0}%",
+                label         = "Bonus Damage",
+                sublabel      = "Conditional",
+                isBuffed      = isBuffed,
+                unbuffedValue = $"+{baseStat * 100f:F0}%"
+            }
+        };
+    }
+}

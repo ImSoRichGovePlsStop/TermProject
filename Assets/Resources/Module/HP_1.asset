@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b7eed258015d6e43af3e1877b980b72, type: 3}
+  m_Name: HP_1
+  m_EditorClassIdentifier: Assembly-CSharp::ModuleData
+  moduleName: Vitality
+  icon: {fileID: 0}
+  moduleEffect: {fileID: 11400000, guid: cd81ab2cfe2a09a40bcc0f442468e6a7, type: 2}
+  moduleColor: {r: 0, g: 1, b: 0, a: 1}
+  cost: 19000000320000004b0000006400000096000000
+  isBuffAdjacent: 0
+  buffGrid:
+  - cells: 0100000000
+  - cells: 0000000000
+  - cells: 0000000000
+  - cells: 0000000000
+  - cells: 0000000000
+  shapeGrid:
+  - cells: 0100000000
+  - cells: 0000000000
+  - cells: 0000000000
+  - cells: 0000000000
+  - cells: 0000000000

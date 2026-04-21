@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
+  m_Name: L3A_ResidualCurrent
+  m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
+  nodeName: Residual Current
+  description: When an attached enemy dies, spawn mini Zapper at the hit location
+  cost: 1
+  parents:
+  - {fileID: 11400000, guid: 9478b880633334849b1f5dfd15224455, type: 2}
+  requireAllParents: 0
+  layer: 3
+  branch: 1
+  overrideCost: 1

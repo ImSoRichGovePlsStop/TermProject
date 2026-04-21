@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b45641cf17794bf46a198cb6d05cff9c, type: 3}
+  m_Name: LuckStationUpgradeConfig
+  m_EditorClassIdentifier: Assembly-CSharp::LuckStationUpgradeConfig
+  levels:
+  - description: Unlock Reroll
+    upgradeCost:
+    - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+      count: 2
+    - material: {fileID: 11400000, guid: 143d429ad908be14e8eed1214cf168b7, type: 2}
+      count: 2
+  - description: 100 coin on start
+    upgradeCost:
+    - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+      count: 3
+    - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+      count: 2
+    - material: {fileID: 11400000, guid: 143d429ad908be14e8eed1214cf168b7, type: 2}
+      count: 3
+  - description: Reduce module cost by 10% , upgrade cost by 10%
+    upgradeCost:
+    - material: {fileID: 11400000, guid: 143d429ad908be14e8eed1214cf168b7, type: 2}
+      count: 4
+    - material: {fileID: 11400000, guid: 13a68ddd8fc6f724c960061a5aba1839, type: 2}
+      count: 2
+    - material: {fileID: 11400000, guid: 072ab0b6b14dc484baa80252ee75489f, type: 2}
+      count: 1
+  - description: +2 shop pool , +1 reward pool
+    upgradeCost:
+    - material: {fileID: 11400000, guid: 143d429ad908be14e8eed1214cf168b7, type: 2}
+      count: 4
+    - material: {fileID: 11400000, guid: 13a68ddd8fc6f724c960061a5aba1839, type: 2}
+      count: 3
+    - material: {fileID: 11400000, guid: 072ab0b6b14dc484baa80252ee75489f, type: 2}
+      count: 2
+  - description: Increase weight loot in loot reward by 25%
+    upgradeCost:
+    - material: {fileID: 11400000, guid: 143d429ad908be14e8eed1214cf168b7, type: 2}
+      count: 4
+    - material: {fileID: 11400000, guid: 13a68ddd8fc6f724c960061a5aba1839, type: 2}
+      count: 4
+    - material: {fileID: 11400000, guid: 072ab0b6b14dc484baa80252ee75489f, type: 2}
+      count: 2
+    - material: {fileID: 11400000, guid: 347983e0f419af54aac76500c585630c, type: 2}
+      count: 1

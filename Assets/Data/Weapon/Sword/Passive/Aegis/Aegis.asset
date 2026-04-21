@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 795b38daab500fb45a7cc0b63959a39f, type: 3}
+  m_Name: Aegis
+  m_EditorClassIdentifier: Assembly-CSharp::PassiveTree
+  treeName: Aegis
+  treeColor: {r: 1, g: 0.84313726, b: 0, a: 1}
+  nodes:
+  - {fileID: 11400000, guid: 8d97cca03ad3d7b419fe37ea48a6c377, type: 2}
+  - {fileID: 11400000, guid: 357286022df0cab45a9573d7c954f4fe, type: 2}
+  - {fileID: 11400000, guid: 526b6ea46cfc4b64d82d2b1d2cec89c1, type: 2}
+  - {fileID: 11400000, guid: 453a3c8bff585574294be4180375df20, type: 2}
+  - {fileID: 11400000, guid: b2d0339f36cf0d34b87968c52a5a33c4, type: 2}
+  - {fileID: 11400000, guid: 15964ee03192d8f48892d00395d06080, type: 2}
+  - {fileID: 11400000, guid: adcc19deca545b14789b9cb1f1e0c75e, type: 2}
+  - {fileID: 11400000, guid: 289854ae857b19642b952868c585fa36, type: 2}
+  handlerPrefab: {fileID: -144109862595276490, guid: 92827ab93639bd44ba5d6f35dcd11446, type: 3}

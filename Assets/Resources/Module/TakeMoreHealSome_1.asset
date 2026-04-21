@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b7eed258015d6e43af3e1877b980b72, type: 3}
+  m_Name: TakeMoreHealSome_1
+  m_EditorClassIdentifier: Assembly-CSharp::ModuleData
+  moduleName: TakeMore
+  description: 
+  icon: {fileID: 0}
+  moduleEffect: {fileID: 11400000, guid: d6761900660c7b14fbeb84a3cda68ddc, type: 2}
+  moduleColor: {r: 1, g: 0.28773582, b: 0.6065856, a: 1}
+  cost: 0000000000000000960000002c010000f4010000
+  hasActive: 0
+  allowDuplicate: 0
+  isBuffAdjacent: 0
+  buffDescription: 
+  buffGrid:
+  - cells: 0000000000
+  - cells: 0000000000
+  - cells: 0000000000
+  - cells: 0000000000
+  - cells: 0000000000
+  shapeGrid:
+  - cells: 0100000000
+  - cells: 0000000000
+  - cells: 0000000000
+  - cells: 0000000000
+  - cells: 0000000000

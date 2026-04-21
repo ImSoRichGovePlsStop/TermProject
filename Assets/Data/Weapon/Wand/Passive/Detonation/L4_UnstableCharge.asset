@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
+  m_Name: L4_UnstableCharge
+  m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
+  nodeName: Unstable Charge
+  description: Each second the Bomber walks before reaching an enemy increases explosion
+    damage by +10%
+  cost: 2
+  parents:
+  - {fileID: 11400000, guid: 34b042c8f3453f74ebf1d31960f37421, type: 2}
+  - {fileID: 11400000, guid: 6449b4129b3d4ef4084624669a10f7a9, type: 2}
+  requireAllParents: 0
+  layer: 4
+  branch: 0
+  overrideCost: 1

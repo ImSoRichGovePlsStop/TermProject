@@ -1,0 +1,248 @@
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.AI;
+
+public class ArcNode : MonoBehaviour
+{
+    [SerializeField] private GameObject arcLinePrefab;
+    [SerializeField] private float initialDelay = 2f;
+
+    [Header("Ground Snap")]
+    [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private float groundOffset = 0.05f;
+
+    [Header("Wander")]
+    [SerializeField] private float wanderRadius = 3f;
+
+    private static readonly List<ArcNode> AllNodes = new List<ArcNode>();
+    private static event System.Action OnNodeCountChanged;
+
+    private ArcNode slot1;
+    private ArcNode slot2;
+
+    private float linkDamage;
+    private HealthBase attacker;
+    private LinkMode linkMode;
+
+    private bool initialDelayDone = false;
+
+    // wander
+    private NavMeshAgent agent;
+    private bool canMove = false;
+
+    public enum LinkMode { Nearest, Farthest, Random }
+
+    public void SetDamageConfig(float dmg, HealthBase atk)
+    {
+        linkDamage = dmg;
+        attacker = atk;
+    }
+
+    public void SetLinkMode(LinkMode mode)
+    {
+        linkMode = mode;
+    }
+
+    public void SetMoveConfig(bool move, float speed)
+    {
+        canMove = move;
+        if (agent != null)
+        {
+            agent.speed = speed;
+            agent.enabled = move;
+        }
+    }
+
+    private void Awake()
+    {
+        agent = GetComponent<NavMeshAgent>();
+        if (agent != null) agent.enabled = false;
+
+        AllNodes.Add(this);
+        OnNodeCountChanged?.Invoke();
+
+        var health = GetComponent<HealthBase>();
+        if (health != null) health.OnDeath += OnDeath;
+    }
+
+    private void Start()
+    {
+        Invoke(nameof(OnInitialDelayDone), initialDelay);
+    }
+
+    private void OnInitialDelayDone()
+    {
+        initialDelayDone = true;
+        TryLink();
+        OnNodeCountChanged += OnNodeChanged;
+    }
+
+    private void OnDestroy()
+    {
+        OnNodeCountChanged -= OnNodeChanged;
+        AllNodes.Remove(this);
+        if (gameObject.scene.isLoaded)
+            OnNodeCountChanged?.Invoke();
+    }
+
+    private void OnDeath() { }
+
+    private void Update()
+    {
+        if (!canMove || agent == null || !agent.enabled) return;
+
+        if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
+            SetNewWanderTarget();
+    }
+
+    private void LateUpdate() => SnapToGround();
+
+    private void SetNewWanderTarget()
+    {
+        Vector3 forward = agent.velocity.sqrMagnitude > 0.01f
+            ? agent.velocity.normalized
+            : transform.forward;
+
+        float angle = Random.Range(-90f, 90f);
+        Vector3 dir = Quaternion.Euler(0f, angle, 0f) * forward;
+        Vector3 target = transform.position + dir * wanderRadius;
+
+        if (NavMesh.SamplePosition(target, out NavMeshHit hit, wanderRadius, NavMesh.AllAreas))
+            agent.SetDestination(hit.position);
+    }
+
+    private void OnNodeChanged() => TryLink();
+
+    private void TryLink()
+    {
+        if (!initialDelayDone) return;
+
+        if (slot1 == null)
+        {
+            ArcNode target = FindTarget();
+            if (target != null) Link(target);
+        }
+
+        if (slot2 == null)
+        {
+            ArcNode target = FindTarget();
+            if (target != null) Link(target);
+        }
+    }
+
+    private void Link(ArcNode other)
+    {
+        if (slot1 == null) slot1 = other; else slot2 = other;
+        if (other.slot1 == null) other.slot1 = this; else other.slot2 = this;
+
+        if (!HasFreeSlot()) OnNodeCountChanged -= OnNodeChanged;
+        if (!other.HasFreeSlot()) OnNodeCountChanged -= other.OnNodeChanged;
+
+        var go = Instantiate(arcLinePrefab, Vector3.zero, Quaternion.identity);
+        var line = go.GetComponent<ArcLine>();
+        line?.Initialize(this, other, linkDamage, attacker);
+    }
+
+    private ArcNode FindTarget()
+    {
+        HashSet<ArcNode> segment = GetSegment();
+        List<ArcNode> candidates = new List<ArcNode>();
+
+        int wallMask = 1 << LayerMask.NameToLayer("Wall");
+        foreach (var node in AllNodes)
+        {
+            if (node == this) continue;
+            if (segment.Contains(node)) continue;
+            if (!node.HasFreeSlot()) continue;
+            if (!node.initialDelayDone) continue;
+            if (!HasLineOfSight(transform.position, node.transform.position, wallMask)) continue;
+            candidates.Add(node);
+        }
+
+        if (candidates.Count == 0) return null;
+
+        switch (linkMode)
+        {
+            case LinkMode.Nearest:
+                {
+                    ArcNode best = null;
+                    float bestDist = float.MaxValue;
+                    foreach (var node in candidates)
+                    {
+                        float d = (transform.position - node.transform.position).sqrMagnitude;
+                        if (d < bestDist) { bestDist = d; best = node; }
+                    }
+                    return best;
+                }
+            case LinkMode.Farthest:
+                {
+                    ArcNode best = null;
+                    float bestDist = float.MinValue;
+                    foreach (var node in candidates)
+                    {
+                        float d = (transform.position - node.transform.position).sqrMagnitude;
+                        if (d > bestDist) { bestDist = d; best = node; }
+                    }
+                    return best;
+                }
+            case LinkMode.Random:
+                return candidates[Random.Range(0, candidates.Count)];
+
+            default:
+                return null;
+        }
+    }
+
+    private HashSet<ArcNode> GetSegment()
+    {
+        var visited = new HashSet<ArcNode>();
+        var queue = new Queue<ArcNode>();
+        queue.Enqueue(this);
+        while (queue.Count > 0)
+        {
+            var n = queue.Dequeue();
+            if (!visited.Add(n)) continue;
+            if (n.slot1 != null) queue.Enqueue(n.slot1);
+            if (n.slot2 != null) queue.Enqueue(n.slot2);
+        }
+        return visited;
+    }
+
+    public void NotifyUnlink(ArcNode other)
+    {
+        if (slot1 == other) slot1 = null;
+        else if (slot2 == other) slot2 = null;
+
+        OnNodeCountChanged -= OnNodeChanged;
+        OnNodeCountChanged += OnNodeChanged;
+        TryLink();
+    }
+
+    public bool HasFreeSlot() => slot1 == null || slot2 == null;
+
+    private void SnapToGround()
+    {
+        if (canMove && agent != null && agent.enabled) return;
+        Vector3 pos = transform.position;
+        if (Physics.Raycast(pos + Vector3.up * 5f, Vector3.down, out RaycastHit hit, 20f, groundLayer))
+            pos.y = hit.point.y + groundOffset;
+        transform.position = pos;
+    }
+
+    private bool HasLineOfSight(Vector3 from, Vector3 to, int wallMask)
+    {
+        Vector3 dir = to - from;
+        dir.y = 0f;
+        float dist = dir.magnitude;
+        if (dist < 0.01f) return true;
+        return !Physics.Raycast(new Vector3(from.x, from.y + 0.1f, from.z), dir.normalized, dist, wallMask);
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (slot1 != null) { Gizmos.color = Color.magenta; Gizmos.DrawLine(transform.position, slot1.transform.position); }
+        if (slot2 != null) { Gizmos.color = Color.cyan; Gizmos.DrawLine(transform.position, slot2.transform.position); }
+        Gizmos.color = new Color(1f, 1f, 0f, 0.3f);
+        Gizmos.DrawWireSphere(transform.position, wanderRadius);
+    }
+}

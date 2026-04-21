@@ -1,0 +1,225 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11e89d58adf13f14ab118631722c3706, type: 3}
+  m_Name: WandData
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponData
+  weaponName: Wand
+  icon: {fileID: -2090157506, guid: 6132fd4f13c75d644a26fa8aa2d4b0a8, type: 3}
+  weaponType: 1
+  animatorOverrideController: {fileID: 22100000, guid: bd3248728cecfa646aed841f5b690fc1, type: 2}
+  passiveData: {fileID: 11400000, guid: b1af5116a57720c48b16d5ccdcdfda74, type: 2}
+  health: 80
+  damage: 6
+  attackSpeed: 1
+  moveSpeed: 6
+  critChance: 0.05
+  critDamage: 1.3
+  evadeChance: 0.08
+  damageTaken: 1
+  dashSpeed: 12.6
+  dashDuration: 0.16
+  dashCooldown: 0.7
+  combo:
+  - damageScale: 0.7
+    range: 0
+    angle: 0
+    extraRange: 0
+    animationTrigger: attack1
+    animationDuration: 0.5
+    hitVFXPrefab: {fileID: 0}
+    vfxOffset: 0
+    vfxDurationMultiplier: 0
+    vfxLoops: 0
+  - damageScale: 0.8
+    range: 0
+    angle: 0
+    extraRange: 0
+    animationTrigger: attack2
+    animationDuration: 0.5
+    hitVFXPrefab: {fileID: 0}
+    vfxOffset: 0
+    vfxDurationMultiplier: 0
+    vfxLoops: 0
+  - damageScale: 0.9
+    range: 0
+    angle: 0
+    extraRange: 0
+    animationTrigger: attack3
+    animationDuration: 0.5
+    hitVFXPrefab: {fileID: 0}
+    vfxOffset: 0
+    vfxDurationMultiplier: 0
+    vfxLoops: 0
+  - damageScale: 1
+    range: 0
+    angle: 0
+    extraRange: 0
+    animationTrigger: attack4
+    animationDuration: 0.5
+    hitVFXPrefab: {fileID: 0}
+    vfxOffset: 0
+    vfxDurationMultiplier: 0
+    vfxLoops: 0
+  - damageScale: 1.8
+    range: 0
+    angle: 0
+    extraRange: 0
+    animationTrigger: attack5
+    animationDuration: 0.8
+    hitVFXPrefab: {fileID: 0}
+    vfxOffset: 0
+    vfxDurationMultiplier: 0
+    vfxLoops: 0
+  secondaryAttack:
+    damageScale: 0
+    range: 0
+    angle: 0
+    extraRange: 0
+    animationTrigger: attack_secondary
+    animationDuration: 0.8
+    hitVFXPrefab: {fileID: 0}
+    vfxOffset: 0
+    vfxDurationMultiplier: 1
+    vfxLoops: 1
+  comboCooldown: 0.5
+  secondaryCooldown: 0
+  comboResetTime: 1.2
+  wandProjectile:
+    normalMaxSpeed: 8
+    normalRange: 2.5
+    normalLifetime: 2
+    normalColliderRadius: 1
+    bigMaxSpeed: 4
+    bigRange: 4
+    bigLifetime: 4
+    bigSpriteScale: 1.8
+    easePower: 2
+    slowThreshold: 0.3
+    fastClip: {fileID: 7400000, guid: 0c48fd6bc6d77674989ff8a60f42d559, type: 2}
+    slowClip: {fileID: 7400000, guid: 8597c03edaf71b04daac96a47f6880b6, type: 2}
+    aoePulseDamageScale: 0.4
+    aoePulseRadius: 1.5
+    aoePulseInterval: 0.95
+  gridSizePerLevel:
+  - {x: 2, y: 5}
+  - {x: 2, y: 5}
+  - {x: 2, y: 5}
+  - {x: 3, y: 5}
+  - {x: 3, y: 5}
+  - {x: 3, y: 5}
+  - {x: 3, y: 6}
+  - {x: 3, y: 6}
+  - {x: 3, y: 6}
+  - {x: 3, y: 7}
+  - {x: 3, y: 7}
+  - {x: 3, y: 7}
+  - {x: 4, y: 7}
+  - {x: 4, y: 7}
+  - {x: 4, y: 7}
+  levelUpCosts:
+  - materials: []
+  - materials:
+    - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+      count: 2
+    - material: {fileID: 11400000, guid: 6bb7b6cfada68ea46b0e68a11c4e8b39, type: 2}
+      count: 2
+  - materials:
+    - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+      count: 3
+    - material: {fileID: 11400000, guid: 6bb7b6cfada68ea46b0e68a11c4e8b39, type: 2}
+      count: 3
+  - materials:
+    - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+      count: 3
+    - material: {fileID: 11400000, guid: 6bb7b6cfada68ea46b0e68a11c4e8b39, type: 2}
+      count: 3
+    - material: {fileID: 11400000, guid: 399297f3e79be15409f69ab7096a631f, type: 2}
+      count: 2
+  - materials:
+    - material: {fileID: 11400000, guid: 6bb7b6cfada68ea46b0e68a11c4e8b39, type: 2}
+      count: 3
+    - material: {fileID: 11400000, guid: 399297f3e79be15409f69ab7096a631f, type: 2}
+      count: 3
+    - material: {fileID: 11400000, guid: 5abdcea167f2bcd40935a2f6eec2acd0, type: 2}
+      count: 2
+  - materials:
+    - material: {fileID: 11400000, guid: 6bb7b6cfada68ea46b0e68a11c4e8b39, type: 2}
+      count: 3
+    - material: {fileID: 11400000, guid: 399297f3e79be15409f69ab7096a631f, type: 2}
+      count: 3
+    - material: {fileID: 11400000, guid: 5abdcea167f2bcd40935a2f6eec2acd0, type: 2}
+      count: 3
+  - materials:
+    - material: {fileID: 11400000, guid: 399297f3e79be15409f69ab7096a631f, type: 2}
+      count: 4
+    - material: {fileID: 11400000, guid: 5abdcea167f2bcd40935a2f6eec2acd0, type: 2}
+      count: 3
+    - material: {fileID: 11400000, guid: d526cca1760890744834885573002c5c, type: 2}
+      count: 2
+  - materials:
+    - material: {fileID: 11400000, guid: 399297f3e79be15409f69ab7096a631f, type: 2}
+      count: 4
+    - material: {fileID: 11400000, guid: 5abdcea167f2bcd40935a2f6eec2acd0, type: 2}
+      count: 4
+    - material: {fileID: 11400000, guid: d526cca1760890744834885573002c5c, type: 2}
+      count: 3
+  - materials:
+    - material: {fileID: 11400000, guid: 5abdcea167f2bcd40935a2f6eec2acd0, type: 2}
+      count: 3
+    - material: {fileID: 11400000, guid: d526cca1760890744834885573002c5c, type: 2}
+      count: 3
+    - material: {fileID: 11400000, guid: 83bdbb620c51bdd439fb89c97180137e, type: 2}
+      count: 1
+  - materials:
+    - material: {fileID: 11400000, guid: 5abdcea167f2bcd40935a2f6eec2acd0, type: 2}
+      count: 3
+    - material: {fileID: 11400000, guid: d526cca1760890744834885573002c5c, type: 2}
+      count: 4
+    - material: {fileID: 11400000, guid: 83bdbb620c51bdd439fb89c97180137e, type: 2}
+      count: 2
+  - materials:
+    - material: {fileID: 11400000, guid: d526cca1760890744834885573002c5c, type: 2}
+      count: 4
+    - material: {fileID: 11400000, guid: 5abdcea167f2bcd40935a2f6eec2acd0, type: 2}
+      count: 3
+    - material: {fileID: 11400000, guid: 83bdbb620c51bdd439fb89c97180137e, type: 2}
+      count: 3
+  - materials:
+    - material: {fileID: 11400000, guid: d526cca1760890744834885573002c5c, type: 2}
+      count: 4
+    - material: {fileID: 11400000, guid: 83bdbb620c51bdd439fb89c97180137e, type: 2}
+      count: 2
+    - material: {fileID: 11400000, guid: 347983e0f419af54aac76500c585630c, type: 2}
+      count: 1
+  - materials:
+    - material: {fileID: 11400000, guid: d526cca1760890744834885573002c5c, type: 2}
+      count: 4
+    - material: {fileID: 11400000, guid: 83bdbb620c51bdd439fb89c97180137e, type: 2}
+      count: 3
+    - material: {fileID: 11400000, guid: 347983e0f419af54aac76500c585630c, type: 2}
+      count: 2
+  - materials:
+    - material: {fileID: 11400000, guid: d526cca1760890744834885573002c5c, type: 2}
+      count: 4
+    - material: {fileID: 11400000, guid: 347983e0f419af54aac76500c585630c, type: 2}
+      count: 2
+    - material: {fileID: 11400000, guid: 7ba20a670b80b744c82f719a8118b50c, type: 2}
+      count: 1
+  - materials:
+    - material: {fileID: 11400000, guid: d526cca1760890744834885573002c5c, type: 2}
+      count: 4
+    - material: {fileID: 11400000, guid: 83bdbb620c51bdd439fb89c97180137e, type: 2}
+      count: 2
+    - material: {fileID: 11400000, guid: 347983e0f419af54aac76500c585630c, type: 2}
+      count: 2
+    - material: {fileID: 11400000, guid: 7ba20a670b80b744c82f719a8118b50c, type: 2}
+      count: 2

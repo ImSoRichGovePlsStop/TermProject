@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 795b38daab500fb45a7cc0b63959a39f, type: 3}
+  m_Name: Foundation
+  m_EditorClassIdentifier: Assembly-CSharp::PassiveTree
+  treeName: Foundation
+  treeColor: {r: 0, g: 0.6981132, b: 0.23119104, a: 1}
+  nodes:
+  - {fileID: 11400000, guid: 6471791c593487746b860939f9a7104b, type: 2}
+  - {fileID: 11400000, guid: 6cc3240ab693b5f429fc93ed620a1f69, type: 2}
+  - {fileID: 11400000, guid: f63ef53b58c8b5445a81fd91b5d80f25, type: 2}
+  - {fileID: 11400000, guid: 63447711e67cd9e4bb0c15f3683875b2, type: 2}
+  - {fileID: 11400000, guid: 9d535adf646a7fa4487692ba4f3e4404, type: 2}
+  - {fileID: 11400000, guid: f10068766ef7d064eb3cce5df0bbf7f5, type: 2}
+  - {fileID: 11400000, guid: 188d28d7ad01ba74abafce20f89baa34, type: 2}
+  - {fileID: 11400000, guid: 07df043a93ed30d4bae8d8d9c309382f, type: 2}
+  handlerPrefab: {fileID: 6511753755691368951, guid: d7663e5c0c0030c459371b1d36af8e81, type: 3}
