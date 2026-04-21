@@ -32,7 +32,7 @@ public class HubStorageUI : MonoBehaviour
 
     private void BuildPanel()
     {
-        // Root panel ? 40% right side, full height
+        // Root panel — 40% right side, full height
         _panel = new GameObject("StoragePanel", typeof(RectTransform), typeof(Image));
         _panel.transform.SetParent(transform, false);
         _panel.GetComponent<Image>().color = new Color(0.08f, 0.08f, 0.10f, 0.97f);
@@ -42,7 +42,7 @@ public class HubStorageUI : MonoBehaviour
         panelRt.offsetMin = Vector2.zero;
         panelRt.offsetMax = Vector2.zero;
 
-        // Title ? inside panel, top center
+        // Title — inside panel, top center
         var titleGo = new GameObject("Title", typeof(RectTransform), typeof(TextMeshProUGUI));
         titleGo.transform.SetParent(_panel.transform, false);
         var titleRt = titleGo.GetComponent<RectTransform>();
@@ -59,7 +59,7 @@ public class HubStorageUI : MonoBehaviour
         titleTmp.alignment = TextAlignmentOptions.Center;
         titleTmp.raycastTarget = false;
 
-        // Switch button ? top right, subtle
+        // Switch button — top right, subtle
         var switchGo = new GameObject("SwitchButton", typeof(RectTransform), typeof(Image), typeof(Button));
         switchGo.transform.SetParent(_panel.transform, false);
         var switchRt = switchGo.GetComponent<RectTransform>();
@@ -165,7 +165,7 @@ public class HubStorageUI : MonoBehaviour
         grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
         grid.constraintCount = Columns;
 
-        // Calculate cell size after layout ? use a coroutine via ContentRoot
+        // Calculate cell size after layout — use a coroutine via ContentRoot
         // For now set approximate, will be corrected on enable
         float approxPanelW = Screen.width * 0.4f;
         float cellSize = (approxPanelW - GridPad * 2f - ItemGap * (Columns - 1)) / Columns;
@@ -234,6 +234,7 @@ public class HubStorageUI : MonoBehaviour
         IsOpen = false;
         _panel?.SetActive(false);
         _isShowingUpgrade = false;
+        ModuleTooltipUI.Instance?.Hide();
     }
 
     public void OnSwitchButtonClicked()

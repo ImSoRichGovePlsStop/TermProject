@@ -57,5 +57,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71dc93089eb308942a37f4866ffd03c5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HubStorageUI
-  panel: {fileID: 0}
-  storageItemPrefab: {fileID: 6144938612535994907, guid: 275f9e01aff050b46b5c0aa3d9561deb, type: 3}
+  bagGridConfig: {fileID: 11400000, guid: 33a9a4677e148154e8f99f5b1a8f1ed1, type: 2}
