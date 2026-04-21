@@ -446,11 +446,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73a687f9a65ebc34ab8d148f3be77e4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EntityStats
-  baseMaxHP: 100
+  baseMaxHP: 80
   baseMoveSpeed: 3
   baseDamage: 12
   baseAttackSpeed: 1
-  baseShield: 80
+  shieldPercent: 120
 --- !u!114 &1631942438345854225
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -491,7 +491,6 @@ MonoBehaviour:
   spawnDuration: 2
   spawnFadeOutDuration: 1
   spawnEffectScale: 3
-  spawnStayDuration: 0.5
   strafe:
     preferredDistMin: 1
     preferredDistMax: 2

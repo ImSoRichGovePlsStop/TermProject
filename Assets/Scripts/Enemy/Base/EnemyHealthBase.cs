@@ -34,8 +34,8 @@ public class EnemyHealthBase : HealthBase
         DamageNumberSpawner.Instance?.RegisterEntity(this, healthBarHeight);
 
         var entityStats = GetComponent<EntityStats>();
-        if (entityStats != null && entityStats.BaseShield > 0f)
-            GainShield(entityStats.BaseShield);
+        if (entityStats != null && entityStats.ShieldPercent > 0f)
+            GainShield(maxHP * entityStats.ShieldPercent / 100f);
     }
 
     public void ResetHP()

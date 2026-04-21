@@ -168,7 +168,7 @@ MonoBehaviour:
   baseMoveSpeed: 2.5
   baseDamage: 16
   baseAttackSpeed: 1
-  baseShield: 80
+  shieldPercent: 80
 --- !u!114 &3778646481919745633
 MonoBehaviour:
   m_ObjectHideFlags: 0

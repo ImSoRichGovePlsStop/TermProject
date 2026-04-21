@@ -168,7 +168,7 @@ MonoBehaviour:
   baseMoveSpeed: 1.5
   baseDamage: 8
   baseAttackSpeed: 1
-  baseShield: 40
+  shieldPercent: 130
 --- !u!114 &1562293047294832253
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -209,7 +209,6 @@ MonoBehaviour:
   spawnDuration: 2
   spawnFadeOutDuration: 1
   spawnEffectScale: 3
-  spawnStayDuration: 0.5
   strafe:
     preferredDistMin: 5
     preferredDistMax: 6
