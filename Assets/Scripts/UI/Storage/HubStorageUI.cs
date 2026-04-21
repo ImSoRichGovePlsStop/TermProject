@@ -6,6 +6,8 @@ using UnityEngine.InputSystem;
 public class HubStorageUI : MonoBehaviour
 {
     [SerializeField] private BagGridUpgradeConfig bagGridConfig;
+    [Header("Cheat")]
+    [SerializeField] private int cheatAmount = 5;
 
     private const float ItemGap = 16f;
     private const int Columns = 4;
@@ -28,11 +30,11 @@ public class HubStorageUI : MonoBehaviour
         BuildPanel();
     }
 
-    // ??? Build ??????????????????????????????????????????????????????????????
+    // Build
 
     private void BuildPanel()
     {
-        // Root panel — 40% right side, full height
+        // Root panel - 40% right side, full height
         _panel = new GameObject("StoragePanel", typeof(RectTransform), typeof(Image));
         _panel.transform.SetParent(transform, false);
         _panel.GetComponent<Image>().color = new Color(0.08f, 0.08f, 0.10f, 0.97f);
@@ -42,7 +44,7 @@ public class HubStorageUI : MonoBehaviour
         panelRt.offsetMin = Vector2.zero;
         panelRt.offsetMax = Vector2.zero;
 
-        // Title — inside panel, top center
+        // Title - inside panel, top center
         var titleGo = new GameObject("Title", typeof(RectTransform), typeof(TextMeshProUGUI));
         titleGo.transform.SetParent(_panel.transform, false);
         var titleRt = titleGo.GetComponent<RectTransform>();
@@ -59,7 +61,7 @@ public class HubStorageUI : MonoBehaviour
         titleTmp.alignment = TextAlignmentOptions.Center;
         titleTmp.raycastTarget = false;
 
-        // Switch button — top right, subtle
+        // Switch button - top right, subtle
         var switchGo = new GameObject("SwitchButton", typeof(RectTransform), typeof(Image), typeof(Button));
         switchGo.transform.SetParent(_panel.transform, false);
         var switchRt = switchGo.GetComponent<RectTransform>();
@@ -91,6 +93,36 @@ public class HubStorageUI : MonoBehaviour
         _switchLabel.alignment = TextAlignmentOptions.Center;
         _switchLabel.raycastTarget = false;
 
+        // Cheat button — top left
+        var cheatGo = new GameObject("CheatButton", typeof(RectTransform), typeof(Image), typeof(Button));
+        cheatGo.transform.SetParent(_panel.transform, false);
+        var cheatRt = cheatGo.GetComponent<RectTransform>();
+        cheatRt.anchorMin = new Vector2(0f, 1f);
+        cheatRt.anchorMax = new Vector2(0f, 1f);
+        cheatRt.pivot = new Vector2(0f, 1f);
+        cheatRt.sizeDelta = new Vector2(120f, 34f);
+        cheatRt.anchoredPosition = new Vector2(10f, -11f);
+        cheatGo.GetComponent<Image>().color = new Color(0.6f, 0.2f, 0.2f, 0.5f);
+        var cheatBtn = cheatGo.GetComponent<Button>();
+        var cc = cheatBtn.colors;
+        cc.normalColor = new Color(0.6f, 0.2f, 0.2f, 0.5f);
+        cc.highlightedColor = new Color(0.8f, 0.3f, 0.3f, 0.7f);
+        cc.pressedColor = new Color(0.4f, 0.1f, 0.1f, 0.8f);
+        cheatBtn.colors = cc;
+        cheatBtn.onClick.AddListener(SpawnCheatMaterials);
+        var cheatLblGo = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
+        cheatLblGo.transform.SetParent(cheatGo.transform, false);
+        var cheatLblRt = cheatLblGo.GetComponent<RectTransform>();
+        cheatLblRt.anchorMin = Vector2.zero;
+        cheatLblRt.anchorMax = Vector2.one;
+        cheatLblRt.offsetMin = Vector2.zero;
+        cheatLblRt.offsetMax = Vector2.zero;
+        var cheatTmp = cheatLblGo.GetComponent<TextMeshProUGUI>();
+        cheatTmp.text = "[Cheat] Fill";
+        cheatTmp.fontSize = 14f;
+        cheatTmp.color = new Color(1f, 0.6f, 0.6f);
+        cheatTmp.alignment = TextAlignmentOptions.Center;
+        cheatTmp.raycastTarget = false;
         // Thin divider under title
         var divGo = new GameObject("Divider", typeof(RectTransform), typeof(Image));
         divGo.transform.SetParent(_panel.transform, false);
@@ -165,7 +197,7 @@ public class HubStorageUI : MonoBehaviour
         grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
         grid.constraintCount = Columns;
 
-        // Calculate cell size after layout — use a coroutine via ContentRoot
+        // Calculate cell size after layout - use a coroutine via ContentRoot
         // For now set approximate, will be corrected on enable
         float approxPanelW = Screen.width * 0.4f;
         float cellSize = (approxPanelW - GridPad * 2f - ItemGap * (Columns - 1)) / Columns;
@@ -185,7 +217,7 @@ public class HubStorageUI : MonoBehaviour
         _scroll.movementType = ScrollRect.MovementType.Clamped;
     }
 
-    // ??? Lifecycle ??????????????????????????????????????????????????????????
+    // Lifecycle
 
     private void Update()
     {
@@ -205,7 +237,7 @@ public class HubStorageUI : MonoBehaviour
         _pendingScrollReset = false;
     }
 
-    // ??? Public API ?????????????????????????????????????????????????????????
+    // Public API
 
     public void Open()
     {
@@ -245,7 +277,7 @@ public class HubStorageUI : MonoBehaviour
         else ShowUpgradeView();
     }
 
-    // ??? Private ????????????????????????????????????????????????????????????
+    // Private
 
     private void ShowStorageView()
     {
@@ -302,5 +334,21 @@ public class HubStorageUI : MonoBehaviour
             var item = go.AddComponent<StorageItemUI>();
             item.Init(kvp.Key, kvp.Value);
         }
+    }
+
+    private void SpawnCheatMaterials()
+    {
+        var allMaterials = Resources.LoadAll<MaterialData>("Materials");
+        if (allMaterials == null || allMaterials.Length == 0)
+        {
+            Debug.LogWarning("[HubStorageUI] No MaterialData found in Resources/Materials/");
+            return;
+        }
+        foreach (var mat in allMaterials)
+        {
+            if (mat == null) continue;
+            MaterialStorage.Instance.Add(mat, cheatAmount);
+        }
+        Populate();
     }
 }

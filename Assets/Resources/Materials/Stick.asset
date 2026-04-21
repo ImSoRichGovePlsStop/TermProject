@@ -18,6 +18,8 @@ MonoBehaviour:
   moduleEffect: {fileID: 0}
   moduleColor: {r: 0.335849, g: 0, b: 0, a: 1}
   cost: 06000000
+  hasActive: 0
+  allowDuplicate: 1
   isBuffAdjacent: 0
   buffDescription: 
   buffGrid:
@@ -34,6 +36,6 @@ MonoBehaviour:
   - cells: 0000000000
   rarity: 0
   maxStack: 5
-  materialDescription: A sturdy branch fallen from a forgotten tree.
+  materialDescription: 
   obtainSources:
   - Any Enemy
