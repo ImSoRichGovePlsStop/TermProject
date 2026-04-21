@@ -85,7 +85,7 @@ public class PassiveLeftPanelUI : MonoBehaviour
         if (canLevelUp)
         {
             int pts = WeaponLevelManager.Instance?.GetPointsForLevel(nextLevel) ?? 0;
-            upgradeButtonText.text = $"Upgrade (Lv.{nextLevel} +{pts}pt)";
+            upgradeButtonText.text = "Upgrade";
         }
         else
         {

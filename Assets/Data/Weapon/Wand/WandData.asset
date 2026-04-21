@@ -127,8 +127,16 @@ MonoBehaviour:
   - {x: 4, y: 7}
   levelUpCosts:
   - materials: []
-  - materials: []
-  - materials: []
+  - materials:
+    - material: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+      count: 2
+    - material: {fileID: 11400000, guid: 6bb7b6cfada68ea46b0e68a11c4e8b39, type: 2}
+      count: 3
+  - materials:
+    - material: {fileID: 11400000, guid: 399297f3e79be15409f69ab7096a631f, type: 2}
+      count: 3
+    - material: {fileID: 11400000, guid: 6bb7b6cfada68ea46b0e68a11c4e8b39, type: 2}
+      count: 3
   - materials: []
   - materials: []
   - materials: []

@@ -31,9 +31,10 @@ public class LootRewardUI : MonoBehaviour
         _hasRerolled = false;
         if (rerollButton != null)
         {
+            bool canReroll = RunManager.Instance == null || RunManager.Instance.AllowReroll;
+            rerollButton.gameObject.SetActive(canReroll);
             rerollButton.onClick.RemoveAllListeners();
             rerollButton.onClick.AddListener(OnReroll);
-            rerollButton.interactable = RunManager.Instance == null || RunManager.Instance.AllowReroll;
         }
 
         RepopulateCards(rolled);

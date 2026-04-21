@@ -21,7 +21,7 @@ public class MinimapManager : MonoBehaviour
     public Color colorUnmarked = new Color(0.45f, 0.45f, 0.45f, 1f);
     public Color colorEvent = new Color(0.75f, 0.70f, 0.35f, 1f);
     public Color colorBattleUnvisited = new Color(0.75f, 0.10f, 0.10f, 1f);
-    public Color colorBattleVisited = new Color(0.45f, 0.45f, 0.45f, 1f);
+    public Color colorBattleCleared   = new Color(0.28f, 0.15f, 0.15f, 1f);
     public Color colorBossUnvisited = new Color(0.55f, 0.10f, 0.65f, 1f);
     public Color colorBossDefeated = new Color(0.40f, 0.30f, 0.45f, 1f);
     public Color colorPlayer = new Color(0.10f, 0.90f, 0.20f, 1f);
@@ -46,8 +46,9 @@ public class MinimapManager : MonoBehaviour
     bool[] _revealed;    
 
 
-    HashSet<MapNode> _visitedRooms = new();
-    HashSet<MapNode> _defeatedBoss = new();
+    HashSet<MapNode> _visitedRooms  = new();
+    HashSet<MapNode> _defeatedBoss  = new();
+    HashSet<MapNode> _clearedBattle = new();
 
     Vector2Int _playerCell = new(-1, -1);
     MapNode _currentRoom;
@@ -105,6 +106,7 @@ public class MinimapManager : MonoBehaviour
         _revealed = new bool[size * size];
         _visitedRooms.Clear();
         _defeatedBoss.Clear();
+        _clearedBattle.Clear();
         _playerCell = new(-1, -1);
         _currentRoom = null;
 
@@ -153,6 +155,15 @@ public class MinimapManager : MonoBehaviour
         var mapNode = GetMapNode(node.MatrixCenter);
         if (mapNode == null) return;
         _defeatedBoss.Add(mapNode);
+        RepaintRoom(mapNode);
+        ApplyTexture();
+    }
+
+    public void OnBattleRoomCleared(RoomNode node)
+    {
+        var mapNode = GetMapNode(node.MatrixCenter);
+        if (mapNode == null) return;
+        _clearedBattle.Add(mapNode);
         RepaintRoom(mapNode);
         ApplyTexture();
     }
@@ -305,7 +316,7 @@ public class MinimapManager : MonoBehaviour
                 return colorUnmarked;
 
             case RoomType.Battle:
-                return _visitedRooms.Contains(node) ? colorBattleVisited : colorBattleUnvisited;
+                return _clearedBattle.Contains(node) ? colorBattleCleared : colorBattleUnvisited;
 
             case RoomType.Boss:
                 return _defeatedBoss.Contains(node) ? colorBossDefeated : colorBossUnvisited;
@@ -373,6 +384,7 @@ public class MinimapManager : MonoBehaviour
         _revealed = null;
         _visitedRooms.Clear();
         _defeatedBoss.Clear();
+        _clearedBattle.Clear();
         _playerCell = new(-1, -1);
         _currentRoom = null;
 

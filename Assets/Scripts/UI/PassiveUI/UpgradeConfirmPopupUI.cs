@@ -9,7 +9,8 @@ public class UpgradeConfirmPopupUI : MonoBehaviour
     [Header("References")]
     [SerializeField] private GameObject panel;
     [SerializeField] private TextMeshProUGUI titleText;
-    [SerializeField] private Transform requirementContainer;
+    [SerializeField] private Transform effectContainer;
+    [SerializeField] private RequiredMaterialsUI reqMaterialsUI;
     [SerializeField] private Button confirmButton;
     [SerializeField] private Button cancelButton;
 
@@ -35,26 +36,37 @@ public class UpgradeConfirmPopupUI : MonoBehaviour
         pendingConfirm = onConfirm;
         titleText.text = $"Upgrade to Lv.{nextLevel}?";
 
-        foreach (Transform child in requirementContainer)
-            Destroy(child.gameObject);
+        // Show upgrade effects
+        if (effectContainer != null)
+        {
+            foreach (Transform child in effectContainer) Destroy(child.gameObject);
+
+            int points = WeaponLevelManager.Instance?.GetPointsForLevel(nextLevel) ?? 0;
+            var currGrid = weapon.GetGridSize(nextLevel - 1);
+            var nextGrid = weapon.GetGridSize(nextLevel);
+            bool gridChanged = nextGrid != currGrid;
+
+            if (points > 0)
+                AddEffectText($"+{points} Passive Point{(points > 1 ? "s" : "")}", new Color(0.5f, 0.9f, 1f));
+            if (gridChanged)
+                AddEffectText($"Weapon Grid {currGrid.x}×{currGrid.y} \u2192 {nextGrid.x}×{nextGrid.y}", new Color(1f, 0.85f, 0.2f));
+        }
 
         var cost = weapon.GetLevelUpCost(nextLevel);
         bool allMet = true;
 
         if (cost?.materials != null && cost.materials.Length > 0)
         {
+            reqMaterialsUI?.Show(cost.materials);
             foreach (var req in cost.materials)
             {
                 if (req.material == null) continue;
-                int have = GetStock(req.material);
-                if (have < req.count) allMet = false;
-                CreateRow($"{req.material.moduleName}  x{req.count}", $"Have: {have}",
-                    have >= req.count ? new Color(0.2f, 0.8f, 0.2f) : new Color(0.9f, 0.2f, 0.2f));
+                if (GetStock(req.material) < req.count) allMet = false;
             }
         }
         else
         {
-            CreateRow("No materials required", "", Color.white);
+            reqMaterialsUI?.Show(null);
         }
 
         confirmButton.interactable = allMet;
@@ -77,36 +89,19 @@ public class UpgradeConfirmPopupUI : MonoBehaviour
         cb?.Invoke();
     }
 
-    private void CreateRow(string leftText, string rightText, Color rightColor)
+    private void AddEffectText(string text, Color color)
     {
-        var row = new GameObject("row", typeof(RectTransform));
-        row.transform.SetParent(requirementContainer, false);
-        var le = row.AddComponent<LayoutElement>();
-        le.preferredHeight = 36;
-        var hlg = row.AddComponent<HorizontalLayoutGroup>();
-        hlg.childAlignment = TextAnchor.MiddleLeft;
-        hlg.spacing = 12;
-        hlg.childControlWidth = true;
-        hlg.childForceExpandWidth = true;
-        hlg.childControlHeight = false;
-        hlg.childForceExpandHeight = false;
-
-        AddText(row.transform, leftText, Color.white, TextAlignmentOptions.Left);
-        if (!string.IsNullOrEmpty(rightText))
-            AddText(row.transform, rightText, rightColor, TextAlignmentOptions.Right);
-    }
-
-    private void AddText(Transform parent, string text, Color color, TextAlignmentOptions alignment)
-    {
-        var obj = new GameObject("text", typeof(RectTransform));
-        obj.transform.SetParent(parent, false);
-        obj.GetComponent<RectTransform>().sizeDelta = new Vector2(0, 36);
-        var tmp = obj.AddComponent<TextMeshProUGUI>();
-        tmp.text = text;
-        tmp.fontSize = 26;
-        tmp.color = color;
-        tmp.alignment = alignment;
+        if (effectContainer == null) return;
+        var go = new GameObject("EffectText", typeof(RectTransform), typeof(TextMeshProUGUI));
+        go.transform.SetParent(effectContainer, false);
+        var le = go.AddComponent<LayoutElement>();
+        le.preferredHeight = 36f;
+        le.preferredWidth = 400f;
+        var tmp = go.GetComponent<TextMeshProUGUI>();
+        tmp.text = text; tmp.fontSize = 20f;
+        tmp.color = color; tmp.alignment = TextAlignmentOptions.Center;
         tmp.textWrappingMode = TextWrappingModes.NoWrap;
+        tmp.raycastTarget = false;
     }
 
     private void SetNoWrap(Button button)
