@@ -23,6 +23,8 @@ public class RunManager : MonoBehaviour
     public int TotalEventsFound = 0;
     public int TotalBossKilled = 0;
     public bool IsWin = false;
+    public float RunTime = 0f;
+    private bool _timerRunning = false;
 
     [Header("Floor Event Tracking")]
 
@@ -58,7 +60,7 @@ public class RunManager : MonoBehaviour
 
     readonly HashSet<string> _pickedCardIds = new();
 
-    public readonly List<FloorModifierCard> AppliedWholeRun  = new();
+    public readonly List<FloorModifierCard> AppliedWholeRun = new();
     public readonly List<FloorModifierCard> AppliedNextFloor = new();
 
     public float EffectiveCoinMultiplier => PermanentMods.coinMultiplier * NextFloorMods.coinMultiplier;
@@ -87,6 +89,9 @@ public class RunManager : MonoBehaviour
 
     // ────────────────────────────────────────────────────────────────────────
 
+    void Update() { if (_timerRunning) RunTime += Time.deltaTime; }
+    public void StartTimer() => _timerRunning = true;
+    public void StopTimer() => _timerRunning = false;
     void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
@@ -175,6 +180,8 @@ public class RunManager : MonoBehaviour
         TotalRoomsCleared = 0;
         HighestFloorReached = 1;
         IsWin = false;
+        RunTime = 0f;
+        _timerRunning = false;
         PreviousFloorEvents.Clear();
         CurrentFloorEvents.Clear();
         PermanentMods = new RunModifiers();
