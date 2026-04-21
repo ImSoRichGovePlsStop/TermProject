@@ -83,7 +83,7 @@ public class BattleRoom : MonoBehaviour
     [Tooltip("Damage multiplier applied per floor (e.g. 1.12 = +12% each floor).")]
     public float enemyDmgPerFloor     = 1.12f;
     [Tooltip("Additional damage multiplier applied per completed segment.")]
-    public float enemyDmgPerSegment   = 1.75f;
+    public float enemyDmgPerSegment   = 1.4f;
     public float enemyHpPlayerDmgWeight  = 0.0f;
     public float enemyDmgPlayerHpWeight  = 0.0f;
 

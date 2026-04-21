@@ -20,7 +20,7 @@ public class BossRoom : BattleRoom
     [Tooltip("Damage multiplier applied per floor for bosses (e.g. 1.12 = +12% each floor).")]
     public float bossDmgPerFloor       = 1.12f;
     [Tooltip("Additional damage multiplier applied per completed segment for bosses.")]
-    public float bossDmgPerSegment     = 1.75f;
+    public float bossDmgPerSegment     = 1.4f;
     public float bossHpPlayerDmgWeight = 0.00f;
     public float bossHpEnemyKillPenalty= 0.000f;
     public float bossDmgPlayerHpWeight = 0.00f;
