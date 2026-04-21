@@ -304,6 +304,7 @@ public class MinibossWarlockController : WarlockController
         Vector3 ritualPos = GetRitualPosition();
         yield return StartCoroutine(JumpToPosition(ritualPos));
 
+        health.StopFlashBuildup();
         isInRitual = true;
         movement.StopMoving();
         movement.SetCanMove(false);
@@ -847,6 +848,7 @@ public class MinibossWarlockController : WarlockController
     public override void OnDeath()
     {
         base.OnDeath();
+        health.StopFlashBuildup();
         StopAllCoroutines();
         isJumping = false;
         isCastingUltimate = false;

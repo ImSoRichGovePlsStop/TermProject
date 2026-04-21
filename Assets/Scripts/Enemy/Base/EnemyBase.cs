@@ -46,7 +46,7 @@ public abstract class EnemyBase : MonoBehaviour
     [SerializeField] private float spawnDuration = 1f;
     [SerializeField] private float spawnFadeOutDuration = 0.4f;
     [SerializeField] private float spawnEffectScale = 1f;
-    private float spawnStayDuration = 0.05f;
+    [SerializeField] private float spawnStayDuration = 0.5f;
 
     protected bool skipSpawnEffect = false;
 
@@ -158,6 +158,7 @@ public abstract class EnemyBase : MonoBehaviour
     private IEnumerator HurtRoutine()
     {
         isHurting = true;
+        health.StopFlashBuildup();
         OnHurtTriggered();
         animator?.SetBool("IsHurting", true);
         yield return new WaitForSeconds(hurtDuration);
@@ -269,6 +270,7 @@ public abstract class EnemyBase : MonoBehaviour
         playerTarget = null;
         entityTarget = null;
         movement.SetCanMove(false);
+        health.StopFlashBuildup();
 
         if (hurtCoroutine != null)
         {

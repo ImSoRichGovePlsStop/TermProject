@@ -38,7 +38,8 @@ public class WandProjectile : MonoBehaviour
 
     void Start()
     {
-        _hitMask = (1 << LayerMask.NameToLayer("Enemy")) | (1 << LayerMask.NameToLayer("Breakable"));
+        _hitMask = (1 << LayerMask.NameToLayer("Enemy"))
+                 | (1 << LayerMask.NameToLayer("Breakable"));
         lifetimeTimer = lifetime;
         currentSpeed = maxSpeed;
         animator = GetComponentInChildren<Animator>();
@@ -80,6 +81,17 @@ public class WandProjectile : MonoBehaviour
         currentSpeed = maxSpeed * Mathf.Pow(1f - t, easePower);
 
         float step = currentSpeed * Time.deltaTime;
+
+        // Wall check via raycast
+        LayerMask wallMask = 1 << LayerMask.NameToLayer("Wall");
+        if (Physics.Raycast(transform.position, moveDirection, step + 0.1f, wallMask))
+        {
+            isStopped = true;
+            currentSpeed = 0f;
+            UpdateClip();
+            return;
+        }
+
         transform.position += moveDirection * step;
         distanceTravelled += step;
 
