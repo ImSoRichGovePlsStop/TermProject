@@ -46,7 +46,7 @@ public abstract class EnemyBase : MonoBehaviour
     [SerializeField] private float spawnDuration = 1f;
     [SerializeField] private float spawnFadeOutDuration = 0.4f;
     [SerializeField] private float spawnEffectScale = 1f;
-    [SerializeField] private float spawnStayDuration = 0.5f;
+    private float spawnStayDuration = 0.05f;
 
     protected bool skipSpawnEffect = false;
 
