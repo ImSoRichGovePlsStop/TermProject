@@ -9,17 +9,20 @@ public class BrawlerSummoner : SummonerBase
     {
         Wander,
         Chase,
+        Strafe,
         Attack
     }
 
     [Header("Attack")]
     [SerializeField] private float attackRange = 1f;
-    [SerializeField] private float attackAngle = 120f;
     [SerializeField] private float attackCooldown = 0.5f;
     [SerializeField] private float damageScale = 0.25f;
 
     [Header("References")]
     [SerializeField] private Animator animator;
+
+    [Header("Strafe")]
+    [SerializeField] private StrafeBehavior strafe;
 
     [Header("Wander")]
     [SerializeField] private WanderBehavior wander;
@@ -31,15 +34,17 @@ public class BrawlerSummoner : SummonerBase
     [Header("Mini Tier")]
     [SerializeField] private StatScale miniStatScale = new StatScale { hp = 0.4f, damage = 0.4f, moveSpeed = 0.7f };
     [SerializeField] private float miniAttackRangeMult = 0.7f;
-    [SerializeField] private float miniAttackAngleMult = 0.8f;
     [SerializeField] private float miniAttackCooldownMult = 1.3f;
+    [SerializeField] private float miniDashSpeedMult = 0.8f;
+    [SerializeField] private float miniDashDurationMult = 0.8f;
     [SerializeField] private float miniSizeMult = 0.5f;
 
     [Header("Elite Tier")]
     [SerializeField] private StatScale eliteStatScale = new StatScale { hp = 3f, damage = 2f, moveSpeed = 1.2f };
     [SerializeField] private float eliteAttackRangeMult = 1.5f;
-    [SerializeField] private float eliteAttackAngleMult = 1.2f;
     [SerializeField] private float eliteAttackCooldownMult = 0.7f;
+    [SerializeField] private float eliteDashSpeedMult = 1.3f;
+    [SerializeField] private float eliteDashDurationMult = 1.2f;
     [SerializeField] private float eliteSizeMult = 1.5f;
 
     [Header("Elite Tier VFX")]
@@ -48,7 +53,13 @@ public class BrawlerSummoner : SummonerBase
     private HealthBase currentTarget;
     private BrawlerState currentState = BrawlerState.Wander;
 
+    [Header("Dash Attack")]
+    [SerializeField] private float dashSpeed = 8f;
+    [SerializeField] private float dashDuration = 0.25f;
+    [SerializeField] private float dashHitRadius = 0.5f;
+
     private bool isAttacking = false;
+    private bool isDashing = false;
     private float lastAttackTime = -Mathf.Infinity;
 
 
@@ -71,15 +82,17 @@ public class BrawlerSummoner : SummonerBase
             case SummonerTier.Mini:
                 stats.SetStatScale(miniStatScale);
                 attackRange *= miniAttackRangeMult;
-                attackAngle *= miniAttackAngleMult;
                 attackCooldown *= miniAttackCooldownMult;
+                dashSpeed *= miniDashSpeedMult;
+                dashDuration *= miniDashDurationMult;
                 transform.localScale *= miniSizeMult;
                 break;
             case SummonerTier.Elite:
                 stats.SetStatScale(eliteStatScale);
                 attackRange *= eliteAttackRangeMult;
-                attackAngle *= eliteAttackAngleMult;
                 attackCooldown *= eliteAttackCooldownMult;
+                dashSpeed *= eliteDashSpeedMult;
+                dashDuration *= eliteDashDurationMult;
                 transform.localScale *= eliteSizeMult;
                 break;
         }
@@ -100,6 +113,7 @@ public class BrawlerSummoner : SummonerBase
         base.Awake();
 
         movement.SetStopDistance(attackRange * 0.8f);
+        strafe.Init(attackRange);
         _enemyMask = 1 << LayerMask.NameToLayer("Enemy");
 
         if (animator == null)
@@ -140,11 +154,10 @@ public class BrawlerSummoner : SummonerBase
 
     private void UpdateState()
     {
-        if (isAttacking)
+        if (isDashing)
         {
             if (currentTarget == null || currentTarget.IsDead)
             {
-                isAttacking = false;
                 currentState = BrawlerState.Wander;
                 return;
             }
@@ -161,7 +174,15 @@ public class BrawlerSummoner : SummonerBase
             float flatDist = Vector3.Distance(transform.position, flatTarget);
             float heightDiff = Mathf.Abs(currentTarget.transform.position.y - transform.position.y);
             if (heightDiff > maxHeightDiff) { currentTarget = null; currentState = BrawlerState.Wander; return; }
-            currentState = flatDist <= attackRange ? BrawlerState.Attack : BrawlerState.Chase;
+
+            bool canAttack = Time.time >= lastAttackTime + attackCooldown / stats.AttackSpeed;
+            if (flatDist <= attackRange)
+                currentState = canAttack ? BrawlerState.Attack : BrawlerState.Strafe;
+            else
+            {
+                if (currentState == BrawlerState.Strafe) strafe.Reset();
+                currentState = BrawlerState.Chase;
+            }
         }
         else
         {
@@ -179,6 +200,11 @@ public class BrawlerSummoner : SummonerBase
         {
             case BrawlerState.Chase:
                 movement.MoveToTarget(currentTarget.transform.position);
+                break;
+
+            case BrawlerState.Strafe:
+                if (movement.GetAgent() is var sa && sa != null) sa.stoppingDistance = 0f;
+                strafe.Tick(transform, currentTarget.transform.position, movement);
                 break;
 
             case BrawlerState.Attack:
@@ -210,33 +236,45 @@ public class BrawlerSummoner : SummonerBase
     public void DealDamage()
     {
         if (currentTarget == null || currentTarget.IsDead) return;
+        Vector3 dir = currentTarget.transform.position - transform.position;
+        dir.y = 0f;
+        if (dir.sqrMagnitude > 0.001f) dir.Normalize();
+        StartCoroutine(DashAttackRoutine(dir));
+    }
 
-        float damage = stats.Damage;
+    private System.Collections.IEnumerator DashAttackRoutine(Vector3 dir)
+    {
+        isDashing = true;
+        var agent = movement.GetAgent();
+        if (agent != null && agent.isOnNavMesh) agent.enabled = false;
 
-        Vector3 attackDir = currentTarget.transform.position - transform.position;
-        attackDir.y = 0f;
-        if (attackDir.sqrMagnitude > 0.001f)
-            attackDir.Normalize();
+        LayerMask enemyMask = _enemyMask;
+        LayerMask wallMask = 1 << LayerMask.NameToLayer("Wall");
+        var alreadyHit = new System.Collections.Generic.HashSet<GameObject>();
 
-        Collider[] hits = Physics.OverlapSphere(transform.position, attackRange, _enemyMask);
-        foreach (var hit in hits)
+        float elapsed = 0f;
+        while (elapsed < dashDuration)
         {
-            Vector3 dir = hit.transform.position - transform.position;
-            dir.y = 0f;
+            float stepDist = dashSpeed * Time.deltaTime;
+            if (Physics.Raycast(transform.position, dir, stepDist + 0.1f, wallMask)) break;
 
-            if (dir.sqrMagnitude > 0.001f)
+            transform.position += dir * stepDist;
+            elapsed += Time.deltaTime;
+
+            Collider[] hits = Physics.OverlapSphere(transform.position, dashHitRadius, enemyMask);
+            foreach (var col in hits)
             {
-                float angle = Vector3.Angle(attackDir, dir);
-                if (angle > attackAngle * 0.5f) continue;
+                if (alreadyHit.Contains(col.gameObject)) continue;
+                alreadyHit.Add(col.gameObject);
+                var enemyHealth = col.GetComponentInParent<EnemyHealthBase>();
+                if (enemyHealth != null && !enemyHealth.IsDead)
+                    enemyHealth.TakeDamage(stats.Damage, null, silent: true);
             }
-
-            var enemyHealth = hit.GetComponentInParent<HealthBase>();
-            if (enemyHealth != null && !enemyHealth.IsDead)
-                if (enemyHealth is EnemyHealthBase enemy)
-                    enemy.TakeDamage(damage, null, silent: true);
-                else
-                    enemyHealth.TakeDamage(damage);
+            yield return null;
         }
+
+        if (agent != null && !agent.enabled) agent.enabled = true;
+        isDashing = false;
     }
 
     // Animation Event
@@ -252,10 +290,7 @@ public class BrawlerSummoner : SummonerBase
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
 
-        Vector3 leftDir = Quaternion.Euler(0, -attackAngle * 0.5f, 0) * transform.forward;
-        Vector3 rightDir = Quaternion.Euler(0, attackAngle * 0.5f, 0) * transform.forward;
-        Gizmos.color = new Color(1f, 0f, 0f, 0.3f);
-        Gizmos.DrawLine(transform.position, transform.position + leftDir * attackRange);
-        Gizmos.DrawLine(transform.position, transform.position + rightDir * attackRange);
+        Gizmos.color = new Color(1f, 0.5f, 0f, 0.4f);
+        Gizmos.DrawWireSphere(transform.position, dashHitRadius);
     }
 }

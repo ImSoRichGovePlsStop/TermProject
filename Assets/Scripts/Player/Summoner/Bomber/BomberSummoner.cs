@@ -408,7 +408,10 @@ public class BomberSummoner : SummonerBase
             if (isCenter && centerDamage == 0f)
                 centerDamage = damage;
 
-            target.TakeDamage(damage);
+            if (target is EnemyHealthBase enemyHealth)
+                enemyHealth.TakeDamage(damage, null, silent: true);
+            else
+                target.TakeDamage(damage);
         }
 
         if (scorchedEarth && fireFieldPrefab != null)

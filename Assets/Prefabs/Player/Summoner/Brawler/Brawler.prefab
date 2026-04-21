@@ -304,7 +304,7 @@ MonoBehaviour:
   baseMoveSpeed: 2
   baseDamage: 6
   baseAttackSpeed: 1
-  baseShield: 0
+  shieldPercent: 0
 --- !u!114 &5090872842714426300
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -328,11 +328,17 @@ MonoBehaviour:
   movement: {fileID: 0}
   stats: {fileID: 0}
   tier: 1
-  attackRange: 0.5
-  attackAngle: 60
+  attackRange: 0.75
   attackCooldown: 1
   damageScale: 0.25
   animator: {fileID: 0}
+  strafe:
+    preferredDistMin: 0.5
+    preferredDistMax: 0.7
+    angleMin: 30
+    angleMax: 60
+    idleTimeMin: 0.5
+    idleTimeMax: 0.8
   wander:
     mode: 0
     wanderRadius: 1.5
@@ -346,15 +352,20 @@ MonoBehaviour:
     damage: 0.4
     moveSpeed: 0.7
   miniAttackRangeMult: 0.7
-  miniAttackAngleMult: 0.8
   miniAttackCooldownMult: 1.3
+  miniDashSpeedMult: 0.8
+  miniDashDurationMult: 0.8
   miniSizeMult: 0.7
   eliteStatScale:
     hp: 2
     damage: 2
     moveSpeed: 1.2
   eliteAttackRangeMult: 1.5
-  eliteAttackAngleMult: 1.2
   eliteAttackCooldownMult: 0.7
+  eliteDashSpeedMult: 1.3
+  eliteDashDurationMult: 1.2
   eliteSizeMult: 1.4
   auraPrefab: {fileID: 7865754226137070314, guid: 1a965814780cb5b41a72990ff4fcd8bc, type: 3}
+  dashSpeed: 10
+  dashDuration: 0.15
+  dashHitRadius: 0.8

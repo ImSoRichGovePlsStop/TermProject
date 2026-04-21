@@ -500,7 +500,7 @@ NavMeshAgent:
   m_Height: 2
   m_BaseOffset: 0.22
   m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 1
+  m_ObstacleAvoidanceType: 0
 --- !u!114 &692780953307815781
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -554,7 +554,7 @@ MonoBehaviour:
   baseMoveSpeed: 2
   baseDamage: 12
   baseAttackSpeed: 1
-  baseShield: 0
+  shieldPercent: 0
 --- !u!114 &955188640718622043
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -621,6 +621,9 @@ MonoBehaviour:
   chargeRotateSpeed: 30
   chargeWallDetectRange: 0.5
   chargeStunnedDuration: 2
+  chargeWarningPrefab: {fileID: 3021588917348942916, guid: 25dd7453603477c4a95228b244f64ae6, type: 3}
+  chargeWarningOffset: 1.25
+  chargeWarningOffsetZ: 0.3
   missDetectAngle: 120
   missDetectDuration: 0.1
   redirectChance: 0
