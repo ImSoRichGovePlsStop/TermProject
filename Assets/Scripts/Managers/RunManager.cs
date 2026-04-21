@@ -182,6 +182,7 @@ public class RunManager : MonoBehaviour
         _pickedCardIds.Clear();
         HealthStationManager.Instance?.ResetRun();
         LuckStationManager.Instance?.ResetRun();
+        EnemyPoolManager.Instance?.RebuildPools();
     }
 
     // ── Floor modifier card logic ────────────────────────────────────────────

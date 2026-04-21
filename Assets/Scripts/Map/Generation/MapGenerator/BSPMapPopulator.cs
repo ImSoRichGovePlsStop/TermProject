@@ -365,8 +365,19 @@ public class BSPMapPopulator : MonoBehaviour
 
         for (int x = x0; x <= x1; x++)
             for (int z = z0; z <= z1; z++)
-                if (roomMap[x, z] == node)
-                    cells.Add(new Vector3(x + 0.5f, 0f, z + 0.5f));
+            {
+                if (roomMap[x, z] != node) continue;
+
+                // Exclude pillar cells defined in the room preset.
+                // Coordinate flip matches StampRoom: presetZ = (Depth-1) - (z - MinZ)
+                if (node.Preset != null)
+                {
+                    int presetZ = (node.Depth - 1) - (z - node.MinZ);
+                    if (node.Preset.IsPillar(x - node.MinX, presetZ)) continue;
+                }
+
+                cells.Add(new Vector3(x + 0.5f, 0f, z + 0.5f));
+            }
         return cells;
     }
 

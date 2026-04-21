@@ -81,7 +81,7 @@ public class ItemCardUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHand
         {
             priceText.gameObject.SetActive(true);
             priceText.text = discount > 0f
-                ? $"<s>$ {baseCost}</s>  $ {_price}"
+                ? $"<color=#666666><s>$ {baseCost}</s></color>  $ {_price}"
                 : $"$ {_price}";
         }
 

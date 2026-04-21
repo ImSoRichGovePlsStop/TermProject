@@ -4,7 +4,7 @@ public class WishFountain : MonoBehaviour, IInteractable
 {
     [SerializeField] private float activateChance  = 0.02f;
     [SerializeField] private float chanceIncrement = 0.00f;
-    [SerializeField] private int   baseCost        = 10;
+    [SerializeField] private int   baseCost        = 1;
     [SerializeField] private int   costPerFloor    = 1;
 
     [Header("Wish Loot")]
@@ -33,7 +33,7 @@ public class WishFountain : MonoBehaviour, IInteractable
     public InteractInfo GetInteractInfo() => new InteractInfo
     {
         name        = "Wish Fountain",
-        description = $"Toss a coin into the fountain for a <color=#88FF88>{activateChance * 100f:0.0}%</color> chance to receive a blessing.",
+        description = $"Toss a coin into the fountain for a chance to receive a blessing.",
         actionText  = "Wish",
         cost        = CurrentCost()
     };
