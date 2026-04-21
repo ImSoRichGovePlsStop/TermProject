@@ -172,17 +172,30 @@ public class TakeDMG_HealModule : ModuleEffect
             yield break;
         }
 
+        float tickInterval = 0.5f;
         float healPerSec = healAmount / duration;
         float elapsed = 0f;
 
+        WaitForSeconds wait = new WaitForSeconds(tickInterval);
+
         while (elapsed < duration)
         {
-            yield return null;
+            float timeRemaining = duration - elapsed;
+            float currentTick = Mathf.Min(tickInterval, timeRemaining);
+
+            if (currentTick == tickInterval)
+            {
+                yield return wait;
+            }
+            else
+            {
+                yield return new WaitForSeconds(currentTick);
+            }
+
             if (stats == null) yield break;
 
-            float tick = Time.deltaTime;
-            elapsed += tick;
-            stats.Heal(healPerSec * tick);
+            elapsed += currentTick;
+            stats.Heal(healPerSec * currentTick);
         }
     }
 
@@ -212,7 +225,7 @@ public class TakeDMG_HealModule : ModuleEffect
         string leftLabel = isBuffed
             ? $"+{effective * 100f:F0}% Damage Taken"
             : $"+{moduleStat * 100f:F0}% Damage Taken";
-
+        Debug.Log($"moduleStat: {moduleStat}, effective: {effective}");
         if (playerStats == null) return (leftLabel, -1f, -1f, "F0%");
 
         float before, after;

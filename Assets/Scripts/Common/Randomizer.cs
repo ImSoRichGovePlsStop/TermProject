@@ -93,10 +93,6 @@ public static class Randomizer
 
         candidates.Sort((a, b) => a.delta.CompareTo(b.delta));
 
-        foreach (var candidate in candidates) {
-            Debug.Log(candidate.entry.data.moduleName + " delta: " + candidate.delta);
-        }
-
         for (int i = 0; i < Mathf.Min(returnCount, candidates.Count); i++)
             result.Add(candidates[i].entry);
 
