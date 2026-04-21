@@ -176,7 +176,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -1.3782885, y: -0.0000004676191, z: 4.032411}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 3933781355179951000}
@@ -252,7 +252,7 @@ NavMeshAgent:
   m_AutoBraking: 1
   m_AutoRepath: 1
   m_Height: 2
-  m_BaseOffset: 0.18
+  m_BaseOffset: 0.3
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 1
 --- !u!114 &4097944732251278272
@@ -349,7 +349,6 @@ MonoBehaviour:
   spawnDuration: 0
   spawnFadeOutDuration: 0
   spawnEffectScale: 0
-  spawnStayDuration: 0
   strafe:
     preferredDistMin: 0
     preferredDistMax: 0
@@ -478,7 +477,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 1246672212, guid: 91c29ad83e23da24a958aa8f319989c2, type: 3}
+  m_Sprite: {fileID: 1543735986, guid: c1df54bfea73ebc4fa65309acf6246ab, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_FlipX: 0
   m_FlipY: 0

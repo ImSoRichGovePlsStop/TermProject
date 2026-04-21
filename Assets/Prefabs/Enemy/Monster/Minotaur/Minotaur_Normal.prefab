@@ -356,7 +356,7 @@ NavMeshAgent:
   m_AutoBraking: 1
   m_AutoRepath: 1
   m_Height: 2
-  m_BaseOffset: 0.37
+  m_BaseOffset: 0.34
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 1
 --- !u!114 &3576762553294094670
@@ -453,7 +453,6 @@ MonoBehaviour:
   spawnDuration: 2
   spawnFadeOutDuration: 1
   spawnEffectScale: 2
-  spawnStayDuration: 0.5
   strafe:
     preferredDistMin: 0.5
     preferredDistMax: 1
