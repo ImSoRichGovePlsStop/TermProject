@@ -488,8 +488,13 @@ public class ModuleTooltipUI : MonoBehaviour
         if (effect != null && statDescRef != null)
         {
             var emptyState = new ModuleRuntimeState();
+            // Temporarily unequip if active so playerStats reflects base (without this module)
+            bool wasActive = inst.RuntimeState.isActive;
+            if (wasActive) effect.Unequip(playerStats, inst.Rarity, inst.Level, inst.RuntimeState);
             var (curLabel, curBefore, curAfter, format) = effect.GetStatPreview(inst.Rarity, inst.Level, emptyState, playerStats);
             var (nextLabel, nextBefore, nextAfter, _) = effect.GetStatPreview(inst.Rarity, nextLevel, emptyState, playerStats);
+            // Re-equip to restore state
+            if (wasActive) effect.Equip(playerStats, inst.Rarity, inst.Level, inst.RuntimeState);
 
             if (curLabel != null && nextLabel != null && curLabel != nextLabel)
             {
