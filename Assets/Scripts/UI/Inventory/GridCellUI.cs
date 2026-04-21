@@ -13,8 +13,8 @@ public class GridCellUI : MonoBehaviour
     private Color colorValid = new Color(0.3f, 0.8f, 0.3f, 0.6f);
     private Color colorInvalid = new Color(0.8f, 0.3f, 0.3f, 0.6f);
 
-    private Color colorLocked = new Color(0.65f, 0.72f, 0.80f, 0.25f);
-    private Color colorUnused = new Color(0.65f, 0.72f, 0.80f, 0.25f);
+    private Color colorLocked = new Color(0.23f, 0.23f, 0.23f, 0.60f);
+    private Color colorUnused = new Color(0.23f, 0.23f, 0.23f, 0.60f);
 
     private Image _img;
 

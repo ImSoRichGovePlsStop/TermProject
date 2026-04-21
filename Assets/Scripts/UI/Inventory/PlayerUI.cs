@@ -38,7 +38,7 @@ public class PlayerUI : MonoBehaviour
         }
     }
 
-    private const string BaseColor  = "#414141";
+    private const string BaseColor  = "#ffffff";
     private const string BonusColor = "#329632";
 
     private static string Bonus(float bonus, string fmt = "F1")
