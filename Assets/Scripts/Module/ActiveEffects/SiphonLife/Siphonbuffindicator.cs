@@ -15,6 +15,9 @@ public class SiphonBuffIndicator : MonoBehaviour
     [SerializeField] private Color buffColorFull = new Color(0.60f, 0.00f, 1.00f, 0.90f);
     [SerializeField] private Color buffColorExpiring = new Color(1.00f, 0.20f, 0.20f, 0.90f);
 
+    [Header("Ready state")]
+    [SerializeField] private Color readyColor = new Color(0.00f, 1.00f, 0.50f, 0.80f); // Bright green for ready
+
     [Header("Colour shifts to expiring when this fraction of buff time remains (0–1)")]
     [SerializeField] private float expiryWarningFraction = 0.25f;
 
@@ -84,6 +87,19 @@ public class SiphonBuffIndicator : MonoBehaviour
             float warningT = Mathf.InverseLerp(expiryWarningFraction, 0f, ratio);
             fillCircle.color = Color.Lerp(buffColorFull, buffColorExpiring, warningT);
         }
+    }
+
+    public void ShowReady()
+    {
+        gameObject.SetActive(true);
+
+        if (fillCircle != null)
+        {
+            fillCircle.fillAmount = 1f;
+            fillCircle.color = readyColor;
+        }
+
+        SetCountVisible(false);
     }
 
     public void Hide()

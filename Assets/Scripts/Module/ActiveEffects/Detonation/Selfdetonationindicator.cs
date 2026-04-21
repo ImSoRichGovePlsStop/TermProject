@@ -15,6 +15,9 @@ public class SelfDetonationIndicator : MonoBehaviour
     [SerializeField] private Color armedColorFull = new Color(1.00f, 0.35f, 0f, 0.90f);
     [SerializeField] private Color armedColorExpiring = new Color(1.00f, 0.00f, 0f, 0.90f);
 
+    [Header("Ready state")]
+    [SerializeField] private Color readyColor = new Color(0.00f, 1.00f, 0.50f, 0.80f);
+
     [Header("Colour shifts to expiring when this fraction of countdown remains (0–1)")]
     [SerializeField] private float expiryWarningFraction = 0.30f;
 
@@ -66,6 +69,19 @@ public class SelfDetonationIndicator : MonoBehaviour
 
             float warningT = Mathf.InverseLerp(expiryWarningFraction, 0f, ratio);
             fillCircle.color = Color.Lerp(armedColorFull, armedColorExpiring, warningT);
+        }
+
+        SetKeyVisible(false);
+    }
+
+    public void ShowReady()
+    {
+        gameObject.SetActive(true);
+
+        if (fillCircle != null)
+        {
+            fillCircle.fillAmount = 1f;
+            fillCircle.color = readyColor;
         }
 
         SetKeyVisible(false);
