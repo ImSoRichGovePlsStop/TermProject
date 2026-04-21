@@ -8,6 +8,11 @@ public class TradeSystem : MonoBehaviour, IInteractable
 
     [Header("Reward Pool")]
     [SerializeField] private MaterialData[] materialPool;
+    [SerializeField] private float weightCommon = 0.70f;
+    [SerializeField] private float weightUncommon = 0.20f;
+    [SerializeField] private float weightRare = 0.07f;
+    [SerializeField] private float weightEpic = 0.02f;
+    [SerializeField] private float weightGOD = 0.01f;
     [SerializeField] private GameObject groundMaterialPrefab;
     [SerializeField] private Vector3 dropOffset = new Vector3(0f, 0f, 1f);
     [SerializeField] private float floatAmplitude = 0.15f;
@@ -95,7 +100,7 @@ public class TradeSystem : MonoBehaviour, IInteractable
             SpawnNothing(); return;
         }
 
-        var mat = materialPool[Random.Range(0, materialPool.Length)];
+        var mat = RollWeightedMaterial();
         if (mat == null) { SpawnNothing(); return; }
 
         Vector3 spread = new Vector3(Random.Range(dropSpreadLeft, dropSpreadRight), 0f, 0f);
@@ -110,6 +115,36 @@ public class TradeSystem : MonoBehaviour, IInteractable
         gm?.Setup(mat);
         gm?.DelayShow();
         Msg($"Received: {mat.moduleName}!", colItem);
+    }
+
+    private MaterialData RollWeightedMaterial()
+    {
+        var pool = new System.Collections.Generic.List<(MaterialData mat, float w)>();
+        foreach (var m in materialPool)
+        {
+            if (m == null) continue;
+            float w = m.rarity switch
+            {
+                Rarity.Common => weightCommon,
+                Rarity.Uncommon => weightUncommon,
+                Rarity.Rare => weightRare,
+                Rarity.Epic => weightEpic,
+                Rarity.GOD => weightGOD,
+                _ => weightCommon
+            };
+            pool.Add((m, w));
+        }
+        float total = 0f;
+        foreach (var e in pool) total += e.w;
+        if (total <= 0f) return null;
+        float roll = Random.Range(0f, total);
+        float cum = 0f;
+        foreach (var e in pool)
+        {
+            cum += e.w;
+            if (roll < cum) return e.mat;
+        }
+        return pool[pool.Count - 1].mat;
     }
 
     private void GrantModuleReward()

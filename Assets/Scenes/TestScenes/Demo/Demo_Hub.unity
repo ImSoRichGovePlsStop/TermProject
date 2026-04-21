@@ -122342,12 +122342,28 @@ PrefabInstance:
       value: 75
       objectReference: {fileID: 0}
     - target: {fileID: 3308804704471590463, guid: c497d7a3a30a4d740a5aa6192069b3d6, type: 3}
+      propertyPath: weightGOD
+      value: 0.005
+      objectReference: {fileID: 0}
+    - target: {fileID: 3308804704471590463, guid: c497d7a3a30a4d740a5aa6192069b3d6, type: 3}
+      propertyPath: weightEpic
+      value: 0.025
+      objectReference: {fileID: 0}
+    - target: {fileID: 3308804704471590463, guid: c497d7a3a30a4d740a5aa6192069b3d6, type: 3}
+      propertyPath: weightCommon
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 3308804704471590463, guid: c497d7a3a30a4d740a5aa6192069b3d6, type: 3}
       propertyPath: dropSpreadLeft
       value: -1
       objectReference: {fileID: 0}
     - target: {fileID: 3308804704471590463, guid: c497d7a3a30a4d740a5aa6192069b3d6, type: 3}
       propertyPath: moduleMeanCost
       value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 3308804704471590463, guid: c497d7a3a30a4d740a5aa6192069b3d6, type: 3}
+      propertyPath: weightUncommon
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 3308804704471590463, guid: c497d7a3a30a4d740a5aa6192069b3d6, type: 3}
       propertyPath: dropSpreadRight

@@ -102,12 +102,14 @@ public class HubStorageUI : MonoBehaviour
         cheatRt.pivot = new Vector2(0f, 1f);
         cheatRt.sizeDelta = new Vector2(120f, 34f);
         cheatRt.anchoredPosition = new Vector2(10f, -11f);
-        cheatGo.GetComponent<Image>().color = new Color(0.6f, 0.2f, 0.2f, 0.5f);
+        var cheatImg = cheatGo.GetComponent<Image>();
+        cheatImg.color = new Color(0f, 0f, 0f, 0f);
+        cheatImg.raycastTarget = true;
         var cheatBtn = cheatGo.GetComponent<Button>();
         var cc = cheatBtn.colors;
-        cc.normalColor = new Color(0.6f, 0.2f, 0.2f, 0.5f);
-        cc.highlightedColor = new Color(0.8f, 0.3f, 0.3f, 0.7f);
-        cc.pressedColor = new Color(0.4f, 0.1f, 0.1f, 0.8f);
+        cc.normalColor = new Color(0f, 0f, 0f, 0f);
+        cc.highlightedColor = new Color(0f, 0f, 0f, 0f);
+        cc.pressedColor = new Color(0f, 0f, 0f, 0f);
         cheatBtn.colors = cc;
         cheatBtn.onClick.AddListener(SpawnCheatMaterials);
         var cheatLblGo = new GameObject("Label", typeof(RectTransform), typeof(TextMeshProUGUI));
@@ -120,7 +122,7 @@ public class HubStorageUI : MonoBehaviour
         var cheatTmp = cheatLblGo.GetComponent<TextMeshProUGUI>();
         cheatTmp.text = "[Cheat] Fill";
         cheatTmp.fontSize = 14f;
-        cheatTmp.color = new Color(1f, 0.6f, 0.6f);
+        cheatTmp.color = new Color(0f, 0f, 0f, 0f);
         cheatTmp.alignment = TextAlignmentOptions.Center;
         cheatTmp.raycastTarget = false;
         // Thin divider under title
