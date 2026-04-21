@@ -107,6 +107,12 @@ public class EnemyHealthBase : HealthBase
 
     private bool suppressHurt = false;
 
+    protected override void OnDamageTaken(float damage, bool isCrit)
+    {
+        AudioManager.Instance?.PlayEnemyHit();
+        base.OnDamageTaken(damage, isCrit);
+    }
+
     protected override void OnHurtStart()
     {
         if (suppressHurt) return;

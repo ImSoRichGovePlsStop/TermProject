@@ -188,6 +188,7 @@ public class WandAttack : MonoBehaviour
         float camTiltX = -Camera.main.transform.rotation.eulerAngles.x;
         Quaternion spawnRot = Quaternion.Euler(camTiltX, 0f, 0f);
         GameObject proj = Instantiate(prefab, spawnPos, spawnRot);
+        AudioManager.Instance?.PlayWandAttack();
         if (isBig)
             proj.transform.localScale = normalProjectilePrefab.transform.localScale * data.bigSpriteScale;
         var wandProj = proj.GetComponent<WandProjectile>();

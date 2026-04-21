@@ -250,6 +250,7 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
+            AudioManager.Instance?.PlaySwordAttack();
             attackHitbox.Attack();
         }
     }
