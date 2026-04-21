@@ -36,6 +36,11 @@ public class ReaverController : EnemyBase
     [SerializeField] private float chargeWallDetectRange = 0.5f;
     [SerializeField] private float chargeStunnedDuration = 2f;
 
+    [Header("Charge Warning")]
+    [SerializeField] private GameObject chargeWarningPrefab;
+    [SerializeField] private float chargeWarningOffset = 1f;
+    [SerializeField] private float chargeWarningOffsetZ = 0f;
+
     [Header("Charge Redirect")]
     [SerializeField] private float missDetectAngle = 120f;
     [SerializeField] private float missDetectDuration = 0.1f;
@@ -280,9 +285,22 @@ public class ReaverController : EnemyBase
             if (info.length > 0f) animator.speed = info.length / chargeWindUpDuration;
         }
 
+        GameObject warning = null;
+        if (chargeWarningPrefab != null)
+        {
+            Vector3 wPos = transform.position + lockedAttackDir * chargeWarningOffset;
+            wPos.z -= chargeWarningOffsetZ;
+            warning = Instantiate(chargeWarningPrefab, wPos, Quaternion.LookRotation(lockedAttackDir, Vector3.up));
+        }
+
         float elapsed = 0f;
         while (elapsed < chargeWindUpDuration)
         {
+            if (health.IsDead || !isAttacking)
+            {
+                if (warning != null) Destroy(warning);
+                yield break;
+            }
             elapsed += Time.deltaTime;
             if (HasTarget)
             {
@@ -292,8 +310,19 @@ public class ReaverController : EnemyBase
                     lockedAttackDir = Vector3.RotateTowards(lockedAttackDir.normalized, toTarget.normalized, windUpRotateSpeed * Mathf.Deg2Rad * Time.deltaTime, 0f);
             }
             movement.FaceTarget(transform.position + lockedAttackDir);
+
+            if (warning != null)
+            {
+                Vector3 wPos = transform.position + lockedAttackDir * chargeWarningOffset;
+                wPos.z -= chargeWarningOffsetZ;
+                warning.transform.position = wPos;
+                warning.transform.rotation = Quaternion.LookRotation(lockedAttackDir, Vector3.up);
+            }
+
             yield return null;
         }
+
+        if (warning != null) Destroy(warning);
 
         if (!isAttacking) yield break;
         if (animator != null) animator.speed = 1f;
@@ -348,6 +377,7 @@ public class ReaverController : EnemyBase
 
         while (isCharging)
         {
+            if (health.IsDead) { isCharging = false; yield break; }
             if (HasTarget)
             {
                 Vector3 toTarget = TargetPosition - transform.position;
