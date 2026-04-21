@@ -46,7 +46,7 @@ public abstract class EnemyBase : MonoBehaviour
     [SerializeField] private float spawnDuration = 1f;
     [SerializeField] private float spawnFadeOutDuration = 0.4f;
     [SerializeField] private float spawnEffectScale = 1f;
-    [SerializeField] private float spawnStayDuration = 0.5f;
+    private float spawnStayDuration = 0.05f;
 
     protected bool skipSpawnEffect = false;
 
@@ -79,8 +79,8 @@ public abstract class EnemyBase : MonoBehaviour
 
         NavMeshAgent agent = movement.GetAgent();
 
-        SpriteRenderer spriteRenderer = GetComponentInChildren<SpriteRenderer>();
-        if (spriteRenderer != null) spriteRenderer.enabled = false;
+        SpriteRenderer[] spriteRenderers = GetComponentsInChildren<SpriteRenderer>();
+        foreach (var sr in spriteRenderers) sr.enabled = false;
 
         yield return null;
         Vector3 finalPos = transform.position;
@@ -90,7 +90,7 @@ public abstract class EnemyBase : MonoBehaviour
         Vector3 startPos = finalPos + Vector3.down * spawnRiseDistance;
         transform.position = startPos;
 
-        if (spriteRenderer != null) spriteRenderer.enabled = true;
+        foreach (var sr in spriteRenderers) sr.enabled = true;
 
         EnemySpawnEffect effect = null;
         if (!skipSpawnEffect && spawnEffectPrefab != null)
