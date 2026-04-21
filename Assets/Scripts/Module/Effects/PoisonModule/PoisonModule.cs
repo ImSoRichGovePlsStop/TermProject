@@ -311,10 +311,10 @@ public class PoisonModule : ModuleEffect
             new PassiveEntry
             {
                 label         = "Damage",
-                value         = eAtk > 0 ? $"{eAtk * 100f:F0}% Attack" : "Poison",
+                value         = eAtk > 0 ? $"{eAtk * 100f:F0}% Damage" : "Poison",
                 sublabel      = eHp  > 0 ? $"+ {eHp * 100f:F1}% Enemy Max HP" : "Per Tick",
                 isBuffed      = state.isActive && (Math.Abs(eHp - bHp) > 0.001f || Math.Abs(eAtk - bAtk) > 0.001f),
-                unbuffedValue = bAtk > 0 ? $"{bAtk * 100f:F0}% Atk" : ""
+                unbuffedValue = bAtk > 0 ? $"{bAtk * 100f:F0}% Damage" : ""
             }
         };
     }
