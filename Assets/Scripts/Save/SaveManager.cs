@@ -288,6 +288,9 @@ public class SaveManager : MonoBehaviour
         }
     }
 
+    /// <summary>Returns true if a save file exists on disk.</summary>
+    public bool HasSave() => File.Exists(SavePath);
+
     /// <summary>Deletes the save file. Useful for a "New Game" button.</summary>
     public void DeleteSave()
     {
