@@ -9,6 +9,15 @@ public class GenericTreeState
         return unlockedNodes.Contains(node);
     }
 
+    /// <summary>Returns all currently unlocked nodes (used by the save system).</summary>
+    public IEnumerable<GenericTreeNode> GetUnlockedNodes() => unlockedNodes;
+
+    /// Bypasses cost/prerequisite checks and marks a node as unlocked.
+    public void UnlockDirect(GenericTreeNode node)
+    {
+        if (node != null) unlockedNodes.Add(node);
+    }
+
     public bool CanUnlock(GenericTreeNode node, int availablePoints)
     {
         if (IsUnlocked(node)) return false;

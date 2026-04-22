@@ -43,6 +43,13 @@ public class LuckStationManager : MonoBehaviour
         return true;
     }
 
+    /// <summary>Directly sets the upgrade level without cost. Used by the save system only.</summary>
+    public void SetLevel(int level)
+    {
+        CurrentLevel = Mathf.Clamp(level, 0, MaxLevel);
+        OnLevelChanged?.Invoke();
+    }
+
     public bool TryUpgrade()
     {
         if (!CanUpgrade()) return false;
