@@ -70,7 +70,7 @@ public class InteractPromptUI : MonoBehaviour
         bool hasCost = info.cost.HasValue;
         costRow?.SetActive(hasCost);
         if (hasCost && costText != null)
-            costText.text = $"$ {info.cost.Value}";
+            costText.text = $"{info.cost.Value}  <sprite=0>";
 
         gameObject.SetActive(true);
     }

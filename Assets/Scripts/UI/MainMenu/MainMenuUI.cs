@@ -18,8 +18,7 @@ public class MainMenuUI : MonoBehaviour
 
     private void OnStart()
     {
-        int nextScene = SceneManager.GetActiveScene().buildIndex + 1;
-        SceneManager.LoadScene(nextScene);
+        Object.FindAnyObjectByType<SceneTransitioner>().TransitionToScene(1);
     }
 
     private void OnExit()
