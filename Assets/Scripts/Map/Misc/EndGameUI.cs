@@ -207,7 +207,9 @@ public class EndGameUI : MonoBehaviour
         RunManager.Instance?.ResetRun();
         // 6. Force-clear any stale UI panel state before scene load
         UIManager.Instance?.ResetPanelState();
-        // 7. Go back to hub scene
+        // 7. Save persistent state (materials, weapon levels, passives) after all resets
+        SaveManager.Instance?.Save();
+        // 8. Go back to hub scene
         gameObject.SetActive(false);
         SceneManager.LoadScene(1);
     }

@@ -60,6 +60,16 @@ public class WeaponLevelManager : MonoBehaviour
         weaponLevels[weapon] = 1;
     }
 
+    /// <summary>
+    /// Directly sets a weapon's level without cost or passive-point side effects.
+    /// Only used by the save system when restoring state.
+    /// </summary>
+    public void SetLevel(WeaponData weapon, int level)
+    {
+        if (weapon == null) return;
+        weaponLevels[weapon] = Mathf.Clamp(level, 1, 15);
+    }
+
     public int GetTotalPoints(WeaponData weapon)
     {
         int level = GetLevel(weapon);
