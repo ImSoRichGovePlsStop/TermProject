@@ -319,7 +319,7 @@ public class ModuleTooltipUI : MonoBehaviour
             rarityTextExpanded = inst.Rarity.ToString();
         }
         rarityText.text = rarityTextNormal;
-        costText.text = $"$ {(int)inst.GetCostAtLevel()}";
+        costText.text = $"{(int)inst.GetCostAtLevel()}   <sprite=0>";
 
         PopulateStats(inst);
         PopulatePassive(inst);
@@ -415,7 +415,7 @@ public class ModuleTooltipUI : MonoBehaviour
         nameText.color = RarityColor(inst.Rarity);
         levelText.text = $"{inst.StackCount}/{inst.MaxStack}";
         rarityText.text = inst.Rarity.ToString();
-        costText.text = inst.Cost > 0 ? $"$ {inst.Cost * inst.StackCount}" : "";
+        costText.text = inst.Cost > 0 ? $"{inst.Cost * inst.StackCount}  <sprite=0>" : "";
 
         ClearStatRows();
         ClearPassive();
@@ -518,7 +518,7 @@ public class ModuleTooltipUI : MonoBehaviour
             }
         }
 
-        costText.text = $"$ {(int)new ModuleInstance(inst.Data, inst.Rarity, nextLevel).GetCostAtLevel()}";
+        costText.text = $"{(int)new ModuleInstance(inst.Data, inst.Rarity, nextLevel).GetCostAtLevel()}  <sprite=0>";
 
         PopulatePassiveCompare(inst);
         StartCoroutine(PositionAtRectNextFrame(anchor));

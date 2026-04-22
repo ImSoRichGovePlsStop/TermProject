@@ -27,8 +27,8 @@ public class Crate : MonoBehaviour
 
                 DamageNumberSpawner.Instance?.SpawnMessage(
                     transform.position,
-                    $"+{goldAmount} Gold",
-                    new Color(1f, 0.85f, 0.1f)
+                    $"{goldAmount}   <sprite=0>",
+                    new Color(0f, 1f, 1f)
                      );    
         }
 

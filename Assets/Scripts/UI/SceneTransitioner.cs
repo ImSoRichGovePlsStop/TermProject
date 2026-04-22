@@ -10,7 +10,6 @@ public class SceneTransitioner : MonoBehaviour
 
     private void Awake()
     {
-        // Make this canvas persist across scenes
         DontDestroyOnLoad(gameObject);
     }
 
