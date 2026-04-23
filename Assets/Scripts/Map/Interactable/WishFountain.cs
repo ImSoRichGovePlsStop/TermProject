@@ -32,9 +32,9 @@ public class WishFountain : MonoBehaviour, IInteractable
     public string GetPromptText() => $"[ E ]  $ {CurrentCost()} to make a wish";
     public InteractInfo GetInteractInfo() => new InteractInfo
     {
-        name        = "Wish Fountain",
-        description = $"Toss a coin into the fountain for a chance to receive a blessing.",
-        actionText  = "Wish",
+        name        = "Spirit Fountain",
+        description = $"Offer some souls into the fountain for a chance to receive a blessing.",
+        actionText  = "Offer",
         cost        = CurrentCost()
     };
 
@@ -79,14 +79,14 @@ public class WishFountain : MonoBehaviour, IInteractable
                 case 2:
                     int coins = Random.Range(bonusCoinMin, bonusCoinMax + 1);
                     DamageNumberSpawner.Instance?.SpawnMessage(
-                        transform.position, $"Blessing: {coins} Gold!", new Color(1f, 0.9f, 0f));
+                        transform.position, $"Blessing: Soul overflow {coins}  <sprite=0>", new Color(0f, 1f, 0.9f));
                     CurrencyManager.Instance.AddCoins(coins);
                     break;
 
                 case 3:
-                    ApplyStatBlessing(playerController.GetComponent<PlayerStats>());
+                    string blessingText = ApplyStatBlessing(playerController.GetComponent<PlayerStats>());
                     DamageNumberSpawner.Instance?.SpawnMessage(
-                    transform.position, "Blessing: Body Enhancement", new Color(0f, 1f, 0.4f));
+                        transform.position, blessingText, new Color(0f, 1f, 0.4f));
                     break;
             }
         }
@@ -110,25 +110,58 @@ public class WishFountain : MonoBehaviour, IInteractable
         _uiManager.OpenRewardLoot(cfg, rolled);
     }
 
-    private void ApplyStatBlessing(PlayerStats stats)
+    private string ApplyStatBlessing(PlayerStats stats)
     {
-        if (stats == null) return;
+        if (stats == null) return "Blessing Failed";
+
         float boost = Random.Range(statBoostMin, statBoostMax);
         int statIndex = Random.Range(0, 6);
+
+        string statName;
+        string displayValue;
         var bonus = new StatModifier();
-       
 
         switch (statIndex)
         {
-            case 0: bonus.health      = stats.BaseHP      * boost;       break;
-            case 1: bonus.damage      = stats.BaseDMG     * boost;        break;
-            case 2: bonus.attackSpeed = stats.BaseATKSPD  * boost;  break;
-            case 3: bonus.moveSpeed   = stats.BaseMOVSPD  * boost;   break;
-            case 4: bonus.critChance  = stats.BaseCrit    * boost;  break;
-            default: bonus.critDamage = stats.BaseCritDMG * boost;   break;
+            case 0:
+                bonus.health = stats.BaseHP * boost;
+                statName = "Max HP";
+                displayValue = $"{bonus.health:F1}";
+                break;
+
+            case 1:
+                bonus.damage = stats.BaseDMG * boost;
+                statName = "Damage";
+                displayValue = $"{bonus.damage:F1}";
+                break;
+
+            case 2:
+                bonus.attackSpeed = stats.BaseATKSPD * boost;
+                statName = "Attack Speed";
+                displayValue = $"{bonus.attackSpeed:P1}";
+                break;
+
+            case 3:
+                bonus.moveSpeed = stats.BaseMOVSPD * boost;
+                statName = "Move Speed";
+                displayValue = $"{bonus.moveSpeed:F1}";
+                break;
+
+            case 4:
+                bonus.critChance = stats.BaseCrit * boost;
+                statName = "Crit Chance";
+                displayValue = $"{bonus.critChance:P1}";
+                break;
+
+            default:
+                bonus.critDamage = stats.BaseCritDMG * boost;
+                statName = "Crit Damage";
+                displayValue = $"{bonus.critDamage:P1}";
+                break;
         }
 
         stats.AddFlatModifier(bonus);
 
+        return $"Blessing: +{displayValue} {statName}";
     }
 }
