@@ -44,10 +44,17 @@ public class LuckStationUpgradeUI : MonoBehaviour
     private void Start()
     {
         upgradeButton.onClick.AddListener(OnUpgradeClicked);
-        BuildRows();
+        if (LuckStationManager.Instance != null)
+            LuckStationManager.Instance.OnLevelChanged += OnLevelChanged;
     }
+    private void OnDestroy()
+    {
+        if (LuckStationManager.Instance != null)
+            LuckStationManager.Instance.OnLevelChanged -= OnLevelChanged;
+    }
+    private void OnLevelChanged() { if (IsOpen) Refresh(); }
 
-    public void Open() { IsOpen = true; panel.SetActive(true); Refresh(); }
+    public void Open() { IsOpen = true; panel.SetActive(true); BuildRows(); Refresh(); }
     public void Close() { IsOpen = false; panel.SetActive(false); }
 
     public void Refresh()

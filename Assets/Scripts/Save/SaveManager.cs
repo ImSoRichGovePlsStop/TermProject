@@ -21,8 +21,8 @@ public class SaveManager : MonoBehaviour
 {
     public static SaveManager Instance { get; private set; }
 
-    private const  string SaveFileName = "savegame.json";
-    private static string SavePath     => Path.Combine(Application.persistentDataPath, SaveFileName);
+    private const string SaveFileName = "savegame.json";
+    private static string SavePath => Path.Combine(Application.persistentDataPath, SaveFileName);
 
     private SaveData _pendingData;
 
@@ -37,7 +37,7 @@ public class SaveManager : MonoBehaviour
         _pendingData = LoadFromDisk();
     }
 
-    private void OnEnable()  => Application.quitting += OnApplicationQuit;
+    private void OnEnable() => Application.quitting += OnApplicationQuit;
     private void OnDisable() => Application.quitting -= OnApplicationQuit;
 
     private void OnApplicationQuit()
@@ -92,7 +92,7 @@ public class SaveManager : MonoBehaviour
                 data.materials.Add(new MaterialSaveEntry
                 {
                     materialName = kvp.Key.name,
-                    count        = kvp.Value
+                    count = kvp.Value
                 });
     }
 
@@ -109,7 +109,7 @@ public class SaveManager : MonoBehaviour
                 data.weaponLevels.Add(new WeaponLevelSaveEntry
                 {
                     weaponName = weapon.name,
-                    level      = level
+                    level = level
                 });
         }
     }
@@ -123,7 +123,7 @@ public class SaveManager : MonoBehaviour
         {
             if (weapon?.passiveData?.trees == null) continue;
 
-            int pts   = mgr.GetAvailablePoints(weapon.passiveData);
+            int pts = mgr.GetAvailablePoints(weapon.passiveData);
             var entry = new WeaponPassiveSaveEntry
             {
                 passiveDataName = weapon.passiveData.name,
@@ -134,7 +134,7 @@ public class SaveManager : MonoBehaviour
             {
                 if (tree?.nodes == null) continue;
 
-                var state     = mgr.GetState(weapon.passiveData, tree);
+                var state = mgr.GetState(weapon.passiveData, tree);
                 var treeEntry = new TreeSaveEntry { treeName = tree.name };
 
                 foreach (var node in state.GetUnlockedNodes())
@@ -152,7 +152,8 @@ public class SaveManager : MonoBehaviour
     private void CollectStations(SaveData data)
     {
         data.healthStationLevel = HealthStationManager.Instance?.CurrentLevel ?? 0;
-        data.luckStationLevel   = LuckStationManager.Instance?.CurrentLevel   ?? 0;
+        data.luckStationLevel = LuckStationManager.Instance?.CurrentLevel ?? 0;
+        data.bagGridLevel = InventoryManager.Instance?.BagGridLevel ?? 0;
     }
 
     // ── Apply (SaveData → runtime) ───────────────────────────────────────────
@@ -234,6 +235,7 @@ public class SaveManager : MonoBehaviour
     {
         HealthStationManager.Instance?.SetLevel(data.healthStationLevel);
         LuckStationManager.Instance?.SetLevel(data.luckStationLevel);
+        InventoryManager.Instance?.SetBagGridLevel(data.bagGridLevel);
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────

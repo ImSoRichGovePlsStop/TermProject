@@ -13,6 +13,8 @@ public class InventoryManager : MonoBehaviour
     [SerializeField] private int bagMaxCols = 10;
     [SerializeField] private int bagMaxRows = 6;
 
+    [Header("Bag Grid — Upgrade Config")]
+    [SerializeField] private BagGridUpgradeConfig bagGridUpgradeConfig;
     [Header("Bag Grid — Starting Unlocked Size")]
     [SerializeField] private int bagStartCols = 6;
     [SerializeField] private int bagStartRows = 4;
@@ -74,6 +76,16 @@ public class InventoryManager : MonoBehaviour
         BagUnlockedRows = Mathf.Clamp(newUnlockedRows, 1, bagMaxRows);
         BagGridLevel++;
         OnBagGridChanged?.Invoke();
+    }
+
+    public void SetBagGridLevel(int level)
+    {
+        if (level <= 0 || level <= BagGridLevel || bagGridUpgradeConfig == null) return;
+        for (int i = BagGridLevel; i < level && i + 1 < bagGridUpgradeConfig.levels.Length; i++)
+        {
+            var lvl = bagGridUpgradeConfig.levels[i + 1];
+            UpgradeBagGrid(lvl.cols, lvl.rows);
+        }
     }
 
     public bool TryMoveModule(ModuleInstance inst, GridData targetGrid, Vector2Int pivot)

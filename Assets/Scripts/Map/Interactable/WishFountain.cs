@@ -51,7 +51,7 @@ public class WishFountain : MonoBehaviour, IInteractable
         if (!CurrencyManager.Instance.TrySpend(cost))
         {
             DamageNumberSpawner.Instance?.SpawnMessage(
-                transform.position, "Not enough coins!", new Color(1f, 0.35f, 0.35f));
+                transform.position, "Not enough souls!", new Color(1f, 0.35f, 0.35f));
             return;
         }
 

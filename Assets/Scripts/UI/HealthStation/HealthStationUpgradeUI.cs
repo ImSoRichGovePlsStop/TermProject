@@ -44,10 +44,17 @@ public class HealthStationUpgradeUI : MonoBehaviour
     private void Start()
     {
         upgradeButton.onClick.AddListener(OnUpgradeClicked);
-        BuildRows();
+        if (HealthStationManager.Instance != null)
+            HealthStationManager.Instance.OnLevelChanged += OnLevelChanged;
     }
+    private void OnDestroy()
+    {
+        if (HealthStationManager.Instance != null)
+            HealthStationManager.Instance.OnLevelChanged -= OnLevelChanged;
+    }
+    private void OnLevelChanged() { if (IsOpen) Refresh(); }
 
-    public void Open() { IsOpen = true; panel.SetActive(true); Refresh(); }
+    public void Open() { IsOpen = true; panel.SetActive(true); BuildRows(); Refresh(); }
     public void Close() { IsOpen = false; panel.SetActive(false); }
 
     public void Refresh()
