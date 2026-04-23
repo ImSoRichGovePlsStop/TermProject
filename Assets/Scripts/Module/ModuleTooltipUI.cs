@@ -100,7 +100,7 @@ public class ModuleTooltipUI : MonoBehaviour
 
         var subRow = CreateHorizontalRow("SubHeaderRow", 6f, headerSection);
         rarityText = CreateTMP(subRow, 22f, FontStyles.Normal, new Color(0.6f, 0.6f, 0.6f), TextAlignmentOptions.Left, flexibleWidth: 1f);
-        costText = CreateTMP(subRow, 22f, FontStyles.Normal, new Color(0f, 1f, 1f, 1f), TextAlignmentOptions.Right, preferredWidth: 90f);
+        costText = CreateTMP(subRow, 22f, FontStyles.Normal, new Color(0.608f, 1f, 0.839f, 1f), TextAlignmentOptions.Right, preferredWidth: 90f);
 
         statDivider = CreateDivider(gameObject);
 
@@ -319,7 +319,7 @@ public class ModuleTooltipUI : MonoBehaviour
             rarityTextExpanded = inst.Rarity.ToString();
         }
         rarityText.text = rarityTextNormal;
-        costText.text = $"{(int)inst.GetCostAtLevel()}   <sprite=0>";
+        costText.text = $"{(int)inst.GetCostAtLevel()}  <sprite=0>";
 
         PopulateStats(inst);
         PopulatePassive(inst);
