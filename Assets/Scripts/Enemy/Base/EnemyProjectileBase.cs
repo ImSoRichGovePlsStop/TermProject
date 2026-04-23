@@ -61,7 +61,11 @@ public abstract class EnemyProjectileBase : MonoBehaviour
         bool isTarget = (targetLayers.value & layer) != 0;
         bool isObstacle = (obstacleLayers.value & layer) != 0;
         if (!isTarget && !isObstacle) return;
-
+        if (isTarget)
+        {
+            var ps = other.GetComponent<PlayerStats>() ?? other.GetComponentInParent<PlayerStats>();
+            if (ps != null && ps.IsInvincible) return;
+        }
         OnHit(isTarget ? other : null);
     }
 

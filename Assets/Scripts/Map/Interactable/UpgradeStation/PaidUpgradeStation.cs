@@ -52,7 +52,8 @@ public class PaidUpgradeStation : UpgradeStation, IInteractable
             DamageNumberSpawner.Instance?.SpawnMessage(
                 transform.position,
                 "Nothing to upgrade!",
-                new Color(1f, 0.6f, 0.2f));
+                new Color(1f, 0.6f, 0.2f),
+                0.5f);
             return;
         }
 
@@ -62,7 +63,8 @@ public class PaidUpgradeStation : UpgradeStation, IInteractable
             DamageNumberSpawner.Instance?.SpawnMessage(
                 transform.position,
                 $"Need {cost} coins!",
-                new Color(1f, 0.35f, 0.35f));
+                new Color(1f, 0.35f, 0.35f),
+                0.5f);
             return;
         }
 
