@@ -8,44 +8,28 @@ using System.Collections.Generic;
 [Serializable]
 public class SaveData
 {
-    /// <summary>MaterialStorage — materials accumulated across runs.</summary>
+    // ── Hub progression ──────────────────────────────────────────────────────
     public List<MaterialSaveEntry> materials = new();
-
-    /// <summary>WeaponLevelManager — level per weapon.</summary>
     public List<WeaponLevelSaveEntry> weaponLevels = new();
-
-    /// <summary>WeaponPassiveManager — unlocked nodes + remaining points per weapon passive.</summary>
     public List<WeaponPassiveSaveEntry> passiveStates = new();
-
-    /// <summary>HealthStationManager upgrade level.</summary>
     public int healthStationLevel;
-
-    /// <summary>LuckStationManager upgrade level.</summary>
     public int luckStationLevel;
-    /// <summary>InventoryManager bag grid upgrade level.</summary>
     public int bagGridLevel;
+
+    // ── Run stats (cumulative across all runs on this slot) ──────────────────
+    public int highestFloor;
+    public int totalRuns;
+    public float totalTime;
+    public string lastSaved;   // stored as ISO 8601 string
 }
 
-[Serializable]
-public class MaterialSaveEntry
-{
-    public string materialName;
-    public int count;
-}
-
-[Serializable]
-public class WeaponLevelSaveEntry
-{
-    public string weaponName;
-    public int level;
-}
+[Serializable] public class MaterialSaveEntry { public string materialName; public int count; }
+[Serializable] public class WeaponLevelSaveEntry { public string weaponName; public int level; }
 
 [Serializable]
 public class WeaponPassiveSaveEntry
 {
-    /// <summary>Matches WeaponPassiveData ScriptableObject name.</summary>
     public string passiveDataName;
-    /// <summary>Points not yet spent in the passive tree.</summary>
     public int availablePoints;
     public List<TreeSaveEntry> trees = new();
 }
@@ -53,8 +37,6 @@ public class WeaponPassiveSaveEntry
 [Serializable]
 public class TreeSaveEntry
 {
-    /// <summary>Matches GenericTreeData ScriptableObject name.</summary>
     public string treeName;
-    /// <summary>Names of each unlocked GenericTreeNode SO in this tree.</summary>
     public List<string> unlockedNodeNames = new();
 }

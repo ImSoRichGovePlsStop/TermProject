@@ -35,6 +35,7 @@ public class EndGameUI : MonoBehaviour
         var run = RunManager.Instance;
         if (run != null)
         {
+            run.TotalRuns++;
             run.StopTimer();
             timerText.text = $"Total Time: {FormatTime(run.RunTime)}";
             killText.text = $"Total Kill: {run.TotalEnemyKilled}";
@@ -204,12 +205,13 @@ public class EndGameUI : MonoBehaviour
         // 5. Reset persistent managers
         FindFirstObjectByType<CurrencyManager>()?.ResetCoins();
         FindFirstObjectByType<MinimapManager>()?.Reset();
-        RunManager.Instance?.ResetRun();
         // 6. Force-clear any stale UI panel state before scene load
         UIManager.Instance?.ResetPanelState();
-        // 7. Save persistent state (materials, weapon levels, passives) after all resets
+        // 7. Save BEFORE ResetRun so RunTime and TotalRuns are still valid
         SaveManager.Instance?.Save();
-        // 8. Go back to hub scene
+        // 8. Reset run after save
+        RunManager.Instance?.ResetRun();
+        // 7. Go back to hub scene
         gameObject.SetActive(false);
         SceneManager.LoadScene(1);
     }

@@ -23,6 +23,7 @@ public class RunManager : MonoBehaviour
     public int TotalEventsFound = 0;
     public int TotalBossKilled = 0;
     public bool IsWin = false;
+    public int TotalRuns = 0;
     public float RunTime = 0f;
     private bool _timerRunning = false;
 
@@ -181,6 +182,7 @@ public class RunManager : MonoBehaviour
         HighestFloorReached = 1;
         IsWin = false;
         RunTime = 0f;
+        TotalRuns = 0;
         _timerRunning = false;
         PreviousFloorEvents.Clear();
         CurrentFloorEvents.Clear();
