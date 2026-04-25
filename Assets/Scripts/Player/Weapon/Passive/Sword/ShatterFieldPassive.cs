@@ -133,7 +133,8 @@ public class ShatterFieldPassive : MonoBehaviour
         entityStats?.RemoveMultiplierModifier(state.currentModifier);
 
         state.stacks = Mathf.Min(state.stacks + 1, maxSlowStacks);
-        state.currentModifier.moveSpeed = slowAmount * state.stacks;
+        float resistance = GetTierResistance(enemy);
+        state.currentModifier.moveSpeed = slowAmount * state.stacks * resistance;
         entityStats?.AddMultiplierModifier(state.currentModifier);
 
         if (state.expireCoroutine != null) StopCoroutine(state.expireCoroutine);
@@ -166,6 +167,18 @@ public class ShatterFieldPassive : MonoBehaviour
             trackedForExploit.Remove(e);
     }
 
+    private float GetTierResistance(HealthBase enemy)
+    {
+        var eh = enemy as EnemyHealthBase;
+        if (eh == null) return 1f;
+        return eh.Tier switch
+        {
+            EnemyTier.Elite => 0.4f,
+            EnemyTier.Miniboss => 0.2f,
+            _ => 1f
+        };
+    }
+
     private void OnEnemyKilled(HealthBase enemy)
     {
         CheckExploit();
@@ -182,7 +195,8 @@ public class ShatterFieldPassive : MonoBehaviour
         state.currentModifier.moveSpeed = 0f;
         state.expireCoroutine = null;
 
-        state.rootModifier.moveSpeed = RootMoveSpeedModifier;
+        float rootResistance = GetTierResistance(enemy);
+        state.rootModifier.moveSpeed = RootMoveSpeedModifier * rootResistance;
         entityStats?.AddMultiplierModifier(state.rootModifier);
 
         if (brittle)
@@ -197,13 +211,15 @@ public class ShatterFieldPassive : MonoBehaviour
         if (rootVFXPrefab != null && enemy != null)
         {
             var enemyHealth = enemy as EnemyHealthBase;
-            Vector3 spawnPos = (enemyHealth?.groundPoint != null)
-                ? enemyHealth.groundPoint.position
-                : enemy.transform.position;
-            state.rootVFX = Instantiate(rootVFXPrefab, enemy.transform);
-            state.rootVFX.transform.position = spawnPos + new Vector3(0f, 0f, -0.01f);
-            Vector3 ps = enemy.transform.lossyScale;
-            state.rootVFX.transform.localScale = new Vector3(1f / ps.x, 1f / ps.y, 1f / ps.z);
+            Transform followTarget = (enemyHealth?.groundPoint != null)
+                ? enemyHealth.groundPoint
+                : enemy.transform;
+            state.rootVFX = Instantiate(rootVFXPrefab);
+            state.rootVFX.transform.position = followTarget.position + new Vector3(0f, 0f, -0.01f);
+            state.rootVFX.transform.localScale = Vector3.one;
+            var follow = state.rootVFX.AddComponent<FollowTarget>();
+            follow.target = followTarget;
+            follow.offset = new Vector3(0f, 0f, -0.01f);
         }
     }
 
