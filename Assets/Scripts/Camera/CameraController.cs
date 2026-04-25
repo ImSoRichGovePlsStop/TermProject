@@ -72,6 +72,7 @@ public class CameraController : MonoBehaviour
 
         _currentOffset = targetOffset;
         _shakeOffset = Vector3.zero;
+        Time.timeScale = 1;
     }
 
     /// <summary>Restores time scale and camera offset to defaults. Call on run reset.</summary>
