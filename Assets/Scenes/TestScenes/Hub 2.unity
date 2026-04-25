@@ -10546,7 +10546,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4991438143346320085, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
       propertyPath: testModules.Array.size
-      value: 16
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 4991438143346320085, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
       propertyPath: testModules.Array.data[0].data
@@ -10615,7 +10615,7 @@ PrefabInstance:
     - target: {fileID: 4991438143346320085, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
       propertyPath: testModules.Array.data[16].data
       value: 
-      objectReference: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
+      objectReference: {fileID: 11400000, guid: af9af12cc4588ed46858c420fa46d236, type: 2}
     - target: {fileID: 4991438143346320085, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
       propertyPath: testModules.Array.data[17].data
       value: 
@@ -10648,6 +10648,14 @@ PrefabInstance:
       propertyPath: testModules.Array.data[24].data
       value: 
       objectReference: {fileID: 11400000, guid: 07af6f68410f003459e061b36f977d82, type: 2}
+    - target: {fileID: 4991438143346320085, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
+      propertyPath: testModules.Array.data[16].level
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4991438143346320085, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
+      propertyPath: testModules.Array.data[16].rarity
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 5089262533467411943, guid: 7f04db1ece7bf2f44b3c2b0383501f61, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0

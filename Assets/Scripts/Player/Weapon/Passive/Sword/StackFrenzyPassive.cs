@@ -9,7 +9,7 @@ public class StackFrenzyPassive : MonoBehaviour
 
     [Header("Settings")]
     public int maxStacks = 10;
-    public float bonusPerStack = 0.02f;
+    public float bonusPerStack = 0.2f;
     public bool thirdHitTripleStack = false;
     public bool frenzyRush = false;
     public bool glassCannon = false;
@@ -117,13 +117,13 @@ public class StackFrenzyPassive : MonoBehaviour
     {
         if (stats == null) return;
 
-        stats.RemoveMultiplierModifier(stackModifier);
+        stats.RemoveFlatModifier(stackModifier);
         CurrentStacks = value;
         stackModifier.damage = CurrentStacks * bonusPerStack;
 
         if (CurrentStacks > 0)
         {
-            stats.AddMultiplierModifier(stackModifier);
+            stats.AddFlatModifier(stackModifier);
             if (currentStackExpireTimer <= 0) currentStackExpireTimer = stackExpireTime;
         }
         else
@@ -187,15 +187,15 @@ public class StackFrenzyPassive : MonoBehaviour
         if (frenzyRush)
         {
             RemoveFrenzyRush();
-            frenzyRushModifier.attackSpeed = 0.15f;
+            frenzyRushModifier.attackSpeed = 0.25f;
             stats.AddMultiplierModifier(frenzyRushModifier);
         }
 
         if (glassCannon)
         {
             RemoveGlassCannon();
-            glassCannonModifier.critDamage = 0.5f;
-            glassCannonModifier.damageTaken = 0.1f;
+            glassCannonModifier.critDamage = 0.35f;
+            glassCannonModifier.damageTaken = 1.5f;
             stats.AddMultiplierModifier(glassCannonModifier);
         }
 
