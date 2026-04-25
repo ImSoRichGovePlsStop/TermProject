@@ -8,6 +8,7 @@ public class EnemyHealthBase : HealthBase
     [Header("Tier")]
     [SerializeField] private EnemyTier tier = EnemyTier.Normal;
     public EnemyTier Tier => tier;
+    public Transform groundPoint;
 
     private EnemyBase controller;
     private PlayerCombatContext context;
@@ -20,6 +21,12 @@ public class EnemyHealthBase : HealthBase
 
     protected override void Awake()
     {
+        if (groundPoint == null)
+        {
+            var t = transform.Find("Visual/GroundPoint");
+            if (t == null) t = transform.Find("GroundPoint");
+            groundPoint = t;
+        }
         base.Awake();
         controller = GetComponent<EnemyBase>();
     }

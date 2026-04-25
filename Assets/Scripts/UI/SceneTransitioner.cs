@@ -64,6 +64,7 @@ public class SceneTransitioner : MonoBehaviour
 
     private IEnumerator Fade(float targetAlpha)
     {
+        canvasGroup.blocksRaycasts = true;
         float startAlpha = canvasGroup.alpha;
         float time = 0;
 
@@ -75,5 +76,6 @@ public class SceneTransitioner : MonoBehaviour
         }
 
         canvasGroup.alpha = targetAlpha;
+        if (targetAlpha == 0f) canvasGroup.blocksRaycasts = false;
     }
 }

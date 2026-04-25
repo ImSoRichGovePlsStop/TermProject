@@ -32,7 +32,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 2373623822714099690}
   m_Father: {fileID: 1382400372124296618}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &6619968300994448295
@@ -141,6 +142,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3aff5a519bd15fa47befeb8a0a1e8565, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FireWormAnimationEvents
+--- !u!1 &3705682385846573129
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2373623822714099690}
+  m_Layer: 8
+  m_Name: GroundPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2373623822714099690
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3705682385846573129}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.146, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2429413709743684220}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6078792719203841976
 GameObject:
   m_ObjectHideFlags: 0
@@ -555,6 +587,7 @@ MonoBehaviour:
   healthBarHeight: 0.3
   healthBarScale: {x: 2, y: 1.25, z: 1}
   tier: 1
+  groundPoint: {fileID: 0}
 --- !u!114 &1815503016428338664
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -628,6 +661,7 @@ MonoBehaviour:
   spawnDuration: 2
   spawnFadeOutDuration: 1
   spawnEffectScale: 3
+  spawnStayDuration: 0.5
   strafe:
     preferredDistMin: 5
     preferredDistMax: 6

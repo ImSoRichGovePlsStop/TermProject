@@ -13,13 +13,14 @@ public class ShatterFieldPassive : MonoBehaviour
     public bool shatterStrike = false;
 
     [HideInInspector] public ShatterFieldZone fieldPrefab;
+    [HideInInspector] public GameObject rootVFXPrefab;
 
     private PlayerStats stats;
     private PlayerCombatContext context;
     private float baseRadius = 1f;
 
     private float cooldownTimer = 0f;
-    private float Cooldown => shatterStrike ? 1.5f : 3f;
+    private float Cooldown => shatterStrike ? 3f : 5f;
     private float FieldDuration => shatterStrike ? 5f : 3f;
 
     // slow state per enemy (shared across all zones)
@@ -45,6 +46,7 @@ public class ShatterFieldPassive : MonoBehaviour
         public Coroutine rootCoroutine;
         public EntityStatModifier rootModifier = new EntityStatModifier();
         public EntityStatModifier brittleModifier = new EntityStatModifier();
+        public GameObject rootVFX;
     }
 
     private Dictionary<HealthBase, EnemySlowState> slowStates
@@ -191,6 +193,18 @@ public class ShatterFieldPassive : MonoBehaviour
 
         if (state.rootCoroutine != null) StopCoroutine(state.rootCoroutine);
         state.rootCoroutine = StartCoroutine(RootExpire(enemy, state));
+        // Spawn root VFX
+        if (rootVFXPrefab != null && enemy != null)
+        {
+            var enemyHealth = enemy as EnemyHealthBase;
+            Vector3 spawnPos = (enemyHealth?.groundPoint != null)
+                ? enemyHealth.groundPoint.position
+                : enemy.transform.position;
+            state.rootVFX = Instantiate(rootVFXPrefab, enemy.transform);
+            state.rootVFX.transform.position = spawnPos + new Vector3(0f, 0f, -0.01f);
+            Vector3 ps = enemy.transform.lossyScale;
+            state.rootVFX.transform.localScale = new Vector3(1f / ps.x, 1f / ps.y, 1f / ps.z);
+        }
     }
 
     private IEnumerator SlowExpire(HealthBase enemy, EnemySlowState state)
@@ -225,5 +239,10 @@ public class ShatterFieldPassive : MonoBehaviour
         state.brittleModifier.damageTaken = 0f;
         state.isRooted = false;
         trackedForExploit.Remove(enemy);
+        if (state.rootVFX != null)
+        {
+            Destroy(state.rootVFX);
+            state.rootVFX = null;
+        }
     }
 }

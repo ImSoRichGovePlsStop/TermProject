@@ -3,6 +3,7 @@ using UnityEngine;
 public class ControlPassiveHandler : PassiveHandlerBase
 {
     [SerializeField] private ShatterFieldZone fieldPrefab;
+    [SerializeField] private GameObject rootVFXPrefab;
     private readonly float fieldRadiusMultiplier = 0.7f;
 
     private ShatterFieldPassive shatterField;
@@ -13,6 +14,7 @@ public class ControlPassiveHandler : PassiveHandlerBase
     {
         shatterField = gameObject.AddComponent<ShatterFieldPassive>();
         shatterField.fieldPrefab = fieldPrefab;
+        shatterField.rootVFXPrefab = rootVFXPrefab;
 
         var weaponEquip = stats.GetComponent<WeaponEquip>();
         shatterField.Init(stats, context, weaponEquip?.GetCurrentWeapon(), fieldRadiusMultiplier);

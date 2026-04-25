@@ -240,6 +240,7 @@ MonoBehaviour:
   healthBarHeight: 0.6
   healthBarScale: {x: 2, y: 1.5, z: 1}
   tier: 2
+  groundPoint: {fileID: 0}
   phaseTwoThreshold: 0.8
   phaseThreeThreshold: 0.6
   phaseFourThreshold: 0.4
@@ -316,6 +317,7 @@ MonoBehaviour:
   spawnDuration: 1
   spawnFadeOutDuration: 0.4
   spawnEffectScale: 1
+  spawnStayDuration: 0.5
   phase1Settings:
     comboExtend3Chance: 0.35
     comboExtend4Chance: 0.35
@@ -661,7 +663,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 8092720163403759106}
   m_Father: {fileID: 969129990054429136}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &253557138536703271
@@ -911,3 +914,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DisableOnEnemyDeath
   fadeOutDuration: 1
+--- !u!1 &7274613038163128847
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8092720163403759106}
+  m_Layer: 8
+  m_Name: GroundPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8092720163403759106
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7274613038163128847}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.303, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 761593304690808989}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

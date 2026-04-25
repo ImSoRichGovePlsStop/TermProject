@@ -14,6 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Shatter Field
   description: 'Secondary attack leaves a field that deals 15% weapon damage every
-    0.5s for 3s. CD: 3s.'
+    0.5s for 3s. CD: 5s.'
+  cost: 1
+  parents: []
+  requireAllParents: 0
   layer: 1
   branch: 0
+  overrideCost: 0
