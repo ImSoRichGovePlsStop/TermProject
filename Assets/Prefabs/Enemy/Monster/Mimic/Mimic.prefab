@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1764534331976558603
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5048328690247586051}
+  m_Layer: 8
+  m_Name: GroundPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5048328690247586051
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1764534331976558603}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.51, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3933781355179951000}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2340830723309399718
 GameObject:
   m_ObjectHideFlags: 0
@@ -32,7 +63,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 5048328690247586051}
   m_Father: {fileID: 4120402462375232821}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &3015475094757838172
@@ -276,6 +308,7 @@ MonoBehaviour:
   healthBarHeight: -0.15
   healthBarScale: {x: 2, y: 1, z: 1}
   tier: 0
+  groundPoint: {fileID: 0}
 --- !u!114 &6091641640401485855
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -305,7 +338,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EntityStats
   baseMaxHP: 75
-  baseMoveSpeed: 1.5
+  baseMoveSpeed: 2.5
   baseDamage: 10
   baseAttackSpeed: 1
   shieldPercent: 150
@@ -349,21 +382,22 @@ MonoBehaviour:
   spawnDuration: 0
   spawnFadeOutDuration: 0
   spawnEffectScale: 0
+  spawnStayDuration: 0
   strafe:
-    preferredDistMin: 0
-    preferredDistMax: 0
+    preferredDistMin: 1
+    preferredDistMax: 1.5
     angleMin: 30
     angleMax: 90
     idleTimeMin: 0.3
     idleTimeMax: 0.8
-  attackRange: 1.5
-  attackCooldownMin: 1.5
-  attackCooldownMax: 2
-  attackDashSpeed: 8
-  attackDashDuration: 0.25
-  attackHitRadius: 0.6
+  attackRange: 2.5
+  attackCooldownMin: 1
+  attackCooldownMax: 1.5
+  attackDashSpeed: 20
+  attackDashDuration: 0.1
+  attackHitRadius: 0.4
   attackDamageScale: 1
-  mimicSpawnStayDuration: 0.3
+  mimicSpawnStayDuration: 0.05
 --- !u!114 &6152957458139641998
 MonoBehaviour:
   m_ObjectHideFlags: 0

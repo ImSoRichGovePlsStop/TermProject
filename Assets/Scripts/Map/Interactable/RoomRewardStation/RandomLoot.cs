@@ -71,7 +71,7 @@ public class RandomLoot : MonoBehaviour, IInteractable
                 Debug.Log($"[RandomLoot] {gameObject.name} — mimic triggered!");
 
             if (mimicPrefab != null)
-                Instantiate(mimicPrefab, transform.position, transform.rotation);
+                Instantiate(mimicPrefab, transform.position + transform.forward * 0.8f, transform.rotation);
             else
                 Debug.LogWarning("[RandomLoot] Mimic triggered but mimicPrefab is not assigned.");
 

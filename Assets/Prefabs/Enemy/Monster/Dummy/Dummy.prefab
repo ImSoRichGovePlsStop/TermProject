@@ -31,7 +31,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 3675970914488492965}
   m_Father: {fileID: 7090103256541281814}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &3559538973294072654
@@ -128,6 +129,37 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BillboardSprite
   isBillboard: 1
+--- !u!1 &6172064435770450799
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3675970914488492965}
+  m_Layer: 8
+  m_Name: GroundPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3675970914488492965
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6172064435770450799}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.012, y: -0.239, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7884144886190648251}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6349517573363260230
 GameObject:
   m_ObjectHideFlags: 0
@@ -261,6 +293,7 @@ MonoBehaviour:
   healthBarHeight: 0.25
   healthBarScale: {x: 1, y: 1, z: 1}
   tier: 0
+  groundPoint: {fileID: 0}
 --- !u!114 &4435982587865951139
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -293,7 +326,7 @@ MonoBehaviour:
   baseMoveSpeed: 3
   baseDamage: 8
   baseAttackSpeed: 1
-  baseShield: 0
+  shieldPercent: 0
 --- !u!114 &-1484515883286661030
 MonoBehaviour:
   m_ObjectHideFlags: 0

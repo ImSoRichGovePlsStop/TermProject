@@ -43,7 +43,7 @@ public class FrenzyPassiveHandler : PassiveHandlerBase
         if (stackFrenzy.CurrentStacks > stackFrenzy.maxStacks)
             stackFrenzy.ClampStacks();
 
-        stackFrenzy.bonusPerStack = IsUnlocked(3, 1) ? 0.03f : 0.02f;
+        stackFrenzy.bonusPerStack = IsUnlocked(3, 1) ? 0.3f : 0.2f;
         stackFrenzy.SetStacks(stackFrenzy.CurrentStacks);
 
         bool newFrenzyRush = IsUnlocked(4, 0);

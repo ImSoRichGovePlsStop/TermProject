@@ -54,11 +54,12 @@ public class PlayerStats : MonoBehaviour
 
     public event Func<bool> OnReviveRequested;
 
-    public bool IsInvincible { get; private set; }
+    public bool IsInvincible => _invincibleCount > 0;
+    private int _invincibleCount = 0;
 
     public void SetInvincible(bool value)
     {
-        IsInvincible = value;
+        _invincibleCount = Mathf.Max(0, _invincibleCount + (value ? 1 : -1));
     }
 
     [Header("Debug")]

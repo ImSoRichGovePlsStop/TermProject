@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: L4_FrenzyRush
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Frenzy Rush
-  description: At max stacks, gain +15% attack speed.
+  description: At max stacks, boost attack speed by 25%.
   cost: 3
   parents:
   - {fileID: 11400000, guid: 7b0296d8994c7b34ba43ba0ec8e36a71, type: 2}
@@ -21,3 +21,4 @@ MonoBehaviour:
   requireAllParents: 0
   layer: 4
   branch: 0
+  overrideCost: 0

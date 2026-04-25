@@ -6,7 +6,7 @@ public class HealObject : MonoBehaviour, IInteractable
     public InteractInfo GetInteractInfo() => new InteractInfo
     {
         name        = "Healing Crystal",
-        description = "Suffused with healing energy, restoring <color=#88FF88>20%</color> of your missing HP.",
+        description = "Suffused with healing energy, restoring <color=#88FF88>50%</color> of your missing HP.",
         actionText  = "Consume",
         cost        = null
     };
@@ -18,7 +18,7 @@ public class HealObject : MonoBehaviour, IInteractable
         if (playerStats != null)
         {
             float missing = playerStats.MaxHealth - playerStats.CurrentHealth;
-            playerStats.Heal(missing * 0.2f);
+            playerStats.Heal(missing * 0.5f);
         }
 
         Destroy(gameObject);

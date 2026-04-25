@@ -19,9 +19,15 @@ public class TabSelector : MonoBehaviour
         SelectTab(1);
     }
 
+    private void OnEnable()
+    {
+        SelectTab(1);
+    }
+
     public void SelectTab(int index)
     {
         _currentIndex = index;
+        UnityEngine.EventSystems.EventSystem.current?.SetSelectedGameObject(null);
         for (int i = 0; i < tabButtons.Length; i++)
         {
             var colors = tabButtons[i].colors;

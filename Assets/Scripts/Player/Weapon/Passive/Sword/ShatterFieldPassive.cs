@@ -13,13 +13,14 @@ public class ShatterFieldPassive : MonoBehaviour
     public bool shatterStrike = false;
 
     [HideInInspector] public ShatterFieldZone fieldPrefab;
+    [HideInInspector] public GameObject rootVFXPrefab;
 
     private PlayerStats stats;
     private PlayerCombatContext context;
     private float baseRadius = 1f;
 
     private float cooldownTimer = 0f;
-    private float Cooldown => shatterStrike ? 1.5f : 3f;
+    private float Cooldown => shatterStrike ? 3f : 5f;
     private float FieldDuration => shatterStrike ? 5f : 3f;
 
     // slow state per enemy (shared across all zones)
@@ -45,6 +46,7 @@ public class ShatterFieldPassive : MonoBehaviour
         public Coroutine rootCoroutine;
         public EntityStatModifier rootModifier = new EntityStatModifier();
         public EntityStatModifier brittleModifier = new EntityStatModifier();
+        public GameObject rootVFX;
     }
 
     private Dictionary<HealthBase, EnemySlowState> slowStates
@@ -131,7 +133,8 @@ public class ShatterFieldPassive : MonoBehaviour
         entityStats?.RemoveMultiplierModifier(state.currentModifier);
 
         state.stacks = Mathf.Min(state.stacks + 1, maxSlowStacks);
-        state.currentModifier.moveSpeed = slowAmount * state.stacks;
+        float resistance = GetTierResistance(enemy);
+        state.currentModifier.moveSpeed = slowAmount * state.stacks * resistance;
         entityStats?.AddMultiplierModifier(state.currentModifier);
 
         if (state.expireCoroutine != null) StopCoroutine(state.expireCoroutine);
@@ -164,6 +167,18 @@ public class ShatterFieldPassive : MonoBehaviour
             trackedForExploit.Remove(e);
     }
 
+    private float GetTierResistance(HealthBase enemy)
+    {
+        var eh = enemy as EnemyHealthBase;
+        if (eh == null) return 1f;
+        return eh.Tier switch
+        {
+            EnemyTier.Elite => 0.4f,
+            EnemyTier.Miniboss => 0.2f,
+            _ => 1f
+        };
+    }
+
     private void OnEnemyKilled(HealthBase enemy)
     {
         CheckExploit();
@@ -180,7 +195,8 @@ public class ShatterFieldPassive : MonoBehaviour
         state.currentModifier.moveSpeed = 0f;
         state.expireCoroutine = null;
 
-        state.rootModifier.moveSpeed = RootMoveSpeedModifier;
+        float rootResistance = GetTierResistance(enemy);
+        state.rootModifier.moveSpeed = RootMoveSpeedModifier * rootResistance;
         entityStats?.AddMultiplierModifier(state.rootModifier);
 
         if (brittle)
@@ -191,6 +207,20 @@ public class ShatterFieldPassive : MonoBehaviour
 
         if (state.rootCoroutine != null) StopCoroutine(state.rootCoroutine);
         state.rootCoroutine = StartCoroutine(RootExpire(enemy, state));
+        // Spawn root VFX
+        if (rootVFXPrefab != null && enemy != null)
+        {
+            var enemyHealth = enemy as EnemyHealthBase;
+            Transform followTarget = (enemyHealth?.groundPoint != null)
+                ? enemyHealth.groundPoint
+                : enemy.transform;
+            state.rootVFX = Instantiate(rootVFXPrefab);
+            state.rootVFX.transform.position = followTarget.position + new Vector3(0f, 0f, -0.01f);
+            state.rootVFX.transform.localScale = Vector3.one;
+            var follow = state.rootVFX.AddComponent<FollowTarget>();
+            follow.target = followTarget;
+            follow.offset = new Vector3(0f, 0f, -0.01f);
+        }
     }
 
     private IEnumerator SlowExpire(HealthBase enemy, EnemySlowState state)
@@ -225,5 +255,10 @@ public class ShatterFieldPassive : MonoBehaviour
         state.brittleModifier.damageTaken = 0f;
         state.isRooted = false;
         trackedForExploit.Remove(enemy);
+        if (state.rootVFX != null)
+        {
+            Destroy(state.rootVFX);
+            state.rootVFX = null;
+        }
     }
 }

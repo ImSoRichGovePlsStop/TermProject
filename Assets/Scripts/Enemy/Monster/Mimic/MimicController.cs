@@ -63,10 +63,15 @@ public class MimicController : EnemyBase
         if (spriteRenderer != null) spriteRenderer.enabled = true;
 
         animator?.SetTrigger("Spawn");
+        float _t0 = Time.time;
         yield return null;
 
-        while (animator != null && animator.GetCurrentAnimatorStateInfo(0).normalizedTime < 1f)
+        while (animator != null && !animator.GetCurrentAnimatorStateInfo(0).IsName("Spawn"))
             yield return null;
+
+        // Wait for clip length instead of normalizedTime to avoid exit time issues
+        float clipLength = animator.GetCurrentAnimatorStateInfo(0).length;
+        yield return new WaitForSeconds(clipLength);
 
         yield return new WaitForSeconds(mimicSpawnStayDuration);
 

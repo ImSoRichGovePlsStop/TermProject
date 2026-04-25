@@ -23,7 +23,7 @@ public class CriticalShieldPassive : MonoBehaviour
     private const float ShieldCooldown = 3f;
 
     // L2 - L6 Constants
-    private const float KeenEdgeCritDmgBonus = 0.25f;
+    private const float KeenEdgeCritDmgBonus = 0.35f;
     private const float FortifiedExtraDuration = 1f;
     private const float FortifiedExtraValue = 8f;
     private const int FortifiedMaxTimes = 3;

@@ -93,6 +93,8 @@ public class AttackHitbox : MonoBehaviour
             prefabRot.eulerAngles.z
         );
         GameObject vfx = Instantiate(currentHit.hitVFXPrefab, spawnPos, spawnRot);
+        if (currentHit.vfxScale != 1f)
+            vfx.transform.localScale *= currentHit.vfxScale;
 
         float totalDuration = (currentHit.animationDuration / stats.AttackSpeed) * currentHit.vfxDurationMultiplier;
         float totalLoops = Mathf.Max(0.01f, currentHit.vfxLoops * currentHit.vfxDurationMultiplier);

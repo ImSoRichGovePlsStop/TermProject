@@ -39,6 +39,7 @@ MonoBehaviour:
     vfxOffset: 0
     vfxDurationMultiplier: 1
     vfxLoops: 1
+    vfxScale: 1
   - damageScale: 1.2
     range: 1.2
     angle: 120
@@ -49,6 +50,7 @@ MonoBehaviour:
     vfxOffset: 0
     vfxDurationMultiplier: 1
     vfxLoops: 1
+    vfxScale: 1
   - damageScale: 2
     range: 1.2
     angle: 120
@@ -59,19 +61,21 @@ MonoBehaviour:
     vfxOffset: 1.6
     vfxDurationMultiplier: 1
     vfxLoops: 1
+    vfxScale: 1
   secondaryAttack:
-    damageScale: 0.6
-    range: 1
+    damageScale: 1.2
+    range: 1.75
     angle: 360
     extraRange: 0
     animationTrigger: attack_secondary
-    animationDuration: 0.8
+    animationDuration: 0.3
     hitVFXPrefab: {fileID: 8020102270209620949, guid: 872beaff7bd510c4c88e5050b29e1d2f, type: 3}
     vfxOffset: 0.2
     vfxDurationMultiplier: 0.6
-    vfxLoops: 3
+    vfxLoops: 1
+    vfxScale: 2
   comboCooldown: 0.2
-  secondaryCooldown: 0.5
+  secondaryCooldown: 1
   comboResetTime: 1.2
   wandProjectile:
     normalMaxSpeed: 12

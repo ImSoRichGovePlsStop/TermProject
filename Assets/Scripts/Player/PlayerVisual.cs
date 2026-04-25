@@ -1,24 +1,30 @@
 using System.Collections;
 using UnityEngine;
+using Color = UnityEngine.Color;
 
 public class PlayerVisual : MonoBehaviour
 {
-    [SerializeField] private Color invincibleTint = Color.white;
-    [SerializeField] private float invincibleWhiteAmount = 0.4f;
     [SerializeField] private Color hitFlashColor = Color.red;
     [SerializeField] private float flashDuration = 0.1f;
+    [SerializeField] private Color invincibleColor = new Color(1f, 1f, 1f, 0.4f);
 
     private SpriteRenderer sr;
+    private SpriteRenderer flashSr;
     private PlayerStats stats;
     private PlayerCombatContext combat;
-    private Color baseColor;
     private Coroutine flashCoroutine;
     private bool isFlashing;
 
     private void Awake()
     {
         sr = GetComponent<SpriteRenderer>();
-        baseColor = sr.color;
+        var overlay = transform.Find("FlashOverlay");
+        if (overlay != null)
+        {
+            flashSr = overlay.GetComponent<SpriteRenderer>();
+            if (flashSr != null)
+                flashSr.color = new Color(1f, 1f, 1f, 0f);
+        }
     }
 
     private void Start()
@@ -34,15 +40,22 @@ public class PlayerVisual : MonoBehaviour
             combat.OnTakeDamage -= TriggerHitFlash;
     }
 
+    private void LateUpdate()
+    {
+        if (flashSr != null && sr != null)
+            flashSr.sprite = sr.sprite;
+    }
+
     private void Update()
     {
         if (isFlashing) return;
+
+        if (flashSr == null) return;
+
         if (stats.IsInvincible)
-        {
-            sr.color = Color.Lerp(baseColor, invincibleTint, invincibleWhiteAmount);
-        }
+            flashSr.color = invincibleColor;
         else
-            sr.color = baseColor;
+            flashSr.color = new Color(1f, 1f, 1f, 0f);
     }
 
     private void TriggerHitFlash()
@@ -54,8 +67,12 @@ public class PlayerVisual : MonoBehaviour
     private IEnumerator FlashRoutine()
     {
         isFlashing = true;
-        sr.color = hitFlashColor;
-        yield return new WaitForSeconds(flashDuration);
+        if (flashSr != null)
+        {
+            flashSr.color = hitFlashColor;
+            yield return new WaitForSeconds(flashDuration);
+            flashSr.color = new Color(1f, 1f, 1f, 0f);
+        }
         isFlashing = false;
     }
 }

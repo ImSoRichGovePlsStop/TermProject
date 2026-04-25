@@ -138,7 +138,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 483490989634752718}
   m_Father: {fileID: 4956095067510546409}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7418726392795072829
@@ -383,6 +384,7 @@ MonoBehaviour:
   healthBarHeight: 0.5
   healthBarScale: {x: 2, y: 1.5, z: 1}
   tier: 2
+  groundPoint: {fileID: 0}
   guardHealRatio: 0.3
   guardProcChance: 0.12
   eliteController: {fileID: 4861128534556401032}
@@ -459,6 +461,7 @@ MonoBehaviour:
   spawnDuration: 1
   spawnFadeOutDuration: 0.4
   spawnEffectScale: 1
+  spawnStayDuration: 0.5
   strafe:
     preferredDistMin: 1
     preferredDistMax: 2
@@ -523,6 +526,37 @@ MonoBehaviour:
     weight: 80
   maxDropsPerKill: 1
   groundPickupPrefab: {fileID: 8948578979080704990, guid: eea1b04394a3221478c0a9d8af512277, type: 3}
+--- !u!1 &1702437372222355991
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 483490989634752718}
+  m_Layer: 8
+  m_Name: GroundPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &483490989634752718
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1702437372222355991}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.033, y: -0.46, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 952351392614946854}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2977151229816529530
 GameObject:
   m_ObjectHideFlags: 0

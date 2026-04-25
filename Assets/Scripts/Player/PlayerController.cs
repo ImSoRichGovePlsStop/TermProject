@@ -200,8 +200,6 @@ public class PlayerController : MonoBehaviour
         anim.SetTrigger(hit.animationTrigger);
 
         isSecondaryAttacking = true;
-
-        comboIndex = 0;
     }
 
 

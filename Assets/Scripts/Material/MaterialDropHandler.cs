@@ -38,7 +38,7 @@ public class MaterialDropHandler : MonoBehaviour
                 int count = Random.Range(item.minCount, item.maxCount + 1);
                 for (int j = 0; j < count; j++)
                 {
-                    Vector3 spawnPos = transform.position + GetSpreadOffset(spawnIndex);
+                    Vector3 spawnPos = GetSafeSpawnPos(spawnIndex);
                     GameObject obj = Instantiate(groundPickupPrefab, spawnPos, Quaternion.identity);
                     obj.GetComponent<GroundMaterial>()?.Setup(item.material);
                     spawnIndex++;
@@ -70,5 +70,17 @@ public class MaterialDropHandler : MonoBehaviour
         float angle = index * 137.5f * Mathf.Deg2Rad;
         float radius = 0.4f + index * 0.2f;
         return new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius);
+    }
+
+    private Vector3 GetSafeSpawnPos(int index)
+    {
+        Vector3 offset = GetSpreadOffset(index);
+        Vector3 origin = transform.position;
+        Vector3 desired = origin + offset;
+        Vector3 dir = offset.normalized;
+        float dist = offset.magnitude;
+        if (Physics.Raycast(origin, dir, out RaycastHit hit, dist, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            return hit.point - dir * 0.1f;
+        return desired;
     }
 }

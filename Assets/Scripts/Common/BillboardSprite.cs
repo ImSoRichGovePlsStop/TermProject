@@ -10,6 +10,8 @@ public class BillboardSprite : MonoBehaviour
     void LateUpdate()
     {
         if (!isBillboard) return;
+        if (cam == null) cam = Camera.main;
+        if (cam == null) return;
         transform.rotation = cam.transform.rotation;
     }
 }

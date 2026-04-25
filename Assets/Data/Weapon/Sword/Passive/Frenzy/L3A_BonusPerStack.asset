@@ -12,11 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff970ddd0ca287247972062c535b7e55, type: 3}
   m_Name: L3A_BonusPerStack
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
-  nodeName: Bonus/Stack +1%
-  description: Each stack now gives +3% damage instead of +2%.
+  nodeName: Bonus/Stack +0.1
+  description: Each stack now gives +0.3 base damage instead of +0.2.
   cost: 2
   parents:
   - {fileID: 11400000, guid: bc5b5f946b2522b4db80f4e25d619e9b, type: 2}
   requireAllParents: 0
   layer: 3
   branch: 1
+  overrideCost: 0

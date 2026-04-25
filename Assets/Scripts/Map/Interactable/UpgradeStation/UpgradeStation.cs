@@ -43,7 +43,8 @@ public class UpgradeStation : MonoBehaviour, IInteractable
             DamageNumberSpawner.Instance?.SpawnMessage(
                 transform.position,
                 "Nothing to upgrade!",
-                new Color(1f, 0.6f, 0.2f));
+                new Color(1f, 0.6f, 0.2f),
+                0.5f);
             return;
         }
 

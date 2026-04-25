@@ -9,7 +9,7 @@ public class StackFrenzyPassive : MonoBehaviour
 
     [Header("Settings")]
     public int maxStacks = 10;
-    public float bonusPerStack = 0.02f;
+    public float bonusPerStack = 0.2f;
     public bool thirdHitTripleStack = false;
     public bool frenzyRush = false;
     public bool glassCannon = false;
@@ -28,6 +28,7 @@ public class StackFrenzyPassive : MonoBehaviour
     private StatModifier glassCannonModifier = new StatModifier();
     private StatModifier apexCritModifier = new StatModifier();
     private StatModifier apexAttackSpeedModifier = new StatModifier();
+    private StatModifier apexCritDmgModifier = new StatModifier();
 
     private Coroutine apexCoroutine;
     private float apexCooldownTimer = 0f;
@@ -49,6 +50,7 @@ public class StackFrenzyPassive : MonoBehaviour
         stats = playerStats;
         context = combatContext;
         context.OnAttack += OnAttack;
+        context.OnSecondaryAttack += OnSecondaryAttackHit;
         context.OnTakeDamage += OnTakeDamage;
     }
 
@@ -57,6 +59,7 @@ public class StackFrenzyPassive : MonoBehaviour
         if (context != null)
         {
             context.OnAttack -= OnAttack;
+            context.OnSecondaryAttack -= OnSecondaryAttackHit;
             context.OnTakeDamage -= OnTakeDamage;
         }
         ClearAllModifiers();
@@ -88,6 +91,13 @@ public class StackFrenzyPassive : MonoBehaviour
         AddStacks(stacksToAdd);
     }
 
+    private void OnSecondaryAttackHit()
+    {
+        if (!enabled) return;
+        if (context.LastHitEnemies.Count == 0) return;
+        AddStacks(1);
+    }
+
     private void OnTakeDamage()
     {
         if (!enabled) return;
@@ -117,13 +127,13 @@ public class StackFrenzyPassive : MonoBehaviour
     {
         if (stats == null) return;
 
-        stats.RemoveMultiplierModifier(stackModifier);
+        stats.RemoveFlatModifier(stackModifier);
         CurrentStacks = value;
         stackModifier.damage = CurrentStacks * bonusPerStack;
 
         if (CurrentStacks > 0)
         {
-            stats.AddMultiplierModifier(stackModifier);
+            stats.AddFlatModifier(stackModifier);
             if (currentStackExpireTimer <= 0) currentStackExpireTimer = stackExpireTime;
         }
         else
@@ -187,15 +197,15 @@ public class StackFrenzyPassive : MonoBehaviour
         if (frenzyRush)
         {
             RemoveFrenzyRush();
-            frenzyRushModifier.attackSpeed = 0.15f;
+            frenzyRushModifier.attackSpeed = 0.25f;
             stats.AddMultiplierModifier(frenzyRushModifier);
         }
 
         if (glassCannon)
         {
             RemoveGlassCannon();
-            glassCannonModifier.critDamage = 0.5f;
-            glassCannonModifier.damageTaken = 0.1f;
+            glassCannonModifier.critDamage = 0.35f;
+            glassCannonModifier.damageTaken = 1.5f;
             stats.AddMultiplierModifier(glassCannonModifier);
         }
 
@@ -224,7 +234,7 @@ public class StackFrenzyPassive : MonoBehaviour
         IsApexActive = true;
         apexTimer = apexDuration;
         apexCritModifier.critChance = 1f;
-        apexAttackSpeedModifier.attackSpeed = 0.35f;
+        apexAttackSpeedModifier.attackSpeed = 0.5f;
 
         stats.AddFlatModifier(apexCritModifier);
         stats.AddMultiplierModifier(apexAttackSpeedModifier);
@@ -232,13 +242,20 @@ public class StackFrenzyPassive : MonoBehaviour
         while (apexTimer > 0f)
         {
             apexTimer -= Time.deltaTime;
+            float totalCrit = stats.CritChance;
+            float excess = Mathf.Max(0f, totalCrit - 1f);
+            stats.RemoveFlatModifier(apexCritDmgModifier);
+            apexCritDmgModifier.critDamage = excess * 3f;
+            stats.AddFlatModifier(apexCritDmgModifier);
             yield return null;
         }
 
         stats.RemoveFlatModifier(apexCritModifier);
+        stats.RemoveFlatModifier(apexCritDmgModifier);
         stats.RemoveMultiplierModifier(apexAttackSpeedModifier);
 
         apexCritModifier.critChance = 0f;
+        apexCritDmgModifier.critDamage = 0f;
         apexAttackSpeedModifier.attackSpeed = 0f;
 
         IsApexActive = false;
@@ -253,6 +270,7 @@ public class StackFrenzyPassive : MonoBehaviour
         if (IsApexActive && stats != null)
         {
             stats.RemoveFlatModifier(apexCritModifier);
+            stats.RemoveFlatModifier(apexCritDmgModifier);
             stats.RemoveMultiplierModifier(apexAttackSpeedModifier);
         }
     }
