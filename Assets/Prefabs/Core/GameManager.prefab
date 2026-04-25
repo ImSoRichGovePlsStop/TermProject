@@ -612,7 +612,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MinimapManager
   minimapRoot: {fileID: 790892548458052559}
   floorTextUI: {fileID: 9216771777309833181}
-  fogRadius: 2
+  fogRadius: 4
   cellScale: 4
   borderThickness: 1
   colorUnmarked: {r: 0.45, g: 0.45, b: 0.45, a: 1}
@@ -4608,7 +4608,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5464829536232953714, guid: 088faad1b73749547a68f37dcc120c66, type: 3}
       propertyPath: m_Size
-      value: 0.9999989
+      value: 0.99999857
       objectReference: {fileID: 0}
     - target: {fileID: 5488765255541663460, guid: 088faad1b73749547a68f37dcc120c66, type: 3}
       propertyPath: m_fontAsset
@@ -4936,7 +4936,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7611678755802073774, guid: 088faad1b73749547a68f37dcc120c66, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.00085264153
+      value: 0.00001607578
       objectReference: {fileID: 0}
     - target: {fileID: 7656400640483700572, guid: 088faad1b73749547a68f37dcc120c66, type: 3}
       propertyPath: m_fontAsset
