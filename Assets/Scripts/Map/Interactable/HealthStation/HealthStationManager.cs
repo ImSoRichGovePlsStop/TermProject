@@ -123,7 +123,7 @@ public class HealthStationManager : MonoBehaviour
         var s = FindFirstObjectByType<PlayerStats>();
         if (s == null || s.IsDead) return;
         float missing = s.MaxHealth - s.CurrentHealth;
-        s.Heal(missing * 0.20f);
+        s.Heal(missing * 0.10f);
         if (CurrentLevel >= 3)
             s.AddFlatModifier(new StatModifier { health = 5f });
     }
@@ -135,9 +135,9 @@ public class HealthStationManager : MonoBehaviour
         if (s == null || s.IsDead) return;
 
         if (tier == EnemyTier.Miniboss)  { s.Heal(s.MaxHealth * 0.35f); return; }
-        if (tier == EnemyTier.Elite)     { s.Heal(s.MaxHealth * 0.05f); return; }
+        if (tier == EnemyTier.Elite)     { s.Heal(s.MaxHealth * 0.03f); return; }
 
-        if (++killCount >= 10) { s.Heal(s.MaxHealth * 0.05f); killCount = 0; }
+        if (++killCount >= 15) { s.Heal(s.MaxHealth * 0.05f); killCount = 0; }
     }
 
     private bool TryRevive()

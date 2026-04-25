@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: HealthStationUpgradeConfig
   m_EditorClassIdentifier: Assembly-CSharp::HealthStationUpgradeConfig
   levels:
-  - description: On room clear heal 20% missing hp
+  - description: On room clear heal 10% missing hp
     upgradeCost:
     - material: {fileID: 11400000, guid: 64c1fc0605c31de47b277b6b8515ab01, type: 2}
       count: 2
@@ -35,7 +35,7 @@ MonoBehaviour:
       count: 2
     - material: {fileID: 11400000, guid: 83bdbb620c51bdd439fb89c97180137e, type: 2}
       count: 1
-  - description: Every 10 kill heal 5% max hp , elite kill heal 5% max hp, miniboss
+  - description: Every 15 kill heal 5% max hp , elite kill heal 3% max hp, miniboss
       kill heal 35% max hp
     upgradeCost:
     - material: {fileID: 11400000, guid: 399297f3e79be15409f69ab7096a631f, type: 2}
