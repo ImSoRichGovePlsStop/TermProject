@@ -33,6 +33,7 @@ public class LootRewardUI : MonoBehaviour
         {
             bool canReroll = RunManager.Instance == null || RunManager.Instance.AllowReroll;
             rerollButton.gameObject.SetActive(canReroll);
+            rerollButton.interactable = true;
             rerollButton.onClick.RemoveAllListeners();
             rerollButton.onClick.AddListener(OnReroll);
         }

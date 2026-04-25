@@ -21,6 +21,9 @@ public class ShopInteractable : MonoBehaviour, IInteractable
 
     private readonly HashSet<int> _soldIndices = new HashSet<int>();
     private TestModuleEntry[] _generatedEntries;
+    public bool HasRerolled { get; private set; }
+
+    public void MarkRerolled() => HasRerolled = true;
 
     public string GetPromptText() => "[ E ]  Open Shop";
     public InteractInfo GetInteractInfo() => new InteractInfo
