@@ -659,15 +659,17 @@ MonoBehaviour:
   sealMinWidth: 2
   sealMinArea: 10
   maxBattleCount: 8
-  maxEventCount: 3
+  maxEventCount: 2
   minBattleCount: 6
-  minEventCount: 2
+  minEventCount: 1
   cornerEventChance: 0.5
-  weightHeal: 4
-  weightShop: 1
-  weightRareLoot: 1
-  weightMerge: 2
-  weightFountain: 1
+  cornerPityBoost: 2
+  cornerBattleFallbackChance: 0.2
+  weightHeal: 8
+  weightShop: 4
+  weightRareLoot: 2
+  weightMerge: 4
+  weightFountain: 2
   repeatPenalty: 0.4
   presetChanceBattle: 0.478
   presetChanceHeal: 0

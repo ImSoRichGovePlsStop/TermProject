@@ -75,11 +75,11 @@ public static class FloorModifierCardRegistry
             m => m.extraLootOptions = 1));
 
         cards.Add(Make("extra_loot_next", "Windfall",
-            "Loot drops on the next floor offer two extra cards to choose from.",
+            "Loot drops on the next floor offer one extra card to choose from.",
             ModifierScope.NextFloorOnly,
-            m => m.extraLootOptions = 2));
+            m => m.extraLootOptions = 1));
 
-        //commented until fix placement of reward more than 3
+ 
 
         cards.Add(Make("more_events_next", "Event Surge",
             "The next floor has chances to spawn more event room.",
@@ -98,20 +98,20 @@ public static class FloorModifierCardRegistry
 
        
 
-        cards.Add(Make("heal_room_s", "Resilience",
-            "Recover more HP after clearing each battle room.",
-            ModifierScope.WholeRun,
-            m => m.healPerRoomBonus = 0.05f));
+        //cards.Add(Make("heal_room_s", "Resilience",
+        //    "Recover more HP after clearing each battle room.",
+        //    ModifierScope.WholeRun,
+        //    m => m.healPerRoomBonus = 0.05f));
 
-        cards.Add(Make("heal_room_l", "Vitality Surge",
-            "Recover a lot more HP after clearing each battle room.",
-            ModifierScope.WholeRun,
-            m => m.healPerRoomBonus = 0.15f));
+        //cards.Add(Make("heal_room_l", "Vitality Surge",
+        //    "Recover a lot more HP after clearing each battle room.",
+        //    ModifierScope.WholeRun,
+        //    m => m.healPerRoomBonus = 0.15f));
 
         cards.Add(Make("heal_room_next", "Second Wind",
-            "Recover a lot more HP after each battle room on the next floor.",
+            "Recover 5% Max HP after each battle room on the next floor.",
             ModifierScope.NextFloorOnly,
-            m => m.healPerRoomBonus = 0.20f));
+            m => m.healPerRoomBonus = 0.05f));
 
 
         cards.Add(Make("hollow_ground", "Hollow Ground",

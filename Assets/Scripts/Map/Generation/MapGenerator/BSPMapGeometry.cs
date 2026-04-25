@@ -62,6 +62,8 @@ public class BSPMapGeometry : MonoBehaviour
     [Header("Corner Rooms")]
     [Tooltip("Chance the 2nd free corner (not Spawn/Boss) becomes an event room instead of a battle room.")]
     [Range(0f, 1f)] public float cornerEventChance = 0.5f;
+    [Range(1f, 10f)] public float cornerPityBoost = 2f;
+    [Range(0f, 1f)] public float cornerBattleFallbackChance = 0.1f;
 
     [Header("Event Room Weights")]
     public float weightHeal = 1f;
@@ -212,16 +214,38 @@ public class BSPMapGeometry : MonoBehaviour
         Shuffle(freeCorners);
 
         int curFloor = rm?.CurrentFloor ?? 1;
-        if (curFloor % 2 == 1)
-            PlaceCornerEventOfType(RoomType.Shop, freeCorners[0]);
+        float c0EventBias = (curFloor % 2 == 1) ? 0.35f : -0.35f;
+        float c0EventChance = Mathf.Clamp01(cornerEventChance + c0EventBias);
+
+        if (Random.value < c0EventChance)
+        {
+            float shopBonus = (curFloor % 2 == 1) ? 2f : 1f;
+            var c0Type = PickWeightedCornerEvent(weightHeal, weightShop * shopBonus, weightRareLoot, weightMerge, weightFountain);
+            PlaceCornerEventOfType(c0Type, freeCorners[0]);
+        }
         else
             PlaceTypedRoom(RoomType.Battle, minBattleRoomSize, maxBattleRoomSize, presetChanceBattle, freeCorners[0]);
 
         if (freeCorners.Count > 1)
         {
-            var cycleTypes = new[] { RoomType.RareLoot, RoomType.Merge, RoomType.Heal, RoomType.Fountain };
-            RoomType cycleType = cycleTypes[(curFloor - 1) % cycleTypes.Length];
-            PlaceCornerEventOfType(cycleType, freeCorners[1]);
+            float wH = weightHeal     * (rm != null && rm.WasMissingLastFloor(RoomType.Heal)     ? cornerPityBoost : 1f);
+            float wS = weightShop     * (rm != null && rm.WasMissingLastFloor(RoomType.Shop)     ? cornerPityBoost : 1f);
+            float wR = weightRareLoot * (rm != null && rm.WasMissingLastFloor(RoomType.RareLoot) ? cornerPityBoost : 1f);
+            float wM = weightMerge    * (rm != null && rm.WasMissingLastFloor(RoomType.Merge)    ? cornerPityBoost : 1f);
+            float wF = weightFountain * (rm != null && rm.WasMissingLastFloor(RoomType.Fountain) ? cornerPityBoost : 1f);
+            if (_nodes.Exists(n => n.Type == RoomType.Heal))     wH = 0f;
+            if (_nodes.Exists(n => n.Type == RoomType.Shop))     wS = 0f;
+            if (_nodes.Exists(n => n.Type == RoomType.RareLoot)) wR = 0f;
+            if (_nodes.Exists(n => n.Type == RoomType.Merge))    wM = 0f;
+            if (_nodes.Exists(n => n.Type == RoomType.Fountain)) wF = 0f;
+            float c1Total = wH + wS + wR + wM + wF;
+            bool anyEventExists = _nodes.Exists(n =>
+                n.Type == RoomType.Heal || n.Type == RoomType.Shop || n.Type == RoomType.RareLoot ||
+                n.Type == RoomType.Merge || n.Type == RoomType.Fountain);
+            if (c1Total <= 0f || (anyEventExists && Random.value < cornerBattleFallbackChance))
+                PlaceTypedRoom(RoomType.Battle, minBattleRoomSize, maxBattleRoomSize, presetChanceBattle, freeCorners[1]);
+            else
+                PlaceCornerEventOfType(PickWeightedCornerEvent(wH, wS, wR, wM, wF), freeCorners[1]);
         }
 
         PlaceAdjacentBattle();
@@ -1293,6 +1317,18 @@ public class BSPMapGeometry : MonoBehaviour
     }
 
 
+
+    RoomType PickWeightedCornerEvent(float wH, float wS, float wR, float wM, float wF)
+    {
+        float total = wH + wS + wR + wM + wF;
+        if (total <= 0f) return RoomType.Heal;
+        float roll = Random.Range(0f, total);
+        if ((roll -= wH) < 0f) return RoomType.Heal;
+        if ((roll -= wS) < 0f) return RoomType.Shop;
+        if ((roll -= wR) < 0f) return RoomType.RareLoot;
+        if ((roll -= wM) < 0f) return RoomType.Merge;
+        return RoomType.Fountain;
+    }
 
     void OnDrawGizmos()
     {

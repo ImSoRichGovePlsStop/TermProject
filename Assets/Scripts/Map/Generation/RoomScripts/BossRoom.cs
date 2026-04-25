@@ -27,15 +27,15 @@ public class BossRoom : BattleRoom
 
     [Header("Mini-Boss Scaling")]
     [Tooltip("HP multiplier applied on top of normal scaling for the guaranteed elite.")]
-    public float miniBossHpScale  = 3f;
+    public float miniBossHpScale  = 2f;
     [Tooltip("Damage multiplier applied on top of normal scaling for the guaranteed elite.")]
-    public float miniBossDmgScale = 2f;
+    public float miniBossDmgScale = 1.5f;
 
     [Header("Non-Boss Wave Budget")]
     [Tooltip("Fraction of the normal battle-room budget used for MiniBoss / EliteBattle waves. " +
              "Lower values mean fewer enemies.")]
     [Range(0.1f, 1f)]
-    public float eliteWaveBudgetMult = 0.8f;
+    public float eliteWaveBudgetMult = 0.7f;
 
     // ── Loot (all modes share this) ───────────────────────────────────────────
     [Header("Boss Loot Config")]
@@ -46,8 +46,8 @@ public class BossRoom : BattleRoom
 
     [Header("Boss Clear Reward")]
     [Tooltip("Bonus coins awarded on boss clear, scaled per floor.")]
-    public int bonusCoinMin = 100;
-    public int bonusCoinMax = 300;
+    public int bonusCoinMin = 00;
+    public int bonusCoinMax = 000;
     public int maxFloor     = 9;
 
     private BossRoomMode          _mode;
@@ -376,9 +376,6 @@ public class BossRoom : BattleRoom
         if (portal != null)
             Instantiate(portal, portalPos, Quaternion.identity);
 
-        float floorMult = 1f + ((RunManager.Instance?.CurrentFloor ?? 1) - 1) * coinFloorMultiplier;
-        Object.FindFirstObjectByType<CurrencyManager>()
-              ?.AddCoins(Mathf.RoundToInt(Random.Range(bonusCoinMin, bonusCoinMax + 1) * floorMult));
 
         RunManager.Instance?.OnBossKilled();
         HealPlayerAfterRoom();
