@@ -3,7 +3,7 @@ using UnityEngine;
 public class ControlPassiveHandler : PassiveHandlerBase
 {
     [SerializeField] private ShatterFieldZone fieldPrefab;
-    private readonly float fieldRadiusMultiplier = 1f;
+    private readonly float fieldRadiusMultiplier = 0.7f;
 
     private ShatterFieldPassive shatterField;
 

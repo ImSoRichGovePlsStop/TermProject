@@ -107,6 +107,7 @@ public class ComboHit
     public float vfxOffset;
     public float vfxDurationMultiplier = 1f;
     public float vfxLoops = 1f;
+    public float vfxScale = 1f;
 }
 
 [System.Serializable]

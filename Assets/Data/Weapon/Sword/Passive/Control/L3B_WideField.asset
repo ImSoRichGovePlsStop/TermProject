@@ -13,10 +13,11 @@ MonoBehaviour:
   m_Name: L3B_WideField
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Wide Field
-  description: Secondary AoE radius increased by 50%.
+  description: Field radius increased by 50%.
   cost: 2
   parents:
   - {fileID: 11400000, guid: 8762c78173d2188468456d71ca72265c, type: 2}
   requireAllParents: 0
   layer: 3
   branch: 2
+  overrideCost: 0
