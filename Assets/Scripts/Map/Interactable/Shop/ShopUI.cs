@@ -19,7 +19,6 @@ public class ShopUI : MonoBehaviour
     private ShopInteractable _currentInteractable;
     private TestModuleEntry[] _currentEntries;
     private InventoryUI _inventoryUI;
-    private bool _hasRerolled;
 
     private void Awake()
     {
@@ -110,11 +109,11 @@ public class ShopUI : MonoBehaviour
         _currentInteractable = interactable;
         _currentEntries = entries;
 
-        _hasRerolled = false;
         if (rerollButton != null)
         {
             bool canReroll = RunManager.Instance == null || RunManager.Instance.AllowReroll;
             rerollButton.gameObject.SetActive(canReroll);
+            rerollButton.interactable = !interactable.HasRerolled;
             rerollButton.onClick.RemoveAllListeners();
             rerollButton.onClick.AddListener(OnReroll);
         }
@@ -151,10 +150,10 @@ public class ShopUI : MonoBehaviour
     private void OnReroll()
     {
         if (_currentInteractable == null) return;
-        if (_hasRerolled) return;
+        if (_currentInteractable.HasRerolled) return;
         if (RunManager.Instance != null && !RunManager.Instance.AllowReroll) return;
 
-        _hasRerolled = true;
+        _currentInteractable.MarkRerolled();
         if (rerollButton != null) rerollButton.interactable = false;
 
         _currentInteractable.Regenerate();

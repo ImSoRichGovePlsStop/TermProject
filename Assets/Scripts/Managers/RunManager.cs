@@ -14,8 +14,7 @@ public class RunManager : MonoBehaviour
     [Range(0f, 1f)]
     public float HealPerRoom = 0f;
 
-    [Header("Reroll")]
-    public bool AllowReroll = false;
+    [NonSerialized] public bool AllowReroll;
 
     [Header("Run Stats")]
     public int CurrentFloor = 1;
@@ -186,6 +185,7 @@ public class RunManager : MonoBehaviour
         _timerRunning = false;
         PreviousFloorEvents.Clear();
         CurrentFloorEvents.Clear();
+        AllowReroll = false;
         PermanentMods = new RunModifiers();
         NextFloorMods = new RunModifiers();
         _pickedCardIds.Clear();
