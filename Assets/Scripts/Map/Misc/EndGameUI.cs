@@ -167,9 +167,21 @@ public class EndGameUI : MonoBehaviour
 
     private void OnContinue()
     {
+        var transitioner = FindAnyObjectByType<SceneTransitioner>();
+        if (transitioner != null)
+            transitioner.TransitionToSceneWithCleanup(1, OnCleanup);
+        else
+        {
+            OnCleanup();
+            SceneManager.LoadScene(1);
+        }
+    }
+
+    private void OnCleanup()
+    {
         // 1. Camera
         CameraController.Instance?.RestoreCamera();
-        // 2. Close all open UI panels FIRST so they can return items
+        // 2. Close all open UI panels
         var ui = UIManager.Instance;
         if (ui != null)
         {
@@ -180,7 +192,7 @@ public class EndGameUI : MonoBehaviour
         }
         ModuleTooltipUI.Instance?.Hide();
         DiscardGridUI.Instance?.ForceHide();
-        // 3. Clear inventory — bag first (materials → storage), then weapon
+        // 3. Clear inventory
         var inv = InventoryManager.Instance;
         if (inv != null)
         {
@@ -205,14 +217,12 @@ public class EndGameUI : MonoBehaviour
         // 5. Reset persistent managers
         FindFirstObjectByType<CurrencyManager>()?.ResetCoins();
         FindFirstObjectByType<MinimapManager>()?.Reset();
-        // 6. Force-clear any stale UI panel state before scene load
+        // 6. Reset panel state
         UIManager.Instance?.ResetPanelState();
-        // 7. Save BEFORE ResetRun so RunTime and TotalRuns are still valid
+        // 7. Save before reset
         SaveManager.Instance?.Save();
-        // 8. Reset run after save
+        // 8. Reset run
         RunManager.Instance?.ResetRun();
-        // 7. Go back to hub scene
         gameObject.SetActive(false);
-        SceneManager.LoadScene(1);
     }
 }

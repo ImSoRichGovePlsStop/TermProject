@@ -13,8 +13,28 @@ public class SceneTransitioner : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
+    public IEnumerator FadeIn() => Fade(1);
+
+    public void TransitionToSceneWithCleanup(int index, System.Action onBlack)
+    {
+        DontDestroyOnLoad(gameObject);
+        StartCoroutine(PerformTransitionWithCleanup(index, onBlack));
+    }
+
+    private IEnumerator PerformTransitionWithCleanup(int index, System.Action onBlack)
+    {
+        yield return StartCoroutine(Fade(1));
+        onBlack?.Invoke();
+        AsyncOperation operation = SceneManager.LoadSceneAsync(index);
+        while (!operation.isDone) yield return null;
+        yield return new WaitForSeconds(1f);
+        yield return StartCoroutine(Fade(0));
+        Destroy(gameObject);
+    }
+
     public void TransitionToScene(int index)
     {
+        DontDestroyOnLoad(gameObject);
         StartCoroutine(PerformTransition(index));
     }
 

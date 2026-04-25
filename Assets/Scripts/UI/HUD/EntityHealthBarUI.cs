@@ -79,6 +79,8 @@ public class EntityHealthBarUI : MonoBehaviour
         if (entity == null) { Destroy(gameObject); return; }
         if (entity.IsDead) return;
 
+        if (cam == null) cam = Camera.main;
+        if (cam == null) return;
         transform.rotation = cam.transform.rotation;
         transform.position = entity.transform.position + CalculateOffset(entity.transform.position);
         UpdateBar();

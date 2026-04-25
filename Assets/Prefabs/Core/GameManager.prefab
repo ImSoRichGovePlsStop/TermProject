@@ -696,6 +696,7 @@ MonoBehaviour:
   TotalEventsFound: 0
   TotalBossKilled: 0
   IsWin: 0
+  TotalRuns: 0
   RunTime: 0
   PreviousFloorEvents: 
   CurrentFloorEvents: 
@@ -3949,6 +3950,10 @@ PrefabInstance:
       propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1655546317780211767, guid: 088faad1b73749547a68f37dcc120c66, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1764789451848823826, guid: 088faad1b73749547a68f37dcc120c66, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -4603,7 +4608,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5464829536232953714, guid: 088faad1b73749547a68f37dcc120c66, type: 3}
       propertyPath: m_Size
-      value: 1
+      value: 0.9999989
       objectReference: {fileID: 0}
     - target: {fileID: 5488765255541663460, guid: 088faad1b73749547a68f37dcc120c66, type: 3}
       propertyPath: m_fontAsset
@@ -4931,7 +4936,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7611678755802073774, guid: 088faad1b73749547a68f37dcc120c66, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.00020346289
+      value: 0.00085264153
       objectReference: {fileID: 0}
     - target: {fileID: 7656400640483700572, guid: 088faad1b73749547a68f37dcc120c66, type: 3}
       propertyPath: m_fontAsset
