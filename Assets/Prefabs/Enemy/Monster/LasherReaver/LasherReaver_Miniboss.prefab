@@ -358,7 +358,7 @@ MonoBehaviour:
     comboExtend3Chance: 0.5
     comboExtend4Chance: 0.5
     comboReaverProjectileChance: 0.35
-    lashLineCount: 3
+    lashLineCount: 4
     anchorCooldownMin: 6
     anchorCooldownMax: 9
     smashEnabled: 1
@@ -376,7 +376,7 @@ MonoBehaviour:
     comboExtend3Chance: 0.75
     comboExtend4Chance: 0.75
     comboReaverProjectileChance: 0.75
-    lashLineCount: 3
+    lashLineCount: 8
     anchorCooldownMin: 6
     anchorCooldownMax: 9
     smashEnabled: 1
@@ -405,8 +405,8 @@ MonoBehaviour:
   lasherScale: {x: 1.5, y: 1.5, z: 1.5}
   reaverScale: {x: 1.3, y: 1.3, z: 1.3}
   lasherAttackRange: 2.5
-  lasherCooldownMin: 1.75
-  lasherCooldownMax: 2.5
+  lasherCooldownMin: 1.5
+  lasherCooldownMax: 2
   comboDashSpeed: 20
   comboDashDuration: 0.1
   comboDashHitRadius: 0.75

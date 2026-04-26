@@ -68,7 +68,8 @@ public class AttackHitbox : MonoBehaviour
             if (healthBase != null && !healthBase.IsDead)
             {
                 healthBase.TakeDamage(dmg, stats.LastHitWasCrit);
-                result.Add(healthBase);
+                if (healthBase is not DestructibleHealth)
+                    result.Add(healthBase);
             }
         }
 

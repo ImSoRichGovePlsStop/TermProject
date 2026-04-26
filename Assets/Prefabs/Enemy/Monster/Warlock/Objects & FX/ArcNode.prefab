@@ -378,12 +378,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArcNode
   arcLinePrefab: {fileID: 6516786466531058625, guid: 0c89aba729ebb3a4182685f740ae3dc4, type: 3}
-  initialDelay: 2
+  initialDelay: 0.8
   groundLayer:
     serializedVersion: 2
     m_Bits: 1024
   groundOffset: 0.1
-  wanderRadius: 1
+  wanderRadius: 2
 --- !u!114 &3678140623814844636
 MonoBehaviour:
   m_ObjectHideFlags: 0

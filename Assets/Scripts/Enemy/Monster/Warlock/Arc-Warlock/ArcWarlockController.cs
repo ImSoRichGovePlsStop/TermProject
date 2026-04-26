@@ -57,6 +57,7 @@ public class ArcWarlockController : WarlockController
         if (isSmashing) return true;
         if (isWindingUp) return false;
         if (Time.time < lastSmashTime + smashCooldown) return false;
+        if (playerTarget == null) return false;
         if (!HasTarget || Vector3.Distance(transform.position, TargetPosition) > smashRange) return false;
         StartCoroutine(ArcSpawnRoutine());
         return true;
@@ -76,7 +77,8 @@ public class ArcWarlockController : WarlockController
         yield return new WaitForSeconds(smashWindUpDuration);
         if (animator != null) animator.speed = 1f;
         isSmashExecuting = true;
-        SpawnArcNodes(TargetPosition);
+        Vector3 spawnCenter = playerTarget != null ? playerTarget.transform.position : TargetPosition;
+        SpawnArcNodes(spawnCenter);
         animator?.SetTrigger("Spawn");
         yield return new WaitForSeconds(smashWarningDuration);
         lastSmashTime = Time.time;

@@ -680,8 +680,8 @@ MonoBehaviour:
   healthBarScale: {x: 2, y: 1.5, z: 1}
   tier: 2
   groundPoint: {fileID: 0}
-  phaseTwoThreshold: 0.7
-  phaseThreeThreshold: 0.3
+  phaseTwoThreshold: 0.75
+  phaseThreeThreshold: 0.4
 --- !u!114 &5644794410267954326
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -764,7 +764,7 @@ MonoBehaviour:
     idleTimeMin: 0.3
     idleTimeMax: 0.8
   shootRange: 7
-  shootCooldown: 3.5
+  shootCooldown: 3
   projectileDamageScale: 1
   spreadAngle: 15
   maxTrackRotateSpeed: 180
@@ -803,20 +803,20 @@ MonoBehaviour:
   normalArcWarlockPrefab: {fileID: 2267385209059488080, guid: 7b3e637306542674a858675a8eb8614c, type: 3}
   eliteArcWarlockPrefab: {fileID: 8761219684217307977, guid: 81bc309d0cb204a469adc399b7df23fb, type: 3}
   phase1Settings:
-    ultimateCircleCountMin: 4
-    ultimateCircleCountMax: 6
-    ultimateMinSpawnDistance: 2
+    ultimateCircleCountMin: 5
+    ultimateCircleCountMax: 7
+    ultimateMinSpawnDistance: 4
     summonCount: 2
     eliteRatio: 0.25
   phase2Settings:
-    ultimateCircleCountMin: 5
-    ultimateCircleCountMax: 7
-    ultimateMinSpawnDistance: 3
+    ultimateCircleCountMin: 6
+    ultimateCircleCountMax: 8
+    ultimateMinSpawnDistance: 4
     summonCount: 3
     eliteRatio: 0.4
   phase3Settings:
-    ultimateCircleCountMin: 6
-    ultimateCircleCountMax: 8
+    ultimateCircleCountMin: 7
+    ultimateCircleCountMax: 10
     ultimateMinSpawnDistance: 4
     summonCount: 3
     eliteRatio: 0.7
@@ -829,14 +829,14 @@ MonoBehaviour:
   scatterFireInterval: 0.08
   scatterDuration: 3
   scatterWindUpDuration: 2
-  scatterCooldown: 8
+  scatterCooldown: 10
   scatterRotateSpeed: 60
-  scatterProximityRequired: 1.5
-  scatterProximityWindow: 4
+  scatterProximityRequired: 1
+  scatterProximityWindow: 5
   ritualDuration: 15
   ritualPositionNormalized: {x: 0.5, y: 0.7}
   warlockBarrier: {fileID: 1047889849521593786}
-  ritualSmashCount: 4
+  ritualSmashCount: 6
   ritualSmashDamageScale: 1
   ritualSmashWarningDurationMin: 1.2
   ritualSmashWarningDurationMax: 2
@@ -854,7 +854,7 @@ MonoBehaviour:
   bigArcNodePrefab: {fileID: 8635059489987017166, guid: aca89842aed7dab47b4ee12aec4c7387, type: 3}
   bigArcNodeWallOffset: 0.5
   bigArcNodeDamageScale: 0.35
-  bigArcNodeHpScale: 0.2
+  bigArcNodeHpScale: 0.15
   bigArcNodeSlideRange: 5
 --- !u!114 &-2045061280870046310
 MonoBehaviour:

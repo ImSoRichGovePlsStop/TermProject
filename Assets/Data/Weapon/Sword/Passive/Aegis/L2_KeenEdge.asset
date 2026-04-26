@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: L2_KeenEdge
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Keen Edge
-  description: While shielded, gain +35% crit damage
+  description: While shielded, boost crit damage by 10%
   cost: 1
   parents:
   - {fileID: 11400000, guid: 8d97cca03ad3d7b419fe37ea48a6c377, type: 2}
