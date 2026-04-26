@@ -385,7 +385,7 @@ MonoBehaviour:
   healthBarScale: {x: 2, y: 1.5, z: 1}
   tier: 2
   groundPoint: {fileID: 0}
-  guardHealRatio: 0.3
+  guardHealRatio: 0.8
   guardProcChance: 0.12
   eliteController: {fileID: 4861128534556401032}
 --- !u!114 &5942300544733507474
@@ -433,8 +433,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e18ad2ec0dc3af48960cabdba840344, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EliteHopliteController
-  detectRange: 10
-  loseTargetRange: 15
+  detectRange: 30
+  loseTargetRange: 30
   postAttackDelayMin: 0.4
   postAttackDelayMax: 0.8
   targetPriority:
@@ -477,7 +477,7 @@ MonoBehaviour:
   attackDashDuration: 0.25
   attackDashHitRadius: 0.8
   guardDuration: 2
-  guardCooldown: 18
+  guardCooldown: 15
   chargeRange: 7
   chargeDamageScale: 1.5
   chargeCooldownMin: 7
