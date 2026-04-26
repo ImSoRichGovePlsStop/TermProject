@@ -75,7 +75,7 @@ public class ReaverController : EnemyBase
         movement.SetStopDistance(0.1f);
         currentDashCooldown = Random.Range(dashCooldownMin, dashCooldownMax);
         currentChargeCooldown = Random.Range(chargeCooldownMin, chargeCooldownMax);
-        lastChargeTime = Time.time;
+        lastChargeTime = Time.time - currentChargeCooldown * 0.5f;
         strafe.Init(dashAttackRange);
     }
 
