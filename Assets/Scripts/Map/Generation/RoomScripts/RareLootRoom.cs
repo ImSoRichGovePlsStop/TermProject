@@ -21,6 +21,16 @@ public class RareLootRoom : MonoBehaviour
     [Tooltip("SD increase per floor.")]
     public float lootSdPerFloor      = 5f;
 
+    [Header("Enemy Scaling")]
+    public float enemySpeedMin           = 0.9f;
+    public float enemySpeedMax           = 1.1f;
+    public float enemyHpPerFloor         = 1.20f;
+    public float enemyHpPerSegment       = 1.75f;
+    public float enemyDmgPerFloor        = 1.12f;
+    public float enemyDmgPerSegment      = 1.4f;
+    public float enemyHpPlayerDmgWeight  = 0.0f;
+    public float enemyDmgPlayerHpWeight  = 0.0f;
+
     [Header("Room Lock")]
     public GameObject doorPrefab;
     public Material   boundaryMaterial;
@@ -59,8 +69,19 @@ public class RareLootRoom : MonoBehaviour
         FindFirstObjectByType<MinimapManager>()?.OnPlayerEnterRoom(node);
     }
 
+    private StatScale ComputeStatScale()
+        => BattleRoom.BuildStatScale(
+            FindFirstObjectByType<PlayerStats>(), RunManager.Instance,
+            enemySpeedMin,          enemySpeedMax,
+            enemyHpPerFloor,        enemyHpPerSegment,
+            enemyDmgPerFloor,       enemyDmgPerSegment,
+            enemyHpPlayerDmgWeight, enemyDmgPlayerHpWeight);
+
     private void HandleMimicSpawned(GameObject mimic)
     {
+        if (mimic != null && mimic.TryGetComponent<EntityStats>(out var stats))
+            stats.SetStatScale(ComputeStatScale());
+
         _mimicActive = true;
         LockRoom();
 

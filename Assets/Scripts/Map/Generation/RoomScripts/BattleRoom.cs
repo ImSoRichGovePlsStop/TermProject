@@ -384,7 +384,7 @@ public class BattleRoom : MonoBehaviour
     }
 
 
-    protected static StatScale BuildStatScale(
+    public static StatScale BuildStatScale(
         PlayerStats player, RunManager rm,
         float speedMin,       float speedMax,
         float hpPerFloor,     float hpPerSegment,
