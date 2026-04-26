@@ -324,6 +324,8 @@ public class BossRoom : BattleRoom
     {
         if (_mode == BossRoomMode.TrueBoss)
         {
+            if (_waveClearPending) yield break;
+            _waveClearPending = true;
             if (_spawnRoutine != null) { StopCoroutine(_spawnRoutine); _spawnRoutine = null; }
             FindFirstObjectByType<UIManager>().isInBattle = false;
             Unsubscribe();
