@@ -527,6 +527,18 @@ public class BattleRoom : MonoBehaviour
         isLocked = true;
         CreateInvisibleWalls();
         SpawnDoors();
+        StartCoroutine(SafetyCheckRoutine());
+    }
+
+    private IEnumerator SafetyCheckRoutine()
+    {
+        var wait = new WaitForSeconds(0.5f);
+        while (!isCleared)
+        {
+            yield return wait;
+            if (isLocked && !_spawning && !_waveClearPending && ShouldClearWave())
+                StartCoroutine(OnWaveCleared());
+        }
     }
 
     private void SpawnDoors()

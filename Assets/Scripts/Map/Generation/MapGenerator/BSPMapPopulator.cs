@@ -194,9 +194,15 @@ public class BSPMapPopulator : MonoBehaviour
 
     void SetupRareLoot(GameObject o, Transform p, MapNode n)
     {
+        var vol = Volume(n);
         var r = o.AddComponent<RareLootRoom>();
-        r.node       = ToLegacy(n);
-        r.lootPrefab = rareLootPrefab;
+        r.node             = ToLegacy(n);
+        r.lootPrefab       = rareLootPrefab;
+        r.doorPrefab       = battleDoorPrefab;
+        r.boundaryMaterial = boundaryMaterial;
+        r.SetRoomSize(vol);
+        r.spawnCells       = CollectSpawnCells(n);
+        r.doorInfos        = CollectDoorInfos(n);
         r.Init(p);
     }
 
