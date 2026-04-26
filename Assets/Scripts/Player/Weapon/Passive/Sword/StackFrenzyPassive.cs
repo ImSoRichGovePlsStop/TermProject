@@ -211,7 +211,7 @@ public class StackFrenzyPassive : MonoBehaviour
         if (glassCannon)
         {
             RemoveGlassCannon();
-            glassCannonModifier.critDamage = 0.35f;
+            glassCannonModifier.critDamage = 0.4f;
             glassCannonModifier.damageTaken = 1.5f;
             stats.AddMultiplierModifier(glassCannonModifier);
         }
