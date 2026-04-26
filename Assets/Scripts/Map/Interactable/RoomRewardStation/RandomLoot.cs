@@ -28,6 +28,8 @@ public class RandomLoot : MonoBehaviour, IInteractable
     [Header("Debug")]
     [SerializeField] private bool debugLog = false;
 
+    public System.Action<GameObject> OnMimicSpawned;
+
     private UIManager uiManager;
 
     public string GetPromptText() => "[ E ]  Open Loot";
@@ -71,7 +73,10 @@ public class RandomLoot : MonoBehaviour, IInteractable
                 Debug.Log($"[RandomLoot] {gameObject.name} — mimic triggered!");
 
             if (mimicPrefab != null)
-                Instantiate(mimicPrefab, transform.position + transform.forward * 0.8f, transform.rotation);
+            {
+                var mimic = Instantiate(mimicPrefab, transform.position + transform.forward * 0.8f, transform.rotation);
+                OnMimicSpawned?.Invoke(mimic);
+            }
             else
                 Debug.LogWarning("[RandomLoot] Mimic triggered but mimicPrefab is not assigned.");
 

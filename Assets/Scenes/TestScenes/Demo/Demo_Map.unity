@@ -663,13 +663,13 @@ MonoBehaviour:
   minBattleCount: 6
   minEventCount: 1
   cornerEventChance: 0.5
-  cornerPityBoost: 2
+  cornerPityBoost: 2.12
   cornerBattleFallbackChance: 0.2
-  weightHeal: 8
-  weightShop: 4
-  weightRareLoot: 2
+  weightHeal: 16
+  weightShop: 8
+  weightRareLoot: 1
   weightMerge: 4
-  weightFountain: 2
+  weightFountain: 1
   repeatPenalty: 0.4
   presetChanceBattle: 0.478
   presetChanceHeal: 0
