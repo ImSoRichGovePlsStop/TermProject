@@ -228,14 +228,14 @@ MonoBehaviour:
   comboMaxRedirectAngle: 90
   comboDashGapDuration: 0.3
   lashSpeedPenalty: -0.25
-  lashChargeExitRange: 2.5
-  lashChargeMaxDuration: 2
+  lashChargeExitRange: 3
+  lashChargeMaxDuration: 1.5
   lashHitOffset: 0.75
   lashHitRadius: 1
   lashDamageScale: 1.2
-  lashTipDelay: 0.4
+  lashTipDelay: 0.35
   lashTipOffset: 1.5
-  lashTipCount: 1
+  lashTipCount: 2
   lashTipRadius: 1.5
   lashTipDamageScale: 1.2
   lashAoeVFX: {fileID: 245339282735500823, guid: 5292192e29d6a1447bdf673f3227f4a1, type: 3}
