@@ -46,7 +46,8 @@ public class WandAoEPulse : MonoBehaviour
             if (healthBase == null || healthBase.IsDead) continue;
             float dmg = shooterStats.CalculateDamage(pulseDamageScale);
             healthBase.TakeDamage(dmg, shooterStats.LastHitWasCrit);
-            result.Add(healthBase);
+            if (healthBase is not DestructibleHealth)
+                result.Add(healthBase);
         }
 
         if (result.Count > 0)

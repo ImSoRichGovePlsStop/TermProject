@@ -20,6 +20,8 @@ public class EntityStats : MonoBehaviour
         GetComponent<HealthBase>()?.ApplyMaxHP();
     }
 
+    public StatScale GetStatScale() => statScale;
+
     public float MaxHP => (baseMaxHP + flatModifier.maxHP) * (1f + multiplierModifier.maxHP) * statScale.hp;
     public float MoveSpeed => Mathf.Max(0f, (baseMoveSpeed + flatModifier.moveSpeed) * (1f + multiplierModifier.moveSpeed) * statScale.moveSpeed);
     public float MoveSpeedRatio => baseMoveSpeed > 0f ? MoveSpeed / baseMoveSpeed : 1f;
@@ -28,38 +30,38 @@ public class EntityStats : MonoBehaviour
     public float DamageTaken => Mathf.Max(0f, 1f + flatModifier.damageTaken + multiplierModifier.damageTaken);
 
     public void AddFlatModifier(EntityStatModifier modifier)
-    {
-        flatModifier.maxHP += modifier.maxHP;
-        flatModifier.moveSpeed += modifier.moveSpeed;
-        flatModifier.damage += modifier.damage;
-        flatModifier.damageTaken += modifier.damageTaken;
-        flatModifier.attackSpeed += modifier.attackSpeed;
-    }
+{
+    flatModifier.maxHP += modifier.maxHP;
+    flatModifier.moveSpeed += modifier.moveSpeed;
+    flatModifier.damage += modifier.damage;
+    flatModifier.damageTaken += modifier.damageTaken;
+    flatModifier.attackSpeed += modifier.attackSpeed;
+}
 
-    public void RemoveFlatModifier(EntityStatModifier modifier)
-    {
-        flatModifier.maxHP -= modifier.maxHP;
-        flatModifier.moveSpeed -= modifier.moveSpeed;
-        flatModifier.damage -= modifier.damage;
-        flatModifier.damageTaken -= modifier.damageTaken;
-        flatModifier.attackSpeed -= modifier.attackSpeed;
-    }
+public void RemoveFlatModifier(EntityStatModifier modifier)
+{
+    flatModifier.maxHP -= modifier.maxHP;
+    flatModifier.moveSpeed -= modifier.moveSpeed;
+    flatModifier.damage -= modifier.damage;
+    flatModifier.damageTaken -= modifier.damageTaken;
+    flatModifier.attackSpeed -= modifier.attackSpeed;
+}
 
-    public void AddMultiplierModifier(EntityStatModifier modifier)
-    {
-        multiplierModifier.maxHP += modifier.maxHP;
-        multiplierModifier.moveSpeed += modifier.moveSpeed;
-        multiplierModifier.damage += modifier.damage;
-        multiplierModifier.damageTaken += modifier.damageTaken;
-        multiplierModifier.attackSpeed += modifier.attackSpeed;
-    }
+public void AddMultiplierModifier(EntityStatModifier modifier)
+{
+    multiplierModifier.maxHP += modifier.maxHP;
+    multiplierModifier.moveSpeed += modifier.moveSpeed;
+    multiplierModifier.damage += modifier.damage;
+    multiplierModifier.damageTaken += modifier.damageTaken;
+    multiplierModifier.attackSpeed += modifier.attackSpeed;
+}
 
-    public void RemoveMultiplierModifier(EntityStatModifier modifier)
-    {
-        multiplierModifier.maxHP -= modifier.maxHP;
-        multiplierModifier.moveSpeed -= modifier.moveSpeed;
-        multiplierModifier.damage -= modifier.damage;
-        multiplierModifier.damageTaken -= modifier.damageTaken;
-        multiplierModifier.attackSpeed -= modifier.attackSpeed;
-    }
+public void RemoveMultiplierModifier(EntityStatModifier modifier)
+{
+    multiplierModifier.maxHP -= modifier.maxHP;
+    multiplierModifier.moveSpeed -= modifier.moveSpeed;
+    multiplierModifier.damage -= modifier.damage;
+    multiplierModifier.damageTaken -= modifier.damageTaken;
+    multiplierModifier.attackSpeed -= modifier.attackSpeed;
+}
 }

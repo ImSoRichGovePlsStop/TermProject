@@ -82,10 +82,17 @@ public class StackFrenzyPassive : MonoBehaviour
         UpdateHUD();
     }
 
+    private bool AnyNonInvincibleHit()
+    {
+        foreach (var enemy in context.LastHitEnemies)
+            if (enemy != null && !enemy.IsInvincible) return true;
+        return false;
+    }
+
     private void OnAttack()
     {
         if (!enabled) return;
-        if (context.LastHitEnemies.Count == 0) return;
+        if (!AnyNonInvincibleHit()) return;
         int comboIndex = context.LastComboIndex;
         int stacksToAdd = (thirdHitTripleStack && comboIndex == 2) ? 3 : 1;
         AddStacks(stacksToAdd);
@@ -94,7 +101,7 @@ public class StackFrenzyPassive : MonoBehaviour
     private void OnSecondaryAttackHit()
     {
         if (!enabled) return;
-        if (context.LastHitEnemies.Count == 0) return;
+        if (!AnyNonInvincibleHit()) return;
         AddStacks(1);
     }
 

@@ -837,7 +837,12 @@ public class MinibossWarlockController : WarlockController
                 : (isArc ? normalArcWarlockPrefab : normalWarlockPrefab);
 
             if (prefab != null)
-                Instantiate(prefab, navHit.position, Quaternion.identity);
+            {
+                var go = Instantiate(prefab, navHit.position, Quaternion.identity);
+                var entityStats = go.GetComponentInChildren<EntityStats>();
+                if (entityStats != null)
+                    entityStats.SetStatScale(GetComponentInChildren<EntityStats>()?.GetStatScale() ?? StatScale.Default);
+            }
 
             spawned.Add(navHit.position);
             spawnedCount++;

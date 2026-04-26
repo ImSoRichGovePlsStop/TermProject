@@ -41,6 +41,7 @@ public class WarlockController : EnemyBase
     protected override void Awake()
     {
         base.Awake();
+        lastSmashTime = Time.time;
         movement.SetStopDistance(0.1f);
         strafe.Init(shootRange);
     }

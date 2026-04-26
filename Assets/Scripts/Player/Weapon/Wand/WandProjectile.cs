@@ -151,6 +151,7 @@ public class WandProjectile : MonoBehaviour
         if (healthBase == null || healthBase.IsDead) return;
 
         healthBase.TakeDamage(damage, isCrit);
-        context?.NotifyAttack(new HashSet<HealthBase> { healthBase }, comboIndex);
+        if (healthBase is not DestructibleHealth)
+            context?.NotifyAttack(new HashSet<HealthBase> { healthBase }, comboIndex);
     }
 }

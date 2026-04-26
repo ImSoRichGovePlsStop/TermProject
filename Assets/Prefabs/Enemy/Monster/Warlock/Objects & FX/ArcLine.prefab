@@ -49,7 +49,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArcLine
   lineRenderer: {fileID: 2328184720302885933}
-  pulseDuration: 2
+  pulseDuration: 1.2
   pulseSpeed: 2
   pulseColorA: {r: 0.70554465, g: 0.982362, b: 0.990566, a: 0}
   pulseColorB: {r: 0.2971698, g: 0.9789233, b: 1, a: 0.7}

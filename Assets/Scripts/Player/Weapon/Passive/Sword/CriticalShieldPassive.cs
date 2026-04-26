@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class CriticalShieldPassive : MonoBehaviour
@@ -23,7 +24,7 @@ public class CriticalShieldPassive : MonoBehaviour
     private const float ShieldCooldown = 3f;
 
     // L2 - L6 Constants
-    private const float KeenEdgeCritDmgBonus = 0.35f;
+    private const float KeenEdgeCritDmgBonus = 0.25f;
     private const float FortifiedExtraDuration = 1f;
     private const float FortifiedExtraValue = 8f;
     private const int FortifiedMaxTimes = 3;
@@ -152,6 +153,7 @@ public class CriticalShieldPassive : MonoBehaviour
     {
         if (!enabled) return;
         if (onCooldown) return;
+        if (context.LastHitEnemies.All(e => e == null || e.IsInvincible)) return;
 
         if (fortifiedStrike && aegisShieldInstance != null)
         {
@@ -184,6 +186,7 @@ public class CriticalShieldPassive : MonoBehaviour
     private void OnSwing()
     {
         if (!enabled || !persistence || context.LastHitEnemies.Count == 0) return;
+        if (context.LastHitEnemies.All(e => e == null || e.IsInvincible)) return;
         if (stats.LastHitWasCrit || onCooldown || aegisShieldInstance != null)
         {
             consecutiveNonCritSwings = 0;
