@@ -476,7 +476,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EntityStats
   baseMaxHP: 40
   baseMoveSpeed: 1
-  baseDamage: 1.5
+  baseDamage: 3
   baseAttackSpeed: 1
   shieldPercent: 130
 --- !u!114 &3988168457867884025
@@ -551,12 +551,12 @@ MonoBehaviour:
   nodeMaxSpawnRadius: 5
   nodeLinkMode: 2
   minNodeDistance: 4
-  nodeCount: 3
-  nodeHpScale: 0.65
+  nodeCount: 4
+  nodeHpScale: 0.6
   nodeCanMove: 1
-  nodeMoveSpeed: 0.15
-  decaySimultaneous: 2
-  decayDuration: 8
+  nodeMoveSpeed: 0.2
+  decaySimultaneous: 3
+  decayDuration: 6
 --- !u!114 &-3681884835361395791
 MonoBehaviour:
   m_ObjectHideFlags: 0

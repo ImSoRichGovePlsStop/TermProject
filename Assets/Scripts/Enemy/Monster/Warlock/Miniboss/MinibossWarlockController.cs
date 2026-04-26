@@ -746,32 +746,51 @@ public class MinibossWarlockController : WarlockController
     {
         int circleCount = Random.Range(currentPhaseSettings.ultimateCircleCountMin, currentPhaseSettings.ultimateCircleCountMax + 1);
         var spawned = new List<Vector3>();
-        int maxAttempts = circleCount * 5;
         LayerMask wallMask = 1 << LayerMask.NameToLayer("Wall");
+        SpawnAOEWarning(TargetPosition, ultimateDamageScale, ultimateAoeRadius, ultimateWarningDuration);
+        spawned.Add(TargetPosition);
+        if (circleCount > 1)
+        {
+            SpawnAOEWarning(transform.position, ultimateDamageScale, ultimateAoeRadius, ultimateWarningDuration);
+            spawned.Add(transform.position);
+        }
+        for (int i = spawned.Count; i < circleCount; i++)
+        {
+            Vector3 pos = FindUltimateSpawnPos(TargetPosition, spawned, wallMask);
+            SpawnAOEWarning(pos, ultimateDamageScale, ultimateAoeRadius, ultimateWarningDuration);
+            spawned.Add(pos);
+        }
+    }
 
-        for (int attempt = 0; attempt < maxAttempts && spawned.Count < circleCount; attempt++)
+    private Vector3 FindUltimateSpawnPos(Vector3 center, List<Vector3> spawned, LayerMask wallMask)
+    {
+        Vector3 bestPos = center;
+        float bestMinDist = float.MinValue;
+        for (int attempt = 0; attempt < 10; attempt++)
         {
             Vector2 rand = Random.insideUnitCircle * ultimateSpawnRadius;
-            Vector3 candidate = TargetPosition + new Vector3(rand.x, 0f, rand.y);
-
+            Vector3 candidate = center + new Vector3(rand.x, 0f, rand.y);
             if (!NavMesh.SamplePosition(candidate, out NavMeshHit navHit, 1f, NavMesh.AllAreas)) continue;
-
-            Vector3 dir = navHit.position - TargetPosition;
+            Vector3 dir = navHit.position - center;
             dir.y = 0f;
             float dist = dir.magnitude;
             if (dist > 0.01f && Physics.Raycast(
-                new Vector3(TargetPosition.x, TargetPosition.y + 0.1f, TargetPosition.z),
+                new Vector3(center.x, center.y + 0.1f, center.z),
                 dir.normalized, dist, wallMask)) continue;
-
-            bool tooClose = false;
+            float minDist = float.MaxValue;
             foreach (var pos in spawned)
-                if (Vector3.Distance(navHit.position, pos) < currentPhaseSettings.ultimateMinSpawnDistance) { tooClose = true; break; }
-            if (tooClose) continue;
-
-            SpawnAOEWarning(navHit.position, ultimateDamageScale, ultimateAoeRadius, ultimateWarningDuration);
-            spawned.Add(navHit.position);
+            {
+                float d = Vector3.Distance(navHit.position, pos);
+                if (d < minDist) minDist = d;
+            }
+            if (spawned.Count == 0 || minDist >= currentPhaseSettings.ultimateMinSpawnDistance)
+                return navHit.position;
+            if (minDist > bestMinDist) { bestMinDist = minDist; bestPos = navHit.position; }
         }
+        return bestPos;
     }
+
+
 
 
     private bool TrySummon()
@@ -837,7 +856,12 @@ public class MinibossWarlockController : WarlockController
                 : (isArc ? normalArcWarlockPrefab : normalWarlockPrefab);
 
             if (prefab != null)
-                Instantiate(prefab, navHit.position, Quaternion.identity);
+            {
+                var go = Instantiate(prefab, navHit.position, Quaternion.identity);
+                var entityStats = go.GetComponentInChildren<EntityStats>();
+                if (entityStats != null)
+                    entityStats.SetStatScale(GetComponentInChildren<EntityStats>()?.GetStatScale() ?? StatScale.Default);
+            }
 
             spawned.Add(navHit.position);
             spawnedCount++;

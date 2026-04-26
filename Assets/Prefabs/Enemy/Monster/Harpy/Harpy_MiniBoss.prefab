@@ -277,7 +277,7 @@ MonoBehaviour:
   healthBarScale: {x: 2, y: 1.5, z: 1}
   tier: 2
   groundPoint: {fileID: 0}
-  enrageThreshold: 0.65
+  enrageThreshold: 0.5
 --- !u!114 &6021029256873973459
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -323,8 +323,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a227147f92f4b044fb89503e5af6f2b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EliteHarpyController
-  detectRange: 10
-  loseTargetRange: 15
+  detectRange: 30
+  loseTargetRange: 30
   postAttackDelayMin: 0.4
   postAttackDelayMax: 0.8
   targetPriority:
@@ -392,13 +392,13 @@ MonoBehaviour:
   fireFieldDuration: 8
   fireFieldTickInterval: 0.25
   fireFieldDamageScale: 0.1
-  airCooldownNormalMin: 10
-  airCooldownNormalMax: 15
+  airCooldownNormalMin: 8
+  airCooldownNormalMax: 12
   fireTrailChanceNormal: 0.5
   fireTrailChance2Normal: 0.15
   diveAfterTrailChanceNormal: 0.7
   airCooldownEnragedMin: 6
-  airCooldownEnragedMax: 10
+  airCooldownEnragedMax: 8
   fireTrailChanceEnraged: 1
   fireTrailChance2Enraged: 0.4
   diveAfterTrailChanceEnraged: 1

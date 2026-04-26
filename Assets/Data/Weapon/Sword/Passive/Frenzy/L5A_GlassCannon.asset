@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: L5A_GlassCannon
   m_EditorClassIdentifier: Assembly-CSharp::PassiveNode
   nodeName: Glass Cannon
-  description: At max stacks, boost crit damage by 35%, but the next hit you take
+  description: At max stacks, boost crit damage by 40%, but the next hit you take
     deals 150% more damage.
   cost: 3
   parents:
