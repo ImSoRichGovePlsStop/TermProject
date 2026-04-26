@@ -536,7 +536,16 @@ public class BattleRoom : MonoBehaviour
         while (!isCleared)
         {
             yield return wait;
-            if (isLocked && !_spawning && !_waveClearPending && ShouldClearWave())
+            if (!isLocked || _spawning || _waveClearPending) continue;
+
+            Vector3 center = transform.position + Vector3.up * (roomSize.y * 0.5f);
+            var hits = Physics.OverlapBox(center, roomSize * 0.5f);
+            bool hasEnemy = false;
+            foreach (var hit in hits)
+            {
+                if (hit.GetComponentInParent<EnemyBase>() != null) { hasEnemy = true; break; }
+            }
+            if (!hasEnemy)
                 StartCoroutine(OnWaveCleared());
         }
     }
