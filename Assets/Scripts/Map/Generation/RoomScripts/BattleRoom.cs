@@ -92,8 +92,9 @@ public class BattleRoom : MonoBehaviour
     protected Vector3 roomSize;
     protected List<GameObject> invisibleWalls = new();
     private List<GameObject> _spawnedDoors = new();
-    protected int _aliveCount = 0;
-    protected PlayerCombatContext _combatContext;
+
+    protected HashSet<HealthBase> _trackedEnemies = new();
+
     protected int _currentWave = 0;
     protected int _totalBudget;
     protected int[] _waveBudgets;
@@ -107,37 +108,42 @@ public class BattleRoom : MonoBehaviour
     const float TriggerInset = 0.3f;
     const float InvisibleWallThickness = 0.01f;
 
-    protected virtual void Start()
+    protected virtual void OnDestroy() { }
+
+
+    protected void RegisterEnemy(GameObject go)
     {
-        var playerObj = GameObject.FindWithTag("Player");
-        if (playerObj != null)
-            _combatContext = playerObj.GetComponent<PlayerCombatContext>();
+        if (go == null) return;
+        if (!go.TryGetComponent<HealthBase>(out var hb)) return;
+        _trackedEnemies.Add(hb);
+        hb.OnDeath += () => OnEntityKilled(hb);
     }
 
-    protected void Subscribe()
+    private IEnumerator RegisterGroupEnemiesNextFrame(GameObject spawnerGo)
     {
-        if (_combatContext == null)
+        yield return null;
+        if (spawnerGo == null)
         {
-            var playerObj = GameObject.FindWithTag("Player");
-            if (playerObj != null) _combatContext = playerObj.GetComponent<PlayerCombatContext>();
+            if (isLocked && !isCleared && !_spawning && !_waveClearPending && ShouldClearWave())
+                StartCoroutine(OnWaveCleared());
+            yield break;
         }
-        if (_combatContext != null) _combatContext.OnEntityKilled += OnEntityKilled;
+        foreach (var hb in spawnerGo.GetComponentsInChildren<HealthBase>())
+        {
+            if (hb == null || hb.IsDead) continue;
+            _trackedEnemies.Add(hb);
+            hb.OnDeath += () => OnEntityKilled(hb);
+        }
     }
 
-    protected void Unsubscribe()
-    {
-        if (_combatContext != null) _combatContext.OnEntityKilled -= OnEntityKilled;
-    }
-
-    protected virtual void OnDestroy() => Unsubscribe();
 
     protected virtual void OnEntityKilled(HealthBase enemy)
     {
         if (isCleared) return;
 
-        if (_aliveCount > 0) _aliveCount--;
+        _trackedEnemies.Remove(enemy);
 
-        if (!isLocked) return;   // during wave pause — don't award coins or trigger wave clear
+        if (!isLocked) return;
 
         RunManager.Instance?.OnEnemyKilled();
         var enemyBase = enemy.GetComponent<EnemyBase>();
@@ -152,7 +158,7 @@ public class BattleRoom : MonoBehaviour
             StartCoroutine(OnWaveCleared());
     }
 
-    protected bool ShouldClearWave() => _aliveCount <= _waveClearThreshold;
+    protected bool ShouldClearWave() => _trackedEnemies.Count <= _waveClearThreshold;
 
     protected virtual IEnumerator OnWaveCleared()
     {
@@ -165,14 +171,13 @@ public class BattleRoom : MonoBehaviour
         if (_currentWave < waveCount)
         {
             yield return new WaitForSeconds(wavePause);
-            _waveClearPending = false;   // reset before next wave starts
+            _waveClearPending = false;
             isLocked = true;
             SpawnWave(_currentWave);
         }
         else
         {
             FindFirstObjectByType<UIManager>().isInBattle = false;
-            Unsubscribe();
             ClearRoom();
         }
     }
@@ -214,7 +219,6 @@ public class BattleRoom : MonoBehaviour
             yield break;
         }
 
-       
         var cells = new List<Vector3>(spawnCells);
         ShuffleList(cells);
         int cellIdx = 0;
@@ -227,21 +231,18 @@ public class BattleRoom : MonoBehaviour
                 : transform.position + Vector3.up * 0.5f;
 
             int n = SpawnEnemyPrefab(prefab, pos);
-            _aliveCount += n;
-            spawned     += n;
+            spawned += n;
             yield return new WaitForSeconds(Random.Range(spawnDelayMin, spawnDelayMax));
         }
 
         _waveSpawnedCount = spawned;
 
-       
         bool isLastWave = _currentWave >= waveCount - 1;
         _waveClearThreshold = isLastWave ? 0
             : Mathf.Max(1, Mathf.RoundToInt(spawned * Random.Range(waveNextThresholdMin, waveNextThresholdMax)));
 
         _spawning = false;
 
-       
         if (isLocked && !isCleared && !_waveClearPending && ShouldClearWave())
             StartCoroutine(OnWaveCleared());
     }
@@ -287,7 +288,6 @@ public class BattleRoom : MonoBehaviour
     {
         int spawned = 0;
         int safetyLimit = 200;
-
         bool groupSpawnerUsed = false;
 
         while (budget > 0 && safetyLimit-- > 0)
@@ -322,23 +322,23 @@ public class BattleRoom : MonoBehaviour
         {
             groupSpawner.SetGroupStatScale(ComputeStatScale());
             groupSpawner.SetMissCallback(HandleGroupMiss);
-            return groupSpawner.GetSpawnCount();
+            int count = groupSpawner.GetSpawnCount();
+            StartCoroutine(RegisterGroupEnemiesNextFrame(go));
+            return count;
         }
         ApplyEnemyScale(go);
+        RegisterEnemy(go);
         return 1;
     }
 
-    
     protected int SpawnEnemyPrefab(GameObject prefab)
         => SpawnEnemyPrefab(prefab, PickSpawnPosition());
 
     protected void HandleGroupMiss(int missed)
     {
         if (missed <= 0) return;
-        _aliveCount = Mathf.Max(0, _aliveCount - missed);
         if (isLocked && !isCleared && !_spawning && !_waveClearPending && ShouldClearWave())
             StartCoroutine(OnWaveCleared());
-       
     }
 
     protected static bool IsGroupSpawnerEntry(EnemyEntry e)
@@ -393,8 +393,8 @@ public class BattleRoom : MonoBehaviour
     {
         int floor           = rm?.CurrentFloor ?? 1;
         int floorsPerSeg    = EnemyPoolManager.Instance?.floorsPerSegment ?? 3;
-        int floorIndex      = Mathf.Max(0, floor - 1);          // 0 on floor 1
-        int segmentIndex    = floorIndex / floorsPerSeg;         // 0 in segment 1
+        int floorIndex      = Mathf.Max(0, floor - 1);
+        int segmentIndex    = floorIndex / floorsPerSeg;
 
         float hpScale  = Mathf.Pow(hpPerFloor,  floorIndex) * Mathf.Pow(hpPerSegment,  segmentIndex);
         float dmgScale = Mathf.Pow(dmgPerFloor, floorIndex) * Mathf.Pow(dmgPerSegment, segmentIndex);
@@ -434,14 +434,12 @@ public class BattleRoom : MonoBehaviour
             waveCount = Mathf.Max(1, waveCount - 1);
     }
 
-    
     protected virtual void ApplyRunModifiers()
     {
         var rm = RunManager.Instance;
         if (rm == null) return;
         eliteBudget += rm.EffectiveEliteBudgetBonus;
 
-        
         int extraWaves = rm.EffectiveExtraWaves;
         if (extraWaves > 0)
         {
@@ -460,8 +458,7 @@ public class BattleRoom : MonoBehaviour
         LockRoom();
         BuildWaveBudgets();
         _currentWave = 0;
-        _aliveCount = 0;
-        Subscribe();
+        _trackedEnemies.Clear();
         SpawnWave(0);
 
         var ui = FindFirstObjectByType<UIManager>();
@@ -503,7 +500,7 @@ public class BattleRoom : MonoBehaviour
         var rm           = RunManager.Instance;
         int floor        = rm?.CurrentFloor ?? 1;
         int roomsCleared = rm?.TotalRoomsCleared ?? 0;
-        float mean = lootBaseMean + floor * lootMeanPerFloor + roomsCleared * lootMeanPerRoom 
+        float mean = lootBaseMean + floor * lootMeanPerFloor + roomsCleared * lootMeanPerRoom
                    + (rm?.EffectiveLootMeanBonus ?? 0f);
         float sd      = lootBaseSd + (floor - 1) * lootSdPerFloor;
         int   options = lootOptionCount + (rm?.EffectiveExtraLootOptions ?? 0);
@@ -532,20 +529,15 @@ public class BattleRoom : MonoBehaviour
 
     private IEnumerator SafetyCheckRoutine()
     {
-        var wait = new WaitForSeconds(0.5f);
+        var wait = new WaitForSeconds(1f);
         while (!isCleared)
         {
             yield return wait;
             if (!isLocked || _spawning || _waveClearPending) continue;
 
-            Vector3 center = transform.position + Vector3.up * (roomSize.y * 0.5f);
-            var hits = Physics.OverlapBox(center, roomSize * 0.5f);
-            bool hasEnemy = false;
-            foreach (var hit in hits)
-            {
-                if (hit.GetComponentInParent<EnemyBase>() != null) { hasEnemy = true; break; }
-            }
-            if (!hasEnemy)
+            _trackedEnemies.RemoveWhere(hb => hb == null || hb.IsDead);
+
+            if (ShouldClearWave())
                 StartCoroutine(OnWaveCleared());
         }
     }
