@@ -84,7 +84,6 @@ public class BossRoom : BattleRoom
             var config = EnemyPoolManager.Instance?.GetBossConfig(floor);
 
             LockRoom();
-            Subscribe();
             SpawnAllBosses(config);
 
             if (config?.periodicEntries != null && config.periodicEntries.Length > 0)
@@ -98,8 +97,7 @@ public class BossRoom : BattleRoom
             LockRoom();
             BuildWaveBudgets();
             _currentWave = 0;
-            _aliveCount  = 0;
-            Subscribe();
+            _trackedEnemies.Clear();
             SpawnWave(0);
         }
 
@@ -114,7 +112,7 @@ public class BossRoom : BattleRoom
     {
         if (config?.bossPrefabs == null || config.bossPrefabs.Length == 0)
         {
-            _aliveCount = 0;
+            // No bosses — trigger clear immediately via the safety check (threshold=0, set empty).
             return;
         }
 
@@ -129,9 +127,11 @@ public class BossRoom : BattleRoom
 
             if (go.TryGetComponent<EntityStats>(out var stats))
                 stats.SetStatScale(bossScale);
-        }
 
-        _aliveCount = _bossInstances.Count;
+            // RegisterEnemy adds to _trackedEnemies (so the safety check sees live bosses)
+            // and subscribes OnDeath → OnEntityKilled.
+            RegisterEnemy(go);
+        }
     }
 
 
@@ -147,7 +147,6 @@ public class BossRoom : BattleRoom
             bossDmgPerFloor,      bossDmgPerSegment,
             bossHpPlayerDmgWeight, bossDmgPlayerHpWeight);
 
-        // Boss-exclusive: kill-count penalty reduces HP (reward for clearing many enemies)
         scale.hp = Mathf.Max(1f, scale.hp - (rm?.TotalEnemyKilled ?? 0) * bossHpEnemyKillPenalty);
         return scale;
     }
@@ -173,6 +172,9 @@ public class BossRoom : BattleRoom
                 ApplyEnemyScale(enemy);
                 _normalEnemies.Add(enemy);
                 alreadyAlive++;
+
+                // Track in _trackedEnemies so the safety check sees live normals.
+                RegisterEnemy(enemy);
             }
 
             yield return new WaitForSeconds(config.spawnInterval);
@@ -229,8 +231,8 @@ public class BossRoom : BattleRoom
                         scale.damage *= miniBossDmgScale;
                         stats.SetStatScale(scale);
                     }
+                    RegisterEnemy(go);
                     remaining -= topCost;
-                    _aliveCount++;
                     spawned++;
                     yield return new WaitForSeconds(Random.Range(spawnDelayMin, spawnDelayMax));
                 }
@@ -239,8 +241,7 @@ public class BossRoom : BattleRoom
             foreach (var prefab in BuildBudgetPrefabList(remaining, waveIndex))
             {
                 int n = SpawnEnemyPrefab(prefab, NextCell());
-                _aliveCount += n;
-                spawned     += n;
+                spawned += n;
                 yield return new WaitForSeconds(Random.Range(spawnDelayMin, spawnDelayMax));
             }
         }
@@ -249,8 +250,7 @@ public class BossRoom : BattleRoom
             foreach (var prefab in BuildEliteWavePrefabList(_waveBudgets[waveIndex]))
             {
                 int n = SpawnEnemyPrefab(prefab, NextCell());
-                _aliveCount += n;
-                spawned     += n;
+                spawned += n;
                 yield return new WaitForSeconds(Random.Range(spawnDelayMin, spawnDelayMax));
             }
         }
@@ -298,7 +298,7 @@ public class BossRoom : BattleRoom
             return;
         }
 
-        if (_aliveCount > 0) _aliveCount--;
+        // ── TrueBoss path ─────────────────────────────────────────────────────
         if (!isLocked) return;
 
         RunManager.Instance?.OnEnemyKilled();
@@ -328,7 +328,6 @@ public class BossRoom : BattleRoom
             _waveClearPending = true;
             if (_spawnRoutine != null) { StopCoroutine(_spawnRoutine); _spawnRoutine = null; }
             FindFirstObjectByType<UIManager>().isInBattle = false;
-            Unsubscribe();
             ClearRoom();
             yield break;
         }
@@ -349,7 +348,6 @@ public class BossRoom : BattleRoom
         else
         {
             FindFirstObjectByType<UIManager>().isInBattle = false;
-            Unsubscribe();
             ClearRoom();
         }
     }
@@ -369,7 +367,6 @@ public class BossRoom : BattleRoom
         int totalFloors = pool != null ? pool.segmentCount * pool.floorsPerSegment : maxFloor;
         bool isFinalBoss = nextFloor > totalFloors;
 
-        // Compute portal position first so loot can avoid it.
         var portalPos = transform.position + new Vector3(0f, 0f, PortalOffsetZ);
         if (!isFinalBoss)
             SpawnLoot(PickLootPosition(portalPos));
@@ -377,7 +374,6 @@ public class BossRoom : BattleRoom
         var portal = (isFinalBoss && portalFinalPrefab != null) ? portalFinalPrefab : portalPrefab;
         if (portal != null)
             Instantiate(portal, portalPos, Quaternion.identity);
-
 
         RunManager.Instance?.OnBossKilled();
         HealPlayerAfterRoom();
@@ -389,7 +385,7 @@ public class BossRoom : BattleRoom
         int floor        = RunManager.Instance?.CurrentFloor ?? 1;
         int roomsCleared = RunManager.Instance?.TotalRoomsCleared ?? 0;
         int bossKills    = RunManager.Instance?.TotalBossKilled ?? 0;
-        float baseMean   = lootBaseMean + floor * lootMeanPerFloor + roomsCleared * lootMeanPerRoom ;
+        float baseMean   = lootBaseMean + floor * lootMeanPerFloor + roomsCleared * lootMeanPerRoom;
         float sd         = lootBaseSd + (floor - 1) * lootSdPerFloor;
         return new LootConfig
         {
